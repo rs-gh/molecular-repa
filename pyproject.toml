@@ -17,4 +17,6 @@ dependencies = [
 dev = [
     "ipykernel>=7.1.0",
     "notebook>=7.5.1",
+    "pre-commit>=4.0.1",
+    "ruff>=0.8.6",
 ]
