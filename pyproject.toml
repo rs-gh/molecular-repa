@@ -4,4 +4,17 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "jax>=0.8.2",
+    "numpy>=2.4.0",
+    "rdkit>=2025.9.3",
+    "scipy>=1.16.3",
+    "torch>=2.9.1",
+    "tqdm>=4.67.1",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.1.0",
+    "notebook>=7.5.1",
+]
