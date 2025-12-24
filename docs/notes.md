@@ -10,11 +10,11 @@ General idea
 
 ## Flow matching
 
-https://scontent-lhr8-1.xx.fbcdn.net/v/t39.2365-6/469963300_2320719918292896_7950025307614718519_n.pdf?_nc_cat=108&ccb=1-7&_nc_sid=3c67a6&_nc_ohc=TKEh9-YHJb4Q7kNvwG0Zxfx&_nc_oc=AdmYWrXsXw4J5KkCV3-cafWYG3vYgtEIad0ThotckIyC4GB9bEtMB_Qq5iCEQewsWdc&_nc_zt=14&_nc_ht=scontent-lhr8-1.xx&_nc_gid=zAyIXhQKL6-4zj2izSnQjA&oh=00_Afk5dKkC3W3nYunaQQ8QwQOudg9Sd7o18ecImyfd6SHWbQ&oe=694E3C02
+[Flow Matching Notes and Code](https://scontent-lhr8-1.xx.fbcdn.net/v/t39.2365-6/469963300_2320719918292896_7950025307614718519_n.pdf?_nc_cat=108&ccb=1-7&_nc_sid=3c67a6&_nc_ohc=TKEh9-YHJb4Q7kNvwG0Zxfx&_nc_oc=AdmYWrXsXw4J5KkCV3-cafWYG3vYgtEIad0ThotckIyC4GB9bEtMB_Qq5iCEQewsWdc&_nc_zt=14&_nc_ht=scontent-lhr8-1.xx&_nc_gid=zAyIXhQKL6-4zj2izSnQjA&oh=00_Afk5dKkC3W3nYunaQQ8QwQOudg9Sd7o18ecImyfd6SHWbQ&oe=694E3C02)
 
-See notebook pages 49-55
+See notebook pages 49-55 and Gemini [chat](https://gemini.google.com/app/dca2f029d12af002)
 
-https://www.youtube.com/watch?v=7NNxK3CqaDk
+[Yannic Kilcher video](https://www.youtube.com/watch?v=7NNxK3CqaDk)
 
 Idea: instead of doing the iterative noise adding/removal process in diffusion, why not just work on the distributions directly? Can we just morph the original noise distribution into the data distribution? Without explicity specifying the process as diffusion does
 
@@ -29,7 +29,7 @@ This paper is mostly about 'how do you construct distributions from samples'
 1. Construct a target prob dist using the samples we have -- for each sample, create a Gaussian with mean = sample, then a Gaussian mixture model across all individual Gaussians?
 2. 
 
-https://www.youtube.com/watch?v=7cMzfkWFWhI
+[Outlier video](https://www.youtube.com/watch?v=7cMzfkWFWhI)
 
 This video deals with samples. not probability distributions
 
