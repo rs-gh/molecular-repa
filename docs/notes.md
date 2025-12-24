@@ -10,11 +10,11 @@ General idea
 
 ## Flow matching
 
-[Flow Matching Notes and Code](https://scontent-lhr8-1.xx.fbcdn.net/v/t39.2365-6/469963300_2320719918292896_7950025307614718519_n.pdf?_nc_cat=108&ccb=1-7&_nc_sid=3c67a6&_nc_ohc=TKEh9-YHJb4Q7kNvwG0Zxfx&_nc_oc=AdmYWrXsXw4J5KkCV3-cafWYG3vYgtEIad0ThotckIyC4GB9bEtMB_Qq5iCEQewsWdc&_nc_zt=14&_nc_ht=scontent-lhr8-1.xx&_nc_gid=zAyIXhQKL6-4zj2izSnQjA&oh=00_Afk5dKkC3W3nYunaQQ8QwQOudg9Sd7o18ecImyfd6SHWbQ&oe=694E3C02)
+### [Flow Matching Notes and Code](https://scontent-lhr8-1.xx.fbcdn.net/v/t39.2365-6/469963300_2320719918292896_7950025307614718519_n.pdf?_nc_cat=108&ccb=1-7&_nc_sid=3c67a6&_nc_ohc=TKEh9-YHJb4Q7kNvwG0Zxfx&_nc_oc=AdmYWrXsXw4J5KkCV3-cafWYG3vYgtEIad0ThotckIyC4GB9bEtMB_Qq5iCEQewsWdc&_nc_zt=14&_nc_ht=scontent-lhr8-1.xx&_nc_gid=zAyIXhQKL6-4zj2izSnQjA&oh=00_Afk5dKkC3W3nYunaQQ8QwQOudg9Sd7o18ecImyfd6SHWbQ&oe=694E3C02)
 
 See notebook pages 49-55 and Gemini [chat](https://gemini.google.com/app/dca2f029d12af002)
 
-[Yannic Kilcher video](https://www.youtube.com/watch?v=7NNxK3CqaDk)
+### [Yannic Kilcher video](https://www.youtube.com/watch?v=7NNxK3CqaDk)
 
 Idea: instead of doing the iterative noise adding/removal process in diffusion, why not just work on the distributions directly? Can we just morph the original noise distribution into the data distribution? Without explicity specifying the process as diffusion does
 
@@ -29,7 +29,7 @@ This paper is mostly about 'how do you construct distributions from samples'
 1. Construct a target prob dist using the samples we have -- for each sample, create a Gaussian with mean = sample, then a Gaussian mixture model across all individual Gaussians?
 2. 
 
-[Outlier video](https://www.youtube.com/watch?v=7cMzfkWFWhI)
+### [Outlier video](https://www.youtube.com/watch?v=7cMzfkWFWhI)
 
 This video deals with samples. not probability distributions
 
@@ -124,3 +124,178 @@ This video deals with samples. not probability distributions
         total_loss.backward()
     ```
   - Flow Matching works best when the data x1​ shares an underlying structure. In molecules, that structure is "Physics and Valency." As long as that structure exists, the model can handle immense diversity (millions of different molecules) because the "rules" for moving atoms into valid positions are consistent across the whole set.
+
+# 20251116
+
+Running questions
+- What is flow matching and how does it work?
+Training?
+Sampling?
+- What is a flow based transformer? 
+- How is a flow connected to a diffusion model?
+- What is equivariance? Vs non-equivariance?
+- What is a small molecule vs a protein?
+- What are the various facets/properties we care about in the protein modelling task?
+- Do different models optimize for different facets?
+- Is the idea to combine them together through something like REPA?
+- What are the different data sources? What do they all contain?
+UniRef?
+PDB?
+AFDB?
+- What is single sequence vs MSA?
+- Does PDB and AFDB have either or both?
+
+## [Proteina](https://arxiv.org/pdf/2503.00710)
+
+What is it?
+- ‘Flow based protein backbone generator’
+- Uses hierarchical fold class labels for conditioning, relies on a tailored scalable transformer architecture with 5x as many params as previous models
+- New metrics to measure performance to measure the distributional similarity of generated proteins with reference sets
+- Scale training data to millions of synthetic protein structures
+- Better training + sampling recipes adapted for protein backbone generation
+  - LoRA for protein backbones
+  - Classifier free guidance
+  - Autoguidance
+  - New training objectives
+- SOTA on de novo protein backbone design, produces diverse and designable proteins up to 800 residues
+- Hierarchical conditioning offers control – enabling high level secondary-structure guidance as well as low-level fold-specific generation
+
+Introduction
+- Protein structure -> protein function
+- So an approach to de novo protein design is: model the distribution of 3D protein structures, typically with diffusion or flow based methods
+- Usually synthesize backbones only
+  - unlike PLMs, which often model sequences instead
+  - And unlike sequence-to-structure folding models like AlphaFold
+Contemporary efforts
+Small training data: 500k structures
+Neural networks don’t offer any control during synthesis and are usually small
+Question: can we scale and control protein structure diffusion and flow models?
+
+Contribution
+- Scale protein structure generation and develop a new flow matching-based protein backbone generative model
+- In vision and language, generative models are typically prompted through semantic text or class inputs, offering enhanced controllability
+- Similarly, enrich the training data with hierarchical fold class labels following the CATH protein structure classification scheme
+- This offers both high-level control – eg over secondary structure content
+- And low-level guidance wrt specific fold classes – which can eg increase the number of \beta sheets in generated proteins
+- Also scale the training data – train on 21MM protein structures
+  - Q: from where?
+- New scalable xformer architecture
+  - Non equivariant design, based on recent vision diffusion transformers
+  - Include triangle layers
+  - Q: What is this?
+- Show that non-equivariant flow models also succeed on unconditional protein structure generation
+  - SOTA is equivariant methods
+- 400MM params, 5x larger than RFDiffusion
+- New metrics for performance, to measure the distribution, not just individual samples
+  - SOTA criteria that matter for a protein generator
+    - Diversity
+    - Novelty
+    - Designability
+  - Problem: none of these metrics scores models at the distribution level, although the task of generative modeling is to learn the model of a data distribution
+  - New metrics introduced to directly score the learned distribution instead of individual samples
+    - Similar to the Frechet inception distance, compare sets of generated samples against reference distributions in a non-linear feature space
+    - Since the feature extractor is based on a fold class predictor, quantify models diversity over fold classes as well the as similarity of the generated class distribution compared to reference data’s classes
+- Adjust the flow matching objective to protein structure generation and explore stage wise training strategies
+  - Using LoRA, fine-tune Proteina models on natural, designable proteins
+  - New guidance schemes for hierarchical fold class conditioning
+- Some discussion of how flow matching works – idk what this stuff is
+
+Data sources
+- PDB
+  - If you filter this to natural proteins, gives you about 20k
+- AFDB
+  - Total number here = 214MM
+  - But most are not useful for training protein structure generators, mostly contain low quality predictions and other unsuitable data
+  - Foldseek AFDB = based on sequential filtering and clustering of the AFDB with the sequence based MMseqs2 and the structure based Foldseek
+    - This data uses cluster representatives only i.e. one structure per cluster
+    - For the training dataset, use between 32 and 256 residues in the models ~600K in total
+      - Q: why not longer or shorter?
+    - High quality filtered AFDB dataset
+      - 21MM structures
+- Synthetic alphafold2 structures
+- Question: Does scaling protein structure training data improve model performance in the same way it did for images and NLP?
+
+Can we include further info to the model?
+- Eg for images typically rely on semantic class or text-conditioning to offer control or to break down the generative modelling task into a set of simpler conditional tasks
+- What does this look like in protein land?
+- ‘Hierarchical fold class annotations’ from TED = The Encyclopedia of Domains
+  - ‘Structural domain assignments to proteins in the AFDB’
+  - CATH hierarchy
+    - C = class = overall secondary structure of a domain
+      - Alpha helix
+      - Beta sheet
+      - mixed
+    - A = architecture = groups together domains with high structural similarity
+    - T = topology/fold = further refines the structure groupings
+    - H = homologous superfamily = shared between domains with evolutionary relationships
+  - Discard H, use only CAT, since we are only interested in structural modelling
+- Assign these labels to the proteins in all datasets
+
+Training objective
+- Model protein backbones’ residue locations through their alpha carbon atom coordinates
+  - Many works instead leverage ‘frames’ to additionally capture residue rotations
+  - But this introduces a whole class of geometry problems
+
+## [Representation Alignment for Generation](https://arxiv.org/pdf/2410.06940)
+
+What is the idea?
+- The denoising process in generative diffusion models can induce meaningful discriminative representations inside the model
+- But the quality of these representations lags behind self supervised methods
+- Argument: one main bottleneck in training large-scale diffusion models for generation lies in effectively learning these representations
+- Moreover, training can be made easier by incorporating high-quality external visual representations, instead of relying on the diffusion models to learn them independently
+
+Diffusion models as representation learners
+- They learn discriminative features in their hidden states
+- Better diffusion models learn better representations
+- Denoising score matching as an SSL method?
+  - Implicitly learns representation h as hidden state of a denoising autoencoder through a reconstruction of x from corrupt data x_hat
+  - But is reconstruction a suitable task for learning good representations?
+    - It is not capable of eliminating unnecessary details in x for representation learning
+    - Q: ??
+
+This paper
+- Identify: the main challenge in training diffusion models stems from the need to learn high quality h
+- Demonstrate: Training process for generative diffusion models becomes easier and more effective when supported by an external representation y_star
+- How? Use a simple regularization technique to use an SSL representation as y_star
+- Improves training efficiency and generation quality
+  - Aligns patch wise projections of the model’s hidden states with pretrained SSL representations
+  - Clean image = target
+  - Goal of the regularization is for the diffusion transformer’s hidden states to predict noise-invariant, clean visual representations from noise inputs that contain useful semantic information
+  - This provides meaningful guidance for subsequent layers to reconstruct the target
+
+## [ESM2](https://www.biorxiv.org/content/10.1101/2022.07.20.500902v1.full.pdf)
+
+What is it?
+- 15B param language model
+- Idea: As models scale, they learn information enabling the prediction of the 3D structure of a protein at the resolution of individual atoms
+- Inference is order of magnitude faster than AlphaFold2
+
+Idea: because the structure and function of a protein constrains the mutations to its sequence that are selected through evolution, it should also be possible to infer biological structure from sequence patterns
+- Structure determines function
+- Function determines sequence
+- So we should be able to go the other way?
+- Predict structure from sequence!
+
+We posit that the task of filling in missing amino acids in
+protein sequences across evolution will require a language
+model to learn something about the underlying structure
+that creates the patterns in the sequences.
+
+Protein language model = train a model with a simple language modelling objective purely on protein sequence data
+
+Argument: large protein language models learn sufficient information to enable accurate, atomic-level predictions of protein structure
+ESM2 = language model
+ESMFold = uses ESM2 information and representations to perform end-to-end 3D structure prediction using only a single sequence as input
+- Can you quantify the emergence of protein structure as the model scales from millions to billions of params?
+- Q: What is MSA vs single sequence?
+
+Data
+ - UniRef database
+Training
+- Given an input protein, 15% of amino acids are masked
+- ESM2 tasked with predicting these missing positions
+
+
+What is the evolutionary scale??
+
+Really simple model?
