@@ -23,3 +23,5 @@ Can start with t=1 and see if/how things change
 TBD
 
 Plan is to spend 1-2 weeks on small molecules, then move to protein models
+
+Goal for 20260129: Run Tabasco with and without REPA using chemprop, see what we get
