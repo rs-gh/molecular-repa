@@ -39,6 +39,7 @@ tabasco = { path = "src/tabasco", editable = true }
 
 [dependency-groups]
 dev = [
+    "huggingface-hub[cli]>=0.20.0",
     "ipykernel>=7.1.0",
     "notebook>=7.5.1",
     "pre-commit>=4.0.1",
