@@ -1,3 +1,94 @@
+# 20260121
+
+## Questions to check with TABASCO-REPA
+1. Do you still need positional encodings? Does the inductive bias from encoder alignment mean this is no longer necessary?
+2. What time steps is alignment most useful for? t ~ 0? t ~ 1?
+2. Training curve for tabasco-mild? Should we compare against that?
+3. What encoder should we use? MACE? ChemProp?
+4. What is the minimal size useful test we can run? Where?
+
+## [REPA](https://arxiv.org/pdf/2410.06940)
+
+We demonstrate that the training
+process for generative diffusion models becomes significantly easier and more effective when sup-
+ported by an external representation, y∗. Specifically, we propose a simple regularization technique
+that leverages recent advances in self-supervised visual representations as y∗, leading to substantial
+improvements in both training efficiency and the generation quality of diffusion transformers.
+- one key difference for us will be we don't use SSL based representations, but rather some other form of encoder.
+
+Similar to prior studies (Xiang et al., 2023), we first observe that pretrained diffusion models
+do indeed learn meaningful discriminative representations (as shown by the linear probing results in
+Figure 2a). However, these representations are significantly inferior to those produced by DINOv2.
+Next, we find that the alignment between the representations learned by the diffusion model and
+those of DINOv2 (Figure 2b) is still considered weak,1 which we study by measuring their repre-
+sentation alignment (Huh et al., 2024). Finally, we observe this alignment between diffusion models
+and DINOv2 improves consistently with longer training and larger models (Figure 2c).
+
+These insights inspire us to enhance generative models by incorporating external self-supervised rep-
+resentations. However, this approach is not straightforward when using off-the-shelf self-supervised
+visual encoders (e.g., by fine-tuning an encoder for generation tasks). The first challenge is an input
+mismatch: diffusion models work with noisy inputs ˜x, whereas most self-supervised learning en-
+coders are trained on clean images x. This issue is even more pronounced in modern latent diffusion
+models, which take a compressed latent image z = E(x) from a pretrained VAE encoder (Rombach
+et al., 2022) as input. Additionally, these off-the-shelf vision encoders are not designed for tasks like
+reconstruction or generation. To overcome these technical hurdles, we guide the feature learning of
+diffusion models using a regularization technique that distills pretrained self-supervised representa-
+tions into diffusion representations, offering a flexible way to integrate high-quality representations.
+
+Figure 3
+- a. unlike with baseline where the semantic gap i.e performance on ImageNet classification gets smaller for larger layer index, with REPA, it looks like the gap starts small and gets bigger somehow
+
+Notably, with improved
+alignment, we can push the SiT model’s generation-representation envelope: within the same num-
+ber of training iterations, it delivers both better generation quality and stronger linear probing results.
+We use a single network trained with REPA at layer 8 and perform the evaluation at different layers.
+
+In essence, REPA dis-
+tills the pretrained self-supervised visual representation y∗ of a clean image x into the diffusion
+transformer representation h of a noisy input ˜x. This regularization reduces the semantic gap in the
+representation h (Figure 3a) and better aligns it with the target self-supervised representations y∗
+(Figure 3b). Notably, this enhanced alignment significantly boosts the generation performance of
+diffusion transformers (Figure 3c). Interestingly, with REPA, we observe that sufficient represen-
+tation alignment can be achieved by aligning only the first few transformer blocks. This, in turn,
+allows the later layers of the diffusion transformers to focus on capturing high-frequency details
+based on the aligned representations, further improving generation performance
+
+### Setup: Standard Diffusion Transformer + Frozen Encoder
+
+```
+model = DiffusionTransformer()
+teacher_enc = FrozenDINOv2() # Pretrained & Frozen
+projector = MLP(dim_student, dim_teacher) # Small trainable layer
+lambda_repa = 0.5 # Weight of the regularization
+
+def training_step(batch_images):
+    # 1. Get Teacher representation of clean images
+    with torch.no_grad():
+        target_repr = teacher_enc(batch_images) # e.g., [B, N, 1024]
+
+    # 2. Standard Diffusion setup
+    noise = torch.randn_like(batch_images)
+    t = torch.randint(0, 1000, (batch_images.shape[0],))
+    noisy_images = add_noise(batch_images, noise, t)
+
+    # 3. Forward pass with hidden state extraction
+    # We ask the model to return the features from Layer 6
+    pred_noise, hidden_states = model(noisy_images, t, return_layer=6)
+
+    # 4. Project student features to teacher space
+    projected_repr = projector(hidden_states)
+
+    # 5. Calculate Losses
+    loss_denoise = mse_loss(pred_noise, noise)
+    loss_repa = mse_loss(projected_repr, target_repr)
+    
+    total_loss = loss_denoise + (lambda_repa * loss_repa)
+
+    # 6. Backprop
+    total_loss.backward()
+    optimizer.step()
+```
+
 # 20251221
 
 ## Diffusion
