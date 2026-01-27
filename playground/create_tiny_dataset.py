@@ -8,6 +8,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from tabasco.chem.convert import MoleculeConverter
 
+
 def create_tiny_dataset(output_path: str = "tiny_dataset.pt", num_molecules: int = 20):
     """Create a tiny dataset of simple molecules.
 
@@ -18,30 +19,32 @@ def create_tiny_dataset(output_path: str = "tiny_dataset.pt", num_molecules: int
 
     # Simple SMILES strings - small molecules for fast testing
     smiles_list = [
-        "C",           # Methane
-        "CC",          # Ethane
-        "CCC",         # Propane
-        "CCCC",        # Butane
-        "CO",          # Methanol
-        "CCO",         # Ethanol
-        "CC(C)C",      # Isobutane
-        "C=C",         # Ethene
-        "C#C",         # Ethyne
-        "c1ccccc1",    # Benzene
-        "CC(=O)C",     # Acetone
-        "CC(=O)O",     # Acetic acid
-        "CCN",         # Ethylamine
-        "C1CC1",       # Cyclopropane
-        "C1CCC1",      # Cyclobutane
-        "CCl",         # Chloroethane
-        "CF",          # Fluoromethane
-        "C(C)N",       # Ethylamine
-        "COC",         # Dimethyl ether
-        "C(C)O",       # Ethanol variant
+        "C",  # Methane
+        "CC",  # Ethane
+        "CCC",  # Propane
+        "CCCC",  # Butane
+        "CO",  # Methanol
+        "CCO",  # Ethanol
+        "CC(C)C",  # Isobutane
+        "C=C",  # Ethene
+        "C#C",  # Ethyne
+        "c1ccccc1",  # Benzene
+        "CC(=O)C",  # Acetone
+        "CC(=O)O",  # Acetic acid
+        "CCN",  # Ethylamine
+        "C1CC1",  # Cyclopropane
+        "C1CCC1",  # Cyclobutane
+        "CCl",  # Chloroethane
+        "CF",  # Fluoromethane
+        "C(C)N",  # Ethylamine
+        "COC",  # Dimethyl ether
+        "C(C)O",  # Ethanol variant
     ]
 
     # Repeat to get desired number of molecules
-    smiles_list = (smiles_list * (num_molecules // len(smiles_list) + 1))[:num_molecules]
+    smiles_list = (smiles_list * (num_molecules // len(smiles_list) + 1))[
+        :num_molecules
+    ]
 
     molecules = []
     failed = []
@@ -84,7 +87,9 @@ def create_tiny_dataset(output_path: str = "tiny_dataset.pt", num_molecules: int
     batches = []
     for mol in molecules:
         try:
-            batch = converter.to_tensor(mol, normalize_coords=True, remove_hydrogens=True)
+            batch = converter.to_tensor(
+                mol, normalize_coords=True, remove_hydrogens=True
+            )
             batches.append(batch)
         except Exception as e:
             print(f"Failed to convert molecule: {e}")
@@ -98,7 +103,9 @@ def create_tiny_dataset(output_path: str = "tiny_dataset.pt", num_molecules: int
 
     # Print statistics
     num_atoms = [batch["coords"].shape[0] for batch in batches]
-    print(f"  Atoms per molecule: min={min(num_atoms)}, max={max(num_atoms)}, avg={sum(num_atoms)/len(num_atoms):.1f}")
+    print(
+        f"  Atoms per molecule: min={min(num_atoms)}, max={max(num_atoms)}, avg={sum(num_atoms)/len(num_atoms):.1f}"
+    )
 
     return batches
 

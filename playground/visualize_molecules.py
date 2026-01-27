@@ -2,9 +2,9 @@
 
 import pickle
 from rdkit import Chem
-from rdkit.Chem import Draw, AllChem, Descriptors
+from rdkit.Chem import Draw, Descriptors
 import py3Dmol
-from IPython.display import display
+
 
 def visualize_2d_grid(mols, mols_per_row=3, img_size=(300, 300)):
     """Create a 2D grid of molecules.
@@ -24,7 +24,7 @@ def visualize_2d_grid(mols, mols_per_row=3, img_size=(300, 300)):
             try:
                 Chem.SanitizeMol(m)
                 valid_mols.append(m)
-            except:
+            except:  # noqa: E722
                 pass
 
     # Add labels with properties
@@ -39,13 +39,13 @@ def visualize_2d_grid(mols, mols_per_row=3, img_size=(300, 300)):
         molsPerRow=mols_per_row,
         subImgSize=img_size,
         legends=legends,
-        returnPNG=False
+        returnPNG=False,
     )
 
     return img
 
 
-def visualize_3d_inline(mol, width=400, height=400, style='stick'):
+def visualize_3d_inline(mol, width=400, height=400, style="stick"):
     """Visualize a single molecule in 3D (for Jupyter notebooks).
 
     Args:
@@ -62,9 +62,9 @@ def visualize_3d_inline(mol, width=400, height=400, style='stick'):
 
     # Create viewer
     viewer = py3Dmol.view(width=width, height=height)
-    viewer.addModel(pdb_block, 'pdb')
+    viewer.addModel(pdb_block, "pdb")
     viewer.setStyle({style: {}})
-    viewer.setBackgroundColor('white')
+    viewer.setBackgroundColor("white")
     viewer.zoomTo()
 
     return viewer
@@ -110,7 +110,7 @@ def print_molecule_info(mols):
         # Sanitize molecule to ensure ring info is computed
         try:
             Chem.SanitizeMol(mol)
-        except:
+        except:  # noqa: E722
             pass
 
         smiles = Chem.MolToSmiles(mol)
@@ -134,7 +134,7 @@ def print_molecule_info(mols):
 def main():
     # Load molecules
     print("Loading molecules from test_molecules.pkl...")
-    with open('test_molecules.pkl', 'rb') as f:
+    with open("test_molecules.pkl", "rb") as f:
         mols = pickle.load(f)
 
     print(f"Loaded {len(mols)} molecules ({sum(m is not None for m in mols)} valid)\n")
@@ -146,12 +146,12 @@ def main():
     print("\n" + "=" * 70)
     print("Creating 2D visualization...")
     img = visualize_2d_grid(mols, mols_per_row=3, img_size=(400, 400))
-    img.save('molecules_2d.png')
+    img.save("molecules_2d.png")
     print("✓ Saved 2D grid to molecules_2d.png")
 
     # Save to SDF for external viewers (like ChimeraX, PyMOL, VMD)
     print("\nSaving SDF file...")
-    save_molecules_as_sdf(mols, 'molecules_3d.sdf')
+    save_molecules_as_sdf(mols, "molecules_3d.sdf")
 
     print("\n" + "=" * 70)
     print("Visualization complete!")

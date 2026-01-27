@@ -60,10 +60,10 @@ Generated_Molecule_1
  27  6  1  0
  27 26  1  0
 M  END
->  <MolecularWeight>  (1) 
+>  <MolecularWeight>  (1)
 356.38
 
->  <NumAtoms>  (1) 
+>  <NumAtoms>  (1)
 27
 
 $$$$
@@ -103,10 +103,10 @@ Generated_Molecule_2
  14 13  2  0
  15  6  2  0
 M  END
->  <MolecularWeight>  (2) 
+>  <MolecularWeight>  (2)
 202.21
 
->  <NumAtoms>  (2) 
+>  <NumAtoms>  (2)
 15
 
 $$$$
@@ -161,10 +161,10 @@ Generated_Molecule_3
  21 15  1  0
  22  2  2  0
 M  END
->  <MolecularWeight>  (3) 
+>  <MolecularWeight>  (3)
 300.30
 
->  <NumAtoms>  (3) 
+>  <NumAtoms>  (3)
 22
 
 $$$$
@@ -218,10 +218,10 @@ Generated_Molecule_4
  20 19  2  0
  21 20  1  0
 M  END
->  <MolecularWeight>  (4) 
+>  <MolecularWeight>  (4)
 281.22
 
->  <NumAtoms>  (4) 
+>  <NumAtoms>  (4)
 21
 
 $$$$
@@ -289,10 +289,10 @@ Generated_Molecule_5
  26 25  1  0
  27 28  1  0
 M  END
->  <MolecularWeight>  (5) 
+>  <MolecularWeight>  (5)
 396.52
 
->  <NumAtoms>  (5) 
+>  <NumAtoms>  (5)
 28
 
 $$$$

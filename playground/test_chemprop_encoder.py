@@ -33,11 +33,14 @@ def create_test_batch(smiles_list: list[str], max_atoms: int = 10):
     atomics = torch.stack([td["atomics"] for td in tensordicts])
     padding_mask = torch.stack([td["padding_mask"] for td in tensordicts])
 
-    return TensorDict({
-        "coords": coords,
-        "atomics": atomics,
-        "padding_mask": padding_mask,
-    }, batch_size=[len(smiles_list)])
+    return TensorDict(
+        {
+            "coords": coords,
+            "atomics": atomics,
+            "padding_mask": padding_mask,
+        },
+        batch_size=[len(smiles_list)],
+    )
 
 
 def test_chemprop_encoder():
@@ -48,10 +51,10 @@ def test_chemprop_encoder():
 
     # Test molecules
     smiles_list = [
-        "CCO",        # Ethanol (3 atoms)
-        "CC(=O)O",    # Acetic acid (4 atoms)
-        "c1ccccc1",   # Benzene (6 atoms)
-        "CCN",        # Ethylamine (3 atoms)
+        "CCO",  # Ethanol (3 atoms)
+        "CC(=O)O",  # Acetic acid (4 atoms)
+        "c1ccccc1",  # Benzene (6 atoms)
+        "CCN",  # Ethylamine (3 atoms)
     ]
 
     batch = create_test_batch(smiles_list, max_atoms=10)
@@ -62,7 +65,9 @@ def test_chemprop_encoder():
 
     # Create ChemProp encoder with CheMeleon pretrained weights
     encoder = ChemPropEncoder(pretrained="chemeleon")
-    print(f"\nChemPropEncoder created with CheMeleon (encoder_dim={encoder.encoder_dim})")
+    print(
+        f"\nChemPropEncoder created with CheMeleon (encoder_dim={encoder.encoder_dim})"
+    )
 
     # Forward pass
     with torch.no_grad():
@@ -77,7 +82,7 @@ def test_chemprop_encoder():
     # Verify embeddings
     for i, smiles in enumerate(smiles_list):
         real_atoms = (~batch["padding_mask"][i]).sum().item()
-        emb_norm = embeddings[i, :int(real_atoms)].norm(dim=-1)
+        emb_norm = embeddings[i, : int(real_atoms)].norm(dim=-1)
         print(f"  {smiles}: {int(real_atoms)} atoms, norms: {emb_norm[:3].tolist()}")
 
     print("\n✓ ChemPropEncoder test passed!")
@@ -110,10 +115,10 @@ def test_repa_loss_with_chemprop():
         similarity_type="cosine",
     )
 
-    print(f"\nREPA Loss created:")
-    print(f"  Encoder: ChemPropEncoder (frozen)")
-    print(f"  Projector: Projector (trainable)")
-    print(f"  lambda_repa: 0.5")
+    print("\nREPA Loss created:")
+    print("  Encoder: ChemPropEncoder (frozen)")
+    print("  Projector: Projector (trainable)")
+    print("  lambda_repa: 0.5")
 
     # Create mock FlowPath and predictions
     from tabasco.flow.path import FlowPath
@@ -124,29 +129,38 @@ def test_repa_loss_with_chemprop():
     path = FlowPath(
         x_1=batch,
         x_t=batch,  # For testing, use same as x_1
-        dx_t=TensorDict({
-            "coords": torch.randn(B, N, 3),
-            "atomics": torch.randn(B, N, batch["atomics"].shape[-1]),
-        }, batch_size=[B]),
-        x_0=TensorDict({
-            "coords": torch.randn(B, N, 3),
-            "atomics": torch.randn(B, N, batch["atomics"].shape[-1]),
-        }, batch_size=[B]),
+        dx_t=TensorDict(
+            {
+                "coords": torch.randn(B, N, 3),
+                "atomics": torch.randn(B, N, batch["atomics"].shape[-1]),
+            },
+            batch_size=[B],
+        ),
+        x_0=TensorDict(
+            {
+                "coords": torch.randn(B, N, 3),
+                "atomics": torch.randn(B, N, batch["atomics"].shape[-1]),
+            },
+            batch_size=[B],
+        ),
         t=torch.rand(B),
     )
 
     # Mock predictions with hidden states
-    pred = TensorDict({
-        "coords": batch["coords"] + 0.1 * torch.randn_like(batch["coords"]),
-        "atomics": batch["atomics"] + 0.1 * torch.randn_like(batch["atomics"]),
-        "hidden_states": torch.randn(B, N, hidden_dim),  # From transformer
-        "padding_mask": batch["padding_mask"],
-    }, batch_size=[B])
+    pred = TensorDict(
+        {
+            "coords": batch["coords"] + 0.1 * torch.randn_like(batch["coords"]),
+            "atomics": batch["atomics"] + 0.1 * torch.randn_like(batch["atomics"]),
+            "hidden_states": torch.randn(B, N, hidden_dim),  # From transformer
+            "padding_mask": batch["padding_mask"],
+        },
+        batch_size=[B],
+    )
 
     # Compute REPA loss
     loss, stats = repa_loss(path, pred, compute_stats=True)
 
-    print(f"\nREPA Loss computation:")
+    print("\nREPA Loss computation:")
     print(f"  Loss value: {loss.item():.4f}")
     print(f"  Stats: {stats}")
 
@@ -154,10 +168,11 @@ def test_repa_loss_with_chemprop():
     loss.backward()
 
     encoder_has_grad = any(p.grad is not None for p in encoder.parameters())
-    projector_has_grad = any(p.grad is not None and p.grad.abs().sum() > 0
-                            for p in projector.parameters())
+    projector_has_grad = any(
+        p.grad is not None and p.grad.abs().sum() > 0 for p in projector.parameters()
+    )
 
-    print(f"\nGradient check:")
+    print("\nGradient check:")
     print(f"  Encoder has gradients: {encoder_has_grad} (should be False)")
     print(f"  Projector has gradients: {projector_has_grad} (should be True)")
 
@@ -193,18 +208,20 @@ def compare_encoders():
             batch["coords"], batch["atomics"], batch["padding_mask"]
         )
 
-    print(f"\nEmbedding comparison:")
+    print("\nEmbedding comparison:")
     print(f"  ChemProp shape: {chemprop_emb.shape}")
     print(f"  Dummy shape: {dummy_emb.shape}")
 
-    print(f"\nEmbedding statistics:")
-    print(f"  ChemProp - mean: {chemprop_emb.mean():.4f}, std: {chemprop_emb.std():.4f}")
+    print("\nEmbedding statistics:")
+    print(
+        f"  ChemProp - mean: {chemprop_emb.mean():.4f}, std: {chemprop_emb.std():.4f}"
+    )
     print(f"  Dummy    - mean: {dummy_emb.mean():.4f}, std: {dummy_emb.std():.4f}")
 
     # Compare semantic consistency
     # ChemProp should give similar embeddings for chemically similar atoms
-    print(f"\nChemProp captures chemical semantics (2D graph structure)")
-    print(f"Dummy encoder only uses coordinates (3D position)")
+    print("\nChemProp captures chemical semantics (2D graph structure)")
+    print("Dummy encoder only uses coordinates (3D position)")
 
     print("\n✓ Encoder comparison complete!")
     return True
@@ -213,6 +230,7 @@ def compare_encoders():
 if __name__ == "__main__":
     # Suppress chemprop warnings
     import warnings
+
     warnings.filterwarnings("ignore", category=SyntaxWarning)
 
     success = True
@@ -224,6 +242,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n✗ Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
         success = False
 

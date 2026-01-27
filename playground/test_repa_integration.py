@@ -31,7 +31,7 @@ def test_hidden_states_extraction():
         num_heads=4,
         num_layers=2,
         hidden_dim=hidden_dim,
-        implementation="pytorch"
+        implementation="pytorch",
     )
 
     # Create dummy input
@@ -53,13 +53,14 @@ def test_hidden_states_extraction():
     output = transformer(coords, atomics, padding_mask, t, return_hidden_states=True)
     assert len(output) == 3, f"Expected 3 outputs, got {len(output)}"
     coords_out, atomics_out, hidden_states = output
-    print(f"✓ With hidden states:")
+    print("✓ With hidden states:")
     print(f"  - Coords shape: {coords_out.shape}")
     print(f"  - Atomics shape: {atomics_out.shape}")
     print(f"  - Hidden states shape: {hidden_states.shape}")
 
-    assert hidden_states.shape == (batch_size, num_atoms, hidden_dim), \
-        f"Expected hidden states shape {(batch_size, num_atoms, hidden_dim)}, got {hidden_states.shape}"
+    assert (
+        hidden_states.shape == (batch_size, num_atoms, hidden_dim)
+    ), f"Expected hidden states shape {(batch_size, num_atoms, hidden_dim)}, got {hidden_states.shape}"
 
     print("✓ TEST 1 PASSED\n")
     return True
@@ -79,10 +80,7 @@ def test_repa_loss():
 
     # Create REPA loss
     repa_loss = REPALoss(
-        encoder=encoder,
-        projector=projector,
-        lambda_repa=0.5,
-        time_weighting=False
+        encoder=encoder, projector=projector, lambda_repa=0.5, time_weighting=False
     )
 
     # Verify encoder is frozen
@@ -109,14 +107,14 @@ def test_repa_loss():
     # Create FlowPath
     x_1 = TensorDict(
         {"coords": coords, "atomics": atomics, "padding_mask": padding_mask},
-        batch_size=batch_size
+        batch_size=batch_size,
     )
     path = FlowPath(
         x_0=x_1,  # Dummy
         x_t=x_1,  # Dummy
         dx_t=x_1,  # Dummy
         x_1=x_1,  # Real clean molecules
-        t=t
+        t=t,
     )
 
     # Create pred with hidden states
@@ -125,9 +123,9 @@ def test_repa_loss():
             "coords": coords,
             "atomics": atomics,
             "hidden_states": hidden_states,
-            "padding_mask": padding_mask
+            "padding_mask": padding_mask,
         },
-        batch_size=batch_size
+        batch_size=batch_size,
     )
 
     # Compute loss
@@ -157,10 +155,7 @@ def test_gradient_flow():
     projector = Projector(hidden_dim=hidden_dim, encoder_dim=encoder_dim, num_layers=2)
 
     repa_loss = REPALoss(
-        encoder=encoder,
-        projector=projector,
-        lambda_repa=0.5,
-        time_weighting=False
+        encoder=encoder, projector=projector, lambda_repa=0.5, time_weighting=False
     )
 
     # Create dummy data
@@ -175,7 +170,7 @@ def test_gradient_flow():
 
     x_1 = TensorDict(
         {"coords": coords, "atomics": atomics, "padding_mask": padding_mask},
-        batch_size=batch_size
+        batch_size=batch_size,
     )
     path = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t)
     pred = TensorDict(
@@ -183,9 +178,9 @@ def test_gradient_flow():
             "coords": coords,
             "atomics": atomics,
             "hidden_states": hidden_states,
-            "padding_mask": padding_mask
+            "padding_mask": padding_mask,
         },
-        batch_size=batch_size
+        batch_size=batch_size,
     )
 
     # Compute loss and backpropagate
@@ -194,7 +189,9 @@ def test_gradient_flow():
 
     # Check gradients
     assert hidden_states.grad is not None, "Hidden states should have gradients"
-    print(f"✓ Hidden states have gradients: {hidden_states.grad.abs().mean().item():.6f}")
+    print(
+        f"✓ Hidden states have gradients: {hidden_states.grad.abs().mean().item():.6f}"
+    )
 
     # Check projector has gradients
     has_grad = False
@@ -235,7 +232,9 @@ def test_time_weighting():
     projector = Projector(hidden_dim=hidden_dim, encoder_dim=encoder_dim, num_layers=2)
 
     # Create REPA loss with time weighting
-    repa_with_weight = REPALoss(encoder, projector, lambda_repa=1.0, time_weighting=True)
+    repa_with_weight = REPALoss(
+        encoder, projector, lambda_repa=1.0, time_weighting=True
+    )
 
     # Create dummy data - same for both time conditions
     batch_size = 2
@@ -248,16 +247,16 @@ def test_time_weighting():
 
     x_1 = TensorDict(
         {"coords": coords, "atomics": atomics, "padding_mask": padding_mask},
-        batch_size=batch_size
+        batch_size=batch_size,
     )
     pred = TensorDict(
         {
             "coords": coords,
             "atomics": atomics,
             "hidden_states": hidden_states,
-            "padding_mask": padding_mask
+            "padding_mask": padding_mask,
         },
-        batch_size=batch_size
+        batch_size=batch_size,
     )
 
     # Test with t close to 0 (noisy molecules)
@@ -281,12 +280,14 @@ def test_time_weighting():
     print(f"✓ Actual |loss| ratio: {actual_ratio:.2f}")
 
     # Verify the magnitude of weighted loss at t~1 is higher than at t~0
-    assert abs(loss_high.item()) > abs(loss_low.item()), \
-        f"|loss| at t~1 ({abs(loss_high.item()):.4f}) should be > |loss| at t~0 ({abs(loss_low.item()):.4f})"
+    assert (
+        abs(loss_high.item()) > abs(loss_low.item())
+    ), f"|loss| at t~1 ({abs(loss_high.item()):.4f}) should be > |loss| at t~0 ({abs(loss_low.item()):.4f})"
 
     # Verify the ratio is approximately correct (allow some tolerance)
-    assert abs(actual_ratio - expected_ratio) < 0.1, \
-        f"|loss| ratio ({actual_ratio:.2f}) should be close to time ratio ({expected_ratio:.2f})"
+    assert (
+        abs(actual_ratio - expected_ratio) < 0.1
+    ), f"|loss| ratio ({actual_ratio:.2f}) should be close to time ratio ({expected_ratio:.2f})"
 
     print("✓ TEST 4 PASSED\n")
     return True
@@ -315,6 +316,7 @@ def main():
         except Exception as e:
             print(f"✗ TEST FAILED: {e}\n")
             import traceback
+
             traceback.print_exc()
             failed += 1
 
