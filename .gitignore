@@ -67,3 +67,4 @@ docs/_build/
 
 # Local development
 checkpoints/
+outputs/

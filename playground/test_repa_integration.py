@@ -24,12 +24,13 @@ def test_hidden_states_extraction():
     print("=" * 70)
 
     # Create a simple transformer
+    hidden_dim = 64
     transformer = TransformerModule(
         spatial_dim=3,
         atom_dim=10,
         num_heads=4,
         num_layers=2,
-        hidden_dim=64,
+        hidden_dim=hidden_dim,
         implementation="pytorch"
     )
 
@@ -57,8 +58,8 @@ def test_hidden_states_extraction():
     print(f"  - Atomics shape: {atomics_out.shape}")
     print(f"  - Hidden states shape: {hidden_states.shape}")
 
-    assert hidden_states.shape == (batch_size, num_atoms, 64), \
-        f"Expected hidden states shape {(batch_size, num_atoms, 64)}, got {hidden_states.shape}"
+    assert hidden_states.shape == (batch_size, num_atoms, hidden_dim), \
+        f"Expected hidden states shape {(batch_size, num_atoms, hidden_dim)}, got {hidden_states.shape}"
 
     print("✓ TEST 1 PASSED\n")
     return True
@@ -214,7 +215,16 @@ def test_gradient_flow():
 
 
 def test_time_weighting():
-    """Test that time weighting works."""
+    """Test that time weighting works.
+
+    Time weighting intuition:
+    - t ≈ 1: molecule is clean → encoder gives meaningful embeddings → higher weight
+    - t ≈ 0: molecule is noisy → encoder embeddings less meaningful → lower weight
+
+    The REPA loss is: lambda * (-cos_sim) * time_weight
+    Since cos_sim can be positive or negative, the loss can also be positive or negative.
+    The key property is that |loss| scales linearly with time weight.
+    """
     print("=" * 70)
     print("TEST 4: Time Weighting")
     print("=" * 70)
@@ -224,25 +234,22 @@ def test_time_weighting():
     encoder = DummyEncoder(input_dim=3, hidden_dim=64, encoder_dim=encoder_dim)
     projector = Projector(hidden_dim=hidden_dim, encoder_dim=encoder_dim, num_layers=2)
 
-    # Create two REPA losses: with and without time weighting
-    repa_no_weight = REPALoss(encoder, projector, lambda_repa=1.0, time_weighting=False)
+    # Create REPA loss with time weighting
     repa_with_weight = REPALoss(encoder, projector, lambda_repa=1.0, time_weighting=True)
 
-    # Create dummy data with t close to 1
+    # Create dummy data - same for both time conditions
     batch_size = 2
     num_atoms = 10
     coords = torch.randn(batch_size, num_atoms, 3)
     atomics = torch.randn(batch_size, num_atoms, 10)
     atomics = torch.nn.functional.softmax(atomics, dim=-1)
     padding_mask = torch.zeros(batch_size, num_atoms, dtype=torch.bool)
-    t_high = torch.tensor([0.9, 0.95])  # Close to 1 (clean molecules)
     hidden_states = torch.randn(batch_size, num_atoms, hidden_dim)
 
     x_1 = TensorDict(
         {"coords": coords, "atomics": atomics, "padding_mask": padding_mask},
         batch_size=batch_size
     )
-    path = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t_high)
     pred = TensorDict(
         {
             "coords": coords,
@@ -253,15 +260,33 @@ def test_time_weighting():
         batch_size=batch_size
     )
 
-    # Compute losses
-    loss_no_weight, _ = repa_no_weight(path, pred, compute_stats=False)
-    loss_with_weight, _ = repa_with_weight(path, pred, compute_stats=False)
+    # Test with t close to 0 (noisy molecules)
+    t_low = torch.tensor([0.1, 0.1])
+    path_low = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t_low)
+    loss_low, _ = repa_with_weight(path_low, pred, compute_stats=False)
 
-    print(f"✓ Loss without time weighting: {loss_no_weight.item():.6f}")
-    print(f"✓ Loss with time weighting (t~1): {loss_with_weight.item():.6f}")
+    # Test with t close to 1 (clean molecules)
+    t_high = torch.tensor([0.9, 0.9])
+    path_high = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t_high)
+    loss_high, _ = repa_with_weight(path_high, pred, compute_stats=False)
 
-    # With t close to 1, weighted loss should be similar (weight ~ 0.9)
-    assert loss_with_weight.item() > 0, "Weighted loss should be positive"
+    print(f"✓ Loss with time weighting (t~0.1): {loss_low.item():.6f}")
+    print(f"✓ Loss with time weighting (t~0.9): {loss_high.item():.6f}")
+
+    # The base alignment error is the same, so |loss| ratio should match the time ratio
+    # |loss_high| / |loss_low| ≈ t_high.mean() / t_low.mean() = 0.9 / 0.1 = 9
+    expected_ratio = t_high.mean().item() / t_low.mean().item()
+    actual_ratio = abs(loss_high.item()) / abs(loss_low.item())
+    print(f"✓ Expected |loss| ratio (t_high/t_low): {expected_ratio:.2f}")
+    print(f"✓ Actual |loss| ratio: {actual_ratio:.2f}")
+
+    # Verify the magnitude of weighted loss at t~1 is higher than at t~0
+    assert abs(loss_high.item()) > abs(loss_low.item()), \
+        f"|loss| at t~1 ({abs(loss_high.item()):.4f}) should be > |loss| at t~0 ({abs(loss_low.item()):.4f})"
+
+    # Verify the ratio is approximately correct (allow some tolerance)
+    assert abs(actual_ratio - expected_ratio) < 0.1, \
+        f"|loss| ratio ({actual_ratio:.2f}) should be close to time ratio ({expected_ratio:.2f})"
 
     print("✓ TEST 4 PASSED\n")
     return True

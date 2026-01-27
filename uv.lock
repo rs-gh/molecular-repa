@@ -13,6 +13,26 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "aimsim-core"
+version = "2.2.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mhfp" },
+    { name = "mordredcommunity" },
+    { name = "multiprocess" },
+    { name = "numpy" },
+    { name = "padelpy" },
+    { name = "pandas" },
+    { name = "psutil" },
+    { name = "rdkit" },
+    { name = "scikit-learn" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/04/72/0b22361d24cea0868009d27be2eefa35744ccc7cc7cdd9e0d87429011c06/aimsim_core-2.2.3.tar.gz", hash = "sha256:67bb30a16cb3a33f5b114c821a92c6fcdb80a81053b6f062aee3df550d612107", size = 859961, upload-time = "2025-09-09T19:57:55.897Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cd/98/da8804e01b727ed6d087055524b2b724619850270d94b14a34c833d2b47f/aimsim_core-2.2.3-py3-none-any.whl", hash = "sha256:9bbc56434343dfc573e5e07731583c1f5f994f075376a87ba35a5669adf1f8b0", size = 187960, upload-time = "2025-09-09T19:57:54.494Z" },
+]
+
+[[package]]
 name = "aiohappyeyeballs"
 version = "2.6.1"
 source = { registry = "https://pypi.org/simple" }
@@ -224,6 +244,27 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b9/33/032cdc44182491aa708d06a68b62434140d8c50820a087fac7af37703357/arrow-1.4.0.tar.gz", hash = "sha256:ed0cc050e98001b8779e84d461b0098c4ac597e88704a655582b21d116e526d7", size = 152931, upload-time = "2025-10-18T17:46:46.761Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ed/c9/d7977eaacb9df673210491da99e6a247e93df98c715fc43fd136ce1d3d33/arrow-1.4.0-py3-none-any.whl", hash = "sha256:749f0769958ebdc79c173ff0b0670d59051a535fa26e8eba02953dc19eb43205", size = 68797, upload-time = "2025-10-18T17:46:45.663Z" },
+]
+
+[[package]]
+name = "astartes"
+version = "1.3.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "scikit-learn" },
+    { name = "scipy" },
+    { name = "tabulate" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/46/43/70ef4adad92483865744e25c22bc27302eab43ac56fa7929bbe385c088fd/astartes-1.3.3.tar.gz", hash = "sha256:fedaa54e705ef0d100adb59067db196d440a42e7a30787caca1b53cf33beda5b", size = 39887, upload-time = "2025-09-30T16:13:40.534Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/37/1b/fc307991cf79f1eb6fb1eaacfa6e6cf447975b81c4b2c6c923723e5a375d/astartes-1.3.3-py3-none-any.whl", hash = "sha256:362447c5ceb77567dd9ea9c5a780d86fe36ba47b27184ba565ba2959a846c672", size = 38969, upload-time = "2025-09-30T16:13:39.434Z" },
+]
+
+[package.optional-dependencies]
+molecules = [
+    { name = "aimsim-core" },
 ]
 
 [[package]]
@@ -523,6 +564,28 @@ wheels = [
 ]
 
 [[package]]
+name = "chemprop"
+version = "2.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "astartes", extra = ["molecules"] },
+    { name = "configargparse" },
+    { name = "descriptastorus" },
+    { name = "lightning" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "rdkit" },
+    { name = "rich" },
+    { name = "scikit-learn" },
+    { name = "scipy" },
+    { name = "torch" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/64/e9/99806e6ee2f3bd2c9ee7d84db480095897555178166ac0c42d8727dc4bd1/chemprop-2.2.2.tar.gz", hash = "sha256:dc14563f44ebe60fc8dcfdedab031fc22b6848d9d44a766ae890002fb3668dce", size = 144921, upload-time = "2026-01-19T18:27:44.48Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/76/aa/3ea5c8237d3e60a52ccb0355f3c1b37a6c57e67a5df3086a9e411a13d5b1/chemprop-2.2.2-py3-none-any.whl", hash = "sha256:99721206417877afdf276dc82678b7524751283eb9013cca18398117c1c8b30a", size = 150396, upload-time = "2026-01-19T18:27:41.14Z" },
+]
+
+[[package]]
 name = "click"
 version = "8.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -615,6 +678,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/4c/13/7d740c5849255756bc17888787313b61fd38a0a8304fc4f073dfc46122aa/comm-0.2.3.tar.gz", hash = "sha256:2dc8048c10962d55d7ad693be1e7045d891b7ce8d999c97963a5e3e99c055971", size = 6319, upload-time = "2025-07-25T14:02:04.452Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/60/97/891a0971e1e4a8c5d2b20bbe0e524dc04548d2307fee33cdeba148fd4fc7/comm-0.2.3-py3-none-any.whl", hash = "sha256:c615d91d75f7f04f095b30d1c1711babd43bdc6419c1be9886a85f2f4e489417", size = 7294, upload-time = "2025-07-25T14:02:02.896Z" },
+]
+
+[[package]]
+name = "configargparse"
+version = "1.7.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/85/4d/6c9ef746dfcc2a32e26f3860bb4a011c008c392b83eabdfb598d1a8bbe5d/configargparse-1.7.1.tar.gz", hash = "sha256:79c2ddae836a1e5914b71d58e4b9adbd9f7779d4e6351a637b7d2d9b6c46d3d9", size = 43958, upload-time = "2025-05-23T14:26:17.369Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/31/28/d28211d29bcc3620b1fece85a65ce5bb22f18670a03cd28ea4b75ede270c/configargparse-1.7.1-py3-none-any.whl", hash = "sha256:8b586a31f9d873abd1ca527ffbe58863c99f36d896e2829779803125e83be4b6", size = 25607, upload-time = "2025-05-23T14:26:15.923Z" },
 ]
 
 [[package]]
@@ -756,6 +828,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/0f/d5/c66da9b79e5bdb124974bfe172b4daf3c984ebd9c2a06e2b8a4dc7331c72/defusedxml-0.7.1.tar.gz", hash = "sha256:1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69", size = 75520, upload-time = "2021-03-08T10:59:26.269Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl", hash = "sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61", size = 25604, upload-time = "2021-03-08T10:59:24.45Z" },
+]
+
+[[package]]
+name = "descriptastorus"
+version = "2.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "pandas-flavor" },
+    { name = "rdkit" },
+    { name = "scipy" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7b/3c/67bfc03db3f6527a54a0f9b696809bca55eb6de27928829218ab7e6c40e7/descriptastorus-2.8.0-py3-none-any.whl", hash = "sha256:cc0c8201d6d9d8534dc8a45ce629aeaf4cf1e62ba848b9b1e392b2600ca834dc", size = 2127218, upload-time = "2024-10-26T19:48:30.328Z" },
 ]
 
 [[package]]
@@ -1951,6 +2037,15 @@ wheels = [
 ]
 
 [[package]]
+name = "mhfp"
+version = "1.9.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f6/e7/91559675553f7a4b685905d63fa690b074b069383322efea71377a23a470/mhfp-1.9.6.tar.gz", hash = "sha256:646909a166d3b0e375c4497f653be45fe6e086ae9214e251b4a85c5ca9b6ad42", size = 23562, upload-time = "2023-02-16T08:25:48.182Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/40/02/dc8584d5b477eefea7090a581312e8e3f0f5b62d144f6089311070e82c3e/mhfp-1.9.6-py3-none-any.whl", hash = "sha256:164793a1c66b1b40a075accb62fb569fe8be2ee1b8146fac7e4fe087001897a8", size = 9736, upload-time = "2023-02-16T08:25:46.573Z" },
+]
+
+[[package]]
 name = "mistune"
 version = "3.1.4"
 source = { registry = "https://pypi.org/simple" }
@@ -2040,6 +2135,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "biotite" },
+    { name = "chemprop" },
     { name = "datamol" },
     { name = "huggingface-hub" },
     { name = "hydra-colorlog" },
@@ -2078,6 +2174,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "biotite", specifier = ">=1.0,<2.0" },
+    { name = "chemprop", specifier = ">=2.2.2" },
     { name = "datamol", specifier = ">=0.12" },
     { name = "huggingface-hub", specifier = ">=1.3.2" },
     { name = "hydra-colorlog", specifier = ">=1.2" },
@@ -2111,6 +2208,22 @@ dev = [
     { name = "notebook", specifier = ">=7.5.1" },
     { name = "pre-commit", specifier = ">=4.0.1" },
     { name = "ruff", specifier = ">=0.8.6" },
+]
+
+[[package]]
+name = "mordredcommunity"
+version = "2.0.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "networkx" },
+    { name = "numpy" },
+    { name = "packaging" },
+    { name = "rdkit" },
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9b/cb/953ff6385cd299dab12cbe7bbcd16dbcf778d14499a229b8e882c8b629d3/mordredcommunity-2.0.7.tar.gz", hash = "sha256:6719be351c5fd80461739a4e79acb4480f0c9fb1eb2f7a3ab576c9092e1d74a8", size = 130842, upload-time = "2026-01-22T15:05:10.826Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2e/28/a5f6bf29558e8eaaac089aa3fcecfee2f8a44b7f4783cd86c5722f3c4530/mordredcommunity-2.0.7-py3-none-any.whl", hash = "sha256:36093d078df9c35419b26ca422a1c7f9ff3693b92ea5e43ea351de245f60020a", size = 176002, upload-time = "2026-01-22T15:05:09.538Z" },
 ]
 
 [[package]]
@@ -2692,6 +2805,15 @@ wheels = [
 ]
 
 [[package]]
+name = "padelpy"
+version = "0.1.16"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5f/19/6af9c17ce403cb372dd7ed75a5e6f00d0a7695ffaccd60584c33e9defebe/padelpy-0.1.16.tar.gz", hash = "sha256:bbe11fd93b3f7914f57b5dafbf83c5070161246fce4c626c1f394d73efabf394", size = 20873861, upload-time = "2023-11-10T22:49:06.075Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/eb/31/75879902fbdd5079a2177845a70c5d5de2915317c1187a83af3a857e70a8/padelpy-0.1.16-py3-none-any.whl", hash = "sha256:fb2814d48c498981c8ba10613e752e6ba856ccbd532aedcdc555154e87abf5b1", size = 20889833, upload-time = "2023-11-10T22:49:02.92Z" },
+]
+
+[[package]]
 name = "pandas"
 version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2702,6 +2824,19 @@ dependencies = [
     { name = "tzdata" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/9f/12/0b6bdd627b99cb10816956c1047b0733ef33b61a84e3420faf4d3202df06/pandas-2.0.0.tar.gz", hash = "sha256:cda9789e61b44463c1c4fe17ef755de77bcd13b09ba31c940d20f193d63a5dc8", size = 5271334, upload-time = "2023-04-03T14:16:39.702Z" }
+
+[[package]]
+name = "pandas-flavor"
+version = "0.8.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pandas" },
+    { name = "xarray" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/86/60/901bacfcc4e67499e37198ad199fb7c113b06814148f7f4822816467a925/pandas_flavor-0.8.1.tar.gz", hash = "sha256:255fa5851833ee0132c4fdd6c1565ec1e938a8c2671c37e408006da6b2bdc366", size = 98266, upload-time = "2025-11-22T11:03:11.209Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/30/04/b57109ac39c90054ca8239daa61f619042b73406309c33df06d3b73a48a7/pandas_flavor-0.8.1-py3-none-any.whl", hash = "sha256:6a74c48a7014e27117a164b687c23ca9f7da46c5b198a516ab4ebaa22435292b", size = 8528, upload-time = "2025-11-22T11:03:10.368Z" },
+]
 
 [[package]]
 name = "pandocfilters"
@@ -3894,6 +4029,15 @@ version = "0.1"
 source = { editable = "src/tabasco" }
 
 [[package]]
+name = "tabulate"
+version = "0.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ec/fe/802052aecb21e3797b8f7902564ab6ea0d60ff8ca23952079064155d1ae1/tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c", size = 81090, upload-time = "2022-10-06T17:21:48.54Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/40/44/4a5f08c96eb108af5cb50b41f76142f0afa346dfa99d5296fe7202a11854/tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f", size = 35252, upload-time = "2022-10-06T17:21:44.262Z" },
+]
+
+[[package]]
 name = "tensordict"
 version = "0.10.0"
 source = { registry = "https://pypi.org/simple" }
@@ -4222,6 +4366,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b3/8f/705086c9d734d3b663af0e9bb3d4de6578d08f46b1b101c2442fd9aecaa2/win32_setctime-1.2.0.tar.gz", hash = "sha256:ae1fdf948f5640aae05c511ade119313fb6a30d7eabe25fef9764dca5873c4c0", size = 4867, upload-time = "2024-12-07T15:28:28.314Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e1/07/c6fe3ad3e685340704d314d765b7912993bcb8dc198f0e7a89382d37974b/win32_setctime-1.2.0-py3-none-any.whl", hash = "sha256:95d644c4e708aba81dc3704a116d8cbc974d70b3bdb8be1d150e36be6e9d1390", size = 4083, upload-time = "2024-12-07T15:28:26.465Z" },
+]
+
+[[package]]
+name = "xarray"
+version = "2024.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "packaging" },
+    { name = "pandas" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/84/e8/8ee12706df0d34ad04b3737621a73432458d47bc8abfbd6f049e51ca89c3/xarray-2024.7.0.tar.gz", hash = "sha256:4cae512d121a8522d41e66d942fb06c526bc1fd32c2c181d5fe62fe65b671638", size = 3728663, upload-time = "2024-07-30T08:31:45.48Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/45/95/233e1f9c939f5ba314297315df709e6a5e823bf3cade7211991b15aa65d2/xarray-2024.7.0-py3-none-any.whl", hash = "sha256:1b0fd51ec408474aa1f4a355d75c00cc1c02bd425d97b2c2e551fd21810e7f64", size = 1176466, upload-time = "2024-07-30T08:31:43.077Z" },
 ]
 
 [[package]]

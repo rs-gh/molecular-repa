@@ -1,3 +1,6 @@
+# 20260127
+- Set up chemprop encoder with default weights
+
 # 20260121
 
 ## Questions to check with TABASCO-REPA
