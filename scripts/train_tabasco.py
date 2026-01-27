@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-"""Training entrypoint for molecular-repa.
+"""Tabasco tdraining entrypoint for molecular-repa.
 
 This script sets up PROJECT_ROOT and then runs tabasco's training code.
 Run from the repo root:
-    uv run python scripts/train.py experiment=qm9_chemprop_local
+    uv run python scripts/train_tabasco.py experiment=qm9_chemprop_local
 """
 
 import os
