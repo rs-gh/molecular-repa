@@ -25,7 +25,7 @@
 #! What types of email messages do you wish to receive?
 #SBATCH --mail-type=ALL
 #! Uncomment and set your email to receive notifications:
-##SBATCH --mail-user=sr2173@cam.ac.uk
+#SBATCH --mail-user=sr2173@cam.ac.uk
 
 #! Output and error logs:
 #SBATCH --output=/rds/user/sr2173/hpc-work/git/molecular-repa/logs/slurm-%j.out
