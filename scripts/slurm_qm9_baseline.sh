@@ -76,8 +76,8 @@ export OMP_NUM_THREADS=1
 #! Number of MPI tasks to be started by the application per node and in total (do not change):
 np=$[${numnodes}*${mpi_tasks_per_node}]
 
-#! Checkpoint auto-resume: find latest checkpoint and resume if exists
-CKPT=$(find "$REPO_DIR/outputs" -name "last.ckpt" -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2)
+#! Checkpoint auto-resume: find latest checkpoint for this experiment
+CKPT=$(find "$REPO_DIR/outputs" -path "*${experiment}*" -name "last.ckpt" -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2)
 
 if [ -n "$CKPT" ]; then
     echo "Resuming from checkpoint: $CKPT"
