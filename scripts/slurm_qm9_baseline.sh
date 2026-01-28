@@ -13,7 +13,7 @@
 #SBATCH -J qm9-baseline
 #! Which project should be charged (NB Wilkes2 projects end in '-GPU'):
 #! To find your account, run: sacctmgr show associations user=$USER format=Account%30
-#SBATCH -A YOUR_ACCOUNT_HERE
+#SBATCH -A LIO-CHARM-SL2-GPU
 #! How many whole nodes should be allocated?
 #SBATCH --nodes=1
 #! How many (MPI) tasks will there be in total?
@@ -21,11 +21,15 @@
 #! Specify the number of GPUs per node (between 1 and 4; must be 4 if nodes>1).
 #SBATCH --gres=gpu:1
 #! How much wallclock time will be required?
-#SBATCH --time=36:00:00
+#SBATCH --time=09:00:00
 #! What types of email messages do you wish to receive?
 #SBATCH --mail-type=ALL
 #! Uncomment and set your email to receive notifications:
 ##SBATCH --mail-user=sr2173@cam.ac.uk
+
+#! Output and error logs:
+#SBATCH --output=/rds/user/sr2173/hpc-work/git/molecular-repa/logs/slurm-%j.out
+#SBATCH --error=/rds/user/sr2173/hpc-work/git/molecular-repa/logs/slurm-%j.err
 
 #! Do not change:
 #SBATCH -p ampere
@@ -50,18 +54,17 @@ module purge                               # Removes all modules still loaded
 module load rhel8/default-amp              # REQUIRED - loads the basic environment
 
 #! Insert additional module load commands after this line if needed:
-
-#! Set up uv (assumes uv is installed in ~/.local/bin)
-export PATH="$HOME/.local/bin:$PATH"
+module load python/3.11.0-icl
 
 #! Work directory - where the repo is cloned on HPC
 REPO_DIR="/rds/user/sr2173/hpc-work/git/molecular-repa"
 
-#! Full path to application executable:
-application="uv run python scripts/train.py"
+#! Deactivate conda if active and activate the project venv
+conda deactivate 2>/dev/null || true
+source "$REPO_DIR/.venv/bin/activate"
 
 #! Run options for the application:
-options="experiment=qm9_baseline"
+experiment="qm9_baseline"
 
 #! Work directory (i.e. where the job will run):
 workdir="$REPO_DIR"
@@ -73,8 +76,16 @@ export OMP_NUM_THREADS=1
 #! Number of MPI tasks to be started by the application per node and in total (do not change):
 np=$[${numnodes}*${mpi_tasks_per_node}]
 
-#! Choose this for a pure shared-memory OpenMP parallel program on a single node:
-CMD="$application $options"
+#! Checkpoint auto-resume: find latest checkpoint and resume if exists
+CKPT=$(find "$REPO_DIR/outputs" -name "last.ckpt" -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2)
+
+if [ -n "$CKPT" ]; then
+    echo "Resuming from checkpoint: $CKPT"
+    CMD="python scripts/train_tabasco.py experiment=$experiment ckpt_path=$CKPT"
+else
+    echo "Starting fresh training run"
+    CMD="python scripts/train_tabasco.py experiment=$experiment"
+fi
 
 ###############################################################
 ### You should not have to change anything below this line ####
