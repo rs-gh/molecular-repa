@@ -81,10 +81,10 @@ CKPT=$(find "$REPO_DIR/outputs" -path "*${experiment}*" -name "last.ckpt" -type 
 
 if [ -n "$CKPT" ]; then
     echo "Resuming from checkpoint: $CKPT"
-    CMD="python scripts/train_tabasco.py experiment=$experiment ckpt_path=$CKPT"
+    CMD="python scripts/train_tabasco.py experiment=$experiment ckpt_path=$CKPT datamodule.num_workers=0"
 else
     echo "Starting fresh training run"
-    CMD="python scripts/train_tabasco.py experiment=$experiment"
+    CMD="python scripts/train_tabasco.py experiment=$experiment datamodule.num_workers=0"
 fi
 
 ###############################################################
