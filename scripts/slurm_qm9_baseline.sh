@@ -64,7 +64,7 @@ conda deactivate 2>/dev/null || true
 source "$REPO_DIR/.venv/bin/activate"
 
 #! Run options for the application:
-experiment="qm9_baseline"
+experiment="qm9/baseline"
 
 #! Work directory (i.e. where the job will run):
 workdir="$REPO_DIR"
