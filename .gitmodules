@@ -1,3 +1,6 @@
 [submodule "src/tabasco"]
 	path = src/tabasco
 	url = https://github.com/rs-gh/tabasco
+[submodule "src/proteina"]
+	path = src/proteina
+	url = https://github.com/rs-gh/proteina
