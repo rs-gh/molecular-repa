@@ -142,16 +142,41 @@ This file is gitignored and only affects the machine it's created on.
 
 ## Proteina
 
-Proteina is an optional protein design submodule. Install its dependencies with:
+Proteina is an optional protein design submodule.
 
-```bash
-uv sync --group proteina
-```
+### Local Setup (Mac/CPU)
 
-> **Note:** `mmseqs2` is a bioconda-only package and cannot be installed via uv. Install it separately:
-> ```bash
-> conda install -c bioconda mmseqs2
-> # or load via HPC module: module load mmseqs2
-> ```
->
-> PyTorch Geometric sparse packages (`torch-sparse`, `torch-scatter`, `torch-cluster`) may require a CUDA-specific index URL on GPU clusters. See the [PyG installation guide](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html).
+1. Complete the [Quick Start](#quick-start) steps above (`make setup`)
+2. Install proteina dependencies:
+   ```bash
+   uv sync --group proteina
+   ```
+   This installs all pip-installable deps including PyTorch Geometric (CPU wheels built from source).
+3. If you need `mmseqs2` (sequence search):
+   ```bash
+   conda install -c bioconda mmseqs2
+   ```
+
+### HPC Setup (GPU/CUDA)
+
+1. Complete the [Quick Start](#quick-start) steps above (`make setup`)
+2. Load a CUDA module so PyG can link against the right CUDA version:
+   ```bash
+   module load cuda/12.1  # adjust to your cluster's available version
+   ```
+3. Install proteina dependencies. Either build from source (uses the loaded CUDA):
+   ```bash
+   uv sync --group proteina
+   ```
+   Or use pre-built PyG CUDA wheels (faster, avoids compiler issues):
+   ```bash
+   # Check your torch+cuda version first
+   uv run python -c "import torch; print(torch.__version__)"  # e.g. 2.5.1+cu121
+   uv sync --group proteina --extra-index-url https://data.pyg.org/whl/torch-2.5.1+cu121.html
+   ```
+4. Load `mmseqs2` via your cluster's module system:
+   ```bash
+   module load mmseqs2
+   ```
+
+> **Note:** `mmseqs2` is a bioconda-only package and cannot be installed via uv.
