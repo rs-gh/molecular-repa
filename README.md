@@ -19,14 +19,29 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 ### Quick Start
 
-Run the setup command to install dependencies and configure pre-commit hooks:
+Clone with submodules:
+```bash
+git clone --recurse-submodules <repo-url>
+```
+
+Or, if you already cloned without submodules:
+```bash
+git submodule update --init --recursive
+```
+
+Then run setup:
 ```bash
 make setup
 ```
 
 This will:
-- Install all project dependencies using uv
+- Install tabasco and its dependencies (+ dev tools) using uv
 - Set up pre-commit hooks with ruff for code linting and formatting
+
+To also install the proteina dependencies (optional):
+```bash
+uv sync --group proteina
+```
 
 ### Development
 
@@ -106,6 +121,37 @@ Training outputs are saved to `outputs/<date>/<time>/`:
 uv run python scripts/train_tabasco.py experiment=qm9/baseline ckpt_path=/path/to/checkpoint.ckpt
 ```
 
+### HPC Notes
+
+On GPU clusters, disable `torch.compile` (Triton kernel compilation often fails on HPC due to compiler environment issues):
+
+```bash
+python scripts/train_tabasco.py experiment=qm9/chemprop trainer=gpu model.compile=false
+```
+
+To redirect outputs to a high-capacity storage location (recommended — checkpoints can be large), create `src/tabasco/configs/local/default.yaml` on the cluster machine with:
+
+```yaml
+# @package _global_
+hydra:
+  run:
+    dir: /path/to/your/storage/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+```
+
+This file is gitignored and only affects the machine it's created on.
+
 ## Proteina
 
-Environment management and training for Proteina is not yet supported but will be added shortly.
+Proteina is an optional protein design submodule. Install its dependencies with:
+
+```bash
+uv sync --group proteina
+```
+
+> **Note:** `mmseqs2` is a bioconda-only package and cannot be installed via uv. Install it separately:
+> ```bash
+> conda install -c bioconda mmseqs2
+> # or load via HPC module: module load mmseqs2
+> ```
+>
+> PyTorch Geometric sparse packages (`torch-sparse`, `torch-scatter`, `torch-cluster`) may require a CUDA-specific index URL on GPU clusters. See the [PyG installation guide](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html).
