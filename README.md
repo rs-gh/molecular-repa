@@ -47,7 +47,8 @@ uv sync --group proteina
 
 The project includes the following Make commands:
 
-- `make setup` - Set up the development environment
+- `make setup` - Set up the development environment (tabasco + dev tools)
+- `make setup-proteina` - Install proteina dependencies and verify the install
 - `make lint` - Run ruff linter
 - `make format` - Format code with ruff
 - `make check` - Run linter and fix import sorting
@@ -147,11 +148,11 @@ Proteina is an optional protein design submodule.
 ### Local Setup (Mac/CPU)
 
 1. Complete the [Quick Start](#quick-start) steps above (`make setup`)
-2. Install proteina dependencies:
+2. Install proteina dependencies and verify:
    ```bash
-   uv sync --group proteina
+   make setup-proteina
    ```
-   This installs all pip-installable deps including PyTorch Geometric (CPU wheels built from source).
+   This installs all pip-installable deps including PyTorch Geometric (CPU wheels built from source), then runs a smoke test to confirm the install.
 3. If you need `mmseqs2` (sequence search):
    ```bash
    conda install -c bioconda mmseqs2
@@ -164,15 +165,16 @@ Proteina is an optional protein design submodule.
    ```bash
    module load cuda/12.1  # adjust to your cluster's available version
    ```
-3. Install proteina dependencies. Either build from source (uses the loaded CUDA):
+3. Install proteina dependencies. Either use the make target (builds PyG from source using the loaded CUDA):
    ```bash
-   uv sync --group proteina
+   make setup-proteina
    ```
    Or use pre-built PyG CUDA wheels (faster, avoids compiler issues):
    ```bash
    # Check your torch+cuda version first
    uv run python -c "import torch; print(torch.__version__)"  # e.g. 2.5.1+cu121
    uv sync --group proteina --extra-index-url https://data.pyg.org/whl/torch-2.5.1+cu121.html
+   uv run python -c "import proteinfoundation; import torch_geometric; print('OK')"
    ```
 4. Load `mmseqs2` via your cluster's module system:
    ```bash
