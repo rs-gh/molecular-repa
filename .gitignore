@@ -69,3 +69,4 @@ docs/_build/
 checkpoints/
 outputs/
 logs/
+data/
