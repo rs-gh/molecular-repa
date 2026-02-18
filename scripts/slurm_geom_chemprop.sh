@@ -1,7 +1,7 @@
 #!/bin/bash
 #!
 #! SLURM job script for Wilkes3 (AMD EPYC 7763, ConnectX-6, A100)
-#! Run qm9_chemprop experiment
+#! Run geom/chemprop experiment (REPA with ChemProp encoder)
 #!
 
 #!#############################################################
@@ -10,7 +10,7 @@
 
 #! sbatch directives begin here ###############################
 #! Name of the job:
-#SBATCH -J qm9-chemprop
+#SBATCH -J geom-chemprop
 #! Which project should be charged (NB Wilkes2 projects end in '-GPU'):
 #! To find your account, run: sacctmgr show associations user=$USER format=Account%30
 #SBATCH -A LIO-CHARM-SL2-GPU
@@ -23,13 +23,13 @@
 #! Number of CPUs per task (workers + 1 for main process):
 #SBATCH --cpus-per-task=16
 #! How much wallclock time will be required?
-#SBATCH --time=09:00:00
+#SBATCH --time=36:00:00
 #! What types of email messages do you wish to receive?
 #SBATCH --mail-type=ALL
 #! Uncomment and set your email to receive notifications:
 #SBATCH --mail-user=sr2173@cam.ac.uk
 
-#! Output and error logs:
+#! Output and error logs (on RDS to avoid filling /home):
 #SBATCH --output=/rds/user/sr2173/hpc-work/tabasco/logs/slurm-%j.out
 #SBATCH --error=/rds/user/sr2173/hpc-work/tabasco/logs/slurm-%j.err
 
@@ -69,7 +69,7 @@ conda deactivate 2>/dev/null || true
 source "$REPO_DIR/.venv/bin/activate"
 
 #! Run options for the application:
-experiment="qm9/chemprop"
+experiment="geom/chemprop"
 
 #! Work directory (i.e. where the job will run):
 workdir="$REPO_DIR"
