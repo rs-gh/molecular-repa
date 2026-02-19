@@ -124,10 +124,12 @@ uv run python scripts/train_tabasco.py experiment=qm9/baseline ckpt_path=/path/t
 
 ### HPC Notes
 
-On GPU clusters, disable `torch.compile` (Triton kernel compilation often fails on HPC due to compiler environment issues):
+**`model.compile=false` is required on Wilkes3.** All available gcc versions (8/11/13.3.0) crash with "Illegal instruction" (SIGILL) in the assembler on the Ampere GPU nodes — the Spack-built gcc binaries were compiled for a different CPU microarchitecture than the nodes run. This prevents Triton from JIT-compiling CUDA kernels. All SLURM scripts already include `model.compile=false`. A support ticket has been filed with HPC.
+
+On other GPU clusters, you may be able to enable `torch.compile` for faster training:
 
 ```bash
-python scripts/train_tabasco.py experiment=qm9/chemprop trainer=gpu model.compile=false
+python scripts/train_tabasco.py experiment=qm9/chemprop trainer=gpu model.compile=true
 ```
 
 To redirect outputs to a high-capacity storage location (recommended — checkpoints can be large), create `src/tabasco/configs/local/default.yaml` on the cluster machine with:

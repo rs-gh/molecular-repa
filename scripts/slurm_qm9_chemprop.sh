@@ -90,12 +90,12 @@ CKPT=$(find "$OUTPUTS_DIR" -name "last.ckpt" -type f -printf '%T@ %p\n' 2>/dev/n
 if [ -n "$CKPT" ]; then
     echo "Resuming from checkpoint: $CKPT"
     CMD="python scripts/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
-        trainer=gpu model.compile=false trainer.precision=16 \
+        trainer=gpu model.compile=false +trainer.precision=16 \
         datamodule.num_workers=$num_workers"
 else
     echo "Starting fresh training run"
     CMD="python scripts/train_tabasco.py experiment=$experiment \
-        trainer=gpu model.compile=false trainer.precision=16 \
+        trainer=gpu model.compile=false +trainer.precision=16 \
         datamodule.num_workers=$num_workers"
 fi
 
