@@ -81,8 +81,8 @@ export OMP_NUM_THREADS=1
 #! Number of MPI tasks to be started by the application per node and in total (do not change):
 np=$[${numnodes}*${mpi_tasks_per_node}]
 
-#! Use all allocated CPUs minus 1 for the main process
-num_workers=$((SLURM_CPUS_PER_TASK - 1))
+#! Safe fixed worker count (31 workers exhausts /dev/shm on HPC Ampere nodes)
+num_workers=8
 
 #! Per-experiment output directory so checkpoint searches don't cross-contaminate
 exp_safe=$(echo "$experiment" | tr '/' '_')
