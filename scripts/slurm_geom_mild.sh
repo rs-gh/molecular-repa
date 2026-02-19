@@ -84,19 +84,26 @@ np=$[${numnodes}*${mpi_tasks_per_node}]
 #! Use all allocated CPUs minus 1 for the main process
 num_workers=$((SLURM_CPUS_PER_TASK - 1))
 
-#! Checkpoint auto-resume: find latest checkpoint for this experiment
-CKPT=$(find "$OUTPUTS_DIR" -name "last.ckpt" -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2)
+#! Per-experiment output directory so checkpoint searches don't cross-contaminate
+exp_safe=$(echo "$experiment" | tr '/' '_')
+EXP_OUTPUTS_DIR="$OUTPUTS_DIR/$exp_safe"
+hydra_run_dir="$EXP_OUTPUTS_DIR/\${now:%Y-%m-%d}/\${now:%H-%M-%S}"
+
+#! Checkpoint auto-resume: find latest checkpoint for this experiment only
+CKPT=$(find "$EXP_OUTPUTS_DIR" -name "last.ckpt" -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2)
 
 if [ -n "$CKPT" ]; then
     echo "Resuming from checkpoint: $CKPT"
     CMD="python scripts/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
         trainer=gpu model.compile=false +trainer.precision=16 \
-        datamodule.num_workers=$num_workers"
+        datamodule.num_workers=$num_workers \
+        hydra.run.dir=$hydra_run_dir"
 else
     echo "Starting fresh training run"
     CMD="python scripts/train_tabasco.py experiment=$experiment \
         trainer=gpu model.compile=false +trainer.precision=16 \
-        datamodule.num_workers=$num_workers"
+        datamodule.num_workers=$num_workers \
+        hydra.run.dir=$hydra_run_dir"
 fi
 
 ###############################################################
