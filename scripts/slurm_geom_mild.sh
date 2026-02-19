@@ -23,7 +23,7 @@
 #! Number of CPUs per task (workers + 1 for main process):
 #SBATCH --cpus-per-task=16
 #! How much wallclock time will be required?
-#SBATCH --time=36:00:00
+#SBATCH --time=10:00:00
 #! What types of email messages do you wish to receive?
 #SBATCH --mail-type=ALL
 #! Uncomment and set your email to receive notifications:
