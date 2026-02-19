@@ -87,7 +87,7 @@ num_workers=$((SLURM_CPUS_PER_TASK / 2 - 1))
 #! Per-experiment output directory so checkpoint searches don't cross-contaminate
 exp_safe=$(echo "$experiment" | tr '/' '_')_2gpu
 EXP_OUTPUTS_DIR="$OUTPUTS_DIR/$exp_safe"
-="$EXP_OUTPUTS_DIR/\${now:%Y-%m-%d}/\${now:%H-%M-%S}"
+hydra_run_dir="$EXP_OUTPUTS_DIR/\${now:%Y-%m-%d}/\${now:%H-%M-%S}"
 
 #! Checkpoint auto-resume: find latest checkpoint for this experiment only
 CKPT=$(find "$EXP_OUTPUTS_DIR" -name "last.ckpt" -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2)
