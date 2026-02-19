@@ -1,7 +1,7 @@
 #!/bin/bash
 #!
 #! SLURM job script for Wilkes3 (AMD EPYC 7763, ConnectX-6, A100)
-#! Run geom/chemprop experiment on 2 GPUs with DDP (REPA with ChemProp encoder)
+#! Run qm9_chemprop experiment
 #!
 
 #!#############################################################
@@ -10,7 +10,7 @@
 
 #! sbatch directives begin here ###############################
 #! Name of the job:
-#SBATCH -J geom-chemprop-2gpu
+#SBATCH -J qm9-chemprop
 #! Which project should be charged (NB Wilkes2 projects end in '-GPU'):
 #! To find your account, run: sacctmgr show associations user=$USER format=Account%30
 #SBATCH -A LIO-CHARM-SL2-GPU
@@ -19,17 +19,17 @@
 #! How many (MPI) tasks will there be in total?
 #SBATCH --ntasks=1
 #! Specify the number of GPUs per node (between 1 and 4; must be 4 if nodes>1).
-#SBATCH --gres=gpu:2
-#! Number of CPUs per task (16 per GPU × 2):
-#SBATCH --cpus-per-task=32
+#SBATCH --gres=gpu:1
+#! Number of CPUs per task (workers + 1 for main process):
+#SBATCH --cpus-per-task=16
 #! How much wallclock time will be required?
-#SBATCH --time=10:00:00
+#SBATCH --time=09:00:00
 #! What types of email messages do you wish to receive?
 #SBATCH --mail-type=ALL
 #! Uncomment and set your email to receive notifications:
 #SBATCH --mail-user=sr2173@cam.ac.uk
 
-#! Output and error logs (on RDS to avoid filling /home):
+#! Output and error logs:
 #SBATCH --output=/rds/user/sr2173/hpc-work/tabasco/logs/slurm-%j.out
 #SBATCH --error=/rds/user/sr2173/hpc-work/tabasco/logs/slurm-%j.err
 
@@ -69,7 +69,7 @@ conda deactivate 2>/dev/null || true
 source "$REPO_DIR/.venv/bin/activate"
 
 #! Run options for the application:
-experiment="geom/chemprop"
+experiment="qm9/chemprop"
 
 #! Work directory (i.e. where the job will run):
 workdir="$REPO_DIR"
@@ -85,7 +85,7 @@ np=$[${numnodes}*${mpi_tasks_per_node}]
 num_workers=8
 
 #! Per-experiment output directory so checkpoint searches don't cross-contaminate
-exp_safe=$(echo "$experiment" | tr '/' '_')_2gpu
+exp_safe=$(echo "$experiment" | tr '/' '_')
 EXP_OUTPUTS_DIR="$OUTPUTS_DIR/$exp_safe"
 hydra_run_dir="$EXP_OUTPUTS_DIR/\${now:%Y-%m-%d}/\${now:%H-%M-%S}"
 
@@ -94,17 +94,15 @@ CKPT=$(find "$EXP_OUTPUTS_DIR" -name "last.ckpt" -type f -printf '%T@ %p\n' 2>/d
 
 if [ -n "$CKPT" ]; then
     echo "Resuming from checkpoint: $CKPT"
-    CMD="python scripts/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
-        trainer=ddp model.compile=false +trainer.precision=16 \
+    CMD="python scripts/tabasco/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
+        trainer=gpu model.compile=false +trainer.precision=16 \
         datamodule.num_workers=$num_workers \
-        lightning_module.optimizer.lr=0.004 \
         hydra.run.dir=$hydra_run_dir"
 else
     echo "Starting fresh training run"
-    CMD="python scripts/train_tabasco.py experiment=$experiment \
-        trainer=ddp model.compile=false +trainer.precision=16 \
+    CMD="python scripts/tabasco/train_tabasco.py experiment=$experiment \
+        trainer=gpu model.compile=false +trainer.precision=16 \
         datamodule.num_workers=$num_workers \
-        lightning_module.optimizer.lr=0.004 \
         hydra.run.dir=$hydra_run_dir"
 fi
 

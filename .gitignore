@@ -70,3 +70,6 @@ checkpoints/
 outputs/
 logs/
 data/
+
+# SLURM node name files
+machine.file.*

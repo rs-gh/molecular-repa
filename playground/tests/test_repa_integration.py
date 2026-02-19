@@ -276,3 +276,151 @@ class TestREPAIntegration:
             p.grad is not None for p in flow_model.repa_loss.encoder.parameters()
         )
         assert not encoder_has_grad
+
+    def test_invalid_combination_mode_raises(self, dummy_encoder, hidden_dim):
+        """Test that an invalid combination_mode raises ValueError."""
+        projector = Projector(
+            hidden_dim=hidden_dim, encoder_dim=dummy_encoder.encoder_dim
+        )
+        with pytest.raises(ValueError, match="combination_mode"):
+            REPALoss(dummy_encoder, projector, combination_mode="bad_mode")
+
+    def test_default_combination_mode_is_additive(self, dummy_encoder, hidden_dim):
+        """Test that the default combination_mode is 'additive'."""
+        projector = Projector(
+            hidden_dim=hidden_dim, encoder_dim=dummy_encoder.encoder_dim
+        )
+        loss = REPALoss(dummy_encoder, projector)
+        assert loss.combination_mode == "additive"
+
+    def test_combination_mode_formula(
+        self, transformer, dummy_encoder, hidden_dim, molecular_batch
+    ):
+        """Test that additive and tradeoff modes implement their formulas correctly.
+
+        With shared net/encoder/projector and the same random seed, component losses
+        are identical across both modes. Therefore:
+            loss_additive - loss_tradeoff = lam * diffusion_loss
+        """
+        projector = Projector(
+            hidden_dim=hidden_dim, encoder_dim=dummy_encoder.encoder_dim
+        )
+        lam = 0.5
+
+        def make_model(mode):
+            rl = REPALoss(
+                dummy_encoder, projector, lambda_repa=lam, combination_mode=mode
+            )
+            return FlowMatchingModel(
+                net=transformer,
+                coords_interpolant=CenteredMetricInterpolant(
+                    key="coords", key_pad_mask="padding_mask"
+                ),
+                atomics_interpolant=DiscreteInterpolant(
+                    key="atomics", key_pad_mask="padding_mask"
+                ),
+                repa_loss=rl,
+            )
+
+        additive_model = make_model("additive")
+        tradeoff_model = make_model("tradeoff")
+
+        torch.manual_seed(42)
+        loss_a, stats_a = additive_model(molecular_batch, compute_stats=True)
+        torch.manual_seed(42)
+        loss_t, _ = tradeoff_model(molecular_batch, compute_stats=True)
+
+        # No interdist_loss in either model, so diffusion = atomics + coords
+        diffusion = stats_a["atomics_loss"] + stats_a["coords_loss"]
+        expected_diff = lam * diffusion
+        actual_diff = loss_a.item() - loss_t.item()
+        assert abs(actual_diff - expected_diff) < 1e-5
+
+    def test_tradeoff_lambda_weighting(
+        self, transformer, dummy_encoder, hidden_dim, molecular_batch
+    ):
+        """Verify tradeoff formula: total = (1-λ)·D + λ·R, for λ=0.8 and λ=0.2.
+
+        Higher λ shifts weight from diffusion to REPA. The direction of the difference
+        in total loss depends on sign(R - D), so we assert the formula directly.
+        Note: R (repa_loss) may be negative when representations are positively aligned
+        (cosine similarity), so directional assertions on the totals are not meaningful.
+        """
+        projector = Projector(
+            hidden_dim=hidden_dim, encoder_dim=dummy_encoder.encoder_dim
+        )
+
+        def make_model(lam):
+            rl = REPALoss(
+                dummy_encoder, projector, lambda_repa=lam, combination_mode="tradeoff"
+            )
+            return FlowMatchingModel(
+                net=transformer,
+                coords_interpolant=CenteredMetricInterpolant(
+                    key="coords", key_pad_mask="padding_mask"
+                ),
+                atomics_interpolant=DiscreteInterpolant(
+                    key="atomics", key_pad_mask="padding_mask"
+                ),
+                repa_loss=rl,
+            )
+
+        model_08 = make_model(0.8)
+        model_02 = make_model(0.2)
+
+        torch.manual_seed(42)
+        total_08, stats_08 = model_08(molecular_batch, compute_stats=True)
+        torch.manual_seed(42)
+        total_02, _ = model_02(molecular_batch, compute_stats=True)
+
+        D = stats_08["atomics_loss"] + stats_08["coords_loss"]
+        R = stats_08["repa_loss"]  # negative when representations are aligned (cosine)
+
+        assert abs(total_08.item() - (0.2 * D + 0.8 * R)) < 1e-5
+        assert abs(total_02.item() - (0.8 * D + 0.2 * R)) < 1e-5
+        # Difference isolates the weighting shift: 0.6*(R - D)
+        assert abs((total_08.item() - total_02.item()) - 0.6 * (R - D)) < 1e-5
+
+    def test_additive_lambda_weighting(
+        self, transformer, dummy_encoder, hidden_dim, molecular_batch
+    ):
+        """Verify additive formula: total = D + λ·R, for λ=0.8 and λ=0.2.
+
+        REPA loss (R) may be negative (negative cosine similarity), so the total is not
+        guaranteed to increase with λ. The difference total_08 - total_02 = 0.6·R exactly,
+        regardless of sign.
+        """
+        projector = Projector(
+            hidden_dim=hidden_dim, encoder_dim=dummy_encoder.encoder_dim
+        )
+
+        def make_model(lam):
+            rl = REPALoss(
+                dummy_encoder, projector, lambda_repa=lam, combination_mode="additive"
+            )
+            return FlowMatchingModel(
+                net=transformer,
+                coords_interpolant=CenteredMetricInterpolant(
+                    key="coords", key_pad_mask="padding_mask"
+                ),
+                atomics_interpolant=DiscreteInterpolant(
+                    key="atomics", key_pad_mask="padding_mask"
+                ),
+                repa_loss=rl,
+            )
+
+        model_08 = make_model(0.8)
+        model_02 = make_model(0.2)
+
+        torch.manual_seed(42)
+        total_08, stats_08 = model_08(molecular_batch, compute_stats=True)
+        torch.manual_seed(42)
+        total_02, _ = model_02(molecular_batch, compute_stats=True)
+
+        D = stats_08["atomics_loss"] + stats_08["coords_loss"]
+        R = stats_08["repa_loss"]  # negative when representations are aligned (cosine)
+
+        assert abs(total_08.item() - (D + 0.8 * R)) < 1e-5
+        assert abs(total_02.item() - (D + 0.2 * R)) < 1e-5
+        # Difference is exactly 0.6·R, regardless of sign
+        assert abs((total_08.item() - total_02.item()) - 0.6 * R) < 1e-5

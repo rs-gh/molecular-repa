@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-"""Tabasco tdraining entrypoint for molecular-repa.
+"""Tabasco training entrypoint for molecular-repa.
 
 This script sets up PROJECT_ROOT and then runs tabasco's training code.
 Run from the repo root:
-    uv run python scripts/train_tabasco.py experiment=qm9/local_chemprop
+    uv run python scripts/tabasco/train_tabasco.py experiment=qm9/local_chemprop
 """
 
 import os
@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 # Compute paths
-_repo_root = Path(__file__).resolve().parent.parent
+_repo_root = Path(__file__).resolve().parent.parent.parent
 _tabasco_root = _repo_root / "src" / "tabasco"
 _train_script = _tabasco_root / "src" / "train.py"
 

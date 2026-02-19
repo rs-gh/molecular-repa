@@ -94,13 +94,13 @@ CKPT=$(find "$EXP_OUTPUTS_DIR" -name "last.ckpt" -type f -printf '%T@ %p\n' 2>/d
 
 if [ -n "$CKPT" ]; then
     echo "Resuming from checkpoint: $CKPT"
-    CMD="python scripts/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
+    CMD="python scripts/tabasco/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
         trainer=gpu model.compile=false +trainer.precision=16 \
         datamodule.num_workers=$num_workers \
         hydra.run.dir=$hydra_run_dir"
 else
     echo "Starting fresh training run"
-    CMD="python scripts/train_tabasco.py experiment=$experiment \
+    CMD="python scripts/tabasco/train_tabasco.py experiment=$experiment \
         trainer=gpu model.compile=false +trainer.precision=16 \
         datamodule.num_workers=$num_workers \
         hydra.run.dir=$hydra_run_dir"

@@ -72,7 +72,7 @@ Tabasco is a flow matching model for molecular generation. Training is managed v
 ### Running Training
 
 ```bash
-uv run python scripts/train_tabasco.py experiment=<experiment_name>
+uv run python scripts/tabasco/train_tabasco.py experiment=<experiment_name>
 ```
 
 ### Available Experiments
@@ -100,13 +100,13 @@ uv run python scripts/train_tabasco.py experiment=<experiment_name>
 
 ```bash
 # Quick local test (3 epochs, small model)
-uv run python scripts/train_tabasco.py experiment=qm9/local_baseline
+uv run python scripts/tabasco/train_tabasco.py experiment=qm9/local_baseline
 
 # Full baseline training
-uv run python scripts/train_tabasco.py experiment=qm9/baseline
+uv run python scripts/tabasco/train_tabasco.py experiment=qm9/baseline
 
 # Train with REPA loss (ChemProp encoder)
-uv run python scripts/train_tabasco.py experiment=qm9/chemprop
+uv run python scripts/tabasco/train_tabasco.py experiment=qm9/chemprop
 ```
 
 ### Outputs
@@ -119,7 +119,7 @@ Training outputs are saved to `outputs/<date>/<time>/`:
 ### Resume Training
 
 ```bash
-uv run python scripts/train_tabasco.py experiment=qm9/baseline ckpt_path=/path/to/checkpoint.ckpt
+uv run python scripts/tabasco/train_tabasco.py experiment=qm9/baseline ckpt_path=/path/to/checkpoint.ckpt
 ```
 
 ### HPC Notes
@@ -129,7 +129,7 @@ uv run python scripts/train_tabasco.py experiment=qm9/baseline ckpt_path=/path/t
 On other GPU clusters, you may be able to enable `torch.compile` for faster training:
 
 ```bash
-python scripts/train_tabasco.py experiment=qm9/chemprop trainer=gpu model.compile=true
+python scripts/tabasco/train_tabasco.py experiment=qm9/chemprop trainer=gpu model.compile=true
 ```
 
 To redirect outputs to a high-capacity storage location (recommended — checkpoints can be large), create `src/tabasco/configs/local/default.yaml` on the cluster machine with:
