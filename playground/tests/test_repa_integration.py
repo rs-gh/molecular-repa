@@ -113,7 +113,7 @@ class TestREPAIntegration:
             {
                 "coords": coords,
                 "atomics": atomics,
-                "hidden_states": hidden_states,
+                "hidden_states_coord": hidden_states,
                 "padding_mask": padding_mask,
             },
             batch_size=batch_size,
@@ -227,7 +227,7 @@ class TestREPAIntegration:
             {
                 "coords": coords,
                 "atomics": atomics,
-                "hidden_states": hidden_states,
+                "hidden_states_coord": hidden_states,
                 "padding_mask": padding_mask,
             },
             batch_size=batch_size,
