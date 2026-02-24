@@ -1,7 +1,7 @@
 #!/bin/bash
 #!
 #! SLURM job script for Wilkes3 (AMD EPYC 7763, ConnectX-6, A100)
-#! Run geom/chemprop_tradeoff experiment (REPA with ChemProp encoder, tradeoff combination)
+#! Run geom/chemprop_additive experiment (REPA with ChemProp encoder, additive combination)
 #!
 
 #!#############################################################
@@ -10,7 +10,7 @@
 
 #! sbatch directives begin here ###############################
 #! Name of the job:
-#SBATCH -J geom-chemprop-tradeoff
+#SBATCH -J geom-chemprop-additive
 #! Which project should be charged (NB Wilkes2 projects end in '-GPU'):
 #! To find your account, run: sacctmgr show associations user=$USER format=Account%30
 #SBATCH -A LIO-CHARM-SL2-GPU
@@ -69,7 +69,7 @@ conda deactivate 2>/dev/null || true
 source "$REPO_DIR/.venv/bin/activate"
 
 #! Run options for the application:
-experiment="geom/chemprop_tradeoff"
+experiment="geom/chemprop_additive"
 
 #! Work directory (i.e. where the job will run):
 workdir="$REPO_DIR"
