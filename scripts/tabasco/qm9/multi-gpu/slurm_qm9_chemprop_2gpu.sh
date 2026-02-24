@@ -53,7 +53,7 @@ mpi_tasks_per_node=$(echo "$SLURM_TASKS_PER_NODE" | sed -e  's/^\([0-9][0-9]*\).
 #! Optionally modify the environment seen by the application
 . /etc/profile.d/modules.sh                # Leave this line (enables the module command)
 module purge                               # Removes all modules still loaded
-module load rhel8/default-amp              # REQUIRED - loads the basic environment
+module load rhel8/ampere/base              # Ampere-native env (enables torch.compile)
 
 #! Insert additional module load commands after this line if needed:
 module load python/3.11.0-icl
@@ -95,14 +95,14 @@ CKPT=$(find "$EXP_OUTPUTS_DIR" -name "last.ckpt" -type f -printf '%T@ %p\n' 2>/d
 if [ -n "$CKPT" ]; then
     echo "Resuming from checkpoint: $CKPT"
     CMD="python scripts/tabasco/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
-        trainer=ddp model.compile=false +trainer.precision=16 \
+        trainer=ddp model.compile=true +trainer.precision=16 \
         datamodule.num_workers=$num_workers \
         lightning_module.optimizer.lr=0.004 \
         hydra.run.dir=$hydra_run_dir"
 else
     echo "Starting fresh training run"
     CMD="python scripts/tabasco/train_tabasco.py experiment=$experiment \
-        trainer=ddp model.compile=false +trainer.precision=16 \
+        trainer=ddp model.compile=true +trainer.precision=16 \
         datamodule.num_workers=$num_workers \
         lightning_module.optimizer.lr=0.004 \
         hydra.run.dir=$hydra_run_dir"

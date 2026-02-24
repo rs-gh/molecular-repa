@@ -124,13 +124,7 @@ uv run python scripts/tabasco/train_tabasco.py experiment=qm9/baseline ckpt_path
 
 ### HPC Notes
 
-**`model.compile=false` is required on Wilkes3.** All available gcc versions (8/11/13.3.0) crash with "Illegal instruction" (SIGILL) in the assembler on the Ampere GPU nodes — the Spack-built gcc binaries were compiled for a different CPU microarchitecture than the nodes run. This prevents Triton from JIT-compiling CUDA kernels. All SLURM scripts already include `model.compile=false`. A support ticket has been filed with HPC.
-
-On other GPU clusters, you may be able to enable `torch.compile` for faster training:
-
-```bash
-python scripts/tabasco/train_tabasco.py experiment=qm9/chemprop trainer=gpu model.compile=true
-```
+**`torch.compile` requires `rhel8/ampere/base` on Wilkes3.** The default `rhel8/default-amp` module set ships gcc binaries compiled for a different CPU microarchitecture, causing SIGILL crashes in Triton's JIT. Loading `rhel8/ampere/base` instead resolves this. All SLURM scripts use `model.compile=true` with the correct module.
 
 To redirect outputs to a high-capacity storage location (recommended — checkpoints can be large), create `src/tabasco/configs/local/default.yaml` on the cluster machine with:
 

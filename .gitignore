@@ -73,3 +73,9 @@ data/
 
 # SLURM node name files
 machine.file.*
+
+# Claude Code session data
+.claude/
+
+# Miscellaneous logs
+segfault_log

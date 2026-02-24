@@ -23,7 +23,7 @@
 #! Number of CPUs per task (workers + 1 for main process):
 #SBATCH --cpus-per-task=16
 #! How much wallclock time will be required?
-#SBATCH --time=10:00:00
+#SBATCH --time=16:00:00
 #! What types of email messages do you wish to receive?
 #SBATCH --mail-type=ALL
 #! Uncomment and set your email to receive notifications:
@@ -53,7 +53,7 @@ mpi_tasks_per_node=$(echo "$SLURM_TASKS_PER_NODE" | sed -e  's/^\([0-9][0-9]*\).
 #! Optionally modify the environment seen by the application
 . /etc/profile.d/modules.sh                # Leave this line (enables the module command)
 module purge                               # Removes all modules still loaded
-module load rhel8/default-amp              # REQUIRED - loads the basic environment
+module load rhel8/ampere/base              # Ampere-native env (enables torch.compile)
 
 #! Insert additional module load commands after this line if needed:
 module load python/3.11.0-icl
@@ -77,12 +77,13 @@ workdir="$REPO_DIR"
 #! Are you using OpenMP (NB this is unrelated to OpenMPI)? If so increase this
 #! safe value to no more than 128:
 export OMP_NUM_THREADS=1
+export WANDB_INIT_TIMEOUT=120
 
 #! Number of MPI tasks to be started by the application per node and in total (do not change):
 np=$[${numnodes}*${mpi_tasks_per_node}]
 
 #! Safe fixed worker count (31 workers exhausts /dev/shm on HPC Ampere nodes)
-num_workers=8
+num_workers=0
 
 #! Per-experiment output directory so checkpoint searches don't cross-contaminate
 exp_safe=$(echo "$experiment" | tr '/' '_')
@@ -92,16 +93,29 @@ hydra_run_dir="$EXP_OUTPUTS_DIR/\${now:%Y-%m-%d}/\${now:%H-%M-%S}"
 #! Checkpoint auto-resume: find latest checkpoint for this experiment only
 CKPT=$(find "$EXP_OUTPUTS_DIR" -name "last.ckpt" -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2)
 
+#! WandB run resume: find most recent run that actually logged metrics (has wandb-summary.json)
+WANDB_RUN_ID=""
 if [ -n "$CKPT" ]; then
-    echo "Resuming from checkpoint: $CKPT"
+    WANDB_RUN_ID=$(find "$EXP_OUTPUTS_DIR/wandb" -name "wandb-summary.json" -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2 | sed 's|.*/run-[0-9_]*-\([^/]*\)/.*|\1|')
+fi
+
+if [ -n "$CKPT" ] && [ -n "$WANDB_RUN_ID" ]; then
+    echo "Resuming from checkpoint: $CKPT (wandb run: $WANDB_RUN_ID)"
     CMD="python scripts/tabasco/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
-        trainer=gpu model.compile=false +trainer.precision=16 \
+        trainer=gpu model.compile=true +trainer.precision=16 \
+        datamodule.num_workers=$num_workers \
+        logger.wandb.id=$WANDB_RUN_ID logger.wandb.resume=must \
+        hydra.run.dir=$hydra_run_dir"
+elif [ -n "$CKPT" ]; then
+    echo "Resuming from checkpoint: $CKPT (no wandb run found)"
+    CMD="python scripts/tabasco/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
+        trainer=gpu model.compile=true +trainer.precision=16 \
         datamodule.num_workers=$num_workers \
         hydra.run.dir=$hydra_run_dir"
 else
     echo "Starting fresh training run"
     CMD="python scripts/tabasco/train_tabasco.py experiment=$experiment \
-        trainer=gpu model.compile=false +trainer.precision=16 \
+        trainer=gpu model.compile=true +trainer.precision=16 \
         datamodule.num_workers=$num_workers \
         hydra.run.dir=$hydra_run_dir"
 fi
