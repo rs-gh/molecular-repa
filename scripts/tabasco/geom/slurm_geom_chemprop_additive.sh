@@ -86,7 +86,7 @@ np=$[${numnodes}*${mpi_tasks_per_node}]
 num_workers=0
 
 #! Per-experiment output directory so checkpoint searches don't cross-contaminate
-exp_safe=$(echo "$experiment" | tr '/' '_')
+exp_safe=$(echo "$experiment" | tr '/' '_')_v2
 EXP_OUTPUTS_DIR="$OUTPUTS_DIR/$exp_safe"
 hydra_run_dir="$EXP_OUTPUTS_DIR/\${now:%Y-%m-%d}/\${now:%H-%M-%S}"
 

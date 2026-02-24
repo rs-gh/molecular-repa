@@ -209,7 +209,7 @@ class TestREPAIntegration:
         The ratio of |loss| values should match the ratio of time values.
         """
         repa_with_weight = REPALoss(
-            encoder, projector, lambda_repa=1.0, time_weighting=True
+            encoder=encoder, projector=projector, lambda_repa=1.0, time_weighting=True
         )
 
         coords = molecular_batch["coords"]
@@ -424,3 +424,272 @@ class TestREPAIntegration:
         assert abs(total_02.item() - (D + 0.2 * R)) < 1e-5
         # Difference is exactly 0.6·R, regardless of sign
         assert abs((total_08.item() - total_02.item()) - 0.6 * R) < 1e-5
+
+
+class TestCrossAttentionFusion:
+    """Tests for cross_attention=True: fused hidden states through single projector."""
+
+    @pytest.fixture
+    def hidden_dim(self):
+        return 64
+
+    @pytest.fixture
+    def atom_dim(self):
+        return 9
+
+    @pytest.fixture
+    def transformer_cross_attn(self, hidden_dim, atom_dim):
+        return TransformerModule(
+            spatial_dim=3,
+            atom_dim=atom_dim,
+            num_heads=4,
+            num_layers=2,
+            hidden_dim=hidden_dim,
+            implementation="pytorch",
+            cross_attention=True,
+        )
+
+    @pytest.fixture
+    def dummy_encoder(self):
+        return DummyEncoder(input_dim=3, hidden_dim=64, encoder_dim=128)
+
+    @pytest.fixture
+    def fused_projector(self, hidden_dim, dummy_encoder):
+        """Projector for fused input. LazyLinear infers input dim automatically."""
+        return Projector(hidden_dim=hidden_dim, encoder_dim=dummy_encoder.encoder_dim)
+
+    @pytest.fixture
+    def repa_loss_fused(self, dummy_encoder, fused_projector):
+        return REPALoss(
+            encoder=dummy_encoder,
+            projector=fused_projector,
+            lambda_repa=0.5,
+            time_weighting=False,
+        )
+
+    @pytest.fixture
+    def molecular_batch(self):
+        """Create a batch of real molecular data from SMILES."""
+        converter = MoleculeConverter()
+        smiles_list = ["CCO", "CC(=O)O"]
+        max_atoms = 10
+
+        tensordicts = []
+        for smiles in smiles_list:
+            mol = Chem.MolFromSmiles(smiles)
+            mol = Chem.AddHs(mol)
+            AllChem.EmbedMolecule(mol, randomSeed=42)
+            mol = Chem.RemoveAllHs(mol)
+            td = converter.to_tensor(mol, pad_to_size=max_atoms)
+            tensordicts.append(td)
+
+        return TensorDict(
+            {
+                "coords": torch.stack([td["coords"] for td in tensordicts]),
+                "atomics": torch.stack([td["atomics"] for td in tensordicts]),
+                "padding_mask": torch.stack([td["padding_mask"] for td in tensordicts]),
+            },
+            batch_size=[len(smiles_list)],
+        )
+
+    def test_cross_attn_returns_four_outputs(
+        self, transformer_cross_attn, hidden_dim, atom_dim
+    ):
+        """TransformerModule with cross_attention=True returns h_coord and h_atom."""
+        batch_size, num_atoms = 2, 10
+        coords = torch.randn(batch_size, num_atoms, 3)
+        atomics = torch.nn.functional.softmax(
+            torch.randn(batch_size, num_atoms, atom_dim), dim=-1
+        )
+        padding_mask = torch.zeros(batch_size, num_atoms, dtype=torch.bool)
+        padding_mask[:, 8:] = True
+        t = torch.rand(batch_size)
+
+        # Without hidden states — still 2 outputs
+        output = transformer_cross_attn(
+            coords, atomics, padding_mask, t, return_hidden_states=False
+        )
+        assert len(output) == 2
+
+        # With hidden states — 4 outputs (coords, atom_logits, h_coord, h_atom)
+        output = transformer_cross_attn(
+            coords, atomics, padding_mask, t, return_hidden_states=True
+        )
+        assert len(output) == 4
+        _, _, h_coord, h_atom = output
+        assert h_coord.shape == (batch_size, num_atoms, hidden_dim)
+        assert h_atom.shape == (batch_size, num_atoms, hidden_dim)
+
+    def test_fusion_concatenation_in_repa_loss(
+        self, dummy_encoder, fused_projector, hidden_dim, molecular_batch
+    ):
+        """REPALoss concatenates hidden_states_coord and hidden_states_atom."""
+        coords = molecular_batch["coords"]
+        atomics = molecular_batch["atomics"]
+        padding_mask = molecular_batch["padding_mask"]
+        batch_size = coords.shape[0]
+        num_atoms = coords.shape[1]
+
+        h_coord = torch.randn(batch_size, num_atoms, hidden_dim)
+        h_atom = torch.randn(batch_size, num_atoms, hidden_dim)
+
+        x_1 = TensorDict(
+            {"coords": coords, "atomics": atomics, "padding_mask": padding_mask},
+            batch_size=batch_size,
+        )
+        t = torch.rand(batch_size)
+        path = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t)
+
+        pred = TensorDict(
+            {
+                "coords": coords,
+                "atomics": atomics,
+                "hidden_states_coord": h_coord,
+                "hidden_states_atom": h_atom,
+                "padding_mask": padding_mask,
+            },
+            batch_size=batch_size,
+        )
+
+        repa = REPALoss(
+            encoder=dummy_encoder,
+            projector=fused_projector,
+            lambda_repa=0.5,
+        )
+        loss, stats = repa(path, pred, compute_stats=True)
+
+        assert loss.dim() == 0  # scalar
+        assert "repa_loss" in stats
+
+    def test_gradient_flow_through_both_heads(
+        self, dummy_encoder, fused_projector, hidden_dim, molecular_batch
+    ):
+        """Gradients flow from REPA loss back through both hidden state heads."""
+        coords = molecular_batch["coords"]
+        atomics = molecular_batch["atomics"]
+        padding_mask = molecular_batch["padding_mask"]
+        batch_size = coords.shape[0]
+        num_atoms = coords.shape[1]
+
+        h_coord = torch.randn(batch_size, num_atoms, hidden_dim, requires_grad=True)
+        h_atom = torch.randn(batch_size, num_atoms, hidden_dim, requires_grad=True)
+
+        x_1 = TensorDict(
+            {"coords": coords, "atomics": atomics, "padding_mask": padding_mask},
+            batch_size=batch_size,
+        )
+        t = torch.rand(batch_size)
+        path = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t)
+
+        pred = TensorDict(
+            {
+                "coords": coords,
+                "atomics": atomics,
+                "hidden_states_coord": h_coord,
+                "hidden_states_atom": h_atom,
+                "padding_mask": padding_mask,
+            },
+            batch_size=batch_size,
+        )
+
+        repa = REPALoss(
+            encoder=dummy_encoder,
+            projector=fused_projector,
+            lambda_repa=0.5,
+        )
+        loss, _ = repa(path, pred)
+        loss.backward()
+
+        # Both heads must receive gradients
+        assert h_coord.grad is not None
+        assert h_coord.grad.abs().sum() > 0
+        assert h_atom.grad is not None
+        assert h_atom.grad.abs().sum() > 0
+
+        # Projector trainable, encoder frozen
+        assert any(
+            p.grad is not None and p.grad.abs().sum() > 0
+            for p in repa.projector.parameters()
+        )
+        assert not any(p.grad is not None for p in repa.encoder.parameters())
+
+    def test_flow_model_end_to_end_cross_attention(
+        self, transformer_cross_attn, repa_loss_fused, molecular_batch
+    ):
+        """Full forward + backward through FlowMatchingModel with cross_attention=True."""
+        model = FlowMatchingModel(
+            net=transformer_cross_attn,
+            coords_interpolant=CenteredMetricInterpolant(
+                key="coords", key_pad_mask="padding_mask"
+            ),
+            atomics_interpolant=DiscreteInterpolant(
+                key="atomics", key_pad_mask="padding_mask"
+            ),
+            repa_loss=repa_loss_fused,
+        )
+
+        loss, stats = model(molecular_batch, compute_stats=True)
+        assert "repa_loss" in stats
+
+        loss.backward()
+
+        # Transformer backbone receives gradients
+        assert any(
+            p.grad is not None and p.grad.abs().sum() > 0
+            for p in model.net.parameters()
+        )
+
+        # Both cross-attention heads receive gradients
+        coord_ca_has_grad = any(
+            p.grad is not None and p.grad.abs().sum() > 0
+            for p in model.net.coord_cross_attention.parameters()
+        )
+        atom_ca_has_grad = any(
+            p.grad is not None and p.grad.abs().sum() > 0
+            for p in model.net.atom_cross_attention.parameters()
+        )
+        assert coord_ca_has_grad, "coord cross-attention head has no gradients"
+        assert atom_ca_has_grad, "atom cross-attention head has no gradients"
+
+        # Projector trainable, encoder frozen
+        assert any(
+            p.grad is not None and p.grad.abs().sum() > 0
+            for p in model.repa_loss.projector.parameters()
+        )
+        assert not any(p.grad is not None for p in model.repa_loss.encoder.parameters())
+
+    def test_single_head_no_fusion(self, dummy_encoder, hidden_dim, molecular_batch):
+        """With only hidden_states_coord (no cross_attention), no fusion occurs."""
+        # Projector with hidden_dim (not 2*hidden_dim) — single head
+        projector = Projector(
+            hidden_dim=hidden_dim, encoder_dim=dummy_encoder.encoder_dim
+        )
+        repa = REPALoss(encoder=dummy_encoder, projector=projector)
+
+        coords = molecular_batch["coords"]
+        atomics = molecular_batch["atomics"]
+        padding_mask = molecular_batch["padding_mask"]
+        batch_size = coords.shape[0]
+        num_atoms = coords.shape[1]
+
+        x_1 = TensorDict(
+            {"coords": coords, "atomics": atomics, "padding_mask": padding_mask},
+            batch_size=batch_size,
+        )
+        t = torch.rand(batch_size)
+        path = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t)
+
+        # Only hidden_states_coord — same as cross_attention=False
+        pred = TensorDict(
+            {
+                "coords": coords,
+                "atomics": atomics,
+                "hidden_states_coord": torch.randn(batch_size, num_atoms, hidden_dim),
+                "padding_mask": padding_mask,
+            },
+            batch_size=batch_size,
+        )
+
+        loss, stats = repa(path, pred, compute_stats=True)
+        assert loss.dim() == 0
+        assert "repa_loss" in stats
