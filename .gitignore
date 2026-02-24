@@ -79,3 +79,4 @@ machine.file.*
 
 # Miscellaneous logs
 segfault_log
+encoder_benchmark

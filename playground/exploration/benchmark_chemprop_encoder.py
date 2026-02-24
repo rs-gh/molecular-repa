@@ -463,6 +463,77 @@ def bench_encoder_forward(batch, smiles_list):
     return m_ft_total, m_smi_total, m_cache_total, m_gnn
 
 
+# ── 2b. end-to-end test of the real ChemPropEncoder class ─────────────────────
+
+
+def bench_real_encoder(batch, smiles_list):
+    """
+    Time the actual ChemPropEncoder.forward() with and without the SMILES path,
+    using the class as it now exists in the codebase (not the reimplemented loop
+    above).  This confirms the fixes land correctly in the real code path.
+    """
+    banner("2b. Real ChemPropEncoder class – before vs after fixes")
+
+    from tabasco.models.components.encoders import ChemPropEncoder
+
+    enc = ChemPropEncoder(pretrained="chemeleon")
+    enc = enc.to(DEVICE).eval()
+
+    coords = batch["coords"]
+    atomics = batch["atomics"]
+    padding_mask = batch["padding_mask"]
+
+    # ── old path (no SMILES → from_tensor + bond inference) ───────────────────
+    print(f"\n  Old path – from_tensor, no cache  [{N_WARMUP}w + {N_REPEATS} timed]")
+    times_old = stopwatch(
+        lambda: enc(coords, atomics, padding_mask, smiles=None),
+        N_WARMUP,
+        N_REPEATS,
+    )
+    m_old, s_old = mean_std(times_old)
+    print(f"    {m_old:.0f} ± {s_old:.0f} ms")
+
+    # ── new path (SMILES provided, first call – cache miss → MolFromSmiles) ───
+    enc._molgraph_cache.clear()
+    print(
+        f"\n  New path – MolFromSmiles, cold cache  [{N_WARMUP}w + {N_REPEATS} timed]"
+    )
+    times_cold = stopwatch(
+        lambda: enc(coords, atomics, padding_mask, smiles=smiles_list),
+        N_WARMUP,
+        N_REPEATS,
+    )
+    m_cold, s_cold = mean_std(times_cold)
+    print(f"    {m_cold:.0f} ± {s_cold:.0f} ms")
+
+    # ── new path – warm cache (all MolGraphs already built) ───────────────────
+    print(
+        f"\n  New path – MolFromSmiles, warm cache (subsequent epochs)  "
+        f"[{N_WARMUP}w + {N_REPEATS} timed]"
+    )
+    times_warm = stopwatch(
+        lambda: enc(coords, atomics, padding_mask, smiles=smiles_list),
+        N_WARMUP,
+        N_REPEATS,
+    )
+    m_warm, s_warm = mean_std(times_warm)
+    print(f"    {m_warm:.0f} ± {s_warm:.0f} ms")
+    print(f"    cache size: {len(enc._molgraph_cache)} unique SMILES")
+
+    print("\n  Summary:")
+    print(f"    Old (from_tensor):            {m_old:.0f} ms")
+    print(
+        f"    New cold (MolFromSmiles):     {m_cold:.0f} ms  "
+        f"({m_old/m_cold:.1f}× vs old)"
+    )
+    print(
+        f"    New warm (cache hit):         {m_warm:.0f} ms  "
+        f"({m_old/m_warm:.1f}× vs old)"
+    )
+
+    return m_old, m_cold, m_warm
+
+
 # ── 3. MolGraph cache memory estimate ─────────────────────────────────────────
 
 
@@ -625,6 +696,7 @@ def main():
 
     m_infer, m_smi, m_feat, m_lookup = bench_per_molecule(batch, smiles)
     m_ft, m_smi_fwd, m_cache, m_gnn = bench_encoder_forward(batch, smiles)
+    m_old, m_cold, m_warm = bench_real_encoder(batch, smiles)
     bench_cache_memory(smiles)
     project_epoch_times(m_ft, m_smi_fwd, m_cache, m_gnn)
 
