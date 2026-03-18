@@ -32,7 +32,7 @@ from tabasco.data.components.lmdb_unconditional import UnconditionalLMDBDataset
 from tabasco.data.utils import TensorDictCollator
 
 # -- data paths ---------------------------------------------------------------
-DATA_DIR = Path(__file__).resolve().parents[2] / "src" / "tabasco" / "data"
+DATA_DIR = Path(__file__).resolve().parents[1] / "src" / "tabasco" / "data"
 
 QM9_PT = DATA_DIR / "processed_qm9_train.pt"
 QM9_LMDB = DATA_DIR / "lmdb_qm9"
