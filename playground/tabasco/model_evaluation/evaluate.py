@@ -271,9 +271,12 @@ def compute_posebusters(molecules: list) -> dict:
     return results
 
 
-def compute_fcd(molecules: list, train_smiles: list) -> float:
+def compute_fcd(molecules: list, train_smiles: list, device: str = None) -> float:
     """Compute Frechet ChemNet Distance between generated and training molecules."""
     from fcd_torch import FCD
+
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
 
     gen_smiles = []
     for mol in molecules:
@@ -289,7 +292,7 @@ def compute_fcd(molecules: list, train_smiles: list) -> float:
         print("  Warning: fewer than 10 valid SMILES for FCD")
         return float("nan")
 
-    fcd_calc = FCD(device="cpu", n_jobs=1)
+    fcd_calc = FCD(device=device, n_jobs=1)
     return float(fcd_calc(train_smiles, gen_smiles))
 
 
@@ -464,7 +467,7 @@ def evaluate_checkpoint(
     if train_smiles is not None:
         print("Computing FCD...")
         t0 = time.time()
-        fcd_value = compute_fcd(molecules, train_smiles)
+        fcd_value = compute_fcd(molecules, train_smiles, device=device)
         fcd_time = time.time() - t0
         print(f"  FCD: {fcd_value:.4f} (computed in {fcd_time:.1f}s)")
         point_metrics["fcd"] = fcd_value
