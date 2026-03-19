@@ -56,9 +56,6 @@ echo "Node: $(hostname)"
 echo "Directory: $(pwd)"
 echo ""
 
-# Install fcd_torch if not already present
-pip show fcd_torch >/dev/null 2>&1 || pip install fcd_torch
-
 echo "=== Evaluating all GEOM checkpoints ==="
 echo "Checkpoints available:"
 ls -lh evaluation_checkpoints/tabasco/*.ckpt
