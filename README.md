@@ -51,6 +51,7 @@ The project includes the following Make commands:
 - `make setup-proteina` - Install proteina dependencies and verify the install
 - `make lint` - Run ruff linter
 - `make format` - Format code with ruff
+- `make test` - Run the test suite
 - `make check` - Run linter and fix import sorting
 - `make clean` - Remove virtual environment and cache files
 
@@ -72,7 +73,7 @@ Tabasco is a flow matching model for molecular generation. Training is managed v
 ### Running Training
 
 ```bash
-uv run python scripts/tabasco/train_tabasco.py experiment=<experiment_name>
+uv run python hpc-scripts/tabasco/train_tabasco.py experiment=<experiment_name>
 ```
 
 ### Available Experiments
@@ -81,32 +82,36 @@ uv run python scripts/tabasco/train_tabasco.py experiment=<experiment_name>
 
 | Experiment | Description |
 |------------|-------------|
-| `qm9/baseline` | Full flow matching model without REPA loss (100 epochs) |
-| `qm9/local_baseline` | Smaller baseline for local testing (3 epochs, reduced model size) |
-| `qm9/chemprop` | Full model with REPA loss using ChemProp encoder |
-| `qm9/local_chemprop` | Smaller REPA variant for local testing |
-| `qm9/repa` | REPA variant with default encoder |
-| `qm9/mace` | REPA variant using MACE encoder |
+| `qm9/baseline` | Flow matching without REPA (128-dim, 16-layer, 100 epochs) |
+| `qm9/local_baseline` | Smaller baseline for local testing (64-dim, 4-layer, 3 epochs) |
+| `qm9/chemprop` | REPA with CheMeleon encoder (λ=0.5, tradeoff mode) |
+| `qm9/local_chemprop` | Smaller REPA+CheMeleon variant for local testing |
+| `qm9/repa` | REPA with DummyEncoder (control experiment without chemical guidance) |
 
 #### GEOM Dataset
 
 | Experiment | Description |
 |------------|-------------|
-| `geom/mild` | Conservative training settings |
-| `geom/hot` | Aggressive training settings |
-| `geom/spicy` | Most aggressive settings |
+| `geom/mild` | Baseline without REPA (128-dim, 16-layer) |
+| `geom/hot` | Baseline without REPA (256-dim, 16-layer) |
+| `geom/spicy` | Baseline without REPA (512-dim, 16-layer) |
+| `geom/chemprop_additive` | REPA with CheMeleon encoder (λ=0.8, additive mode) |
+| `geom/chemprop_tradeoff` | REPA with CheMeleon encoder (λ=0.8, tradeoff mode) |
+| `geom/chemprop_cached` | REPA with pre-computed CheMeleon embeddings (fast lookup) |
+| `geom/local_baseline` | Smaller baseline for local testing (64-dim, 4-layer, 3 epochs) |
+| `geom/local_chemprop` | Smaller REPA+CheMeleon variant for local testing |
 
 ### Examples
 
 ```bash
 # Quick local test (3 epochs, small model)
-uv run python scripts/tabasco/train_tabasco.py experiment=qm9/local_baseline
+uv run python hpc-scripts/tabasco/train_tabasco.py experiment=qm9/local_baseline
 
 # Full baseline training
-uv run python scripts/tabasco/train_tabasco.py experiment=qm9/baseline
+uv run python hpc-scripts/tabasco/train_tabasco.py experiment=qm9/baseline
 
 # Train with REPA loss (ChemProp encoder)
-uv run python scripts/tabasco/train_tabasco.py experiment=qm9/chemprop
+uv run python hpc-scripts/tabasco/train_tabasco.py experiment=qm9/chemprop
 ```
 
 ### Outputs
@@ -119,7 +124,7 @@ Training outputs are saved to `outputs/<date>/<time>/`:
 ### Resume Training
 
 ```bash
-uv run python scripts/tabasco/train_tabasco.py experiment=qm9/baseline ckpt_path=/path/to/checkpoint.ckpt
+uv run python hpc-scripts/tabasco/train_tabasco.py experiment=qm9/baseline ckpt_path=/path/to/checkpoint.ckpt
 ```
 
 ### HPC Notes

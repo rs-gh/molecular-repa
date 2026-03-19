@@ -26,6 +26,10 @@ format:
 check: lint
 	uv run ruff check --select I --fix .
 
+.PHONY: test
+test:
+	PROJECT_ROOT=$(CURDIR)/src/tabasco uv run python -m pytest tests/ -v
+
 .PHONY: clean
 clean:
 	rm -rf .venv
