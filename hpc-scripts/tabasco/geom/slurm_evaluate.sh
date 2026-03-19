@@ -48,6 +48,7 @@ source "$REPO_DIR/.venv/bin/activate"
 cd "$REPO_DIR"
 
 export OMP_NUM_THREADS=1
+export PYTHONUNBUFFERED=1
 export PROJECT_ROOT="$REPO_DIR/src/tabasco"
 
 echo "JobID: $SLURM_JOB_ID"

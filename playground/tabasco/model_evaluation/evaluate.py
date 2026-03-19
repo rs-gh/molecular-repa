@@ -196,12 +196,18 @@ def generate_molecules(
 # ---------------------------------------------------------------------------
 
 
-def compute_metrics(molecules: list, train_smiles: list = None) -> dict:
+def compute_metrics(
+    molecules: list, train_smiles: list = None, exclude: set = None
+) -> dict:
     """Compute all metrics on a list of generated molecules.
+
+    Args:
+        exclude: set of metric names to skip (e.g. {"diversity"} for bootstrap speed).
 
     Returns:
         dict mapping metric_name -> float value
     """
+    exclude = exclude or set()
     metrics = {
         "validity": MolecularValidity(),
         "connectivity": MolecularConnectivity(),
@@ -218,6 +224,8 @@ def compute_metrics(molecules: list, train_smiles: list = None) -> dict:
 
     results = {}
     for name, metric in metrics.items():
+        if name in exclude:
+            continue
         metric.update(molecules)
         val = metric.compute()
         results[name] = val.item() if hasattr(val, "item") else float(val)
@@ -317,7 +325,7 @@ def bootstrap_ci(
     for i in range(n_bootstrap):
         indices = rng.randint(0, n, size=n)
         sample = [molecules[j] for j in indices]
-        results = compute_metrics(sample, train_smiles)
+        results = compute_metrics(sample, train_smiles, exclude={"diversity"})
         bootstrap_results.append(results)
 
     # Aggregate
