@@ -67,6 +67,7 @@ python playground/tabasco/model_evaluation/evaluate.py \
     --num_mols 1000 \
     --num_steps 100 \
     --batch_size 256 \
+    --no_bootstrap \
     --device cuda
 
 echo ""

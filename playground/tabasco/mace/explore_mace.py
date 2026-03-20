@@ -414,6 +414,9 @@ def compare_with_chemeleon(mols, calc, model, config, n_mols=20):
     print("  MACE vs CheMeleon: REPRESENTATION COMPARISON")
     print(f"{'='*60}")
 
+    # MACE sets global dtype to float64; reset for CheMeleon
+    torch.set_default_dtype(torch.float32)
+
     try:
         from tabasco.models.components.encoders import ChemPropEncoder
         from tabasco.chem.convert import MoleculeConverter

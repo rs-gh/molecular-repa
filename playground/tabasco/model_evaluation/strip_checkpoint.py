@@ -51,7 +51,7 @@ def _extract_net_config(hyper_parameters):
         "hidden_dim": net.hidden_dim,
         "num_layers": len(net.transformer.layers),
         "num_heads": net.transformer.layers[0].attn_block.attention.mha.num_heads,
-        "cross_attention": hasattr(net.transformer.layers[0], "cross_attn_block"),
+        "cross_attention": hasattr(net, "coord_cross_attention"),
     }
     return config
 
@@ -85,10 +85,12 @@ def strip_checkpoint(input_path: str, output_path: str):
         print("  No EMA in optimizer_states — using state_dict weights as-is.")
 
     # --- Extract only model.net.* keys ---
+    # Strip _orig_mod. prefix injected by torch.compile's OptimizedModule wrapper
     net_state = {}
     for k, v in state_dict.items():
         if k.startswith("model.net."):
-            net_state[k] = v
+            clean_key = k.replace("._orig_mod", "")
+            net_state[clean_key] = v
 
     print(
         f"  Extracted {len(net_state)} model.net keys "

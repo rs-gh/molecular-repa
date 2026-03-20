@@ -125,16 +125,39 @@ def load_checkpoint(checkpoint_path: str, device: str = "cpu"):
         model = _build_model_from_config(model_config, data_stats)
 
         # Load state dict — keys are "model.net.*", strip "model." prefix
+        # Also strip _orig_mod. prefix from torch.compile (handles old checkpoints)
         net_state = {}
         for k, v in ckpt["state_dict"].items():
             if k.startswith("model.net."):
-                # Strip "model." prefix so keys become "net.*"
-                net_state[k[len("model.") :]] = v
-        model.load_state_dict(net_state, strict=False)
+                clean_key = k[len("model.") :].replace("._orig_mod", "")
+                net_state[clean_key] = v
+
+        # Sanity check: strict=True to catch key mismatches immediately
+        missing, unexpected = model.load_state_dict(net_state, strict=False)
+        if missing:
+            print(
+                f"  WARNING: {len(missing)} missing keys in model (not in checkpoint):"
+            )
+            for k in missing[:10]:
+                print(f"    {k}")
+        if unexpected:
+            print(
+                f"  WARNING: {len(unexpected)} unexpected keys in checkpoint (not in model):"
+            )
+            for k in unexpected[:10]:
+                print(f"    {k}")
+        loaded_count = len(net_state) - len(unexpected)
+        model_count = len(model.state_dict())
         print(
             f"  Loaded stripped checkpoint (epoch {ckpt.get('epoch')}, "
-            f"step {ckpt.get('global_step')})"
+            f"step {ckpt.get('global_step')}, "
+            f"{loaded_count}/{model_count} params matched)"
         )
+        if loaded_count == 0:
+            raise RuntimeError(
+                "No parameters were loaded! Check state_dict key format. "
+                f"Checkpoint keys look like: {list(ckpt['state_dict'].keys())[:3]}"
+            )
     else:
         # --- Full training checkpoint: use Lightning ---
         lightning_module = LightningTabasco.load_from_checkpoint(
@@ -481,13 +504,17 @@ def evaluate_checkpoint(
         point_metrics["fcd"] = fcd_value
 
     # Bootstrap CIs (on core metrics only — PB and FCD are too slow to bootstrap)
-    print(f"Computing bootstrap CIs ({n_bootstrap} resamples)...")
-    t0 = time.time()
-    ci_metrics = bootstrap_ci(molecules, train_smiles, n_bootstrap=n_bootstrap)
-    ci_time = time.time() - t0
-    print(f"  Bootstrap done in {ci_time:.1f}s")
-    for k, v in ci_metrics.items():
-        print(f"  {k}: {v['mean']:.4f} [{v['ci_low']:.4f}, {v['ci_high']:.4f}]")
+    ci_metrics = {}
+    if n_bootstrap > 0:
+        print(f"Computing bootstrap CIs ({n_bootstrap} resamples)...")
+        t0 = time.time()
+        ci_metrics = bootstrap_ci(molecules, train_smiles, n_bootstrap=n_bootstrap)
+        ci_time = time.time() - t0
+        print(f"  Bootstrap done in {ci_time:.1f}s")
+        for k, v in ci_metrics.items():
+            print(f"  {k}: {v['mean']:.4f} [{v['ci_low']:.4f}, {v['ci_high']:.4f}]")
+    else:
+        print("Skipping bootstrap CIs (--no_bootstrap)")
 
     # Save outputs
     summary = {
@@ -534,6 +561,11 @@ def main():
     )
     parser.add_argument("--n_bootstrap", type=int, default=1000)
     parser.add_argument(
+        "--no_bootstrap",
+        action="store_true",
+        help="Skip bootstrap CI computation",
+    )
+    parser.add_argument(
         "--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu"
     )
     parser.add_argument(
@@ -542,6 +574,8 @@ def main():
         help="Evaluate all models in evaluation_checkpoints/tabasco/",
     )
     args = parser.parse_args()
+
+    n_bootstrap = 0 if args.no_bootstrap else args.n_bootstrap
 
     if args.all:
         for name, ckpt_path in ALL_MODELS.items():
@@ -558,7 +592,7 @@ def main():
                 num_steps=args.num_steps,
                 batch_size=args.batch_size,
                 train_smiles_path=args.train_smiles,
-                n_bootstrap=args.n_bootstrap,
+                n_bootstrap=n_bootstrap,
                 device=args.device,
             )
         print(f"\nAll done. Results in {RESULTS_DIR}/")
@@ -572,7 +606,7 @@ def main():
             num_steps=args.num_steps,
             batch_size=args.batch_size,
             train_smiles_path=args.train_smiles,
-            n_bootstrap=args.n_bootstrap,
+            n_bootstrap=n_bootstrap,
             device=args.device,
         )
 
