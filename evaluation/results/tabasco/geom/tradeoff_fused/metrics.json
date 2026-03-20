@@ -1,0 +1,36 @@
+{
+  "checkpoint": "evaluation_checkpoints/tabasco/tradeoff_fused.ckpt",
+  "meta": {
+    "epoch": 16,
+    "global_step": 77843,
+    "stripped": true
+  },
+  "generation": {
+    "num_mols": 1000,
+    "num_steps": 100,
+    "time_seconds": 14.692749500274658
+  },
+  "metrics": {
+    "validity": 0.9599999785423279,
+    "connectivity": 0.9989583492279053,
+    "uniqueness": 1.0,
+    "qed": 0.6622588038444519,
+    "logP": 3.0005524158477783,
+    "lipinski": 4.918749809265137,
+    "diversity": 0.8896750661692978,
+    "novelty": 0.9419999718666077,
+    "atom_type_dist": 0.9777132868766785,
+    "pb_intersection": 0.85,
+    "pb_mol_pred_loaded": 0.96,
+    "pb_sanitization": 0.96,
+    "pb_inchi_convertible": 0.959,
+    "pb_all_atoms_connected": 0.959,
+    "pb_bond_lengths": 0.939,
+    "pb_bond_angles": 0.928,
+    "pb_internal_steric_clash": 0.885,
+    "pb_aromatic_ring_flatness": 0.959,
+    "pb_double_bond_flatness": 0.958,
+    "fcd": 6.241529878293079
+  },
+  "bootstrap_ci": {}
+}

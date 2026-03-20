@@ -1,0 +1,36 @@
+{
+  "checkpoint": "evaluation_checkpoints/tabasco/additive_fused.ckpt",
+  "meta": {
+    "epoch": 15,
+    "global_step": 73264,
+    "stripped": true
+  },
+  "generation": {
+    "num_mols": 1000,
+    "num_steps": 100,
+    "time_seconds": 14.651266813278198
+  },
+  "metrics": {
+    "validity": 0.972000002861023,
+    "connectivity": 0.998971164226532,
+    "uniqueness": 1.0,
+    "qed": 0.6457714438438416,
+    "logP": 2.9684014320373535,
+    "lipinski": 4.923868179321289,
+    "diversity": 0.8824455278449752,
+    "novelty": 0.9610000252723694,
+    "atom_type_dist": 0.9672420620918274,
+    "pb_intersection": 0.9,
+    "pb_mol_pred_loaded": 0.972,
+    "pb_sanitization": 0.972,
+    "pb_inchi_convertible": 0.972,
+    "pb_all_atoms_connected": 0.971,
+    "pb_bond_lengths": 0.959,
+    "pb_bond_angles": 0.952,
+    "pb_internal_steric_clash": 0.92,
+    "pb_aromatic_ring_flatness": 0.972,
+    "pb_double_bond_flatness": 0.97,
+    "fcd": 7.427774189471961
+  },
+  "bootstrap_ci": {}
+}

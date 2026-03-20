@@ -1,0 +1,36 @@
+{
+  "checkpoint": "evaluation_checkpoints/tabasco/baseline.ckpt",
+  "meta": {
+    "epoch": 32,
+    "global_step": 151107,
+    "stripped": true
+  },
+  "generation": {
+    "num_mols": 1000,
+    "num_steps": 100,
+    "time_seconds": 27.030689477920532
+  },
+  "metrics": {
+    "validity": 0.9800000190734863,
+    "connectivity": 0.9979591965675354,
+    "uniqueness": 1.0,
+    "qed": 0.6372519731521606,
+    "logP": 3.001594305038452,
+    "lipinski": 4.914285659790039,
+    "diversity": 0.8858266085223944,
+    "novelty": 0.9660000205039978,
+    "atom_type_dist": 0.9735685586929321,
+    "pb_intersection": 0.917,
+    "pb_mol_pred_loaded": 0.98,
+    "pb_sanitization": 0.98,
+    "pb_inchi_convertible": 0.98,
+    "pb_all_atoms_connected": 0.978,
+    "pb_bond_lengths": 0.974,
+    "pb_bond_angles": 0.961,
+    "pb_internal_steric_clash": 0.933,
+    "pb_aromatic_ring_flatness": 0.98,
+    "pb_double_bond_flatness": 0.98,
+    "fcd": 5.606863540386001
+  },
+  "bootstrap_ci": {}
+}

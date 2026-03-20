@@ -5,14 +5,14 @@ Usage:
     source .venv/bin/activate
     export PROJECT_ROOT=$(pwd)/src/tabasco
     python playground/tabasco/mech_interp/run_analysis.py \
-        --checkpoint evaluation_checkpoints/tabasco/baseline.ckpt \
+        --checkpoint evaluation/checkpoints/tabasco/geom/baseline.ckpt \
         --num-molecules 50 \
         --num-steps 100 \
         --output-dir playground/tabasco/mech_interp/results/baseline
 
 To also run ablation experiments:
     python playground/tabasco/mech_interp/run_analysis.py \
-        --checkpoint evaluation_checkpoints/tabasco/baseline.ckpt \
+        --checkpoint evaluation/checkpoints/tabasco/geom/baseline.ckpt \
         --num-molecules 50 \
         --run-ablations \
         --output-dir playground/tabasco/mech_interp/results/ablations

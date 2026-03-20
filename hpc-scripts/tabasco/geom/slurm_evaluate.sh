@@ -59,10 +59,10 @@ echo ""
 
 echo "=== Evaluating all GEOM checkpoints ==="
 echo "Checkpoints available:"
-ls -lh evaluation_checkpoints/tabasco/*.ckpt
+ls -lh evaluation/checkpoints/tabasco/geom/*.ckpt
 echo ""
 
-python playground/tabasco/model_evaluation/evaluate.py \
+python evaluation/scripts/evaluate.py \
     --all \
     --num_mols 1000 \
     --num_steps 100 \
@@ -73,4 +73,4 @@ python playground/tabasco/model_evaluation/evaluate.py \
 echo ""
 echo "=== Done ==="
 echo "Time: $(date)"
-echo "Results in evaluation_results/"
+echo "Results in evaluation/results/tabasco/geom/"
