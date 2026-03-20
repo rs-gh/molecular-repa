@@ -28,31 +28,78 @@ CHECKPOINT_MAP = {
 }
 
 
-def _extract_net_config(hyper_parameters):
-    """Extract minimal TransformerModule config from the stored model object.
+def _extract_net_config(hyper_parameters, state_dict=None):
+    """Extract minimal TransformerModule config from the checkpoint.
 
-    hyper_parameters["model"] is the actual FlowMatchingModel nn.Module —
-    for REPA variants this includes the 4GB CheMeleon encoder. We extract
-    only what's needed to reconstruct model.net (TransformerModule).
+    Tries two sources:
+    1. hyper_parameters["model"] — the actual nn.Module (available when
+       save_hyperparameters includes 'model', i.e. pre-MACE checkpoints).
+    2. state_dict weight shapes — always available, infers architecture
+       from tensor dimensions.
     """
-    if hyper_parameters is None:
+    # --- Try from hyper_parameters first ---
+    if hyper_parameters is not None:
+        model = hyper_parameters.get("model")
+        if model is not None:
+            net = model.net
+            if hasattr(net, "_orig_mod"):
+                net = net._orig_mod
+            return {
+                "hidden_dim": net.hidden_dim,
+                "num_layers": len(net.transformer.layers),
+                "num_heads": net.transformer.layers[
+                    0
+                ].attn_block.attention.mha.num_heads,
+                "cross_attention": hasattr(net, "coord_cross_attention"),
+            }
+
+    # --- Fallback: infer from state_dict weight shapes ---
+    if state_dict is None:
         return {}
 
-    model = hyper_parameters.get("model")
-    if model is None:
+    # Normalize keys: strip common prefixes so patterns match uniformly
+    keys = {}
+    for k, v in state_dict.items():
+        if "model.net" not in k:
+            continue
+        clean = (
+            k.replace("model.net.", "")
+            .replace("._orig_mod.", ".")
+            .replace("._orig_mod", "")
+        )
+        # Strip leading dot if present
+        clean = clean.lstrip(".")
+        keys[clean] = v
+
+    if not keys:
         return {}
 
-    net = model.net
-    # Unwrap torch.compile's OptimizedModule wrapper
-    if hasattr(net, "_orig_mod"):
-        net = net._orig_mod
+    config = {}
 
-    config = {
-        "hidden_dim": net.hidden_dim,
-        "num_layers": len(net.transformer.layers),
-        "num_heads": net.transformer.layers[0].attn_block.attention.mha.num_heads,
-        "cross_attention": hasattr(net, "coord_cross_attention"),
-    }
+    # hidden_dim: from in_proj_weight [3*hidden_dim, hidden_dim]
+    for k, v in keys.items():
+        if "mha.in_proj_weight" in k and v.dim() == 2:
+            config["hidden_dim"] = v.shape[1]
+            break
+
+    # num_layers: count transformer layer indices
+    layer_indices = set()
+    for k in keys:
+        if "transformer.layers." in k:
+            for part in k.split("."):
+                if part.isdigit():
+                    layer_indices.add(int(part))
+                    break
+    if layer_indices:
+        config["num_layers"] = max(layer_indices) + 1
+
+    # num_heads: hidden_dim / head_dim (head_dim=16 for all current models)
+    if "hidden_dim" in config:
+        config["num_heads"] = config["hidden_dim"] // 16
+
+    # cross_attention: check for cross attention keys
+    config["cross_attention"] = any("cross_attention" in k for k in keys)
+
     return config
 
 
@@ -101,7 +148,7 @@ def strip_checkpoint(input_path: str, output_path: str):
     # hyper_parameters stores the actual instantiated FlowMatchingModel nn.Module,
     # which for REPA variants includes the 4GB frozen CheMeleon encoder.
     # We extract only the TransformerModule config needed to reconstruct model.net.
-    model_config = _extract_net_config(ckpt.get("hyper_parameters"))
+    model_config = _extract_net_config(ckpt.get("hyper_parameters"), state_dict)
     print(f"  Extracted model config: {model_config}")
 
     # --- Strip all_smiles from data_stats (57MB for GEOM) ---

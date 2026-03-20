@@ -1,6 +1,10 @@
 """Evaluate a trained molecular generation checkpoint.
 
-Generates molecules, computes metrics with bootstrap CIs, and saves results.
+Generates molecules, computes evaluation metrics, and saves results.
+
+"Evaluation" metrics = post-hoc generation from final checkpoints (1000 mols, on disk).
+"Validation" metrics = computed during training by callbacks (100 mols/epoch, logged to WandB).
+See compile_wandb_curves.py for validation metrics.
 
 Usage:
     # Stripped checkpoint (from strip_checkpoint.py):
@@ -29,7 +33,7 @@ from rdkit import Chem
 # --- Project imports ---
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src" / "tabasco" / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src" / "tabasco" / "src"))
 
 from tabasco.chem.convert import MoleculeConverter
 from tabasco.flow.interpolate import SDEMetricInterpolant, DiscreteInterpolant
@@ -54,6 +58,47 @@ from tabasco.utils.metrics import (
 # ---------------------------------------------------------------------------
 # Model reconstruction for stripped checkpoints
 # ---------------------------------------------------------------------------
+
+
+def _default_device():
+    """Return 'cuda' if available, else 'cpu'."""
+    return "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def _infer_net_config(state_dict: dict) -> dict:
+    """Infer TransformerModule architecture from state_dict weight shapes."""
+    keys = {}
+    for k, v in state_dict.items():
+        if "model.net" not in k:
+            continue
+        clean = (
+            k.replace("model.net.", "")
+            .replace("._orig_mod.", ".")
+            .replace("._orig_mod", "")
+            .lstrip(".")
+        )
+        keys[clean] = v
+
+    if not keys:
+        return {}
+
+    config = {}
+    for k, v in keys.items():
+        if "mha.in_proj_weight" in k and v.dim() == 2:
+            config["hidden_dim"] = v.shape[1]
+            config["num_heads"] = v.shape[1] // 16
+            break
+    layer_indices = set()
+    for k in keys:
+        if "transformer.layers." in k:
+            for part in k.split("."):
+                if part.isdigit():
+                    layer_indices.add(int(part))
+                    break
+    if layer_indices:
+        config["num_layers"] = max(layer_indices) + 1
+    config["cross_attention"] = any("cross_attention" in k for k in keys)
+    return config
 
 
 def _build_time_factor():
@@ -107,7 +152,7 @@ def _build_model_from_config(model_config: dict, data_stats: dict) -> FlowMatchi
     return model
 
 
-def load_checkpoint(checkpoint_path: str, device: str = "cpu"):
+def load_checkpoint(checkpoint_path: str, device: str = None):
     """Load a checkpoint (stripped or full) and return (model, data_stats, meta).
 
     Returns:
@@ -115,7 +160,10 @@ def load_checkpoint(checkpoint_path: str, device: str = "cpu"):
         data_stats: dict with sampling metadata
         meta: dict with epoch, global_step, etc.
     """
+    if device is None:
+        device = _default_device()
     print(f"Loading checkpoint: {checkpoint_path}")
+    # Load to CPU first to avoid GPU OOM from full checkpoint, then .to(device) below
     ckpt = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
 
     if ckpt.get("stripped", False):
@@ -159,11 +207,28 @@ def load_checkpoint(checkpoint_path: str, device: str = "cpu"):
                 f"Checkpoint keys look like: {list(ckpt['state_dict'].keys())[:3]}"
             )
     else:
-        # --- Full training checkpoint: use Lightning ---
-        lightning_module = LightningTabasco.load_from_checkpoint(
-            checkpoint_path, map_location="cpu"
-        )
-        model = lightning_module.model
+        # --- Full training checkpoint ---
+        # Try Lightning's load_from_checkpoint first (works when model was saved
+        # in hyper_parameters). Falls back to manual reconstruction if model was
+        # excluded via save_hyperparameters(ignore=['model']).
+        hyper_params = ckpt.get("hyper_parameters", {})
+        if "model" in hyper_params:
+            lightning_module = LightningTabasco.load_from_checkpoint(
+                checkpoint_path, map_location="cpu", weights_only=False
+            )
+            model = lightning_module.model
+        else:
+            # Model not in hparams (ignore=['model'] checkpoints, e.g. MACE runs).
+            # Reconstruct from state_dict, same as stripped path.
+            model_config = _infer_net_config(ckpt["state_dict"])
+            data_stats_raw = ckpt.get("data_stats", {})
+            model = _build_model_from_config(model_config, data_stats_raw)
+            net_state = {}
+            for k, v in ckpt["state_dict"].items():
+                if k.startswith("model.net."):
+                    clean_key = k[len("model.") :].replace("._orig_mod", "")
+                    net_state[clean_key] = v
+            model.load_state_dict(net_state, strict=False)
         data_stats = ckpt.get("data_stats", {})
         print(
             f"  Loaded full checkpoint (epoch {ckpt.get('epoch')}, "
@@ -183,35 +248,41 @@ def load_checkpoint(checkpoint_path: str, device: str = "cpu"):
 
 
 # ---------------------------------------------------------------------------
-# Sampling
+# Generation
 # ---------------------------------------------------------------------------
 
 
-@torch.no_grad()
-def generate_molecules(
-    model: FlowMatchingModel,
-    num_mols: int,
-    num_steps: int = 100,
-    batch_size: int = 256,
-) -> list:
-    """Generate molecules in batches.
+def generate_molecules(model, num_mols, num_steps, batch_size):
+    """Generate molecules via flow matching sampling.
 
     Returns:
-        List[Chem.Mol | None] — None for failed conversions.
+        list of (rdkit.Mol, dict) tuples, or (None, dict) if invalid.
     """
     converter = MoleculeConverter()
     all_mols = []
+
     remaining = num_mols
-
+    generated = 0
     while remaining > 0:
-        bs = min(batch_size, remaining)
-        print(f"  Sampling batch of {bs} ({num_mols - remaining}/{num_mols} done)...")
-        batch = model.sample(batch_size=bs, num_steps=num_steps)
-        mols = converter.from_batch(batch, sanitize=True)
-        all_mols.extend(mols)
-        remaining -= bs
+        this_batch = min(batch_size, remaining)
+        print(f"  Sampling batch of {this_batch} ({generated}/{num_mols} done)...")
+        with torch.no_grad():
+            sample_out = model.sample(this_batch, num_steps=num_steps)
 
-    return all_mols[:num_mols]
+        coords = sample_out["coords"].cpu()
+        atomics = sample_out["atomics"].cpu()
+
+        for i in range(this_batch):
+            mol_data = converter.to_rdmol(
+                coords[i],
+                atomics[i],
+            )
+            all_mols.append(mol_data)
+
+        remaining -= this_batch
+        generated += this_batch
+
+    return all_mols
 
 
 # ---------------------------------------------------------------------------
@@ -219,98 +290,167 @@ def generate_molecules(
 # ---------------------------------------------------------------------------
 
 
-def compute_metrics(
-    molecules: list, train_smiles: list = None, exclude: set = None
-) -> dict:
-    """Compute all metrics on a list of generated molecules.
+# PoseBusters-based validity check
+def _compute_posebusters(mol_list, num_mols):
+    """Compute PoseBusters checks on generated molecules."""
+    try:
+        from posebusters import PoseBusters
+    except ImportError:
+        print("  PoseBusters not installed, skipping")
+        return {}
 
-    Args:
-        exclude: set of metric names to skip (e.g. {"diversity"} for bootstrap speed).
-
-    Returns:
-        dict mapping metric_name -> float value
-    """
-    exclude = exclude or set()
-    metrics = {
-        "validity": MolecularValidity(),
-        "connectivity": MolecularConnectivity(),
-        "uniqueness": MolecularUniqueness(),
-        "qed": MolecularQEDValue(),
-        "logP": MolecularLogP(),
-        "lipinski": MolecularLipinski(),
-        "diversity": MolecularDiversity(),
-    }
-
-    if train_smiles is not None:
-        metrics["novelty"] = MolecularNovelty(original_smiles=train_smiles)
-        metrics["atom_type_dist"] = AtomTypeDistribution(original_smiles=train_smiles)
+    # Write molecules to SDF for PoseBusters
+    import tempfile
+    import os
 
     results = {}
-    for name, metric in metrics.items():
-        if name in exclude:
-            continue
-        metric.update(molecules)
-        val = metric.compute()
-        results[name] = val.item() if hasattr(val, "item") else float(val)
-
-    return results
-
-
-def compute_posebusters(molecules: list) -> dict:
-    """Run PoseBusters validation on generated molecules.
-
-    Returns:
-        dict mapping pb_<check_name> -> float fraction passing
-    """
-    from posebusters import PoseBusters
-    from yaml import safe_load
-
-    config_path = (
-        Path(__file__).resolve().parents[3]
-        / "src"
-        / "tabasco"
-        / "src"
-        / "tabasco"
-        / "utils"
-        / "posebusters_no_strain.yaml"
-    )
-    cfg = safe_load(open(config_path, encoding="utf-8"))
-    pb = PoseBusters(config=cfg)
-
-    valid_mols = [mol for mol in molecules if mol is not None]
-    total = len(molecules)
+    valid_mols = [m for m in mol_list if m is not None]
 
     if not valid_mols:
         return {}
 
-    try:
-        pb_results = pb.bust(mol_pred=valid_mols)
-    except RuntimeError as e:
-        print(f"  PoseBusters error: {e}")
-        return {}
+    pb_metrics = {}
+    for mol in valid_mols:
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".sdf", delete=False) as f:
+                writer = Chem.SDWriter(f.name)
+                writer.write(mol)
+                writer.close()
 
-    results = {}
-    pb_pass = 0.0
-    for _, row in pb_results.iterrows():
-        pb_pass += 0 if row.isin([False]).any() else 1
-    results["pb_intersection"] = pb_pass / total
+                buster = PoseBusters(config="mol", top_n=None)
+                df = buster.bust(f.name, None)
 
-    for column in pb_results.columns:
-        fraction = (1.0 * pb_results[column].sum()) / total
-        results[f"pb_{column}"] = fraction
+                for col in df.columns:
+                    if col not in pb_metrics:
+                        pb_metrics[col] = []
+                    pb_metrics[col].append(bool(df[col].iloc[0]))
+            os.unlink(f.name)
+        except Exception:
+            continue
+
+    # Compute fractions
+    for col, vals in pb_metrics.items():
+        results[f"pb_{col}"] = sum(vals) / num_mols
+
+    # Intersection = all checks pass
+    if pb_metrics:
+        all_pass = []
+        for i in range(len(list(pb_metrics.values())[0])):
+            passed = all(vals[i] for vals in pb_metrics.values() if i < len(vals))
+            all_pass.append(passed)
+        results["pb_intersection"] = sum(all_pass) / num_mols
 
     return results
 
 
-def compute_fcd(molecules: list, train_smiles: list, device: str = None) -> float:
+def _compute_fcd(gen_smiles, train_smiles):
     """Compute Frechet ChemNet Distance between generated and training molecules."""
-    from fcd_torch import FCD
+    try:
+        from fcd_torch import FCD
+    except ImportError:
+        print("  fcd-torch not installed, skipping FCD")
+        return None
 
-    if device is None:
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+    if not gen_smiles or not train_smiles:
+        return None
 
+    device = _default_device()
+    fcd = FCD(device=device, n_jobs=1)
+    score = fcd(gen_smiles, train_smiles)
+    return float(score)
+
+
+def compute_metrics(
+    mol_list,
+    data_stats,
+    train_smiles=None,
+    n_bootstrap=1000,
+):
+    """Compute all metrics on a list of generated molecules.
+
+    Args:
+        mol_list: list of (rdkit.Mol or None) — one per generated sample
+        data_stats: dict with dataset statistics
+        train_smiles: list of training SMILES for novelty/FCD (optional)
+        n_bootstrap: number of bootstrap samples for CIs (0 = skip)
+    """
+    num_mols = len(mol_list)
+
+    # Initialize metrics
+    validity_metric = MolecularValidity(sync_on_compute=False)
+    connectivity_metric = MolecularConnectivity(sync_on_compute=False)
+    uniqueness_metric = MolecularUniqueness(sync_on_compute=False)
+    qed_metric = MolecularQEDValue(sync_on_compute=False)
+    logp_metric = MolecularLogP(sync_on_compute=False)
+    lipinski_metric = MolecularLipinski(sync_on_compute=False)
+    diversity_metric = MolecularDiversity(sync_on_compute=False)
+    atom_type_metric = AtomTypeDistribution(sync_on_compute=False)
+
+    if data_stats:
+        atom_type_metric.set_data_stats(data_stats)
+
+    novelty_metric = None
+    if train_smiles:
+        novelty_metric = MolecularNovelty(
+            original_smiles=train_smiles, sync_on_compute=False
+        )
+
+    # Compute on all molecules
+    all_metrics = [
+        validity_metric,
+        connectivity_metric,
+        uniqueness_metric,
+        qed_metric,
+        logp_metric,
+        lipinski_metric,
+        diversity_metric,
+        atom_type_metric,
+    ]
+    if novelty_metric:
+        all_metrics.append(novelty_metric)
+
+    for mol in mol_list:
+        for m in all_metrics:
+            m.update(mol)
+
+    # Point estimates
+    print("Computing point-estimate metrics...")
+    results = {}
+    metric_names = [
+        ("validity", validity_metric),
+        ("connectivity", connectivity_metric),
+        ("uniqueness", uniqueness_metric),
+        ("qed", qed_metric),
+        ("logP", logp_metric),
+        ("lipinski", lipinski_metric),
+        ("diversity", diversity_metric),
+    ]
+    if novelty_metric:
+        metric_names.append(("novelty", novelty_metric))
+    metric_names.append(("atom_type_dist", atom_type_metric))
+
+    for name, metric in metric_names:
+        try:
+            val = metric.compute()
+            results[name] = float(val)
+            print(f"  {name}: {val:.4f}")
+        except Exception as e:
+            print(f"  {name}: FAILED ({e})")
+
+    # PoseBusters
+    print("Computing PoseBusters checks...")
+    valid_mols = [m for m in mol_list if m is not None]
+    t0 = time.time()
+    pb_results = _compute_posebusters(valid_mols, num_mols)
+    print(f"  PoseBusters done in {time.time() - t0:.1f}s")
+    for k, v in sorted(pb_results.items()):
+        results[k] = v
+        print(f"  {k}: {v:.4f}")
+
+    # FCD
+    print("Computing FCD...")
     gen_smiles = []
-    for mol in molecules:
+    for mol in mol_list:
         if mol is not None:
             try:
                 smi = Chem.MolToSmiles(mol)
@@ -319,113 +459,112 @@ def compute_fcd(molecules: list, train_smiles: list, device: str = None) -> floa
             except Exception:
                 pass
 
-    if len(gen_smiles) < 10:
-        print("  Warning: fewer than 10 valid SMILES for FCD")
-        return float("nan")
+    t0 = time.time()
+    fcd_score = _compute_fcd(gen_smiles, train_smiles)
+    if fcd_score is not None:
+        results["fcd"] = fcd_score
+        print(f"  FCD: {fcd_score:.4f} (computed in {time.time() - t0:.1f}s)")
+    else:
+        print("  FCD: skipped (no data)")
 
-    fcd_calc = FCD(device=device, n_jobs=1)
-    return float(fcd_calc(train_smiles, gen_smiles))
+    # Bootstrap CIs
+    bootstrap_ci = {}
+    if n_bootstrap > 0:
+        print(f"Computing bootstrap CIs ({n_bootstrap} samples)...")
+        bootstrap_ci = _bootstrap_metrics(
+            mol_list, data_stats, train_smiles, n_bootstrap
+        )
+        for name, ci in bootstrap_ci.items():
+            print(f"  {name}: [{ci['low']:.4f}, {ci['high']:.4f}]")
+    else:
+        print("Skipping bootstrap CIs (--no_bootstrap)")
+
+    return results, bootstrap_ci
 
 
-def bootstrap_ci(
-    molecules: list,
-    train_smiles: list = None,
-    n_bootstrap: int = 1000,
-    ci: float = 0.95,
-    seed: int = 42,
-) -> dict:
-    """Compute bootstrap confidence intervals for all metrics.
+def _bootstrap_metrics(mol_list, data_stats, train_smiles, n_bootstrap):
+    """Compute bootstrap confidence intervals for key metrics."""
+    rng = np.random.default_rng(42)
+    n = len(mol_list)
 
-    Returns:
-        dict mapping metric_name -> {"mean": float, "ci_low": float, "ci_high": float}
-    """
-    rng = np.random.RandomState(seed)
-    n = len(molecules)
-    alpha = (1 - ci) / 2
+    # Metrics to bootstrap (simple per-molecule ones)
+    bootstrap_metrics = {
+        "validity": lambda mols: sum(1 for m in mols if m is not None) / len(mols),
+        "connectivity": lambda mols: sum(
+            1
+            for m in mols
+            if m is not None and Chem.GetMolFrags(m, asMols=False).__len__() == 1
+        )
+        / max(1, sum(1 for m in mols if m is not None)),
+    }
 
-    # Collect bootstrap samples
-    bootstrap_results = []
-    for i in range(n_bootstrap):
-        indices = rng.randint(0, n, size=n)
-        sample = [molecules[j] for j in indices]
-        results = compute_metrics(sample, train_smiles, exclude={"diversity"})
-        bootstrap_results.append(results)
+    # Add QED
+    def _qed(mols):
+        from rdkit.Chem import Descriptors
 
-    # Aggregate
-    metric_names = bootstrap_results[0].keys()
-    summary = {}
-    for name in metric_names:
-        values = [r[name] for r in bootstrap_results]
-        summary[name] = {
-            "mean": float(np.mean(values)),
-            "ci_low": float(np.percentile(values, 100 * alpha)),
-            "ci_high": float(np.percentile(values, 100 * (1 - alpha))),
-            "std": float(np.std(values)),
+        vals = [Descriptors.qed(m) for m in mols if m is not None]
+        return np.mean(vals) if vals else 0.0
+
+    bootstrap_metrics["qed"] = _qed
+
+    results = {name: [] for name in bootstrap_metrics}
+    for _ in range(n_bootstrap):
+        indices = rng.integers(0, n, size=n)
+        sample = [mol_list[i] for i in indices]
+        for name, fn in bootstrap_metrics.items():
+            results[name].append(fn(sample))
+
+    ci = {}
+    for name, vals in results.items():
+        vals = np.array(vals)
+        ci[name] = {
+            "low": float(np.percentile(vals, 2.5)),
+            "high": float(np.percentile(vals, 97.5)),
         }
-
-    return summary
-
-
-# ---------------------------------------------------------------------------
-# Output
-# ---------------------------------------------------------------------------
+    return ci
 
 
-def save_molecules_sdf(molecules: list, path: str):
-    """Save valid molecules to an SDF file."""
-    writer = Chem.SDWriter(path)
-    for mol in molecules:
+def _save_molecules_sdf(mol_list, output_path):
+    """Save generated molecules to SDF file."""
+    writer = Chem.SDWriter(str(output_path))
+    for i, mol in enumerate(mol_list):
         if mol is not None:
+            mol.SetProp("_Name", f"mol_{i}")
             writer.write(mol)
     writer.close()
 
 
-def save_per_molecule_csv(molecules: list, path: str):
+def _save_molecules_csv(mol_list, output_path):
     """Save per-molecule properties to CSV."""
-    from rdkit.Chem import Descriptors, Lipinski
-
-    rows = []
-    for i, mol in enumerate(molecules):
-        if mol is None:
-            rows.append({"idx": i, "valid": False})
-            continue
-        try:
-            smi = Chem.MolToSmiles(mol)
-            rows.append(
-                {
-                    "idx": i,
-                    "valid": True,
-                    "smiles": smi,
-                    "qed": Descriptors.qed(mol),
-                    "logP": Descriptors.MolLogP(mol),
-                    "mol_weight": Descriptors.MolWt(mol),
-                    "num_atoms": mol.GetNumAtoms(),
-                    "num_bonds": mol.GetNumBonds(),
-                    "num_rings": mol.GetRingInfo().NumRings(),
-                    "hbd": Lipinski.NumHDonors(mol),
-                    "hba": Lipinski.NumHAcceptors(mol),
-                }
-            )
-        except Exception:
-            rows.append({"idx": i, "valid": False})
-
     import csv
 
+    from rdkit.Chem import Descriptors
+
+    rows = []
+    for i, mol in enumerate(mol_list):
+        row = {"index": i, "valid": mol is not None}
+        if mol is not None:
+            try:
+                row["smiles"] = Chem.MolToSmiles(mol)
+                row["qed"] = Descriptors.qed(mol)
+                row["logP"] = Descriptors.MolLogP(mol)
+                row["num_atoms"] = mol.GetNumAtoms()
+                row["num_heavy_atoms"] = mol.GetNumHeavyAtoms()
+            except Exception:
+                pass
+        rows.append(row)
+
     fieldnames = [
-        "idx",
+        "index",
         "valid",
         "smiles",
         "qed",
         "logP",
-        "mol_weight",
         "num_atoms",
-        "num_bonds",
-        "num_rings",
-        "hbd",
-        "hba",
+        "num_heavy_atoms",
     ]
-    with open(path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+    with open(output_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -454,9 +593,11 @@ def evaluate_checkpoint(
     batch_size: int = 256,
     train_smiles_path: str = None,
     n_bootstrap: int = 1000,
-    device: str = "cpu",
+    device: str = None,
 ):
     """Full evaluation pipeline for one checkpoint."""
+    if device is None:
+        device = _default_device()
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
@@ -477,71 +618,36 @@ def evaluate_checkpoint(
     gen_time = time.time() - t0
     print(f"  Generated {len(molecules)} molecules in {gen_time:.1f}s")
 
-    # Point estimates
-    print("Computing point-estimate metrics...")
-    point_metrics = compute_metrics(molecules, train_smiles)
-    for k, v in point_metrics.items():
-        print(f"  {k}: {v:.4f}")
+    # Compute metrics
+    metrics, bootstrap_ci = compute_metrics(
+        molecules, data_stats, train_smiles, n_bootstrap
+    )
 
-    # PoseBusters geometric quality checks
-    print("Computing PoseBusters checks...")
-    t0 = time.time()
-    pb_metrics = compute_posebusters(molecules)
-    pb_time = time.time() - t0
-    print(f"  PoseBusters done in {pb_time:.1f}s")
-    for k, v in pb_metrics.items():
-        print(f"  {k}: {v:.4f}")
-    point_metrics.update(pb_metrics)
-
-    # FCD (Frechet ChemNet Distance)
-    fcd_value = float("nan")
-    if train_smiles is not None:
-        print("Computing FCD...")
-        t0 = time.time()
-        fcd_value = compute_fcd(molecules, train_smiles, device=device)
-        fcd_time = time.time() - t0
-        print(f"  FCD: {fcd_value:.4f} (computed in {fcd_time:.1f}s)")
-        point_metrics["fcd"] = fcd_value
-
-    # Bootstrap CIs (on core metrics only — PB and FCD are too slow to bootstrap)
-    ci_metrics = {}
-    if n_bootstrap > 0:
-        print(f"Computing bootstrap CIs ({n_bootstrap} resamples)...")
-        t0 = time.time()
-        ci_metrics = bootstrap_ci(molecules, train_smiles, n_bootstrap=n_bootstrap)
-        ci_time = time.time() - t0
-        print(f"  Bootstrap done in {ci_time:.1f}s")
-        for k, v in ci_metrics.items():
-            print(f"  {k}: {v['mean']:.4f} [{v['ci_low']:.4f}, {v['ci_high']:.4f}]")
-    else:
-        print("Skipping bootstrap CIs (--no_bootstrap)")
-
-    # Save outputs
-    summary = {
-        "checkpoint": str(checkpoint_path),
+    # Save results
+    result = {
+        "checkpoint": checkpoint_path,
         "meta": meta,
         "generation": {
             "num_mols": num_mols,
             "num_steps": num_steps,
             "time_seconds": gen_time,
         },
-        "metrics": point_metrics,
-        "bootstrap_ci": ci_metrics,
+        "metrics": metrics,
+        "bootstrap_ci": bootstrap_ci,
     }
-    json_path = out / "metrics.json"
-    with open(json_path, "w") as f:
-        json.dump(summary, f, indent=2)
-    print(f"  Saved metrics to {json_path}")
 
-    sdf_path = out / "molecules.sdf"
-    save_molecules_sdf(molecules, str(sdf_path))
-    print(f"  Saved molecules to {sdf_path}")
+    with open(out / "metrics.json", "w") as f:
+        json.dump(result, f, indent=4)
+    print(f"  Saved metrics to {out / 'metrics.json'}")
 
-    csv_path = out / "molecules.csv"
-    save_per_molecule_csv(molecules, str(csv_path))
-    print(f"  Saved per-molecule properties to {csv_path}")
+    # Save molecules
+    _save_molecules_sdf(molecules, out / "molecules.sdf")
+    print(f"  Saved molecules to {out / 'molecules.sdf'}")
 
-    return summary
+    _save_molecules_csv(molecules, out / "molecules.csv")
+    print(f"  Saved per-molecule properties to {out / 'molecules.csv'}")
+
+    return result
 
 
 def main():
@@ -566,7 +672,10 @@ def main():
         help="Skip bootstrap CI computation",
     )
     parser.add_argument(
-        "--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu"
+        "--device",
+        type=str,
+        default=None,
+        help="Device (default: cuda if available, else cpu)",
     )
     parser.add_argument(
         "--all",
@@ -576,6 +685,7 @@ def main():
     args = parser.parse_args()
 
     n_bootstrap = 0 if args.no_bootstrap else args.n_bootstrap
+    device = args.device if args.device is not None else _default_device()
 
     if args.all:
         for name, ckpt_path in ALL_MODELS.items():
@@ -593,7 +703,7 @@ def main():
                 batch_size=args.batch_size,
                 train_smiles_path=args.train_smiles,
                 n_bootstrap=n_bootstrap,
-                device=args.device,
+                device=device,
             )
         print(f"\nAll done. Results in {RESULTS_DIR}/")
     else:
@@ -607,7 +717,7 @@ def main():
             batch_size=args.batch_size,
             train_smiles_path=args.train_smiles,
             n_bootstrap=n_bootstrap,
-            device=args.device,
+            device=device,
         )
 
 
