@@ -102,20 +102,20 @@ fi
 if [ -n "$CKPT" ] && [ -n "$WANDB_RUN_ID" ]; then
     echo "Resuming from checkpoint: $CKPT (wandb run: $WANDB_RUN_ID)"
     CMD="python hpc-scripts/tabasco/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
-        trainer=gpu model.compile=true +trainer.precision=16 \
+        trainer=gpu model.compile=true trainer.precision=16 \
         datamodule.num_workers=$num_workers \
         logger.wandb.id=$WANDB_RUN_ID logger.wandb.resume=must \
         hydra.run.dir=$hydra_run_dir"
 elif [ -n "$CKPT" ]; then
     echo "Resuming from checkpoint: $CKPT (no wandb run found)"
     CMD="python hpc-scripts/tabasco/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
-        trainer=gpu model.compile=true +trainer.precision=16 \
+        trainer=gpu model.compile=true trainer.precision=16 \
         datamodule.num_workers=$num_workers \
         hydra.run.dir=$hydra_run_dir"
 else
     echo "Starting fresh training run"
     CMD="python hpc-scripts/tabasco/train_tabasco.py experiment=$experiment \
-        trainer=gpu model.compile=true +trainer.precision=16 \
+        trainer=gpu model.compile=true trainer.precision=16 \
         datamodule.num_workers=$num_workers \
         hydra.run.dir=$hydra_run_dir"
 fi
