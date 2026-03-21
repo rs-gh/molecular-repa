@@ -21,13 +21,13 @@ Typical run (HPC A100 node, GEOM train ~1.1M conformers)
     cd /home/sr2173/git/molecular-repa
     python playground/tabasco/mace/precompute_embeddings.py \
         --lmdb-in   src/tabasco/data/lmdb_geom/train.lmdb \
-        --lmdb-out  src/tabasco/data/mace_geom/train_embeddings.lmdb \
+        --lmdb-out  /rds/user/sr2173/hpc-work/tabasco/data/mace_geom/train_embeddings.lmdb \
         --batch-size 256
 
 Run for val and test splits too (they're small, takes minutes):
     python playground/tabasco/mace/precompute_embeddings.py \
         --lmdb-in  src/tabasco/data/lmdb_geom/val.lmdb \
-        --lmdb-out src/tabasco/data/mace_geom/val_embeddings.lmdb
+        --lmdb-out /rds/user/sr2173/hpc-work/tabasco/data/mace_geom/val_embeddings.lmdb
 
 Storage: GEOM ~11 GB, QM9 ~0.3 GB (float16).
 """

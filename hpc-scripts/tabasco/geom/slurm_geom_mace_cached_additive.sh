@@ -86,6 +86,18 @@ np=$[${numnodes}*${mpi_tasks_per_node}]
 #! Safe fixed worker count (31 workers exhausts /dev/shm on HPC Ampere nodes)
 num_workers=0
 
+#! Copy MACE embedding LMDB to local NVMe for fast random reads.
+#! The 14GB file on Lustre/NFS causes severe mmap thrashing.
+MACE_LMDB_SRC="$REPO_DIR/src/tabasco/data/mace_geom/train_embeddings.lmdb"
+LOCAL_MACE_LMDB="/tmp/mace_geom_train_embeddings.lmdb"
+if [ ! -f "$LOCAL_MACE_LMDB" ]; then
+    echo "Copying MACE embeddings to local NVMe..."
+    cp "$MACE_LMDB_SRC" "$LOCAL_MACE_LMDB"
+    echo "Done ($(du -h $LOCAL_MACE_LMDB | cut -f1))"
+else
+    echo "MACE embeddings already on local NVMe: $LOCAL_MACE_LMDB"
+fi
+
 #! Per-experiment output directory so checkpoint searches don't cross-contaminate
 exp_safe=$(echo "$experiment" | tr '/' '_')_v2
 EXP_OUTPUTS_DIR="$OUTPUTS_DIR/$exp_safe"
@@ -108,24 +120,26 @@ if [ -n "$CKPT" ] && [ "$CKPT" != "$SEED_CKPT" ]; then
     WANDB_RUN_ID=$(find "$EXP_OUTPUTS_DIR/wandb" -name "wandb-summary.json" -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2 | sed 's|.*/run-[0-9_]*-\([^/]*\)/.*|\1|')
 fi
 
+#! Common Hydra overrides (local LMDB path for fast reads)
+COMMON_OVERRIDES="trainer=gpu model.compile=true trainer.precision=16 \
+        datamodule.num_workers=$num_workers \
+        model.repa_loss.encoder.lmdb_path=$LOCAL_MACE_LMDB"
+
 if [ -n "$CKPT" ] && [ -n "$WANDB_RUN_ID" ]; then
     echo "Resuming from checkpoint: $CKPT (wandb run: $WANDB_RUN_ID)"
     CMD="python hpc-scripts/tabasco/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
-        trainer=gpu model.compile=true trainer.precision=16 \
-        datamodule.num_workers=$num_workers \
+        $COMMON_OVERRIDES \
         logger.wandb.id=$WANDB_RUN_ID logger.wandb.resume=must \
         hydra.run.dir=$hydra_run_dir"
 elif [ -n "$CKPT" ]; then
     echo "Resuming from checkpoint: $CKPT (no wandb run found)"
     CMD="python hpc-scripts/tabasco/train_tabasco.py experiment=$experiment ckpt_path=$CKPT \
-        trainer=gpu model.compile=true trainer.precision=16 \
-        datamodule.num_workers=$num_workers \
+        $COMMON_OVERRIDES \
         hydra.run.dir=$hydra_run_dir"
 else
     echo "Starting fresh training run"
     CMD="python hpc-scripts/tabasco/train_tabasco.py experiment=$experiment \
-        trainer=gpu model.compile=true trainer.precision=16 \
-        datamodule.num_workers=$num_workers \
+        $COMMON_OVERRIDES \
         hydra.run.dir=$hydra_run_dir"
 fi
 
