@@ -411,3 +411,145 @@ class TestMACEREPAIntegration:
         expected_ratio = t_high.mean().item() / t_low.mean().item()
         actual_ratio = abs(loss_high.item()) / abs(loss_low.item())
         assert abs(actual_ratio - expected_ratio) < 0.1
+
+
+class TestCachedMACEEncoder:
+    """Tests for CachedMACEEncoder with a temporary LMDB cache."""
+
+    @pytest.fixture
+    def cache_lmdb(self, mace_encoder, converter, sample_smiles, tmp_path):
+        """Build a small cache LMDB from sample molecules."""
+        import pickle
+        import lmdb as _lmdb
+
+        lmdb_path = str(tmp_path / "test_cache.lmdb")
+        db = _lmdb.open(lmdb_path, map_size=50 * (1024**2), subdir=False)
+
+        # Write embeddings for keys "0", "1", "2", "3"
+        batch = _create_batch(sample_smiles, converter, max_atoms=10)
+        with torch.no_grad():
+            embs = mace_encoder(
+                batch["coords"], batch["atomics"], batch["padding_mask"]
+            )
+
+        with db.begin(write=True) as txn:
+            for i, smi in enumerate(sample_smiles):
+                key = str(i)
+                mask = ~batch["padding_mask"][i]
+                n_atoms = mask.sum().item()
+                emb_np = embs[i, :n_atoms].cpu().to(torch.float16).numpy()
+                txn.put(key.encode(), pickle.dumps(emb_np, protocol=4))
+        db.close()
+        return lmdb_path
+
+    def test_cache_hit(self, cache_lmdb, converter, sample_smiles):
+        """Cached encoder should return embeddings from LMDB."""
+        from tabasco.models.components.encoders import CachedMACEEncoder
+
+        encoder = CachedMACEEncoder(lmdb_path=cache_lmdb, encoder_dim=192)
+        batch = _create_batch(sample_smiles, converter, max_atoms=10)
+        lmdb_keys = [str(i) for i in range(len(sample_smiles))]
+
+        output = encoder(
+            batch["coords"],
+            batch["atomics"],
+            batch["padding_mask"],
+            lmdb_keys=lmdb_keys,
+        )
+        assert output.shape == (len(sample_smiles), 10, 192)
+        # Real atoms should be nonzero
+        for i in range(len(sample_smiles)):
+            mask = ~batch["padding_mask"][i]
+            assert output[i][mask].abs().sum() > 0
+
+    def test_cache_miss_fallback(self, cache_lmdb, converter, sample_smiles):
+        """Keys not in cache should fall back to live MACEEncoder."""
+        from tabasco.models.components.encoders import CachedMACEEncoder
+
+        encoder = CachedMACEEncoder(lmdb_path=cache_lmdb, encoder_dim=192)
+        batch = _create_batch(sample_smiles, converter, max_atoms=10)
+        # Use keys that don't exist in cache
+        lmdb_keys = ["999", "998", "997", "996"]
+
+        output = encoder(
+            batch["coords"],
+            batch["atomics"],
+            batch["padding_mask"],
+            lmdb_keys=lmdb_keys,
+        )
+        assert output.shape == (len(sample_smiles), 10, 192)
+        # Fallback should still produce nonzero embeddings
+        for i in range(len(sample_smiles)):
+            mask = ~batch["padding_mask"][i]
+            assert output[i][mask].abs().sum() > 0
+
+    def test_no_keys_uses_fallback(self, cache_lmdb, converter, sample_smiles):
+        """When lmdb_keys=None, should use fallback encoder."""
+        from tabasco.models.components.encoders import CachedMACEEncoder
+
+        encoder = CachedMACEEncoder(lmdb_path=cache_lmdb, encoder_dim=192)
+        batch = _create_batch(sample_smiles, converter, max_atoms=10)
+
+        output = encoder(
+            batch["coords"],
+            batch["atomics"],
+            batch["padding_mask"],
+            lmdb_keys=None,
+        )
+        assert output.shape == (len(sample_smiles), 10, 192)
+
+    def test_cache_matches_live(
+        self, cache_lmdb, mace_encoder, converter, sample_smiles
+    ):
+        """Cached embeddings should closely match live encoder output."""
+        from tabasco.models.components.encoders import CachedMACEEncoder
+
+        cached_encoder = CachedMACEEncoder(lmdb_path=cache_lmdb, encoder_dim=192)
+        batch = _create_batch(sample_smiles, converter, max_atoms=10)
+        lmdb_keys = [str(i) for i in range(len(sample_smiles))]
+
+        cached_out = cached_encoder(
+            batch["coords"],
+            batch["atomics"],
+            batch["padding_mask"],
+            lmdb_keys=lmdb_keys,
+        )
+        with torch.no_grad():
+            live_out = mace_encoder(
+                batch["coords"], batch["atomics"], batch["padding_mask"]
+            )
+
+        # float16 cache introduces small rounding; check cosine similarity
+        for i in range(len(sample_smiles)):
+            mask = ~batch["padding_mask"][i]
+            cos = torch.nn.functional.cosine_similarity(
+                cached_out[i][mask], live_out[i][mask], dim=-1
+            )
+            assert cos.mean() > 0.99, f"Mol {i}: cos sim {cos.mean():.4f} too low"
+
+
+class TestLmdbKeyPropagation:
+    """Tests for lmdb_key propagation through the data pipeline."""
+
+    def test_lmdb_key_in_augmented_batch(self):
+        """lmdb_key should survive apply_random_rotation."""
+        from tabasco.data.transforms import apply_random_rotation
+
+        B, N = 4, 9
+        batch = TensorDict(
+            {
+                "coords": torch.randn(B, N, 3),
+                "atomics": torch.randn(B, N, 9),
+                "padding_mask": torch.zeros(B, N, dtype=torch.bool),
+            },
+            batch_size=[B],
+        )
+        batch.set_non_tensor("smiles", ["CCO", "CC", "C", "CCN"])
+        batch.set_non_tensor("lmdb_key", ["0", "1", "10", "100"])
+
+        augmented = apply_random_rotation(batch, n_augmentations=2)
+        keys = list(augmented.get_non_tensor("lmdb_key"))
+
+        # naug = 3 (original + 2), block-repeated
+        assert len(keys) == B * 3
+        assert keys == ["0", "1", "10", "100"] * 3
