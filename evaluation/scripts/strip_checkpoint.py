@@ -21,10 +21,10 @@ OUTPUTS_ROOT = Path("/rds/user/sr2173/hpc-work/tabasco/outputs")
 
 CHECKPOINT_MAP = {
     "baseline": "geom_mild/checkpoints/last.ckpt",
-    "additive_fused": "geom_chemprop_additive_v2/checkpoints/last.ckpt",
-    "additive_same": "geom_chemprop_additive/checkpoints/last.ckpt",
-    "tradeoff_fused": "geom_chemprop_tradeoff_v2/checkpoints/last.ckpt",
-    "tradeoff_same": "geom_chemprop_tradeoff/checkpoints/last.ckpt",
+    "chemeleon_additive_fused": "geom_chemprop_additive_v2/checkpoints/last.ckpt",
+    "chemeleon_additive_same": "geom_chemprop_additive/checkpoints/last.ckpt",
+    "chemeleon_tradeoff_fused": "geom_chemprop_tradeoff_v2/checkpoints/last.ckpt",
+    "chemeleon_tradeoff_same": "geom_chemprop_tradeoff/checkpoints/last.ckpt",
     "mace_additive": "geom_mace_cached_additive_v2/checkpoints/last.ckpt",
     "mace_tradeoff": "geom_mace_cached_tradeoff_v2/checkpoints/last.ckpt",
 }

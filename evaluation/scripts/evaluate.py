@@ -575,10 +575,10 @@ RESULTS_DIR = Path("evaluation/results/tabasco/geom/evaluation")
 
 ALL_MODELS = {
     "baseline": CHECKPOINT_DIR / "baseline.ckpt",
-    "additive_fused": CHECKPOINT_DIR / "additive_fused.ckpt",
-    "additive_same": CHECKPOINT_DIR / "additive_same.ckpt",
-    "tradeoff_fused": CHECKPOINT_DIR / "tradeoff_fused.ckpt",
-    "tradeoff_same": CHECKPOINT_DIR / "tradeoff_same.ckpt",
+    "chemeleon_additive_fused": CHECKPOINT_DIR / "chemeleon_additive_fused.ckpt",
+    "chemeleon_additive_same": CHECKPOINT_DIR / "chemeleon_additive_same.ckpt",
+    "chemeleon_tradeoff_fused": CHECKPOINT_DIR / "chemeleon_tradeoff_fused.ckpt",
+    "chemeleon_tradeoff_same": CHECKPOINT_DIR / "chemeleon_tradeoff_same.ckpt",
     "mace_additive": CHECKPOINT_DIR / "mace_additive.ckpt",
     "mace_tradeoff": CHECKPOINT_DIR / "mace_tradeoff.ckpt",
 }

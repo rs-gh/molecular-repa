@@ -1,5 +1,5 @@
 {
-  "checkpoint": "evaluation_checkpoints/tabasco/tradeoff_fused.ckpt",
+  "checkpoint": "evaluation_checkpoints/tabasco/chemeleon_tradeoff_fused.ckpt",
   "meta": {
     "epoch": 16,
     "global_step": 77843,

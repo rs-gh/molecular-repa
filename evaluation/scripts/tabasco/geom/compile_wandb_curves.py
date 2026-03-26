@@ -34,30 +34,30 @@ WANDB_PROJECT = "sr2173-university-of-cambridge/tabasco"
 
 RUNS = {
     "baseline": ["s105bkm0", "yy363ps7"],  # part1 (epochs 0-7) + part2 (epochs 8-32)
-    "additive_same": ["0fbrr8vx"],
-    "additive_fused": ["x3c4vid0"],
-    "tradeoff_same": ["cqjant8r"],
-    "tradeoff_fused": ["7u3l0zpy"],
+    "chemeleon_additive_same": ["0fbrr8vx"],
+    "chemeleon_additive_fused": ["x3c4vid0"],
+    "chemeleon_tradeoff_same": ["cqjant8r"],
+    "chemeleon_tradeoff_fused": ["7u3l0zpy"],
     "mace_additive": ["7kuaxjk4", "1cj5gk44"],  # GPU live (ep 0-3) + cached (ep 3-15)
     "mace_tradeoff": ["uq02ccie", "5s25bbx3"],  # GPU live (ep 0-3) + cached (ep 3-15)
 }
 
 MODEL_ORDER = [
     "baseline",
-    "additive_same",
-    "additive_fused",
-    "tradeoff_same",
-    "tradeoff_fused",
+    "chemeleon_additive_same",
+    "chemeleon_additive_fused",
+    "chemeleon_tradeoff_same",
+    "chemeleon_tradeoff_fused",
     "mace_additive",
     "mace_tradeoff",
 ]
 
 COLORS = {
     "baseline": "#4C72B0",
-    "additive_same": "#55A868",
-    "additive_fused": "#8ECA6E",
-    "tradeoff_same": "#C44E52",
-    "tradeoff_fused": "#E8907E",
+    "chemeleon_additive_same": "#55A868",
+    "chemeleon_additive_fused": "#8ECA6E",
+    "chemeleon_tradeoff_same": "#C44E52",
+    "chemeleon_tradeoff_fused": "#E8907E",
     "mace_additive": "#9467BD",
     "mace_tradeoff": "#B8A9D4",
 }

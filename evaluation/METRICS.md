@@ -31,7 +31,7 @@ Two collection contexts:
 
 From WandB training runs. All 5 GEOM models.
 
-| Metric | Baseline | Add-Fused | Add-Same | Trade-Fused | Trade-Same |
+| Metric | Baseline | ChM Add-Fused | ChM Add-Same | ChM Trade-Fused | ChM Trade-Same |
 |--------|----------|-----------|----------|-------------|------------|
 | Validity | ~0.94 | ~0.94 | ~0.94 | ~0.98 | ~0.98 |
 | Connectivity | ~1.00 | ~1.00 | ~1.00 | ~1.00 | ~1.00 |
@@ -129,7 +129,7 @@ From WandB training runs. All 5 GEOM models.
 - **Formula:** PoseBusters `bond_angles` check (pass/fail per mol), averaged.
 - **Code:** PoseBusters library via callback; logged as `val/pb_bond_angles`.
 - **When:** Same schedule. evaluate.py: included in PB results.
-- **Saturation:** MODERATE. Some spread between models but still fairly high for all. The ordering is inconsistent (Add-Fused is worst) suggesting noise.
+- **Saturation:** MODERATE. Some spread between models but still fairly high for all. The ordering is inconsistent (CheMeleon Add-Fused is worst) suggesting noise.
 
 ### 11. PoseBusters: Bond Lengths OK
 

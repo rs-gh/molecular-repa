@@ -1,5 +1,5 @@
 {
-  "checkpoint": "evaluation_checkpoints/tabasco/additive_fused.ckpt",
+  "checkpoint": "evaluation_checkpoints/tabasco/chemeleon_additive_fused.ckpt",
   "meta": {
     "epoch": 15,
     "global_step": 73264,

@@ -42,18 +42,22 @@ KEY_METRICS = [
 
 MODEL_ORDER = [
     "baseline",
-    "additive_same",
-    "additive_fused",
-    "tradeoff_same",
-    "tradeoff_fused",
+    "chemeleon_additive_same",
+    "chemeleon_additive_fused",
+    "chemeleon_tradeoff_same",
+    "chemeleon_tradeoff_fused",
+    "mace_additive",
+    "mace_tradeoff",
 ]
 
 COLORS = {
     "baseline": "#4C72B0",
-    "additive_same": "#55A868",
-    "additive_fused": "#8ECA6E",
-    "tradeoff_same": "#C44E52",
-    "tradeoff_fused": "#E8907E",
+    "chemeleon_additive_same": "#55A868",
+    "chemeleon_additive_fused": "#8ECA6E",
+    "chemeleon_tradeoff_same": "#C44E52",
+    "chemeleon_tradeoff_fused": "#E8907E",
+    "mace_additive": "#9467BD",
+    "mace_tradeoff": "#B8A9D4",
 }
 
 
@@ -199,7 +203,9 @@ def main():
     print()
 
     # Plot comparison
-    plot_path = results_dir / "evaluation_comparison.png"
+    fig_dir = results_dir / "figures"
+    fig_dir.mkdir(exist_ok=True)
+    plot_path = fig_dir / "evaluation_comparison.png"
     plot_comparison(df, plot_path)
 
 
