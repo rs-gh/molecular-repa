@@ -7,12 +7,12 @@ See compile_results.py for evaluation metrics.
 
 Usage:
     source .venv/bin/activate
-    python evaluation/scripts/compile_wandb_curves.py
+    python evaluation/scripts/tabasco/geom/compile_wandb_curves.py
 
-Outputs (in evaluation/results/tabasco/geom/):
+Outputs (in evaluation/results/tabasco/geom/validation/):
     validation_curves.csv              — All per-epoch validation metrics for every model
-    validation_curves.png              — Line plots of validation metrics over training
-    validation_epoch_matched.png       — Bar chart at epoch 15 (apples-to-apples)
+    figures/validation_curves.png      — Line plots of validation metrics over training
+    figures/validation_epoch_matched.png — Bar chart at epoch 15 (apples-to-apples)
 """
 
 import argparse
@@ -38,6 +38,8 @@ RUNS = {
     "additive_fused": ["x3c4vid0"],
     "tradeoff_same": ["cqjant8r"],
     "tradeoff_fused": ["7u3l0zpy"],
+    "mace_additive": ["7kuaxjk4", "1cj5gk44"],  # GPU live (ep 0-3) + cached (ep 3-15)
+    "mace_tradeoff": ["uq02ccie", "5s25bbx3"],  # GPU live (ep 0-3) + cached (ep 3-15)
 }
 
 MODEL_ORDER = [
@@ -46,6 +48,8 @@ MODEL_ORDER = [
     "additive_fused",
     "tradeoff_same",
     "tradeoff_fused",
+    "mace_additive",
+    "mace_tradeoff",
 ]
 
 COLORS = {
@@ -54,6 +58,8 @@ COLORS = {
     "additive_fused": "#8ECA6E",
     "tradeoff_same": "#C44E52",
     "tradeoff_fused": "#E8907E",
+    "mace_additive": "#9467BD",
+    "mace_tradeoff": "#B8A9D4",
 }
 
 # Metrics to pull (wandb key → display name, higher_is_better)
@@ -94,7 +100,7 @@ BAR_METRICS = [
     "val/connectivity",
 ]
 
-OUTPUT_DIR = Path("evaluation/results/tabasco/geom")
+OUTPUT_DIR = Path("evaluation/results/tabasco/geom/validation")
 
 
 # ---------------------------------------------------------------------------
@@ -323,11 +329,13 @@ def main():
         print(matched[cols].to_string(index=False))
 
     # Plot validation curves
-    plot_training_curves(df, out / "validation_curves.png")
+    fig_dir = out / "figures"
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    plot_training_curves(df, fig_dir / "validation_curves.png")
 
     # Plot epoch-matched bar chart
     if not matched.empty:
-        plot_epoch_matched(df, match_epoch, out / "validation_epoch_matched.png")
+        plot_epoch_matched(df, match_epoch, fig_dir / "validation_epoch_matched.png")
 
     print("\nDone.")
 

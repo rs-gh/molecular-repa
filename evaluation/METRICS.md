@@ -5,7 +5,7 @@ All metrics used to evaluate the quality of generated molecules from our flow ma
 ## Summary Table
 
 Two collection contexts:
-- **Validation** — computed automatically during training by callbacks, every epoch, on 100 generated samples. Logged to WandB. Noisier but available at every epoch for epoch-matched comparisons. See `scripts/compile_wandb_curves.py`.
+- **Validation** — computed automatically during training by callbacks, every epoch, on 100 generated samples. Logged to WandB. Noisier but available at every epoch for epoch-matched comparisons. See `scripts/tabasco/geom/compile_wandb_curves.py`.
 - **Evaluation** — computed post-hoc from final checkpoints by `scripts/evaluate.py` on 1000 generated samples with optional bootstrap CIs. More reliable but only available for saved checkpoints. See `scripts/compile_results.py`.
 
 | # | Metric | Validation (n=100) | Evaluation (n=1000) | Observed Spread | Saturation |

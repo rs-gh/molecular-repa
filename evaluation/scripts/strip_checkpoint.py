@@ -25,6 +25,8 @@ CHECKPOINT_MAP = {
     "additive_same": "geom_chemprop_additive/checkpoints/last.ckpt",
     "tradeoff_fused": "geom_chemprop_tradeoff_v2/checkpoints/last.ckpt",
     "tradeoff_same": "geom_chemprop_tradeoff/checkpoints/last.ckpt",
+    "mace_additive": "geom_mace_cached_additive_v2/checkpoints/last.ckpt",
+    "mace_tradeoff": "geom_mace_cached_tradeoff_v2/checkpoints/last.ckpt",
 }
 
 
@@ -182,7 +184,7 @@ def main():
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Strip all known GEOM checkpoints to ./evaluation/checkpoints/tabasco/geom/",
+        help="Strip all known GEOM checkpoints to evaluation/checkpoints/tabasco/geom/",
     )
     args = parser.parse_args()
 

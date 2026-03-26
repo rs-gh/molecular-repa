@@ -1,8 +1,10 @@
 run_name,label,dataset,phase,state,total_steps,epoch,s_per_step,steps_per_hr,hr_per_epoch,runtime_hr,gpu_util_mean,gpu_util_max,val/coords_loss,val/atomics_loss,val/validity,val/connectivity,val/novelty,val/pb_all_atoms_connected,val/atom_type_distribution
 0320-1409-tabasco-geom-mace-additive,"MACE add (CPU, f64)",geom,mace-cpu,crashed,649,0,50.699,71,62.82,9.14,1.8,100.0,,,,,,,
 0320-1409-tabasco-geom-mace-tradeoff,"MACE trade (CPU, f64)",geom,mace-cpu,crashed,699,0,49.976,72,61.93,9.7,0.8,82.0,,,,,,,
-0321-0006-tabasco-geom-mace-additive,"MACE add (GPU, f32)",geom,mace-gpu,crashed,17799,3,2.674,1347,3.31,13.22,23.8,100.0,0.5614,0.175,0.96,1.0,0.96,0.93,0.9735
-0321-0010-tabasco-geom-mace-tradeoff,"MACE trade (GPU, f32)",geom,mace-gpu,crashed,17999,3,2.628,1370,3.26,13.14,22.0,100.0,0.5623,0.1713,0.96,1.0,0.96,0.96,0.9777
+0321-0006-tabasco-geom-mace-additive-1,"MACE add (GPU, f32)",geom,mace-gpu,crashed,17799,3,2.674,1347,3.31,13.22,23.8,100.0,0.5614,0.175,0.96,1.0,0.96,0.93,0.9735
+0321-0010-tabasco-geom-mace-tradeoff-1,"MACE trade (GPU, f32)",geom,mace-gpu,crashed,17999,3,2.628,1370,3.26,13.14,22.0,100.0,0.5623,0.1713,0.96,1.0,0.96,0.96,0.9777
 0224-1849-tabasco-geom-chemprop-additive-fused-projector,CheMeleon additive,geom,chemeleon,crashed,77099,16,0.737,4884,0.91,15.78,56.7,100.0,0.5197,0.1426,0.94,1.0,0.94,0.97,0.9778
 0224-1848-tabasco-geom-chemprop-tradeoff-fused-projector,CheMeleon tradeoff,geom,chemeleon,crashed,77842,16,0.735,4900,0.91,15.89,51.5,100.0,0.5238,0.1412,0.98,1.0,0.96,0.98,0.9852
 final-tabasco-mild-geom-part2,Baseline (no REPA),geom,baseline,crashed,151899,33,0.376,9567,0.47,15.88,59.3,100.0,0.5099,0.1376,0.95,0.9895,0.94,0.96,0.9831
+0321-1401-tabasco-geom-mace-cached-additive-3,MACE cached add,geom,mace-cached,crashed,73249,15,0.78,4618,0.97,15.86,30.1,100.0,0.5192,0.142,0.98,1.0,0.96,0.98,0.977
+0321-1401-tabasco-geom-mace-cached-tradeoff-3,MACE cached trade,geom,mace-cached,crashed,73249,15,0.779,4619,0.97,15.86,30.5,100.0,0.5224,0.1419,0.95,1.0,0.95,0.93,0.9845

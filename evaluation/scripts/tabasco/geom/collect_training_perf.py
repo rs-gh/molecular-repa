@@ -1,11 +1,11 @@
-"""Collect training performance statistics across all runs and generate plots.
+"""Collect training performance statistics across all GEOM runs and generate plots.
 
 Outputs:
-    evaluation/results/training_performance.csv  — raw data
-    evaluation/results/figures/training_perf_*.png — plots
+    evaluation/results/tabasco/geom/training_performance/training_performance.csv  — raw data
+    evaluation/results/tabasco/geom/training_performance/figures/training_perf_*.png — plots
 
 Usage:
-    python evaluation/scripts/collect_training_perf.py
+    python evaluation/scripts/tabasco/geom/collect_training_perf.py
 """
 
 import os
@@ -29,9 +29,14 @@ RUNS = [
         "geom",
         "mace-cpu",
     ),
-    ("0321-0006-tabasco-geom-mace-additive", "MACE add (GPU, f32)", "geom", "mace-gpu"),
     (
-        "0321-0010-tabasco-geom-mace-tradeoff",
+        "0321-0006-tabasco-geom-mace-additive-1",
+        "MACE add (GPU, f32)",
+        "geom",
+        "mace-gpu",
+    ),
+    (
+        "0321-0010-tabasco-geom-mace-tradeoff-1",
         "MACE trade (GPU, f32)",
         "geom",
         "mace-gpu",
@@ -254,7 +259,12 @@ def main():
     df = pd.DataFrame(rows)
 
     # Save CSV
-    out_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "results")
+    eval_root = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    )
+    out_dir = os.path.join(
+        eval_root, "results", "tabasco", "geom", "training_performance"
+    )
     os.makedirs(out_dir, exist_ok=True)
     csv_path = os.path.join(out_dir, "training_performance.csv")
     df.to_csv(csv_path, index=False)

@@ -4,18 +4,18 @@ Generates molecules, computes evaluation metrics, and saves results.
 
 "Evaluation" metrics = post-hoc generation from final checkpoints (1000 mols, on disk).
 "Validation" metrics = computed during training by callbacks (100 mols/epoch, logged to WandB).
-See compile_wandb_curves.py for validation metrics.
+See scripts/tabasco/geom/compile_wandb_curves.py for validation metrics.
 
 Usage:
     # Stripped checkpoint (from strip_checkpoint.py):
     python evaluation/scripts/evaluate.py \
         --checkpoint evaluation/checkpoints/tabasco/geom/baseline.ckpt \
-        --num_mols 1000 --output_dir evaluation/results/tabasco/geom/baseline/
+        --num_mols 1000 --output_dir evaluation/results/tabasco/geom/evaluation/baseline/
 
     # Full training checkpoint:
     python evaluation/scripts/evaluate.py \
         --checkpoint /rds/.../last.ckpt \
-        --num_mols 1000 --output_dir evaluation/results/tabasco/geom/baseline/
+        --num_mols 1000 --output_dir evaluation/results/tabasco/geom/evaluation/baseline/
 
     # Batch evaluate all stripped checkpoints:
     python evaluation/scripts/evaluate.py --all
@@ -267,17 +267,14 @@ def generate_molecules(model, num_mols, num_steps, batch_size):
         this_batch = min(batch_size, remaining)
         print(f"  Sampling batch of {this_batch} ({generated}/{num_mols} done)...")
         with torch.no_grad():
-            sample_out = model.sample(this_batch, num_steps=num_steps)
-
-        coords = sample_out["coords"].cpu()
-        atomics = sample_out["atomics"].cpu()
+            sample_out = model.sample(batch_size=this_batch, num_steps=num_steps)
 
         for i in range(this_batch):
-            mol_data = converter.to_rdmol(
-                coords[i],
-                atomics[i],
-            )
-            all_mols.append(mol_data)
+            try:
+                mol = converter.from_tensor(sample_out[i].cpu())
+            except Exception:
+                mol = None
+            all_mols.append(mol)
 
         remaining -= this_batch
         generated += this_batch
@@ -365,6 +362,7 @@ def compute_metrics(
     data_stats,
     train_smiles=None,
     n_bootstrap=1000,
+    skip_posebusters=False,
 ):
     """Compute all metrics on a list of generated molecules.
 
@@ -384,13 +382,11 @@ def compute_metrics(
     logp_metric = MolecularLogP(sync_on_compute=False)
     lipinski_metric = MolecularLipinski(sync_on_compute=False)
     diversity_metric = MolecularDiversity(sync_on_compute=False)
-    atom_type_metric = AtomTypeDistribution(sync_on_compute=False)
-
-    if data_stats:
-        atom_type_metric.set_data_stats(data_stats)
-
-    novelty_metric = None
+    atom_type_metric = None
     if train_smiles:
+        atom_type_metric = AtomTypeDistribution(
+            original_smiles=train_smiles, sync_on_compute=False
+        )
         novelty_metric = MolecularNovelty(
             original_smiles=train_smiles, sync_on_compute=False
         )
@@ -404,14 +400,14 @@ def compute_metrics(
         logp_metric,
         lipinski_metric,
         diversity_metric,
-        atom_type_metric,
     ]
+    if atom_type_metric:
+        all_metrics.append(atom_type_metric)
     if novelty_metric:
         all_metrics.append(novelty_metric)
 
-    for mol in mol_list:
-        for m in all_metrics:
-            m.update(mol)
+    for m in all_metrics:
+        m.update(mol_list)
 
     # Point estimates
     print("Computing point-estimate metrics...")
@@ -427,7 +423,8 @@ def compute_metrics(
     ]
     if novelty_metric:
         metric_names.append(("novelty", novelty_metric))
-    metric_names.append(("atom_type_dist", atom_type_metric))
+    if atom_type_metric:
+        metric_names.append(("atom_type_dist", atom_type_metric))
 
     for name, metric in metric_names:
         try:
@@ -574,7 +571,7 @@ def _save_molecules_csv(mol_list, output_path):
 # ---------------------------------------------------------------------------
 
 CHECKPOINT_DIR = Path("evaluation/checkpoints/tabasco/geom")
-RESULTS_DIR = Path("evaluation/results/tabasco/geom")
+RESULTS_DIR = Path("evaluation/results/tabasco/geom/evaluation")
 
 ALL_MODELS = {
     "baseline": CHECKPOINT_DIR / "baseline.ckpt",
@@ -582,6 +579,8 @@ ALL_MODELS = {
     "additive_same": CHECKPOINT_DIR / "additive_same.ckpt",
     "tradeoff_fused": CHECKPOINT_DIR / "tradeoff_fused.ckpt",
     "tradeoff_same": CHECKPOINT_DIR / "tradeoff_same.ckpt",
+    "mace_additive": CHECKPOINT_DIR / "mace_additive.ckpt",
+    "mace_tradeoff": CHECKPOINT_DIR / "mace_tradeoff.ckpt",
 }
 
 
@@ -612,11 +611,22 @@ def evaluate_checkpoint(
     # Load model
     model, data_stats, meta = load_checkpoint(checkpoint_path, device=device)
 
-    # Generate molecules
-    t0 = time.time()
-    molecules = generate_molecules(model, num_mols, num_steps, batch_size)
-    gen_time = time.time() - t0
-    print(f"  Generated {len(molecules)} molecules in {gen_time:.1f}s")
+    # Generate molecules (cache to SDF so we don't regenerate on metric failures)
+    cached_sdf = out / "molecules.sdf"
+    if cached_sdf.exists():
+        print(f"  Loading cached molecules from {cached_sdf}...")
+        supplier = Chem.SDMolSupplier(str(cached_sdf), removeHs=False)
+        molecules = [mol for mol in supplier]
+        gen_time = 0.0
+        print(f"  Loaded {len(molecules)} cached molecules")
+    else:
+        t0 = time.time()
+        molecules = generate_molecules(model, num_mols, num_steps, batch_size)
+        gen_time = time.time() - t0
+        print(f"  Generated {len(molecules)} molecules in {gen_time:.1f}s")
+        # Save immediately so we don't lose them if metrics crash
+        _save_molecules_sdf(molecules, cached_sdf)
+        print(f"  Cached molecules to {cached_sdf}")
 
     # Compute metrics
     metrics, bootstrap_ci = compute_metrics(
@@ -662,7 +672,7 @@ def main():
     parser.add_argument(
         "--train_smiles",
         type=str,
-        default="evaluation/checkpoints/tabasco/geom/geom_train_smiles.txt",
+        default="evaluation/data/tabasco/geom/geom_train_smiles.txt",
         help="Path to training SMILES for novelty/FCD",
     )
     parser.add_argument("--n_bootstrap", type=int, default=1000)
@@ -670,6 +680,11 @@ def main():
         "--no_bootstrap",
         action="store_true",
         help="Skip bootstrap CI computation",
+    )
+    parser.add_argument(
+        "--skip_posebusters",
+        action="store_true",
+        help="Skip PoseBusters checks (very slow on CPU)",
     )
     parser.add_argument(
         "--device",
