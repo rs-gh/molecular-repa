@@ -1,0 +1,52 @@
+{
+    "checkpoint": "evaluation/checkpoints/tabasco/geom/mace_additive.ckpt",
+    "meta": {
+        "epoch": 14,
+        "global_step": 68685,
+        "stripped": true
+    },
+    "generation": {
+        "num_mols": 1000,
+        "num_steps": 100,
+        "time_seconds": 0.0
+    },
+    "metrics": {
+        "validity": 1.0,
+        "connectivity": 0.9948132634162903,
+        "uniqueness": 0.9958506226539612,
+        "qed": 0.6440801620483398,
+        "logP": 3.0567448139190674,
+        "lipinski": 4.900414943695068,
+        "diversity": 0.8839028518309824,
+        "novelty": 0.9771783947944641,
+        "atom_type_dist": 0.9715111255645752,
+        "pb_all_atoms_connected": 0.9948132780082988,
+        "pb_aromatic_ring_flatness": 1.0,
+        "pb_bond_angles": 0.9730290456431535,
+        "pb_bond_lengths": 0.9771784232365145,
+        "pb_double_bond_flatness": 0.9979253112033195,
+        "pb_inchi_convertible": 1.0,
+        "pb_internal_energy": 1.0,
+        "pb_internal_steric_clash": 0.921161825726141,
+        "pb_intersection": 0.8599585062240664,
+        "pb_mol_pred_loaded": 1.0,
+        "pb_no_radicals": 1.0,
+        "pb_non-aromatic_ring_non-flatness": 0.9657676348547718,
+        "pb_sanitization": 1.0,
+        "fcd": 6.809801900459931
+    },
+    "bootstrap_ci": {
+        "validity": {
+            "low": 1.0,
+            "high": 1.0
+        },
+        "connectivity": {
+            "low": 0.9896265560165975,
+            "high": 0.9989626556016598
+        },
+        "qed": {
+            "low": 0.6327060249714194,
+            "high": 0.6533333342798416
+        }
+    }
+}
