@@ -40,14 +40,14 @@ This will:
 
 To also install the proteina dependencies (optional):
 ```bash
-uv sync --group proteina
+make setup-proteina
 ```
 
 ### Development
 
 The project includes the following Make commands:
 
-- `make setup` - Set up the development environment (tabasco + dev tools)
+- `make setup` - Set up the base development environment (core deps + dev tools + pre-commit hooks)
 - `make setup-proteina` - Install proteina dependencies and verify the install
 - `make lint` - Run ruff linter
 - `make format` - Format code with ruff
@@ -151,9 +151,9 @@ Proteina is a flow matching model for protein backbone (CA-trace) generation, in
 1. Complete the [Quick Start](#quick-start) steps above (`make setup`)
 2. Install proteina dependencies:
    ```bash
-   uv sync --group proteina
+   make setup-proteina
    ```
-   This installs proteinfoundation and its dependencies (torch-geometric, einops, jax, transformers, etc.).
+   This installs proteinfoundation and its dependencies (torch-geometric, einops, jax, transformers, etc.) and verifies the install.
 3. If you need `mmseqs2` (sequence search):
    ```bash
    conda install -c bioconda mmseqs2
