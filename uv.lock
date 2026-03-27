@@ -1065,6 +1065,20 @@ wheels = [
 ]
 
 [[package]]
+name = "fcd-torch"
+version = "1.0.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "scipy" },
+    { name = "torch" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1f/f3/7dbae532d827a62d95ecfd025774f6c29f917c676034731844c70e1f2b9b/fcd_torch-1.0.7.tar.gz", hash = "sha256:7cccb09ce79fbf6be84d2578332f8aa04668b0a34ecae3357e1af3cce3cc13d7", size = 5240902, upload-time = "2019-03-22T16:27:24.206Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/48/45/476df503cd87d28486af12c37b2e71fc5d0b2730f9bd0539cf19782678b8/fcd_torch-1.0.7-py3-none-any.whl", hash = "sha256:63a24aae88c554a7ba6422cffdef3ad7c1befec73f835b70ead04097a1ebed6f", size = 5241244, upload-time = "2019-03-22T16:27:20.318Z" },
+]
+
+[[package]]
 name = "filelock"
 version = "3.20.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2472,6 +2486,7 @@ name = "molecular-repa"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "fcd-torch" },
     { name = "tabasco" },
 ]
 
@@ -2488,7 +2503,10 @@ proteina = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "tabasco", editable = "src/tabasco" }]
+requires-dist = [
+    { name = "fcd-torch" },
+    { name = "tabasco", editable = "src/tabasco" },
+]
 
 [package.metadata.requires-dev]
 dev = [
