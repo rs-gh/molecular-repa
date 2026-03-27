@@ -144,42 +144,80 @@ This file is gitignored and only affects the machine it's created on.
 
 ## Proteina
 
-Proteina is an optional protein design submodule.
+Proteina is a flow matching model for protein backbone (CA-trace) generation, included as a submodule. We extend it with REPA (Representation Alignment) to align the generative model's hidden states with frozen GearNet encoder representations.
 
-### Local Setup (Mac/CPU)
+### Setup
 
 1. Complete the [Quick Start](#quick-start) steps above (`make setup`)
-2. Install proteina dependencies and verify:
+2. Install proteina dependencies:
    ```bash
-   make setup-proteina
+   uv sync --group proteina
    ```
-   This installs all pip-installable deps including PyTorch Geometric (CPU wheels built from source), then runs a smoke test to confirm the install.
+   This installs proteinfoundation and its dependencies (torch-geometric, einops, jax, transformers, etc.).
 3. If you need `mmseqs2` (sequence search):
    ```bash
    conda install -c bioconda mmseqs2
    ```
 
-### HPC Setup (GPU/CUDA)
+### PyG C Extension Compatibility
 
-1. Complete the [Quick Start](#quick-start) steps above (`make setup`)
-2. Load a CUDA module so PyG can link against the right CUDA version:
-   ```bash
-   module load cuda/12.1  # adjust to your cluster's available version
-   ```
-3. Install proteina dependencies. Either use the make target (builds PyG from source using the loaded CUDA):
-   ```bash
-   make setup-proteina
-   ```
-   Or use pre-built PyG CUDA wheels (faster, avoids compiler issues):
-   ```bash
-   # Check your torch+cuda version first
-   uv run python -c "import torch; print(torch.__version__)"  # e.g. 2.5.1+cu121
-   uv sync --group proteina --extra-index-url https://data.pyg.org/whl/torch-2.5.1+cu121.html
-   uv run python -c "import proteinfoundation; import torch_geometric; print('OK')"
-   ```
-4. Load `mmseqs2` via your cluster's module system:
-   ```bash
-   module load mmseqs2
-   ```
+The PyG C extension packages (`torch-scatter`, `torch-sparse`, `torch-cluster`) have known compatibility issues on HPC clusters:
 
-> **Note:** `mmseqs2` is a bioconda-only package and cannot be installed via uv.
+- **Pre-built wheels** from `data.pyg.org` require GLIBC 2.32+, but RHEL 8 clusters have GLIBC 2.28
+- **Building from source** requires matching the exact torch C++ ABI, and older package versions (2.1.x) are incompatible with torch 2.9+
+
+We work around this with a **compatibility shim** (`proteinfoundation/repa/pyg_compat.py`) that replaces `torch_scatter` with equivalent native PyTorch ops (`torch.scatter_reduce_`). The shim auto-detects whether the C extensions work and only patches if needed. This is imported automatically by `train_repa.py` and the test suite.
+
+If you want to attempt installing the C extensions anyway (e.g., on a system with GLIBC 2.32+):
+```bash
+# Check your torch+cuda version
+uv run python -c "import torch; print(torch.__version__)"  # e.g. 2.9.1+cu128
+# Install pre-built wheels
+uv pip install torch-scatter torch-sparse torch-cluster \
+  -f https://data.pyg.org/whl/torch-2.9.1+cu128.html
+```
+
+### Training Proteina
+
+Training uses `train_repa.py`, which supports both baseline and REPA modes via config:
+
+```bash
+# From src/proteina/proteinfoundation/
+python train_repa.py --config_name training_ca_baseline   # baseline (no REPA)
+python train_repa.py --config_name training_ca_repa       # with REPA alignment
+```
+
+The REPA config aligns transformer hidden states at layer 4 (of 10) with a frozen GearNet CA encoder using cosine similarity loss (λ=0.5, additive mode).
+
+### HPC Training
+
+SLURM scripts are provided for Wilkes3 (A100):
+
+```bash
+sbatch hpc-scripts/proteina/train_baseline.sh   # baseline 60M model
+sbatch hpc-scripts/proteina/train_repa.sh        # REPA-aligned 60M model
+```
+
+Before submitting, ensure:
+- `DATA_PATH` env var points to your data directory (containing PDB data and `metric_factory/model_weights/gearnet_ca.pth`)
+- Log directory exists: `mkdir -p /rds/user/$USER/hpc-work/proteina/logs`
+
+### Tests
+
+```bash
+PYTHONPATH=src/proteina:$PYTHONPATH uv run python -m pytest tests/proteina/ -v
+```
+
+Tests cover the REPA components (projector, loss, hidden state extraction, format conversion). The PyG compat shim is applied automatically, so all 11 tests pass on both login and compute nodes regardless of whether the C extensions work.
+
+### REPA Architecture
+
+The REPA integration adds these modules (all in `src/proteina/proteinfoundation/repa/`):
+
+| Module | Purpose |
+|--------|---------|
+| `gearnet_encoder.py` | Frozen GearNet CA encoder returning per-residue features [b, n, 512] |
+| `protein_transformer_repa.py` | Transformer subclass that captures hidden states at configurable layers |
+| `repa_loss.py` | Cosine similarity REPA loss + trainable Projector MLP |
+| `proteina_repa.py` | `ProteinaREPA` model subclass integrating REPA into the training loop |
+| `pyg_compat.py` | Native PyTorch shim for `torch_scatter` (auto-applied if C extensions fail) |
