@@ -28,7 +28,7 @@ echo "=== GPU: $(nvidia-smi --query-gpu=name --format=csv,noheader) ==="
 echo "=== Time: $(date) ==="
 
 # Run WITHOUT --nolog so WandB is active
-python train_repa.py --config_name training_ca_smoke_test --single --show_prog_bar
+python train_repa.py --config_name smoke_test --single --show_prog_bar
 
 echo "=== SMOKE TEST WANDB COMPLETE ==="
 echo "=== Time: $(date) ==="

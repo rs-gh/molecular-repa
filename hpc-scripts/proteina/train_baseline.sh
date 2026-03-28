@@ -59,7 +59,7 @@ mkdir -p /rds/user/sr2173/hpc-work/proteina/logs
 echo "=== NODE: $(hostname) ==="
 echo "=== GPU: $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader) ==="
 echo "=== SLURM_JOB_ID: $SLURM_JOB_ID ==="
-echo "=== Config: training_ca_baseline_compile ==="
+echo "=== Config: training_baseline ==="
 echo "=== Time: $(date) ==="
 echo ""
 
@@ -86,7 +86,7 @@ import torch.multiprocessing as mp
 mp.set_start_method('spawn', force=True)
 
 import sys, runpy
-sys.argv = ['train_repa.py', '--config_name', 'training_ca_baseline_compile', '--show_prog_bar']
+sys.argv = ['train_repa.py', '--config_name', 'training_baseline', '--show_prog_bar']
 runpy.run_path('train_repa.py', run_name='__main__')
 "
 TRAIN_EXIT=$?

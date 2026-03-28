@@ -61,7 +61,7 @@ echo ""
 echo "=== BASELINE: num_workers=0, 3 epochs ==="
 echo "=== Start: $(date) ==="
 
-python train_repa.py --config_name training_ca_smoke_test --single --nolog --show_prog_bar
+python train_repa.py --config_name smoke_test --single --nolog --show_prog_bar
 
 echo "=== End: $(date) ==="
 

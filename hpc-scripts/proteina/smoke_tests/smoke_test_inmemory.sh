@@ -102,7 +102,7 @@ from proteinfoundation.utils.seed_callback import SeedCallback
 
 config_path = '../configs/experiment_config'
 with hydra.initialize(config_path, version_base=hydra.__version__):
-    cfg_exp = hydra.compose(config_name='training_ca_smoke_test')
+    cfg_exp = hydra.compose(config_name='smoke_test')
     cfg_exp.hardware.ngpus_per_node_ = 1
     cfg_exp.hardware.nnodes_ = 1
     cfg_exp.run_name_ = 'inmemory_baseline_test'

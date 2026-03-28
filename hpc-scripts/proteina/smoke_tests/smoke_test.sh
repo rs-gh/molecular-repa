@@ -25,7 +25,7 @@ echo "=== NODE: $(hostname) ==="
 echo "=== GPU: $(nvidia-smi --query-gpu=name --format=csv,noheader) ==="
 echo "=== Time: $(date) ==="
 
-python train_repa.py --config_name training_ca_smoke_test --single --nolog --show_prog_bar
+python train_repa.py --config_name smoke_test --single --nolog --show_prog_bar
 
 echo "=== SMOKE TEST COMPLETE ==="
 echo "=== Time: $(date) ==="
