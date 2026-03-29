@@ -73,6 +73,34 @@ nvidia-smi --query-gpu=timestamp,utilization.gpu,utilization.memory,memory.used,
 GPU_MON_PID=$!
 
 ###############################################################
+### Copy LMDB to local NVMe (avoid Lustre mmap thrashing)  ###
+###############################################################
+
+LMDB_SRC="$DATA_PATH/pdb_train/lmdb"
+LMDB_LOCAL="/tmp/proteina_pdb_lmdb"
+
+if [ -d "$LMDB_SRC" ]; then
+    mkdir -p "$LMDB_LOCAL"
+    for split in train val test; do
+        src="$LMDB_SRC/${split}.lmdb"
+        dst="$LMDB_LOCAL/${split}.lmdb"
+        if [ -f "$src" ] && [ ! -f "$dst" ]; then
+            echo "Copying ${split}.lmdb to local NVMe..."
+            cp "$src" "$dst"
+            echo "Done ($(du -h "$dst" | cut -f1))"
+        elif [ -f "$dst" ]; then
+            echo "${split}.lmdb already on local NVMe"
+        fi
+    done
+    export LMDB_DIR="$LMDB_LOCAL"
+else
+    echo "WARNING: LMDB not found at $LMDB_SRC, using Lustre directly"
+    export LMDB_DIR="$LMDB_SRC"
+fi
+
+echo ""
+
+###############################################################
 ### Training                                                ###
 ###############################################################
 
@@ -81,7 +109,7 @@ cd "$PROTEINA_DIR"
 #! Use spawn start method for num_workers > 0 (avoids fork+CUDA segfaults).
 #! train_repa.py handles checkpoint auto-resume and WandB continuation
 #! internally via fetch_last_ckpt() and WandbLogger(id=run_name, resume=...).
-python -c "
+python -u -c "
 import torch.multiprocessing as mp
 mp.set_start_method('spawn', force=True)
 

@@ -47,8 +47,10 @@ for attempt in $(seq 1 $MAX_RETRIES); do
     echo "=== Start: $(date) ==="
     echo "========================================="
 
-    python -c "
+    python -u -c "
 import os, sys
+sys.stdout.reconfigure(line_buffering=True)
+sys.stderr.reconfigure(line_buffering=True)
 sys.path.append(os.path.abspath('.'))
 sys.path.append(os.path.abspath('..'))
 
@@ -82,13 +84,15 @@ else:
     logger.info(f'CSV saved: {csv_name}')
 
 # Step 2: Download raw structures (skips existing files)
-n_raw_before = len([f for f in os.listdir(datamodule.raw_dir) if not f.endswith('-lock')])
+n_raw_before = len(os.listdir(datamodule.raw_dir))
 logger.info(f'Raw files before download: {n_raw_before}')
 logger.info(f'Downloading structures...')
+sys.stdout.flush()
+sys.stderr.flush()
 
 datamodule._download_structure_data(df_data['pdb'].tolist())
 
-n_raw_after = len([f for f in os.listdir(datamodule.raw_dir) if not f.endswith('-lock')])
+n_raw_after = len(os.listdir(datamodule.raw_dir))
 logger.info(f'Raw files after download: {n_raw_after} (+{n_raw_after - n_raw_before} new)')
 "
     EXIT_CODE=$?

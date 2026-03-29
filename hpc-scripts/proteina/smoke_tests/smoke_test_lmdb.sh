@@ -22,6 +22,7 @@ source "$REPO_DIR/.venv/bin/activate"
 cd "$REPO_DIR/src/proteina/proteinfoundation"
 
 export DATA_PATH="/rds/user/sr2173/hpc-work/proteina/data"
+export LMDB_DIR="$DATA_PATH/pdb_train/lmdb"  # smoke test: read from Lustre directly (small dataset)
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 
