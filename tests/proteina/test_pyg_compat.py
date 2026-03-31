@@ -201,16 +201,26 @@ class TestRadiusGraph:
         assert col.dtype == torch.long
         assert row.device == x.device
 
+    def test_1d_input(self):
+        """1D position input (not 2D coords) should work — GearNet uses this."""
+        x = torch.tensor([0.0, 1.0, 2.0, 10.0, 11.0])
+        batch = torch.tensor([0, 0, 0, 1, 1])
+        row, col = _radius_graph_native(x, r=1.5, batch=batch)
+        edges = set(zip(row.tolist(), col.tolist()))
+        assert (0, 1) in edges
+        assert (1, 2) in edges
+        assert (3, 4) in edges
+        # No cross-batch
+        assert (2, 3) not in edges
+
     def test_gearnet_sequential_graph_pattern(self):
         """Simulate GearNet's sequential graph: radius_graph on 1D positions.
 
         GearNet calls radius_graph(atom_seq_pos.float(), max_distance + 0.1, batch=atom2batch)
-        where atom_seq_pos is 1D sequential indices reshaped to [N, 1].
+        where atom_seq_pos is a flat 1D tensor of sequential residue indices.
         """
         # 8 residues across 2 proteins (batch 0: 5 residues, batch 1: 3 residues)
-        atom_seq_pos = torch.tensor(
-            [[0], [1], [2], [3], [4], [0], [1], [2]], dtype=torch.float
-        )
+        atom_seq_pos = torch.tensor([0, 1, 2, 3, 4, 0, 1, 2], dtype=torch.float)
         batch = torch.tensor([0, 0, 0, 0, 0, 1, 1, 1])
         max_distance = 2
         row, col = _radius_graph_native(atom_seq_pos, r=max_distance + 0.1, batch=batch)
