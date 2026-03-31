@@ -12,6 +12,7 @@ split assignments, then processes raw files directly into LMDB (one per split).
 """
 
 import argparse
+import multiprocessing
 import os
 import sys
 
@@ -48,7 +49,16 @@ def main():
         default="pdb",
         help="Config subdirectory (pdb or afdb)",
     )
+    parser.add_argument(
+        "--num_workers",
+        type=int,
+        default=0,
+        help="Number of parallel workers for CIF parsing (0 = auto from CPU count)",
+    )
     args = parser.parse_args()
+    if args.num_workers == 0:
+        # Cap at 24 workers to avoid OOM (each worker uses ~500MB for graphein+PyG)
+        args.num_workers = min(24, max(1, multiprocessing.cpu_count() - 1))
 
     config_path = os.path.abspath(
         os.path.join(
@@ -69,15 +79,31 @@ def main():
     logger.info(f"Data directory: {data_dir}")
     logger.info(f"File format: {file_format}")
 
-    # Find the CSV
+    # Find the right CSV using the dataselector config to build the identifier
     csv_files = [f for f in os.listdir(data_dir) if f.endswith(".csv")]
     if len(csv_files) == 0:
-        logger.error(f"No CSV found in {data_dir}. Run prepare_data first.")
+        logger.error(f"No CSV found in {data_dir}. Run download_raw_pdb.sh first.")
         sys.exit(1)
 
-    csv_name = csv_files[0]
+    # Match CSV by dataselector params (fraction, max_length, etc)
+    if "dataselector" in cfg_resolved:
+        ds = cfg_resolved["dataselector"]
+        # Build the identifier the same way PDBLightningDataModule does
+        fraction_str = f"f{ds.get('fraction', 1.0)}"
+        maxl_str = f"maxl{ds.get('max_length', 512)}"
+        matching = [f for f in csv_files if fraction_str in f and maxl_str in f]
+        if matching:
+            csv_name = matching[0]
+        else:
+            csv_name = csv_files[0]
+            logger.warning(
+                f"No CSV matching {fraction_str}+{maxl_str}, using {csv_name}"
+            )
+    else:
+        csv_name = csv_files[0]
+
     if len(csv_files) > 1:
-        logger.warning(f"Multiple CSVs found, using {csv_name}")
+        logger.info(f"Selected CSV from {len(csv_files)} available: {csv_name}")
 
     logger.info(f"Loading CSV: {csv_name}")
     df = pd.read_csv(os.path.join(data_dir, csv_name))
@@ -99,6 +125,7 @@ def main():
         lmdb_path = os.path.join(lmdb_dir, f"{split_name}.lmdb")
         logger.info(f"Processing {split_name}: {len(pdb_codes)} entries → {lmdb_path}")
 
+        logger.info(f"Using {args.num_workers} workers for CIF parsing")
         n_written = process_raw_to_lmdb(
             raw_dir=raw_dir,
             output_path=lmdb_path,
@@ -106,6 +133,7 @@ def main():
             chains=chains,
             file_format=file_format,
             apply_coord_reorder=True,
+            num_workers=args.num_workers,
         )
         logger.info(f"{split_name}: {n_written} new samples written")
 
