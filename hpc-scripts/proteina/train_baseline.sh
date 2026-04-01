@@ -53,6 +53,15 @@ export WANDB_INIT_TIMEOUT=120
 mkdir -p /rds/user/sr2173/hpc-work/proteina/logs
 
 ###############################################################
+### Clean stale caches from previous runs on this node      ###
+###############################################################
+
+echo "Clearing stale caches..."
+rm -rf /tmp/torchinductor_${USER} 2>/dev/null
+find "$REPO_DIR/src/proteina" -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null
+echo "Done"
+
+###############################################################
 ### Diagnostics                                             ###
 ###############################################################
 
@@ -80,21 +89,31 @@ LMDB_SRC="$DATA_PATH/pdb_train/lmdb"
 LMDB_LOCAL="/tmp/proteina_pdb_lmdb"
 
 if [ -d "$LMDB_SRC" ]; then
-    mkdir -p "$LMDB_LOCAL"
-    for split in train val test; do
-        src="$LMDB_SRC/${split}.lmdb"
-        dst="$LMDB_LOCAL/${split}.lmdb"
-        if [ -f "$src" ] && [ ! -f "$dst" ]; then
-            echo "Copying ${split}.lmdb to local NVMe..."
-            cp "$src" "$dst"
-            echo "Done ($(du -h "$dst" | cut -f1))"
-        elif [ -f "$dst" ]; then
-            echo "${split}.lmdb already on local NVMe"
-        fi
-    done
-    export LMDB_DIR="$LMDB_LOCAL"
+    LMDB_SIZE_KB=$(du -sk "$LMDB_SRC" 2>/dev/null | cut -f1)
+    TMP_FREE_KB=$(df /tmp --output=avail 2>/dev/null | tail -1 | tr -d ' ')
+    echo "LMDB total: $((LMDB_SIZE_KB / 1024))MB, /tmp free: $((TMP_FREE_KB / 1024))MB"
+
+    if [ "${TMP_FREE_KB:-0}" -gt "$((LMDB_SIZE_KB + 1048576))" ]; then
+        echo "=== LMDB_SOURCE: nvme ==="
+        rm -rf "$LMDB_LOCAL"
+        mkdir -p "$LMDB_LOCAL"
+        for split in val test train; do
+            src="$LMDB_SRC/${split}.lmdb"
+            if [ -f "$src" ]; then
+                echo "Copying ${split}.lmdb to local NVMe..."
+                cp "$src" "$LMDB_LOCAL/${split}.lmdb"
+                echo "Done ($(du -h "$LMDB_LOCAL/${split}.lmdb" | cut -f1))"
+            fi
+        done
+        export LMDB_DIR="$LMDB_LOCAL"
+    else
+        echo "=== LMDB_SOURCE: lustre (not enough space on /tmp) ==="
+        rm -rf "$LMDB_LOCAL"
+        export LMDB_DIR="$LMDB_SRC"
+    fi
 else
     echo "WARNING: LMDB not found at $LMDB_SRC, using Lustre directly"
+    echo "=== LMDB_SOURCE: lustre (not found) ==="
     export LMDB_DIR="$LMDB_SRC"
 fi
 
