@@ -107,7 +107,7 @@ with hydra.initialize(config_path, version_base=hydra.__version__):
     cfg_exp.hardware.nnodes_ = 1
     cfg_exp.run_name_ = 'inmemory_baseline_test'
 
-dataset_config_path = '../configs/datasets_config/pdb'
+dataset_config_path = '../configs/datasets_config/pdb/smoke_test'
 with hydra.initialize(dataset_config_path, version_base=hydra.__version__):
     cfg_data = hydra.compose(config_name='pdb_smoke_test_inmemory')
 

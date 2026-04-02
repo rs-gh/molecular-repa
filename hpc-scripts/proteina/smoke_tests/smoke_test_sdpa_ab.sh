@@ -84,7 +84,7 @@ with hydra.initialize(config_path, version_base=hydra.__version__):
     cfg_exp.run_name_ = '${ATTN}_${COMPILE}_512_test'
     cfg_exp.model.nn.use_sdpa = use_sdpa
 
-dataset_config_path = '../configs/datasets_config/pdb'
+dataset_config_path = '../configs/datasets_config/pdb/smoke_test'
 with hydra.initialize(dataset_config_path, version_base=hydra.__version__):
     cfg_data = hydra.compose(config_name='pdb_smoke_test_512')
 

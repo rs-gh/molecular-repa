@@ -2,10 +2,10 @@
 
 Usage:
     # From raw CIF/PDB files (no intermediate .pt needed):
-    python convert_to_lmdb.py --config_name pdb_train_compile --config_subdir pdb
+    python convert_to_lmdb.py --config_name pdb_train_compile --config_subdir pdb/original
 
     # Incremental — re-run to add newly downloaded structures:
-    python convert_to_lmdb.py --config_name pdb_train_compile --config_subdir pdb
+    python convert_to_lmdb.py --config_name pdb_train_compile --config_subdir pdb/original
 
 Reads the dataset config to find the data directory, loads the CSV and
 split assignments, then processes raw files directly into LMDB (one per split).

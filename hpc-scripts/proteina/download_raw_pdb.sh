@@ -63,7 +63,7 @@ from loguru import logger
 data_dir = os.environ['DATA_PATH'] + '/pdb_train'
 
 # Load config to get selector params
-config_path = '../configs/datasets_config/pdb'
+config_path = '../configs/datasets_config/pdb/original'
 with hydra.initialize(config_path, version_base=hydra.__version__):
     cfg_data = hydra.compose(config_name='pdb_train_compile')
 

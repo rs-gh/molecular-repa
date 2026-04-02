@@ -38,7 +38,7 @@ echo ""
 
 if [ "$DATASET" = "pdb" ]; then
     python "$REPO_DIR/hpc-scripts/proteina/convert_to_lmdb.py" \
-        --config_name pdb_train_compile --config_subdir pdb
+        --config_name pdb_train_compile --config_subdir pdb/original
 elif [ "$DATASET" = "d_FS" ]; then
     python "$REPO_DIR/hpc-scripts/proteina/convert_to_lmdb.py" \
         --config_name d_FS --config_subdir afdb
