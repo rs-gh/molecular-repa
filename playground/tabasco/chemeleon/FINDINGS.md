@@ -45,6 +45,8 @@ We investigated whether the CheMeleon encoder (frozen, pretrained on 1M PubChem 
 
 ### 3. High effective rank, low participation ratio
 
+> **Definition note**: "Effective rank (1% SV)" below uses a threshold-based metric: count of singular values exceeding 1% of the maximum. Other analyses use entropy-based definitions which give ~138 for CheMeleon. See `playground/projector/encoder_analysis.py` for all four definitions computed consistently across all encoders.
+
 |                        |  QM9 |  GEOM |
 |------------------------|------|-------|
 | Effective rank (1% SV) |  500 |   500 |

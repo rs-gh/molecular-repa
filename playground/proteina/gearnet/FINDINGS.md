@@ -34,6 +34,8 @@ LeakyReLU (slope 0.1) produces a fully dense representation with ~62.5% negative
 | Dims for 95% variance | 125 | — | — |
 | Dims for 99% variance | 283 | ~300 | ~30 |
 
+> **Definition note**: "Effective rank" (82.6) uses entropy on normalized squared singular values (variance): exp(-sum(p log p)) where p = S_i^2 / sum(S^2). This differs slightly from the MACE analysis which normalizes raw SVs. See `playground/projector/encoder_analysis.py` for all four definitions computed consistently.
+
 Effective rank 82.6 out of 512 — the representation uses ~16% of its capacity. The projector (512 -> 512) has plenty of room to learn this structure. No bottleneck concern.
 
 **Figure**: `fig_02_singular_values.png`

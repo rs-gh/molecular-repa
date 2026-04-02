@@ -36,6 +36,8 @@ MACE uses no ReLU in its output, producing dense feature vectors with a roughly 
 
 ### 2. Compact representation with low effective rank (fig_02, fig_05)
 
+> **Definition note**: "Effective rank" below uses entropy on normalized singular values: exp(-sum(p log p)) where p = S_i / sum(S). This differs from the threshold-based definition used in CheMeleon's FINDINGS (which reports 500). See `playground/projector/encoder_analysis.py` for all four definitions computed consistently.
+
 |                          | MACE   | CheMeleon |
 |--------------------------|--------|-----------|
 | Output dimension         | 192    | 2048      |
