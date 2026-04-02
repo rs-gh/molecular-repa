@@ -156,3 +156,37 @@ Given the weak conformer signal, consider supplementing MACE-REPA with an explic
 
 ### 5. Atom-type classification baseline
 As recommended in the CheMeleon findings, compare MACE-REPA against a simple atom-type classification auxiliary loss. If REPA is primarily teaching atom identity (which both MACE and CheMeleon do well), the simpler approach may achieve similar benefits.
+
+---
+
+## Additional Analyses (2026-04-02)
+
+**Script**: `playground/tabasco/mace/probe_and_saturation.py`
+
+### Linear Probe: Atom-Type Discrimination
+
+| Metric | MACE | CheMeleon | GearNet (proteins) |
+|--------|------|-----------|-------------------|
+| Linear probe accuracy | **1.000** | 1.000 | 0.154 |
+| Within-type cosine sim | 0.706 +/- 0.202 | 0.245 | 0.189 +/- 0.139 |
+| Between-type cosine sim | 0.447 +/- 0.148 | 0.152 | 0.176 +/- 0.133 |
+| Delta (within - between) | **0.260** | 0.093 | 0.013 |
+
+MACE achieves 100% linear probe accuracy — atom type is perfectly recoverable from the embedding. The within-type vs between-type gap (0.260) is larger than CheMeleon's (0.093), meaning MACE discriminates atom types more strongly while also encoding chemical environment variation (within-type std of 0.202 shows atoms of the same element in different contexts get distinct embeddings).
+
+### Projector Saturation Test
+
+| Input condition | MACE | CheMeleon | GearNet |
+|----------------|------|-----------|---------|
+| Random (128-d) | **0.858** | ~0.43 | 0.461 |
+| Identity (one-hot) | **0.863** | — | 0.430 |
+
+**MACE has severe projector saturation.** A random MLP reaches 0.86 cosine similarity with MACE targets — even higher than CheMeleon's saturation (0.43). This is because MACE's 192-dim output with effective rank ~40 is extremely low-rank; a simple MLP can approximate the mean embedding structure with very little information.
+
+The atom-type one-hot input (0.863) performs nearly identically to random (0.858), confirming that the saturation is due to the low-rank target space, not the input information.
+
+**Implication for REPA**: Any MACE-REPA training that reports high cosine similarity should be interpreted with extreme caution. A cos_sim of 0.86 is achievable without any meaningful input — the transformer would need to exceed ~0.90 to demonstrate genuine structural alignment beyond what the projector provides for free.
+
+### Comparison with GearNet
+
+GearNet's projector saturation baseline is much lower (0.46 random) yet REPA training reaches 0.78 — a 0.32 gap that represents genuine structural learning. MACE's gap would be at most ~0.14 (from 0.86 to theoretical max ~1.0), leaving much less room for the transformer to contribute meaningful signal. This analysis retroactively validates the choice of GearNet over MACE for the protein REPA pipeline.
