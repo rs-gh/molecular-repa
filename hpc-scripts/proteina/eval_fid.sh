@@ -10,7 +10,6 @@
 #!   sbatch hpc-scripts/proteina/eval_fid.sh inference_fid_60m_repa_layer9
 #!
 
-#SBATCH -J prot-eval-fid
 #SBATCH -A LIO-CHARM-SL2-GPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -32,6 +31,9 @@
 ###############################################################
 
 CONFIG_NAME="${1:?Usage: sbatch eval_fid.sh <config_name>}"
+
+#! Derive a descriptive job name from the config (e.g. inference_fid_60m_repa_layer0 -> eval-repa-l0)
+SHORT_NAME=$(echo "$CONFIG_NAME" | sed 's/inference_fid_60m_/eval-/' | sed 's/_v[0-9]*//' | sed 's/repa_layer/repa-l/' | sed 's/_/-/g')
 
 ###############################################################
 ### Environment setup                                       ###
@@ -93,11 +95,37 @@ cd "$PROTEINA_DIR"
 
 #! Import pyg_compat shim BEFORE inference.py to replace broken torch_scatter/
 #! torch_cluster C extensions with pure-PyTorch implementations (same as training).
+#! Also add parent dir to sys.path so graphein_utils is importable.
 python -u -c "
+import os, sys
+sys.path.append(os.path.abspath('..'))  # for graphein_utils
+
 import proteinfoundation.repa.pyg_compat  # patches sys.modules
 
-import sys, runpy
+# PyTorch 2.6+ defaults weights_only=True; our checkpoints contain omegaconf objects.
+# Lightning explicitly passes weights_only=True, so force it to False.
+# Also strip _orig_mod. prefix from torch.compile checkpoints.
+import torch
+_orig_torch_load = torch.load
+def _patched_load(*args, **kwargs):
+    kwargs['weights_only'] = False
+    result = _orig_torch_load(*args, **kwargs)
+    if isinstance(result, dict) and 'state_dict' in result:
+        sd = result['state_dict']
+        # Strip _orig_mod. prefix from torch.compile and remove REPA training-only keys
+        sd = {k.replace('_orig_mod.', ''): v for k, v in sd.items()}
+        result['state_dict'] = {k: v for k, v in sd.items() if not k.startswith('repa_loss.')}
+        # Record training step for later
+        if 'global_step' in result:
+            _patched_load._global_step = result['global_step']
+            _patched_load._epoch = result.get('epoch', -1)
+    return result
+_patched_load._global_step = None
+_patched_load._epoch = None
+torch.load = _patched_load
+
 sys.argv = ['inference.py', '--config_name', '$CONFIG_NAME']
+import runpy
 runpy.run_path('inference.py', run_name='__main__')
 "
 EVAL_EXIT=$?
@@ -135,15 +163,20 @@ echo "=== Results ==="
 RESULTS_CSV="$PROTEINA_DIR/inference/results_${CONFIG_NAME}_fid.csv"
 if [ -f "$RESULTS_CSV" ]; then
     echo "Results saved to: $RESULTS_CSV"
-    #! Print metric columns only
+    #! Append training step/epoch to CSV and print metric columns
     python -c "
-import pandas as pd
+import pandas as pd, torch
 df = pd.read_csv('$RESULTS_CSV')
-metric_cols = [c for c in df.columns if c.startswith('_res_')]
-if metric_cols:
-    print(df[metric_cols].to_string(index=False))
-else:
-    print('No metric columns found')
+
+# Read training step from checkpoint
+ckpt_path = df['ckpt_path'].iloc[0] + '/' + df['ckpt_name'].iloc[0]
+ckpt = torch.load(ckpt_path, map_location='cpu', weights_only=False)
+df.insert(0, 'global_step', ckpt.get('global_step', -1))
+df.insert(1, 'epoch', ckpt.get('epoch', -1))
+df.to_csv('$RESULTS_CSV', index=False)
+
+metric_cols = ['global_step', 'epoch'] + [c for c in df.columns if c.startswith('_res_')]
+print(df[metric_cols].to_string(index=False))
 "
 else
     echo "WARNING: Results CSV not found at $RESULTS_CSV"
