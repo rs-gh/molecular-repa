@@ -62,7 +62,7 @@ BATCH_SIZES = {
 
 
 def load_results():
-    """Load all result CSVs and the .bak file into a unified dataframe."""
+    """Load full-eval result CSVs and the .bak file into a unified dataframe."""
     records = []
 
     runs = {
@@ -93,6 +93,7 @@ def load_results():
             record = {
                 "run": label,
                 "global_step": int(step) if not pd.isna(step) else np.nan,
+                "eval_type": "full",
             }
             for metric in METRICS:
                 record[metric] = row[metric]
@@ -108,9 +109,24 @@ def load_results():
             record = {
                 "run": "Baseline (60M)",
                 "global_step": int(row["global_step"]),
+                "eval_type": "full",
             }
             for metric in METRICS:
                 record[metric] = row[metric]
+            records.append(record)
+
+    # Load lite sweep results if available
+    lite_path = os.path.join(RESULTS_DIR, "lite_convergence_all.csv")
+    if os.path.exists(lite_path):
+        lite_df = pd.read_csv(lite_path)
+        for _, row in lite_df.iterrows():
+            record = {
+                "run": row["run"],
+                "global_step": int(row["global_step"]),
+                "eval_type": "lite",
+            }
+            for metric in METRICS:
+                record[metric] = row.get(metric, np.nan)
             records.append(record)
 
     df = pd.DataFrame(records).sort_values(["run", "global_step"])
@@ -125,39 +141,82 @@ def load_results():
 
 
 def plot_metric(data: pd.DataFrame, metric: str, ax):
-    """Plot a single metric vs samples seen on the given axis."""
+    """Plot a single metric vs samples seen on the given axis.
+
+    Lite eval points are shown as thin connected lines.
+    Full eval points are overlaid as large markers (no connecting line).
+    """
+    has_lite = "eval_type" in data.columns and (data["eval_type"] == "lite").any()
+
     for run_name, group in data.groupby("run"):
         group = group.dropna(subset=["samples_seen"]).sort_values("samples_seen")
         if group.empty:
             continue
         color, marker, ls = STYLES.get(run_name, ("gray", "x", ":"))
-        ax.plot(
-            group["samples_seen"],
-            group[metric],
-            color=color,
-            marker=marker,
-            markersize=7,
-            linewidth=2,
-            linestyle=ls,
-            label=run_name,
-        )
-        # Annotate each point with its step count (still useful context)
-        for _, row in group.iterrows():
-            ax.annotate(
-                f"{int(row['global_step']) // 1000}K steps",
-                (row["samples_seen"], row[metric]),
-                textcoords="offset points",
-                xytext=(0, 8),
-                ha="center",
-                fontsize=7,
+
+        if has_lite:
+            # Plot lite points as thin connected line
+            lite = group[group["eval_type"] == "lite"]
+            if not lite.empty:
+                ax.plot(
+                    lite["samples_seen"],
+                    lite[metric],
+                    color=color,
+                    marker=marker,
+                    markersize=4,
+                    linewidth=1.5,
+                    linestyle=ls,
+                    alpha=0.7,
+                    label=run_name,
+                )
+            # Overlay full eval points as large markers
+            full = group[group["eval_type"] == "full"]
+            if not full.empty:
+                ax.scatter(
+                    full["samples_seen"],
+                    full[metric],
+                    color=color,
+                    marker=marker,
+                    s=100,
+                    edgecolors="black",
+                    linewidths=0.8,
+                    zorder=5,
+                    label=f"{run_name} (full)" if lite.empty else None,
+                )
+        else:
+            # No lite data: plot full eval with lines + annotations (original style)
+            ax.plot(
+                group["samples_seen"],
+                group[metric],
                 color=color,
+                marker=marker,
+                markersize=7,
+                linewidth=2,
+                linestyle=ls,
+                label=run_name,
             )
+            for _, row in group.iterrows():
+                ax.annotate(
+                    f"{int(row['global_step']) // 1000}K steps",
+                    (row["samples_seen"], row[metric]),
+                    textcoords="offset points",
+                    xytext=(0, 8),
+                    ha="center",
+                    fontsize=7,
+                    color=color,
+                )
 
     ax.set_xlabel("Samples Seen", fontsize=10)
     ax.set_ylabel(METRIC_LABELS[metric], fontsize=10)
     ax.set_title(METRIC_LABELS[metric], fontsize=11, fontweight="bold")
     ax.grid(True, alpha=0.3)
-    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{x/1e6:.1f}M"))
+
+    # Use log scale when we have many lite data points
+    if has_lite:
+        ax.set_xscale("log")
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{x/1e6:.1f}M"))
+    else:
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{x/1e6:.1f}M"))
 
 
 def main():
