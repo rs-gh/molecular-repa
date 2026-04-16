@@ -30,7 +30,9 @@
 ### Parse arguments                                         ###
 ###############################################################
 
-CONFIG_NAME="${1:?Usage: sbatch eval_fid.sh <config_name>}"
+CONFIG_NAME="${1:?Usage: sbatch eval_fid.sh <config_name> [--designability_subset N] [--centroid_path PATH] ...}"
+shift
+EXTRA_ARGS="$@"
 
 #! Derive a descriptive job name from the config (e.g. inference_fid_60m_repa_layer0 -> eval-repa-l0)
 SHORT_NAME=$(echo "$CONFIG_NAME" | sed 's/inference_fid_60m_/eval-/' | sed 's/_v[0-9]*//' | sed 's/repa_layer/repa-l/' | sed 's/_/-/g')
@@ -91,20 +93,21 @@ GPU_MON_PID=$!
 ### Run FID evaluation                                      ###
 ###############################################################
 
-cd "$PROTEINA_DIR"
+cd "$REPO_DIR"
 
-#! Import pyg_compat shim BEFORE inference.py to replace broken torch_scatter/
+#! Import pyg_compat shim BEFORE any proteina code to replace broken torch_scatter/
 #! torch_cluster C extensions with pure-PyTorch implementations (same as training).
 #! Also add parent dir to sys.path so graphein_utils is importable.
 python -u -c "
 import os, sys
-sys.path.append(os.path.abspath('..'))  # for graphein_utils
+sys.path.insert(0, 'src/proteina/proteinfoundation')
+sys.path.insert(0, 'src/proteina')
 
 import proteinfoundation.repa.pyg_compat  # patches sys.modules
 
 # PyTorch 2.6+ defaults weights_only=True; our checkpoints contain omegaconf objects.
 # Lightning explicitly passes weights_only=True, so force it to False.
-# Also strip _orig_mod. prefix from torch.compile checkpoints.
+# Also strip _orig_mod. prefix from torch.compile and remove REPA training-only keys.
 import torch
 _orig_torch_load = torch.load
 def _patched_load(*args, **kwargs):
@@ -112,21 +115,14 @@ def _patched_load(*args, **kwargs):
     result = _orig_torch_load(*args, **kwargs)
     if isinstance(result, dict) and 'state_dict' in result:
         sd = result['state_dict']
-        # Strip _orig_mod. prefix from torch.compile and remove REPA training-only keys
         sd = {k.replace('_orig_mod.', ''): v for k, v in sd.items()}
         result['state_dict'] = {k: v for k, v in sd.items() if not k.startswith('repa_loss.')}
-        # Record training step for later
-        if 'global_step' in result:
-            _patched_load._global_step = result['global_step']
-            _patched_load._epoch = result.get('epoch', -1)
     return result
-_patched_load._global_step = None
-_patched_load._epoch = None
 torch.load = _patched_load
 
-sys.argv = ['inference.py', '--config_name', '$CONFIG_NAME']
+sys.argv = ['evaluate.py', '--config_name', '$CONFIG_NAME'] + '$EXTRA_ARGS'.split()
 import runpy
-runpy.run_path('inference.py', run_name='__main__')
+runpy.run_path('evaluation/proteina/scripts/evaluate.py', run_name='__main__')
 "
 EVAL_EXIT=$?
 
@@ -160,7 +156,7 @@ else:
 
 echo ""
 echo "=== Results ==="
-RESULTS_CSV="$PROTEINA_DIR/inference/results_${CONFIG_NAME}_fid.csv"
+RESULTS_CSV="$REPO_DIR/eval_output/${CONFIG_NAME}/results_${CONFIG_NAME}_fid.csv"
 if [ -f "$RESULTS_CSV" ]; then
     echo "Results saved to: $RESULTS_CSV"
     #! Append training step/epoch to CSV and print metric columns
