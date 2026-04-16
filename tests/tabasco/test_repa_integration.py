@@ -693,3 +693,369 @@ class TestCrossAttentionFusion:
         loss, stats = repa(path, pred, compute_stats=True)
         assert loss.dim() == 0
         assert "repa_loss" in stats
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# REPA Pipeline Audit Tests
+# Verify correctness against the original REPA paper (arXiv 2410.06940)
+# Reference code: https://github.com/sihyun-yu/REPA
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+def _reference_repa_loss(projected, target, mask):
+    """Exact reimplementation of the original REPA paper's loss computation.
+
+    From https://github.com/sihyun-yu/REPA/blob/main/loss.py:
+        z_tilde_j = F.normalize(z_tilde_j, dim=-1)
+        z_j = F.normalize(z_j, dim=-1)
+        proj_loss += mean_flat(-(z_j * z_tilde_j).sum(dim=-1))
+        proj_loss /= (len(zs) * bsz)
+
+    Key: mean_flat averages over spatial dims PER SAMPLE, then averages over batch.
+    """
+    import torch.nn.functional as F
+
+    b = projected.shape[0]
+    total = torch.tensor(0.0, device=projected.device)
+    for i in range(b):
+        m = mask[i]
+        if not m.any():
+            continue
+        z_tilde = F.normalize(projected[i, m], dim=-1)
+        z = F.normalize(target[i, m], dim=-1)
+        total = total + (-(z * z_tilde).sum(dim=-1)).mean()
+    return total / b
+
+
+class TestTabascoReferenceEquivalence:
+    """Verify tabasco REPA loss matches the paper's exact computation."""
+
+    @pytest.fixture
+    def make_batch(self):
+        """Create a synthetic FlowPath + pred TensorDict."""
+
+        def _make(b, n, hidden_dim, encoder_dim, atom_dim=9, mask=None):
+            coords = torch.randn(b, n, 3)
+            atomics = torch.zeros(b, n, atom_dim)
+            atomics[:, :, 0] = 1.0  # All carbon
+            if mask is None:
+                padding_mask = torch.zeros(b, n, dtype=torch.bool)
+            else:
+                padding_mask = ~mask  # REPALoss expects padding_mask (True=padded)
+
+            x_1 = TensorDict(
+                {"coords": coords, "atomics": atomics, "padding_mask": padding_mask},
+                batch_size=b,
+            )
+            t = torch.rand(b)
+            path = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t)
+
+            pred = TensorDict(
+                {
+                    "coords": coords,
+                    "atomics": atomics,
+                    "hidden_states_coord": torch.randn(b, n, hidden_dim),
+                    "padding_mask": padding_mask,
+                },
+                batch_size=b,
+            )
+            return path, pred
+
+        return _make
+
+    def test_per_sample_matches_reference_equal_lengths(self, make_batch):
+        """With equal-length molecules, per_sample averaging matches reference."""
+        torch.manual_seed(42)
+        b, n, hidden_dim, encoder_dim = 4, 9, 64, 128
+
+        encoder = DummyEncoder(encoder_dim=encoder_dim)
+        torch.manual_seed(0)
+        projector = Projector(hidden_dim=hidden_dim, encoder_dim=encoder_dim)
+
+        repa = REPALoss(
+            encoder=encoder,
+            projector=projector,
+            averaging="per_sample",
+            time_weighting=False,
+        )
+
+        path, pred = make_batch(b, n, hidden_dim, encoder_dim)
+        loss, _ = repa(path, pred)
+
+        # Manually compute reference
+        with torch.no_grad():
+            h_fused = pred["hidden_states_coord"]
+            projected = projector(h_fused)
+            target_repr = encoder(
+                path.x_1["coords"], path.x_1["atomics"], pred["padding_mask"]
+            )
+            real_mask = ~pred["padding_mask"]
+
+        ref_loss = _reference_repa_loss(projected, target_repr, real_mask)
+        torch.testing.assert_close(loss, ref_loss, atol=1e-5, rtol=1e-5)
+
+    def test_per_sample_matches_reference_variable_lengths(self, make_batch):
+        """With variable-length molecules, per_sample should still match reference."""
+        torch.manual_seed(123)
+        b, n, hidden_dim, encoder_dim = 3, 15, 64, 128
+
+        encoder = DummyEncoder(encoder_dim=encoder_dim)
+        torch.manual_seed(0)
+        projector = Projector(hidden_dim=hidden_dim, encoder_dim=encoder_dim)
+
+        # Variable lengths: 5, 10, 15
+        mask = torch.ones(b, n, dtype=torch.bool)
+        mask[0, 5:] = False
+        mask[1, 10:] = False
+
+        repa = REPALoss(
+            encoder=encoder,
+            projector=projector,
+            averaging="per_sample",
+            time_weighting=False,
+        )
+
+        path, pred = make_batch(b, n, hidden_dim, encoder_dim, mask=mask)
+        loss, _ = repa(path, pred)
+
+        with torch.no_grad():
+            h_fused = pred["hidden_states_coord"]
+            projected = projector(h_fused)
+            target_repr = encoder(
+                path.x_1["coords"], path.x_1["atomics"], pred["padding_mask"]
+            )
+            real_mask = ~pred["padding_mask"]
+
+        ref_loss = _reference_repa_loss(projected, target_repr, real_mask)
+        torch.testing.assert_close(loss, ref_loss, atol=1e-5, rtol=1e-5)
+
+
+class TestTabascoPerSampleVsPerAtomAveraging:
+    """Document the difference between per_sample and per_atom averaging."""
+
+    def test_equal_lengths_same_result(self):
+        """With equal-length molecules, both averaging modes should agree."""
+        torch.manual_seed(99)
+        b, n, hidden_dim, encoder_dim = 3, 9, 64, 128
+
+        encoder = DummyEncoder(encoder_dim=encoder_dim)
+
+        # Create one projector and materialize its LazyLinear, then copy weights
+        torch.manual_seed(0)
+        proj_ps = Projector(hidden_dim=hidden_dim, encoder_dim=encoder_dim)
+        proj_ps(torch.randn(1, 1, hidden_dim))  # materialize LazyLinear
+        proj_pa = Projector(hidden_dim=hidden_dim, encoder_dim=encoder_dim)
+        proj_pa(torch.randn(1, 1, hidden_dim))  # materialize
+        proj_pa.load_state_dict(proj_ps.state_dict())
+
+        repa_ps = REPALoss(
+            encoder=encoder,
+            projector=proj_ps,
+            averaging="per_sample",
+            time_weighting=False,
+        )
+        repa_pa = REPALoss(
+            encoder=encoder,
+            projector=proj_pa,
+            averaging="per_atom",
+            time_weighting=False,
+        )
+
+        coords = torch.randn(b, n, 3)
+        atomics = torch.zeros(b, n, 9)
+        atomics[:, :, 0] = 1.0
+        padding_mask = torch.zeros(b, n, dtype=torch.bool)
+
+        x_1 = TensorDict(
+            {"coords": coords, "atomics": atomics, "padding_mask": padding_mask},
+            batch_size=b,
+        )
+        t = torch.rand(b)
+        path = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t)
+
+        pred = TensorDict(
+            {
+                "coords": coords,
+                "atomics": atomics,
+                "hidden_states_coord": torch.randn(b, n, hidden_dim),
+                "padding_mask": padding_mask,
+            },
+            batch_size=b,
+        )
+
+        l_ps, _ = repa_ps(path, pred)
+        l_pa, _ = repa_pa(path, pred)
+        torch.testing.assert_close(l_ps, l_pa, atol=1e-5, rtol=1e-5)
+
+    def test_variable_lengths_different_result(self):
+        """With different-length molecules, the two modes should diverge."""
+        torch.manual_seed(99)
+        b, n, hidden_dim, encoder_dim = 2, 20, 64, 128
+
+        encoder = DummyEncoder(encoder_dim=encoder_dim)
+
+        torch.manual_seed(0)
+        proj_ps = Projector(hidden_dim=hidden_dim, encoder_dim=encoder_dim)
+        proj_ps(torch.randn(1, 1, hidden_dim))  # materialize
+        proj_pa = Projector(hidden_dim=hidden_dim, encoder_dim=encoder_dim)
+        proj_pa(torch.randn(1, 1, hidden_dim))  # materialize
+        proj_pa.load_state_dict(proj_ps.state_dict())
+
+        repa_ps = REPALoss(
+            encoder=encoder,
+            projector=proj_ps,
+            averaging="per_sample",
+            time_weighting=False,
+        )
+        repa_pa = REPALoss(
+            encoder=encoder,
+            projector=proj_pa,
+            averaging="per_atom",
+            time_weighting=False,
+        )
+
+        coords = torch.randn(b, n, 3)
+        atomics = torch.zeros(b, n, 9)
+        atomics[:, :, 0] = 1.0
+        # Lengths 3 vs 20 — very different
+        padding_mask = torch.zeros(b, n, dtype=torch.bool)
+        padding_mask[0, 3:] = True
+
+        x_1 = TensorDict(
+            {"coords": coords, "atomics": atomics, "padding_mask": padding_mask},
+            batch_size=b,
+        )
+        t = torch.rand(b)
+        path = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t)
+
+        pred = TensorDict(
+            {
+                "coords": coords,
+                "atomics": atomics,
+                "hidden_states_coord": torch.randn(b, n, hidden_dim),
+                "padding_mask": padding_mask,
+            },
+            batch_size=b,
+        )
+
+        l_ps, _ = repa_ps(path, pred)
+        l_pa, _ = repa_pa(path, pred)
+
+        assert not torch.allclose(l_ps, l_pa, atol=1e-4), (
+            f"per_sample ({l_ps.item():.6f}) and per_atom ({l_pa.item():.6f}) "
+            "should differ when molecule lengths are unequal"
+        )
+
+
+class TestTabascoProjectorArchitecture:
+    """Verify projector MLP structure matches expectations."""
+
+    def test_three_layer_projector(self):
+        """3-layer projector (paper default): 3 Linear, 2 SiLU."""
+        proj = Projector(hidden_dim=128, encoder_dim=192, num_layers=3)
+        # Materialize LazyLinear
+        proj(torch.randn(1, 5, 64))
+
+        linears = [m for m in proj.mlp if isinstance(m, torch.nn.Linear)]
+        activations = [m for m in proj.mlp if isinstance(m, torch.nn.SiLU)]
+
+        assert len(linears) == 3, f"Expected 3 Linear layers, got {len(linears)}"
+        assert (
+            len(activations) == 2
+        ), f"Expected 2 SiLU activations, got {len(activations)}"
+
+    def test_two_layer_projector(self):
+        """2-layer projector: 2 Linear, 1 SiLU."""
+        proj = Projector(hidden_dim=128, encoder_dim=192, num_layers=2)
+        proj(torch.randn(1, 5, 64))
+
+        linears = [m for m in proj.mlp if isinstance(m, torch.nn.Linear)]
+        activations = [m for m in proj.mlp if isinstance(m, torch.nn.SiLU)]
+
+        assert len(linears) == 2, f"Expected 2 Linear layers, got {len(linears)}"
+        assert (
+            len(activations) == 1
+        ), f"Expected 1 SiLU activation, got {len(activations)}"
+
+
+class TestTabascoMSEMode:
+    """Verify the MSE similarity path works correctly."""
+
+    def test_mse_loss_finite_and_positive(self):
+        encoder = DummyEncoder(encoder_dim=128)
+        projector = Projector(hidden_dim=64, encoder_dim=128)
+        repa = REPALoss(
+            encoder=encoder,
+            projector=projector,
+            similarity_type="mse",
+            time_weighting=False,
+        )
+
+        b, n = 2, 9
+        coords = torch.randn(b, n, 3)
+        atomics = torch.zeros(b, n, 9)
+        atomics[:, :, 0] = 1.0
+        padding_mask = torch.zeros(b, n, dtype=torch.bool)
+
+        x_1 = TensorDict(
+            {"coords": coords, "atomics": atomics, "padding_mask": padding_mask},
+            batch_size=b,
+        )
+        t = torch.rand(b)
+        path = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t)
+
+        pred = TensorDict(
+            {
+                "coords": coords,
+                "atomics": atomics,
+                "hidden_states_coord": torch.randn(b, n, 64),
+                "padding_mask": padding_mask,
+            },
+            batch_size=b,
+        )
+
+        loss, stats = repa(path, pred)
+        assert torch.isfinite(loss)
+        assert loss > 0
+        assert "repa_loss" in stats
+
+    def test_mse_gradient_flow(self):
+        encoder = DummyEncoder(encoder_dim=128)
+        projector = Projector(hidden_dim=64, encoder_dim=128)
+        repa = REPALoss(
+            encoder=encoder,
+            projector=projector,
+            similarity_type="mse",
+            time_weighting=False,
+        )
+
+        b, n = 2, 9
+        coords = torch.randn(b, n, 3)
+        atomics = torch.zeros(b, n, 9)
+        atomics[:, :, 0] = 1.0
+        padding_mask = torch.zeros(b, n, dtype=torch.bool)
+        hs = torch.randn(b, n, 64, requires_grad=True)
+
+        x_1 = TensorDict(
+            {"coords": coords, "atomics": atomics, "padding_mask": padding_mask},
+            batch_size=b,
+        )
+        t = torch.rand(b)
+        path = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t)
+
+        pred = TensorDict(
+            {
+                "coords": coords,
+                "atomics": atomics,
+                "hidden_states_coord": hs,
+                "padding_mask": padding_mask,
+            },
+            batch_size=b,
+        )
+
+        loss, _ = repa(path, pred)
+        loss.backward()
+
+        assert hs.grad is not None
+        for p in projector.parameters():
+            assert p.grad is not None

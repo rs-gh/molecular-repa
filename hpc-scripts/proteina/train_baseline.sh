@@ -133,7 +133,7 @@ import torch.multiprocessing as mp
 mp.set_start_method('spawn', force=True)
 
 import sys, runpy
-sys.argv = ['train_repa.py', '--config_name', 'training_baseline', '--show_prog_bar']
+sys.argv = ['train_repa.py', '--config_name', 'training_baseline', '--config_subdir', 'training/512', '--show_prog_bar']
 runpy.run_path('train_repa.py', run_name='__main__')
 "
 TRAIN_EXIT=$?

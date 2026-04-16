@@ -4,9 +4,10 @@
 #! Wilkes3 (AMD EPYC 7763, ConnectX-6, A100 80GB)
 #!
 #! Usage:
-#!   sbatch hpc-scripts/proteina/train_repa.sh                         # default: training_repa
-#!   sbatch hpc-scripts/proteina/train_repa.sh training_repa_layer0    # align layer 0
-#!   sbatch hpc-scripts/proteina/train_repa.sh training_repa_layer9    # align layer 9
+#!   sbatch hpc-scripts/proteina/train_repa.sh                                              # default: training_repa (flat/symlink)
+#!   sbatch hpc-scripts/proteina/train_repa.sh training_repa training/512                   # 512 REPA (subdir)
+#!   sbatch hpc-scripts/proteina/train_repa.sh training_baseline_256 training/256            # 256 baseline (subdir)
+#!   sbatch hpc-scripts/proteina/train_repa.sh training_repa_l4_256 training/256             # 256 REPA layer 4
 #!
 #! Checkpoint resume is automatic: if a last.ckpt exists under the run's
 #! store directory, train_repa.py picks it up and continues training.
@@ -52,6 +53,15 @@ export MKL_NUM_THREADS=1
 export WANDB_INIT_TIMEOUT=120
 
 REPA_CONFIG="${1:-training_repa}"
+REPA_SUBDIR="${2:-}"
+
+#! Set descriptive SLURM job name from config (e.g. training_repa_l4_256 -> repa-l4-256)
+#! Normalize: training_repa (layer 4 implicit) -> repa-l4, training_repa_layer0 -> repa-l0
+JOB_SHORT=$(echo "$REPA_CONFIG" | sed 's/^training_//' | sed 's/repa_layer/repa_l/' | sed 's/_/-/g')
+# training_repa with no layer suffix is layer 4 — make that explicit
+if [ "$JOB_SHORT" = "repa" ]; then JOB_SHORT="repa-l4"; fi
+if [ "$JOB_SHORT" = "repa-v2" ]; then JOB_SHORT="repa-l4"; fi
+scontrol update JobId="$SLURM_JOB_ID" JobName="$JOB_SHORT" 2>/dev/null
 
 #! Ensure log directory exists
 mkdir -p /rds/user/sr2173/hpc-work/proteina/logs
@@ -72,7 +82,7 @@ echo "Done"
 echo "=== NODE: $(hostname) ==="
 echo "=== GPU: $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader) ==="
 echo "=== SLURM_JOB_ID: $SLURM_JOB_ID ==="
-echo "=== Config: $REPA_CONFIG ==="
+echo "=== Config: ${REPA_SUBDIR:+$REPA_SUBDIR/}$REPA_CONFIG ==="
 echo "=== Time: $(date) ==="
 echo ""
 
@@ -137,7 +147,10 @@ import torch.multiprocessing as mp
 mp.set_start_method('spawn', force=True)
 
 import sys, runpy
-sys.argv = ['train_repa.py', '--config_name', '${REPA_CONFIG}', '--show_prog_bar']
+argv = ['train_repa.py', '--config_name', '${REPA_CONFIG}', '--show_prog_bar']
+if '${REPA_SUBDIR}':
+    argv += ['--config_subdir', '${REPA_SUBDIR}']
+sys.argv = argv
 runpy.run_path('train_repa.py', run_name='__main__')
 "
 TRAIN_EXIT=$?
