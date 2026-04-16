@@ -174,3 +174,58 @@ Layer 4 is the middle of the 10-layer transformer. The intuition from the REPA p
 - Late layers specialize for the generation task
 
 Aligning at the middle encourages the model to develop good structural representations early, which the later layers can build on for generation. Multiple layers can be aligned (e.g., `layers: [2, 4, 6]`), each with its own projector.
+
+## Audit vs Reference Implementation (2026-04-16)
+
+Audited against the original REPA paper (arXiv 2410.06940) and its reference code at
+https://github.com/sihyun-yu/REPA (image-domain DiT).
+
+### Divergences Found and Fixed
+
+**1. Per-sample vs per-residue averaging (FIXED)**
+
+The reference computes `mean_flat` per sample (averaging over tokens), then averages over the batch — each sample contributes equally regardless of length. Our original code flattened all unmasked tokens globally and took one `.mean()`, causing longer proteins to dominate the gradient.
+
+This also created an inconsistency with the flow matching loss, which is per-sample: a 200-residue protein got the same FM loss weight as a 50-residue protein, but 4x the REPA weight.
+
+Fix: Added `averaging` parameter to `ProteinaREPALoss` with options `"per_sample"` (paper default) and `"per_residue"` (legacy). Wired through config as `repa.averaging`.
+
+**2. Projector depth (FIXED)**
+
+Reference uses a 3-layer MLP (`Linear→SiLU→Linear→SiLU→Linear`). All our configs used `projector_num_layers: 2` (2-layer MLP). Updated all configs to `projector_num_layers: 3`. Cost: +262K parameters (0.44% of 60M model).
+
+### Verified Correct
+
+- `F.cosine_similarity` is mathematically equivalent to the reference's explicit `normalize→dot` approach
+- Encoder targets from clean data (x_1), hidden states from noisy input (x_t) — matches paper
+- Additive loss combination `fm_loss + λ * repa_loss` with default λ=0.5 — matches reference
+- GearNet frozen via `@torch.no_grad()` + `requires_grad=False`
+- Register tokens correctly stripped before alignment
+- Self-conditioning pass skips hidden state extraction
+- nm→Angstrom conversion correct (×10.0)
+
+### Known Maintenance Risk
+
+`ProteinTransformerAF3WithHiddenStates.forward()` duplicates the parent's `forward()` entirely. Future changes to `ProteinTransformerAF3.forward()` will not propagate. A regression test (`TestParentSubclassForwardEquivalence`) catches this.
+
+### Test Coverage (tests/proteina/test_repa_components.py)
+
+| Test | What it verifies |
+|------|-----------------|
+| `TestReferenceNumericalEquivalence` | Our loss matches the paper's exact computation |
+| `TestPerSampleVsPerResidueAveraging` | Both modes work; they agree at equal lengths, diverge otherwise |
+| `TestParentSubclassForwardEquivalence` | Subclass produces identical output to parent class |
+| `TestProjectorArchitecture` | MLP structure matches expected layer counts |
+| `TestMSESimilarityMode` | MSE path produces finite loss with gradients |
+| `TestTradeoffCombinationMode` | Both additive and tradeoff formulas correct |
+
+### Tabasco (tests/tabasco/test_repa_integration.py)
+
+Same two divergences fixed. The `averaging` parameter uses `"per_atom"` (instead of proteina's `"per_residue"`) as the legacy option name. 12 tabasco configs updated to `num_layers: 3` for the projector.
+
+| Test | What it verifies |
+|------|-----------------|
+| `TestTabascoReferenceEquivalence` | Loss matches paper's exact computation (equal + variable lengths) |
+| `TestTabascoPerSampleVsPerAtomAveraging` | Both modes work; agree at equal lengths, diverge otherwise |
+| `TestTabascoProjectorArchitecture` | MLP structure matches expected layer counts |
+| `TestTabascoMSEMode` | MSE path produces finite loss with gradients |

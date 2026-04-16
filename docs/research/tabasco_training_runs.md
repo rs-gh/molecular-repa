@@ -2,6 +2,21 @@
 
 WandB project: [`sr2173-university-of-cambridge/tabasco`](https://wandb.ai/sr2173-university-of-cambridge/tabasco)
 
+## REPA Pipeline Configuration History
+
+| Parameter | Runs below (pre-audit) | Current default (post-audit) | Reference paper |
+|---|---|---|---|
+| Projector layers | 2 | 3 | 3 |
+| Averaging | per_atom (global) | per_sample | per_sample (mean_flat) |
+| Similarity | cosine | cosine | cosine (normalize+dot) |
+| Lambda | 0.5-0.8 | 0.5-0.8 | 0.5 |
+| Combination | additive or tradeoff | additive or tradeoff | additive |
+
+> **Note (2026-04-16 audit)**: All runs below were trained with `projector num_layers: 2` (default)
+> and global per-atom averaging. The codebase has since been updated to default to
+> `num_layers: 3` and `averaging: per_sample` to match the reference REPA paper.
+> Future runs should use the new defaults. See [repa-codeflow.md](repa-codeflow.md) for audit details.
+
 ## GEOM Dataset — Production Runs
 
 All production runs trained on GEOM-drugs (1,142,099 molecules, batch size 256, 4461 steps/epoch).
@@ -21,6 +36,23 @@ Stripped checkpoints (15MB): `evaluation/checkpoints/tabasco/geom/`
 | **MACE tradeoff** | `uq02ccie`, `5s25bbx3` | [GPU live](https://wandb.ai/sr2173-university-of-cambridge/tabasco/runs/uq02ccie), [cached](https://wandb.ai/sr2173-university-of-cambridge/tabasco/runs/5s25bbx3) | 15 | 73,249 | mace-gpu + mace-cached | `geom_mace_cached_tradeoff_v2/checkpoints/last.ckpt` |
 
 **Multi-part runs**: Baseline was split across two WandB runs (epochs 0-7 then 8-32). MACE runs had an initial GPU-live phase (epochs 0-3, encoder on GPU) then switched to cached embeddings (epochs 3-15) for speed.
+
+### REPA Run Configurations
+
+| Model | Encoder | Encoder Dim | Lambda | Combination | Projector Layers | Projector Hidden | Averaging |
+|---|---|---|---|---|---|---|---|
+| CheMeleon additive (same) | ChemPropEncoder | 2048 | 0.5 | additive | 2 | hidden_dim | per_atom |
+| CheMeleon additive (fused) | ChemPropEncoder | 2048 | 0.5 | additive | 2 | hidden_dim | per_atom |
+| CheMeleon tradeoff (same) | ChemPropEncoder | 2048 | 0.5 | tradeoff | 2 | hidden_dim | per_atom |
+| CheMeleon tradeoff (fused) | ChemPropEncoder | 2048 | 0.5 | tradeoff | 2 | hidden_dim | per_atom |
+| MACE additive | MACEEncoder (small) | 192 | 0.8 | additive | 2 | hidden_dim | per_atom |
+| MACE tradeoff | MACEEncoder (small) | 192 | 0.8 | tradeoff | 2 | hidden_dim | per_atom |
+
+**Notes**:
+- "same proj" = single projector matching coord hidden dim; "fused proj" = projector sized for concatenated coord+atom heads (cross_attention=True)
+- `hidden_dim` refers to `model.net.hidden_dim` (128 for GEOM mild config)
+- All runs used `time_weighting: false` and `similarity_type: cosine`
+- CheMeleon is 2D-only (same embeddings for all conformers); MACE is 3D-aware
 
 ### WandB Display Names (for API queries)
 
