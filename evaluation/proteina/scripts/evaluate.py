@@ -38,6 +38,12 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_name", type=str, required=True)
     parser.add_argument(
+        "--config_subdir",
+        type=str,
+        default=None,
+        help="Subdirectory under experiment_config/ (e.g. 'inference').",
+    )
+    parser.add_argument(
         "--designability_subset",
         type=int,
         default=500,
@@ -306,11 +312,16 @@ def main():
     )
 
     # ── Load config ──
+    config_name = (
+        f"{args.config_subdir}/{args.config_name}"
+        if args.config_subdir
+        else args.config_name
+    )
     with hydra.initialize(
-        config_path="../../src/proteina/configs/experiment_config",
+        config_path="../../../src/proteina/configs/experiment_config",
         version_base=hydra.__version__,
     ):
-        cfg = hydra.compose(config_name=args.config_name)
+        cfg = hydra.compose(config_name=config_name)
 
     # Apply CLI overrides
     if args.ckpt_name_override:
