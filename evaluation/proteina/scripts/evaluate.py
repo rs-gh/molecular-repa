@@ -72,6 +72,18 @@ def parse_args():
         action="store_true",
         help="Skip GearNet FID/fJSD/fS metrics (no GPU required)",
     )
+    parser.add_argument(
+        "--ckpt_name_override",
+        type=str,
+        default=None,
+        help="Override ckpt_name from config (for sweeping checkpoints)",
+    )
+    parser.add_argument(
+        "--output_suffix",
+        type=str,
+        default=None,
+        help="Suffix appended to output directory (e.g. step_100000)",
+    )
     return parser.parse_args()
 
 
@@ -299,10 +311,15 @@ def main():
         version_base=hydra.__version__,
     ):
         cfg = hydra.compose(config_name=args.config_name)
+
+    # Apply CLI overrides
+    if args.ckpt_name_override:
+        cfg = OmegaConf.merge(cfg, {"ckpt_name": args.ckpt_name_override})
     logger.info(f"Config: {args.config_name}")
 
     # ── Paths (persist across restarts) ──
-    root_path = f"./eval_output/{args.config_name}"
+    suffix = f"_{args.output_suffix}" if args.output_suffix else ""
+    root_path = f"./eval_output/{args.config_name}{suffix}"
     samples_dir = os.path.join(root_path, "samples_fid")
     tensors_dir = os.path.join(root_path, "tensors")
     os.makedirs(samples_dir, exist_ok=True)
@@ -503,7 +520,7 @@ def main():
     if "metric_factory" in df.columns:
         df = df.drop("metric_factory", axis=1)
 
-    results_csv = os.path.join(root_path, f"results_{args.config_name}_fid.csv")
+    results_csv = os.path.join(root_path, f"results_{args.config_name}{suffix}_fid.csv")
 
     # If skipping FID and an existing CSV has FID columns, merge new columns in
     if args.skip_fid and os.path.exists(results_csv):
