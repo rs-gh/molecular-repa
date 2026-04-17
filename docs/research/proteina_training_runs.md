@@ -96,6 +96,32 @@ Wandb runs for renamed trainings start fresh on relaunch (wandb run ID = `run_na
 
 Prior collision bug: `training_repa_l{0,9}_256_persamp.yaml` had `run_name_` pointing at the per_residue run name. Those configs are now removed, and l0/l9 per_sample runs start fresh from scratch under their new canonical names.
 
+## Short-short-sequence runs (max_len=128)
+
+Added 2026-04-17 for faster iteration than the 256 tier — ~4× lower attention cost. Intended for overnight convergence experiments rather than multi-day production runs.
+
+Config layout: `src/proteina/configs/experiment_config/training/128/{training_baseline_128.yaml, per_residue/training_repa_l{0,4,9}_128_per_residue.yaml}`. Dataset: `pdb_lmdb_128` (batch_size 24 placeholder, `lmdb_max_num_residues: 128`, `PaddingTransform max_size: 128`, `dataselector.max_length: 128`).
+
+| Model | WandB Run ID (= run_name) | REPA Layer | Averaging | Projector depth |
+|---|---|---|---|---|
+| Baseline 128 | `proteina_60m_baseline_128` | -- | -- | -- |
+| REPA L0 128 (per_residue) | `proteina_60m_repa_l0_128_per_residue` | [0] | per_residue | **3** |
+| REPA L4 128 (per_residue) | `proteina_60m_repa_l4_128_per_residue` | [4] | per_residue | **3** |
+| REPA L9 128 (per_residue) | `proteina_60m_repa_l9_128_per_residue` | [9] | per_residue | **3** |
+
+**Noteworthy — projector depth diverges from 256/512**. The 128 REPA configs are the first in the repo to use `projector_num_layers: 3` (reference REPA paper depth). The 256/512 configs all still use 2 with a TODO. A direct comparison between e.g. `l4_128_per_residue` and `l4_256_per_residue` therefore is **not** a clean length-only ablation; it also varies projector depth. Keep this in mind when reading convergence curves across tiers.
+
+**Batch size**: 24 is a placeholder based on L² attention scaling from 256 (B=12). First launch may OOM or leave headroom — adjust `pdb_lmdb_128.yaml` if needed.
+
+**per_sample variants**: not shipped initially. Add via the 256 pattern (`training/128/per_sample/training_repa_l{0,4,9}_128_per_sample.yaml`) if needed.
+
+**Submission:**
+```bash
+sbatch hpc-scripts/proteina/training/train_baseline.sh training_baseline_128 training/128
+sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l4_128_per_residue training/128/per_residue
+# (same pattern for l0, l9)
+```
+
 ## Evaluation Results (6,125 samples, 100 Euler steps, SDE sc_scale_noise=0.45)
 
 ### Latest Checkpoints
