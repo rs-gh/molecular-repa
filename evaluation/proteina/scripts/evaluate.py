@@ -6,7 +6,7 @@ Replaces inference.py's monolithic predict-then-evaluate flow with:
 3. Compute metrics only after all generation is done
 4. Compute designability, diversity, and novelty metrics
 
-Usage (called by eval_fid.sh):
+Usage (called by hpc-scripts/proteina/evaluation/eval_fid.sh):
     python evaluate.py --config_name inference_fid_60m_baseline
 """
 
@@ -25,7 +25,7 @@ import torch
 from loguru import logger
 from omegaconf import OmegaConf
 
-# proteina imports (pyg_compat and torch.load patching done in eval_fid.sh wrapper)
+# proteina imports (pyg_compat and torch.load patching done in hpc-scripts/proteina/evaluation/eval_fid.sh wrapper)
 from proteinfoundation.proteinflow.proteina import Proteina
 from proteinfoundation.metrics.metric_factory import (
     GenerationMetricFactory,

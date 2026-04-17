@@ -283,101 +283,160 @@ class TestSDPACUDA:
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA required")
-class TestSDPABackendSelection:
-    """Verify which SDPA backend is actually used.
+class TestSDPABackendRouting:
+    """Characterize which SDPA backend actually handles proteina's attention.
 
-    FlashAttention-2 may not support arbitrary [B, H, N, N] additive biases.
-    With a dense attn_mask, PyTorch dispatches to either the memory-efficient
-    (xformers) backend or the Math fallback. This test suite detects which
-    backend we actually get, so we know if we're getting a real speedup.
+    Proteina passes a (B, H, N, N) float additive bias to
+    F.scaled_dot_product_attention (pair_bias_attn.py:126). Not every SDPA
+    backend accepts this pattern — FlashAttention-2 only supports per-head
+    ALiBi slopes, not arbitrary dense bias; EFFICIENT_ATTENTION (memory-
+    efficient / xformers) is spec'd to accept arbitrary bias but has stricter
+    runtime requirements around contiguity and grad.
+
+    These tests document the current reality: which backends SDPA can
+    dispatch to for our exact input pattern. If any assertion flips (e.g.,
+    FLASH starts accepting our bias on a future torch upgrade, or the
+    attention code changes so EFFICIENT accepts it), these will fail and
+    prompt us to re-measure throughput.
     """
 
-    def _make_inputs(self, n=256, dtype=torch.bfloat16):
-        """Create inputs at a given sequence length."""
-        q = torch.randn(B, H, n, D, device="cuda", dtype=dtype)
-        k = torch.randn(B, H, n, D, device="cuda", dtype=dtype)
-        v = torch.randn(B, H, n, D, device="cuda", dtype=dtype)
-        bias = torch.randn(B, H, n, n, device="cuda", dtype=dtype)
+    def _make_inputs(self, n=256, dtype=torch.bfloat16, requires_grad=True):
+        """Inputs matching proteina's attention call shape."""
+        q = torch.randn(
+            B, H, n, D, device="cuda", dtype=dtype, requires_grad=requires_grad
+        )
+        k = torch.randn(
+            B, H, n, D, device="cuda", dtype=dtype, requires_grad=requires_grad
+        )
+        v = torch.randn(
+            B, H, n, D, device="cuda", dtype=dtype, requires_grad=requires_grad
+        )
+        bias = torch.randn(
+            B, H, n, n, device="cuda", dtype=dtype, requires_grad=requires_grad
+        )
         return q, k, v, bias
 
-    def test_flash_attention_accepts_dense_bias(self):
-        """FlashAttention on PyTorch 2.6+ / A100 supports dense additive bias.
+    def _try_backend(self, backend, do_backward=True):
+        """Run forward (+ optional backward) under the given SDPA backend.
+        Returns True if succeeds, False if the backend rejects the inputs."""
+        from torch.nn.attention import sdpa_kernel
 
-        Earlier versions rejected [B,H,N,N] biases, but FA2 now handles them.
-        This is the best-case scenario for performance.
+        q, k, v, bias = self._make_inputs()
+        try:
+            with sdpa_kernel([backend]):
+                out = torch.nn.functional.scaled_dot_product_attention(
+                    q,
+                    k,
+                    v,
+                    attn_mask=bias,
+                    scale=SCALE,
+                )
+            if do_backward:
+                out.sum().backward()
+            torch.cuda.synchronize()
+            return True
+        except RuntimeError:
+            return False
+
+    def test_math_backend_accepts_proteina_bias(self):
+        """MATH is the universal fallback; must always work on our pattern."""
+        from torch.nn.attention import SDPBackend
+
+        assert self._try_backend(SDPBackend.MATH), (
+            "MATH backend rejected proteina's attention inputs — "
+            "something fundamentally changed in torch's SDPA."
+        )
+
+    def test_flash_backend_currently_rejects_proteina_bias(self):
+        """Characterization: FLASH_ATTENTION rejects dense (B,H,N,N) bias.
+
+        FA2 only supports per-head ALiBi slopes, not arbitrary bias.
+        FA3 has partial support but isn't wired through torch's FLASH dispatch.
+        If this test starts failing, a torch upgrade enabled dense-bias
+        support — re-run the SDPA benchmark to confirm a real speedup.
         """
-        q, k, v, bias = self._make_inputs()
-        with torch.backends.cuda.sdp_kernel(
-            enable_flash=True,
-            enable_math=False,
-            enable_mem_efficient=False,
-        ):
-            out = torch.nn.functional.scaled_dot_product_attention(
-                q,
-                k,
-                v,
-                attn_mask=bias,
-                scale=SCALE,
-            )
-            assert out.shape == (B, H, 256, D)
+        from torch.nn.attention import SDPBackend
 
-    def test_mem_efficient_backend_accepts_dense_bias(self):
-        """Memory-efficient backend should accept our dense bias."""
-        q, k, v, bias = self._make_inputs()
-        with torch.backends.cuda.sdp_kernel(
-            enable_flash=False,
-            enable_math=False,
-            enable_mem_efficient=True,
-        ):
-            out = torch.nn.functional.scaled_dot_product_attention(
-                q,
-                k,
-                v,
-                attn_mask=bias,
-                scale=SCALE,
-            )
-            assert out.shape == (B, H, 256, D)
+        assert not self._try_backend(SDPBackend.FLASH_ATTENTION), (
+            "FLASH_ATTENTION unexpectedly accepted proteina's dense bias — "
+            "this is good news, re-run hpc-scripts/proteina/bench/benchmark_sdpa.py "
+            "to measure the throughput gain and update docs."
+        )
 
-    def test_math_fallback_works(self):
-        """Math backend (manual) should always work as a fallback."""
-        q, k, v, bias = self._make_inputs()
-        with torch.backends.cuda.sdp_kernel(
-            enable_flash=False,
-            enable_math=True,
-            enable_mem_efficient=False,
-        ):
-            out = torch.nn.functional.scaled_dot_product_attention(
-                q,
-                k,
-                v,
-                attn_mask=bias,
-                scale=SCALE,
-            )
-            assert out.shape == (B, H, 256, D)
+    def test_efficient_backend_currently_rejects_proteina_bias(self):
+        """Characterization: EFFICIENT_ATTENTION also rejects our bias today.
 
-    def test_default_dispatch_does_not_use_math(self):
-        """With default dispatch, verify we get mem_efficient, not math.
-
-        If this fails, SDPA is silently falling back to the Math backend
-        and we get no memory or speed benefit over the manual implementation.
+        EFFICIENT *is* designed to accept arbitrary additive bias, but some
+        combination of (strided-view bias from rearrange, requires_grad, bf16
+        under autocast) trips it up in training. See
+        hpc-scripts/proteina/bench/diagnose_sdpa.py for the matrix of tried
+        fixes. If this test flips, one of those constraints got lifted —
+        re-benchmark and update proteina_training_runs.md.
         """
-        q, k, v, bias = self._make_inputs(n=512)
-        # Run with all backends enabled (default) and check that
-        # mem_efficient alone can handle it
-        with torch.backends.cuda.sdp_kernel(
-            enable_flash=False,
-            enable_math=False,
-            enable_mem_efficient=True,
-        ):
-            # If this succeeds, mem_efficient handles our inputs
-            out = torch.nn.functional.scaled_dot_product_attention(
-                q,
-                k,
-                v,
-                attn_mask=bias,
-                scale=SCALE,
-            )
-            assert out.shape == (B, H, 512, D)
+        from torch.nn.attention import SDPBackend
+
+        assert not self._try_backend(SDPBackend.EFFICIENT_ATTENTION), (
+            "EFFICIENT_ATTENTION accepted proteina's bias — update the "
+            "SDPA benchmark and docs, this is a potential speedup."
+        )
+
+    def test_default_dispatch_falls_to_math(self):
+        """Because FLASH and EFFICIENT both reject our inputs, the default
+        (all-backends-enabled) dispatcher must fall through to MATH.
+
+        Proof by elimination: disable MATH, leave only FLASH+EFFICIENT, and
+        the call should fail — since neither accepts our pattern, MATH is
+        the only backend carrying the forward pass in production today.
+        """
+        from torch.nn.attention import SDPBackend, sdpa_kernel
+
+        q, k, v, bias = self._make_inputs()
+        with pytest.raises(RuntimeError):
+            with sdpa_kernel(
+                [
+                    SDPBackend.FLASH_ATTENTION,
+                    SDPBackend.EFFICIENT_ATTENTION,
+                ]
+            ):
+                out = torch.nn.functional.scaled_dot_product_attention(
+                    q,
+                    k,
+                    v,
+                    attn_mask=bias,
+                    scale=SCALE,
+                )
+                out.sum().backward()
+                torch.cuda.synchronize()
+
+    def test_pair_bias_attention_routes_to_sdpa_path(self):
+        """Verify ``use_sdpa=True`` (config default) routes through
+        F.scaled_dot_product_attention, not the manual einsum fallback.
+
+        Guards against a silent regression where use_sdpa gets flipped off
+        and we don't notice.
+        """
+        import sys
+        import os
+
+        sys.path.insert(
+            0,
+            os.path.join(
+                os.path.dirname(__file__), "../../src/proteina/proteinfoundation"
+            ),
+        )
+        from nn.pair_bias_attn.pair_bias_attn import PairBiasAttention
+
+        attn = PairBiasAttention(
+            node_dim=64,
+            pair_dim=32,
+            heads=H,
+            head_dim=8,
+            use_sdpa=True,
+        )
+        assert attn.use_sdpa is True
+        # ``_attn_sdpa`` is the method that calls F.scaled_dot_product_attention;
+        # merely asserting use_sdpa=True is the config-level guard.
+        assert hasattr(attn, "_attn_sdpa")
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA required")

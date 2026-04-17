@@ -140,11 +140,12 @@ def load_results():
     return df
 
 
-def plot_metric(data: pd.DataFrame, metric: str, ax):
+def plot_metric(data: pd.DataFrame, metric: str, ax, log_y: bool = False):
     """Plot a single metric vs samples seen on the given axis.
 
-    Lite eval points are shown as thin connected lines.
-    Full eval points are overlaid as large markers (no connecting line).
+    Lite eval points are shown as dotted lines with low opacity.
+    Full eval points are shown as solid lines with full opacity and larger markers.
+    Both axes use log scale for REPA-paper-style convergence plots.
     """
     has_lite = "eval_type" in data.columns and (data["eval_type"] == "lite").any()
 
@@ -155,36 +156,39 @@ def plot_metric(data: pd.DataFrame, metric: str, ax):
         color, marker, ls = STYLES.get(run_name, ("gray", "x", ":"))
 
         if has_lite:
-            # Plot lite points as thin connected line
             lite = group[group["eval_type"] == "lite"]
+            full = group[group["eval_type"] == "full"]
+
+            # Lite: dotted, low opacity, small markers
             if not lite.empty:
                 ax.plot(
                     lite["samples_seen"],
                     lite[metric],
                     color=color,
                     marker=marker,
-                    markersize=4,
-                    linewidth=1.5,
-                    linestyle=ls,
-                    alpha=0.7,
-                    label=run_name,
+                    markersize=5,
+                    linewidth=1.2,
+                    linestyle="--",
+                    alpha=0.4,
+                    label=f"{run_name} (lite)",
                 )
-            # Overlay full eval points as large markers
-            full = group[group["eval_type"] == "full"]
+            # Full: solid, full opacity, large markers with edge
             if not full.empty:
-                ax.scatter(
+                ax.plot(
                     full["samples_seen"],
                     full[metric],
                     color=color,
                     marker=marker,
-                    s=100,
-                    edgecolors="black",
-                    linewidths=0.8,
+                    markersize=9,
+                    linewidth=2.5,
+                    linestyle=ls,
+                    alpha=1.0,
+                    markeredgecolor="white",
+                    markeredgewidth=1.0,
                     zorder=5,
-                    label=f"{run_name} (full)" if lite.empty else None,
+                    label=run_name,
                 )
         else:
-            # No lite data: plot full eval with lines + annotations (original style)
             ax.plot(
                 group["samples_seen"],
                 group[metric],
@@ -195,28 +199,22 @@ def plot_metric(data: pd.DataFrame, metric: str, ax):
                 linestyle=ls,
                 label=run_name,
             )
-            for _, row in group.iterrows():
-                ax.annotate(
-                    f"{int(row['global_step']) // 1000}K steps",
-                    (row["samples_seen"], row[metric]),
-                    textcoords="offset points",
-                    xytext=(0, 8),
-                    ha="center",
-                    fontsize=7,
-                    color=color,
-                )
 
-    ax.set_xlabel("Samples Seen", fontsize=10)
-    ax.set_ylabel(METRIC_LABELS[metric], fontsize=10)
-    ax.set_title(METRIC_LABELS[metric], fontsize=11, fontweight="bold")
-    ax.grid(True, alpha=0.3)
+    ax.set_xscale("log")
+    if log_y:
+        ax.set_yscale("log")
+    ax.set_xlabel("Samples Seen", fontsize=11, fontweight="bold")
+    ax.set_ylabel(METRIC_LABELS[metric], fontsize=11, fontweight="bold")
+    ax.set_title(METRIC_LABELS[metric], fontsize=12, fontweight="bold")
+    ax.grid(True, alpha=0.3, which="both")
+    ax.tick_params(labelsize=9)
 
-    # Use log scale when we have many lite data points
-    if has_lite:
-        ax.set_xscale("log")
-        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{x/1e6:.1f}M"))
-    else:
-        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{x/1e6:.1f}M"))
+    def fmt_samples(x, _):
+        if x >= 1e6:
+            return f"{x/1e6:.1f}M"
+        return f"{x/1e3:.0f}K"
+
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(fmt_samples))
 
 
 def main():
@@ -229,8 +227,8 @@ def main():
 
     # --- FID plot (2 panels) ---
     fig_fid, axes_fid = plt.subplots(1, 2, figsize=(14, 5))
-    plot_metric(data, "_res_PDB_FID", axes_fid[0])
-    plot_metric(data, "_res_AFDB_FID", axes_fid[1])
+    plot_metric(data, "_res_PDB_FID", axes_fid[0], log_y=True)
+    plot_metric(data, "_res_AFDB_FID", axes_fid[1], log_y=True)
     axes_fid[0].legend(fontsize=9)
     fig_fid.suptitle(
         "FID vs Samples Seen (BS=6 baseline, BS=4 REPA)", fontsize=14, fontweight="bold"
