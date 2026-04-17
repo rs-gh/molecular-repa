@@ -7,15 +7,19 @@ WandB project: [`sr2173-university-of-cambridge/tabasco`](https://wandb.ai/sr217
 | Parameter | Runs below (pre-audit) | Current default (post-audit) | Reference paper |
 |---|---|---|---|
 | Projector layers | 2 | 3 | 3 |
-| Averaging | per_atom (global) | per_sample | per_sample (mean_flat) |
+| Averaging | per_atom (global) | **per_atom** (project choice) | per-patch mean_flat (≡ per_sample at fixed patch count; no guidance for variable length) |
 | Similarity | cosine | cosine | cosine (normalize+dot) |
 | Lambda | 0.5-0.8 | 0.5-0.8 | 0.5 |
 | Combination | additive or tradeoff | additive or tradeoff | additive |
 
-> **Note (2026-04-16 audit)**: All runs below were trained with `projector num_layers: 2` (default)
-> and global per-atom averaging. The codebase has since been updated to default to
-> `num_layers: 3` and `averaging: per_sample` to match the reference REPA paper.
-> Future runs should use the new defaults. See [repa-codeflow.md](repa-codeflow.md) for audit details.
+> **Note (2026-04-16 audit, updated 2026-04-17)**: All runs below were trained with
+> `projector num_layers: 2` (default) and global per-atom averaging. The projector-layers
+> default was updated to 3 to match the reference REPA paper; the averaging default was
+> reverted to `per_atom` on 2026-04-17 to preserve continuity with existing checkpoints.
+> `averaging: per_sample` remains available via explicit override — note neither option is
+> "the paper default" since the paper averages per-patch at fixed patch count per image, so
+> per-sample and per-patch coincide there and the paper gives no variable-length guidance.
+> See [repa-codeflow.md](repa-codeflow.md) for audit details.
 
 ## GEOM Dataset — Production Runs
 

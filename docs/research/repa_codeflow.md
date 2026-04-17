@@ -184,11 +184,11 @@ https://github.com/sihyun-yu/REPA (image-domain DiT).
 
 **1. Per-sample vs per-residue averaging (FIXED)**
 
-The reference computes `mean_flat` per sample (averaging over tokens), then averages over the batch — each sample contributes equally regardless of length. Our original code flattened all unmasked tokens globally and took one `.mean()`, causing longer proteins to dominate the gradient.
+The reference computes `mean_flat` per sample (averaging over patches), then averages over the batch. However, **this distinction is vacuous in the image domain**: every image has the same number of patches (fixed resolution → fixed patch grid), so per-sample and per-patch global averaging are mathematically identical. The paper never had to make this choice because with constant N, (1/B)Σ(1/N)Σs = (1/BN)ΣΣs. We cannot derive a preference from the reference.
 
-This also created an inconsistency with the flow matching loss, which is per-sample: a 200-residue protein got the same FM loss weight as a 50-residue protein, but 4x the REPA weight.
+In our setting (variable-length proteins/molecules), the two diverge: our original code flattened all unmasked tokens globally and took one `.mean()`, causing longer proteins to dominate the gradient. This created an inconsistency with the flow matching loss, which is per-sample: a 200-residue protein got the same FM loss weight as a 50-residue protein, but 4x the REPA weight.
 
-Fix: Added `averaging` parameter to `ProteinaREPALoss` with options `"per_sample"` (paper default) and `"per_residue"` (legacy). Wired through config as `repa.averaging`.
+Fix: Added `averaging` parameter to `ProteinaREPALoss` with options `"per_sample"` (each structure weighted equally) and `"per_residue"` (default). Wired through config as `repa.averaging`. Neither can claim to be "the paper default" — the paper's `mean_flat` is per-patch averaging, which equals per-sample only when every image has the same patch count. The paper never had to choose between them and provides no guidance for variable-length domains. The project default was set to `"per_residue"` on 2026-04-17 to match the averaging that produced the existing v2 checkpoints. See the section below on theoretical justification for each choice.
 
 **2. Projector depth (FIXED)**
 
@@ -229,3 +229,45 @@ Same two divergences fixed. The `averaging` parameter uses `"per_atom"` (instead
 | `TestTabascoPerSampleVsPerAtomAveraging` | Both modes work; agree at equal lengths, diverge otherwise |
 | `TestTabascoProjectorArchitecture` | MLP structure matches expected layer counts |
 | `TestTabascoMSEMode` | MSE path produces finite loss with gradients |
+
+## Per-Sample vs Per-Residue Averaging: Theoretical Justification
+
+The 2026-04-16 audit briefly defaulted to per-sample for consistency with the flow matching loss, but on 2026-04-17 the default was reverted to per-residue to preserve continuity with the averaging used to train the existing v2 checkpoints. The original REPA paper operates in the image domain where all samples have the same number of patches — per-sample and per-patch averaging are mathematically identical, so the paper provides no guidance on this choice. In our variable-length setting (proteins/molecules), the two diverge and represent genuinely different design decisions. This section documents the theoretical argument for each.
+
+### The core distinction: sample-level vs token-level objectives
+
+The flow matching loss is inherently a **sample-level** objective: "did you reconstruct this molecule/protein correctly?" Averaging per-sample makes sense because you care about each structure equally regardless of its size.
+
+REPA is a **representation quality** regularizer: "does each position's hidden state encode useful structural information?" That is arguably a token-level property. Per-residue averaging says "every residue matters equally for representation quality," which is a coherent and distinct stance from saying "every protein matters equally."
+
+These are different objectives measuring different things at different levels of abstraction, so there is no a priori reason they must use the same averaging.
+
+### Precedent for mixed-granularity losses
+
+Using a regularizer at a different averaging granularity than the main loss is common in deep learning:
+
+1. **Weight decay** — the most ubiquitous regularizer, operating per-parameter. A layer with more parameters receives proportionally more regularization gradient. Nobody argues weight decay should be "per-layer-averaged" for consistency with per-sample task loss.
+
+2. **MoE load-balancing losses** — in Mixture-of-Experts models, the main language modeling loss is per-token→per-sample, but the auxiliary load-balancing loss operates on batch-level expert utilization statistics. Different granularity by design.
+
+3. **VICReg / Barlow Twins** — the variance and covariance regularization terms operate on batch-level statistics (covariance matrices), while any reconstruction or task loss is per-sample.
+
+4. **Deep supervision** — auxiliary losses at intermediate layers commonly use different averaging or weighting than the final loss.
+
+5. **Knowledge distillation** — the KD loss (soft targets) and the task loss (hard targets) are routinely averaged differently.
+
+### The argument for per-residue REPA
+
+With per-sample averaging, a 200-residue protein and a 50-residue protein contribute equal REPA gradient. But the 200-residue protein has 4× more positions where representation quality matters. Per-residue averaging naturally gives it proportionally more REPA signal.
+
+The framing: **regularization budget should scale with the number of degrees of freedom being regularized.** This is exactly how weight decay works — more parameters means proportionally more regularization. Per-residue REPA applies the same principle: more residues means proportionally more representation-quality constraint.
+
+### The counterargument: gradient imbalance
+
+The risk is effective λ becoming length-dependent. If the FM loss gives each protein equal gradient magnitude but REPA gives longer proteins 4× more, the effective `λ_repa` is no longer constant across the batch. Longer proteins get regularized harder relative to their reconstruction signal.
+
+Whether this helps or hurts depends on whether longer sequences genuinely need more representation guidance (plausible — more positions to get right) or whether the imbalance distorts training dynamics by over-constraining longer sequences at the expense of reconstruction quality.
+
+### Bottom line
+
+If per-residue averaging wins empirically, the principled justification is: **REPA is a local representation quality constraint, and local constraints should scale with the number of local units being constrained.** The "inconsistency" with per-sample FM loss is not a bug — it reflects that the two losses are measuring fundamentally different things at different levels of abstraction. Mixed-granularity losses are well-precedented across deep learning.
