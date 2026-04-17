@@ -6,7 +6,7 @@ fast max_length filtering without re-scanning the LMDB at every startup.
 
 Usage:
     source .venv/bin/activate
-    python hpc-scripts/proteina/build_lmdb_length_index.py --lmdb_dir /path/to/lmdb/
+    python hpc-scripts/proteina/data_prep/build_lmdb_length_index.py --lmdb_dir /path/to/lmdb/
 
 Output files (per split):
     {lmdb_dir}/{split}_lengths.npy   - int32 array of residue counts

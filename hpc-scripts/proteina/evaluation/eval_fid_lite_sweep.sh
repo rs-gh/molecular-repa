@@ -4,16 +4,16 @@
 #! Generates ~300 PDBs per checkpoint (~35 min) for convergence curves.
 #!
 #! Usage:
-#!   sbatch --array=0-10 hpc-scripts/proteina/eval_fid_lite_sweep.sh baseline
-#!   sbatch --array=0-11 hpc-scripts/proteina/eval_fid_lite_sweep.sh repa
-#!   sbatch --array=0-11 hpc-scripts/proteina/eval_fid_lite_sweep.sh repa_layer0
-#!   sbatch --array=0-11 hpc-scripts/proteina/eval_fid_lite_sweep.sh repa_layer9
+#!   sbatch --array=0-10 hpc-scripts/proteina/evaluation/eval_fid_lite_sweep.sh baseline
+#!   sbatch --array=0-11 hpc-scripts/proteina/evaluation/eval_fid_lite_sweep.sh repa
+#!   sbatch --array=0-11 hpc-scripts/proteina/evaluation/eval_fid_lite_sweep.sh repa_layer0
+#!   sbatch --array=0-11 hpc-scripts/proteina/evaluation/eval_fid_lite_sweep.sh repa_layer9
 #!
 #! Submit all at once:
-#!   sbatch --array=0-10 hpc-scripts/proteina/eval_fid_lite_sweep.sh baseline && \
-#!   sbatch --array=0-11 hpc-scripts/proteina/eval_fid_lite_sweep.sh repa && \
-#!   sbatch --array=0-11 hpc-scripts/proteina/eval_fid_lite_sweep.sh repa_layer0 && \
-#!   sbatch --array=0-11 hpc-scripts/proteina/eval_fid_lite_sweep.sh repa_layer9
+#!   sbatch --array=0-10 hpc-scripts/proteina/evaluation/eval_fid_lite_sweep.sh baseline && \
+#!   sbatch --array=0-11 hpc-scripts/proteina/evaluation/eval_fid_lite_sweep.sh repa && \
+#!   sbatch --array=0-11 hpc-scripts/proteina/evaluation/eval_fid_lite_sweep.sh repa_layer0 && \
+#!   sbatch --array=0-11 hpc-scripts/proteina/evaluation/eval_fid_lite_sweep.sh repa_layer9
 #!
 
 #SBATCH -A LIO-CHARM-SL2-GPU

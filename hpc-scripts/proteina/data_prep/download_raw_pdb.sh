@@ -6,7 +6,7 @@
 #! Requires GPU partition (ampere) because icelake nodes can't resolve PDB servers.
 #!
 #! Usage:
-#!   sbatch hpc-scripts/proteina/download_raw_pdb.sh
+#!   sbatch hpc-scripts/proteina/data_prep/download_raw_pdb.sh
 
 #SBATCH -J prot-pdb-dl
 #SBATCH -A LIO-CHARM-SL2-GPU
@@ -116,4 +116,4 @@ echo "=== DOWNLOAD COMPLETE ==="
 echo "=== Total raw files: $N_RAW ==="
 echo "=== Time: $(date) ==="
 echo ""
-echo "Next step: sbatch hpc-scripts/proteina/convert_to_lmdb.sh"
+echo "Next step: sbatch hpc-scripts/proteina/data_prep/convert_to_lmdb.sh"

@@ -7,7 +7,7 @@
 #! skips existing files, downloads remaining with parallel wget.
 #!
 #! Usage:
-#!   sbatch hpc-scripts/proteina/download_raw_pdb_fast.sh
+#!   sbatch hpc-scripts/proteina/data_prep/download_raw_pdb_fast.sh
 
 #SBATCH -J prot-pdb-dl-fast
 #SBATCH -A COMPUTERLAB-SL2-CPU
@@ -90,4 +90,4 @@ echo "=== DOWNLOAD COMPLETE ==="
 echo "=== Total raw files: $N_FINAL / $N_TOTAL unique PDB codes ==="
 echo "=== Time: $(date) ==="
 echo ""
-echo "Next step: sbatch hpc-scripts/proteina/convert_to_lmdb.sh pdb"
+echo "Next step: sbatch hpc-scripts/proteina/data_prep/convert_to_lmdb.sh pdb"

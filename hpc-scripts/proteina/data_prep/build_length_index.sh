@@ -4,7 +4,7 @@
 #! Scans all LMDB entries to extract protein lengths, saves as .npy + .pkl
 #! files alongside the LMDB. One-time cost (~90 min for 425k entries).
 #!
-#! Usage: sbatch hpc-scripts/proteina/smoke_tests/build_length_index.sh
+#! Usage: sbatch hpc-scripts/proteina/data_prep/build_length_index.sh
 #!
 
 #SBATCH -J lmdb-idx
@@ -34,7 +34,7 @@ echo "=== Time: $(date) ==="
 
 LMDB_DIR="/rds/user/sr2173/hpc-work/proteina/data/pdb_train/lmdb"
 
-python -u "$REPO_DIR/hpc-scripts/proteina/build_lmdb_length_index.py" \
+python -u "$REPO_DIR/hpc-scripts/proteina/data_prep/build_lmdb_length_index.py" \
     --lmdb_dir "$LMDB_DIR" \
     --splits train val
 

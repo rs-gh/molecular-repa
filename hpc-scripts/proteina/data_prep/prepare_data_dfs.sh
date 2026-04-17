@@ -5,7 +5,7 @@
 #!   2. Process raw PDB → .pt files (datamodule.prepare_data)
 #!
 #! Usage:
-#!   sbatch hpc-scripts/proteina/prepare_data_dfs.sh
+#!   sbatch hpc-scripts/proteina/data_prep/prepare_data_dfs.sh
 
 #SBATCH -J prot-dfs-prep
 #SBATCH -A COMPUTERLAB-SL2-CPU

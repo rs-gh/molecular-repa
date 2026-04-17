@@ -1,20 +1,17 @@
 #!/bin/bash
 #!
-#! SLURM job script for Proteina REPA (60M, GearNet alignment, torch.compile)
+#! SLURM job script for Proteina baseline (60M, no REPA, torch.compile)
 #! Wilkes3 (AMD EPYC 7763, ConnectX-6, A100 80GB)
 #!
 #! Usage:
-#!   sbatch hpc-scripts/proteina/train_repa.sh                                              # default: training_repa (flat/symlink)
-#!   sbatch hpc-scripts/proteina/train_repa.sh training_repa training/512                   # 512 REPA (subdir)
-#!   sbatch hpc-scripts/proteina/train_repa.sh training_baseline_256 training/256            # 256 baseline (subdir)
-#!   sbatch hpc-scripts/proteina/train_repa.sh training_repa_l4_256 training/256             # 256 REPA layer 4
+#!   sbatch hpc-scripts/proteina/training/train_baseline.sh          # fresh or auto-resume
 #!
 #! Checkpoint resume is automatic: if a last.ckpt exists under the run's
 #! store directory, train_repa.py picks it up and continues training.
 #! WandB likewise resumes the same run (keyed by run_name_ in the config).
 #!
 
-#SBATCH -J prot-repa
+#SBATCH -J prot-baseline
 #SBATCH -A LIO-CHARM-SL2-GPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -25,8 +22,8 @@
 #SBATCH --mail-user=sr2173@cam.ac.uk
 
 #! Output logs on RDS to avoid filling /home (50GB quota):
-#SBATCH --output=/rds/user/sr2173/hpc-work/proteina/logs/repa-%j.out
-#SBATCH --error=/rds/user/sr2173/hpc-work/proteina/logs/repa-%j.err
+#SBATCH --output=/rds/user/sr2173/hpc-work/proteina/logs/baseline-%j.out
+#SBATCH --error=/rds/user/sr2173/hpc-work/proteina/logs/baseline-%j.err
 
 #! Do not change:
 #SBATCH -p ampere
@@ -46,22 +43,11 @@ PROTEINA_DIR="$REPO_DIR/src/proteina/proteinfoundation"
 conda deactivate 2>/dev/null || true
 source "$REPO_DIR/.venv/bin/activate"
 
-#! Data and environment (DATA_PATH must contain metric_factory/model_weights/gearnet_ca.pth)
+#! Data and environment
 export DATA_PATH="/rds/user/sr2173/hpc-work/proteina/data"
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export WANDB_INIT_TIMEOUT=120
-
-REPA_CONFIG="${1:-training_repa}"
-REPA_SUBDIR="${2:-}"
-
-#! Set descriptive SLURM job name from config (e.g. training_repa_l4_256 -> repa-l4-256)
-#! Normalize: training_repa (layer 4 implicit) -> repa-l4, training_repa_layer0 -> repa-l0
-JOB_SHORT=$(echo "$REPA_CONFIG" | sed 's/^training_//' | sed 's/repa_layer/repa_l/' | sed 's/_/-/g')
-# training_repa with no layer suffix is layer 4 — make that explicit
-if [ "$JOB_SHORT" = "repa" ]; then JOB_SHORT="repa-l4"; fi
-if [ "$JOB_SHORT" = "repa-v2" ]; then JOB_SHORT="repa-l4"; fi
-scontrol update JobId="$SLURM_JOB_ID" JobName="$JOB_SHORT" 2>/dev/null
 
 #! Ensure log directory exists
 mkdir -p /rds/user/sr2173/hpc-work/proteina/logs
@@ -82,7 +68,7 @@ echo "Done"
 echo "=== NODE: $(hostname) ==="
 echo "=== GPU: $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader) ==="
 echo "=== SLURM_JOB_ID: $SLURM_JOB_ID ==="
-echo "=== Config: ${REPA_SUBDIR:+$REPA_SUBDIR/}$REPA_CONFIG ==="
+echo "=== Config: training_baseline ==="
 echo "=== Time: $(date) ==="
 echo ""
 
@@ -90,7 +76,7 @@ echo ""
 ### GPU utilization monitor (background, 10s intervals)     ###
 ###############################################################
 
-GPU_LOG="/rds/user/sr2173/hpc-work/proteina/logs/gpu-util-repa-${SLURM_JOB_ID}.csv"
+GPU_LOG="/rds/user/sr2173/hpc-work/proteina/logs/gpu-util-baseline-${SLURM_JOB_ID}.csv"
 nvidia-smi --query-gpu=timestamp,utilization.gpu,utilization.memory,memory.used,memory.total \
     --format=csv -l 10 > "$GPU_LOG" &
 GPU_MON_PID=$!
@@ -147,10 +133,7 @@ import torch.multiprocessing as mp
 mp.set_start_method('spawn', force=True)
 
 import sys, runpy
-argv = ['train_repa.py', '--config_name', '${REPA_CONFIG}', '--show_prog_bar']
-if '${REPA_SUBDIR}':
-    argv += ['--config_subdir', '${REPA_SUBDIR}']
-sys.argv = argv
+sys.argv = ['train_repa.py', '--config_name', 'training_baseline', '--config_subdir', 'training/512', '--show_prog_bar']
 runpy.run_path('train_repa.py', run_name='__main__')
 "
 TRAIN_EXIT=$?

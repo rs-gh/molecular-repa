@@ -194,8 +194,8 @@ The REPA config aligns transformer hidden states at layer 4 (of 10) with a froze
 SLURM scripts are provided for Wilkes3 (A100):
 
 ```bash
-sbatch hpc-scripts/proteina/train_baseline.sh   # baseline 60M model
-sbatch hpc-scripts/proteina/train_repa.sh        # REPA-aligned 60M model
+sbatch hpc-scripts/proteina/training/train_baseline.sh   # baseline 60M model
+sbatch hpc-scripts/proteina/training/train_repa.sh        # REPA-aligned 60M model
 ```
 
 Before submitting, ensure:

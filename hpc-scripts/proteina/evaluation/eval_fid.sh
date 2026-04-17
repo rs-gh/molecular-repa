@@ -4,9 +4,9 @@
 #! Wilkes3 (AMD EPYC 7763, ConnectX-6, A100 80GB)
 #!
 #! Usage:
-#!   sbatch hpc-scripts/proteina/eval_fid.sh inference_fid_60m_baseline                   # flat (symlink)
-#!   sbatch hpc-scripts/proteina/eval_fid.sh inference_fid_60m_baseline inference          # subdir
-#!   sbatch hpc-scripts/proteina/eval_fid.sh inference_fid_60m_repa inference
+#!   sbatch hpc-scripts/proteina/evaluation/eval_fid.sh inference_fid_60m_baseline                   # flat (symlink)
+#!   sbatch hpc-scripts/proteina/evaluation/eval_fid.sh inference_fid_60m_baseline inference          # subdir
+#!   sbatch hpc-scripts/proteina/evaluation/eval_fid.sh inference_fid_60m_repa inference
 #!
 
 #SBATCH -A LIO-CHARM-SL2-GPU

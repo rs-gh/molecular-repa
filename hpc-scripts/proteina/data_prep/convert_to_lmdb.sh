@@ -3,8 +3,8 @@
 #! Run AFTER download_raw_pdb.sh or download_raw_pdb_fast.sh completes.
 #!
 #! Usage:
-#!   sbatch hpc-scripts/proteina/convert_to_lmdb.sh          # default: PDB dataset
-#!   sbatch hpc-scripts/proteina/convert_to_lmdb.sh d_FS     # D_FS dataset
+#!   sbatch hpc-scripts/proteina/data_prep/convert_to_lmdb.sh          # default: PDB dataset
+#!   sbatch hpc-scripts/proteina/data_prep/convert_to_lmdb.sh d_FS     # D_FS dataset
 
 #SBATCH -J prot-lmdb-conv
 # Using GPU account/partition for a CPU-only job because the CPU account
@@ -37,10 +37,10 @@ echo "=== Dataset: $DATASET ==="
 echo ""
 
 if [ "$DATASET" = "pdb" ]; then
-    python "$REPO_DIR/hpc-scripts/proteina/convert_to_lmdb.py" \
+    python "$REPO_DIR/hpc-scripts/proteina/data_prep/convert_to_lmdb.py" \
         --config_name pdb_train_compile --config_subdir pdb/original
 elif [ "$DATASET" = "d_FS" ]; then
-    python "$REPO_DIR/hpc-scripts/proteina/convert_to_lmdb.py" \
+    python "$REPO_DIR/hpc-scripts/proteina/data_prep/convert_to_lmdb.py" \
         --config_name d_FS --config_subdir afdb
 else
     echo "Unknown dataset: $DATASET (use 'pdb' or 'd_FS')"
