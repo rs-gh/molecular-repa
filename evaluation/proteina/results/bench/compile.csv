@@ -1,0 +1,7 @@
+seq_len,model_type,compile_mode,batch_size,status,peak_mem_gb,n_total,n_warmup,n_measured,median_s_per_step,p10_s,p90_s,p99_s,steps_per_sec,total_s,samples_per_sec
+256,baseline,off,8,ok,21.78,100,30,70,0.2414,0.1718,0.242,0.2425,4.143,23.15,33.14
+256,baseline,default,8,ok,16.73,100,30,70,0.0926,0.0741,0.0928,0.0932,10.805,124.85,86.44
+256,baseline,reduce-overhead,8,error,,,,,,,,,,,
+512,baseline,off,6,ok,59.1,100,30,70,0.4269,0.4263,0.6081,0.6088,2.343,50.25,14.06
+512,baseline,default,6,ok,44.65,100,30,70,0.1656,0.1652,0.2105,0.2111,6.037,129.59,36.22
+512,baseline,reduce-overhead,6,error,,,,,,,,,,,

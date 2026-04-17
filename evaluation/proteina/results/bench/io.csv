@@ -1,0 +1,7 @@
+source,num_workers,pin_memory,batch_size,max_size,status
+lustre,0,True,6,512,error
+lustre,0,False,6,512,error
+lustre,2,True,6,512,error
+lustre,2,False,6,512,error
+lustre,4,True,6,512,error
+lustre,4,False,6,512,error

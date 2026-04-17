@@ -1,0 +1,9 @@
+seq_len,model_type,sdpa_backend,compile_mode,batch_size,status,peak_mem_gb,n_total,n_warmup,n_measured,median_s_per_step,p10_s,p90_s,p99_s,steps_per_sec,total_s,samples_per_sec
+512,baseline,default,off,6,ok,59.09,100,30,70,0.4268,0.4263,0.6079,0.6085,2.343,50.25,14.06
+512,baseline,efficient,off,6,unsupported,,,,,,,,,,,
+512,baseline,math,off,6,ok,59.1,100,30,70,0.4269,0.4266,0.608,0.6087,2.342,50.27,14.05
+512,baseline,flash,off,6,unsupported,,,,,,,,,,,
+512,baseline,default,default,6,ok,44.66,100,30,70,0.1652,0.1648,0.2101,0.2107,6.054,130.3,36.33
+512,baseline,efficient,default,6,unsupported,,,,,,,,,,,
+512,baseline,math,default,6,ok,44.66,100,30,70,0.166,0.1655,0.2107,0.2112,6.024,130.81,36.15
+512,baseline,flash,default,6,unsupported,,,,,,,,,,,
