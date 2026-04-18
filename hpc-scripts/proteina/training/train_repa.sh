@@ -49,6 +49,9 @@ source "$REPO_DIR/.venv/bin/activate"
 
 #! Data and environment (DATA_PATH must contain metric_factory/model_weights/gearnet_ca.pth)
 export DATA_PATH="/rds/user/sr2173/hpc-work/proteina/data"
+#! ESM-2-650M weights staged for REPA configs using `encoder.type: esm`.
+#! Ignored by gearnet configs. Falls back to HF hub download if unset.
+export ESM_MODEL_PATH="/rds/user/sr2173/hpc-work/proteina/hf_cache/esm2_t33_650M_UR50D"
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export WANDB_INIT_TIMEOUT=120

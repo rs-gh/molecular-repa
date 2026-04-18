@@ -199,7 +199,7 @@ class MockEncoder(nn.Module):
         self.proj = nn.Linear(3, encoder_dim, bias=False)
 
     @torch.no_grad()
-    def forward(self, ca_coords_nm, mask):
+    def forward(self, ca_coords_nm, mask, residue_type=None):
         features = self.proj(ca_coords_nm)
         features = features * mask[..., None].float()
         return features
