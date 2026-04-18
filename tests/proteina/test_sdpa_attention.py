@@ -61,6 +61,11 @@ def _attn_sdpa(
         )
         attn_bias = attn_bias + mask_bias if exists(attn_bias) else mask_bias
 
+    # Mirrors prod: force contiguity so EFFICIENT_ATTENTION dispatches instead
+    # of MATH fallback (see pair_bias_attn.py and test class below).
+    if attn_bias is not None:
+        attn_bias = attn_bias.contiguous()
+
     return torch.nn.functional.scaled_dot_product_attention(
         q,
         k,
@@ -542,3 +547,154 @@ class TestSDPAEdgeCases:
         out_manual = _attn_manual(q, k, v, b=bias, scale=SCALE, mask=None)
         out_sdpa = _attn_sdpa(q, k, v, b=bias, scale=SCALE, mask=None)
         assert torch.allclose(out_manual, out_sdpa, atol=ATOL)
+
+
+class TestContiguousBiasFix:
+    """Guard: the prod SDPA path must call .contiguous() on the attn_mask
+    before dispatching F.scaled_dot_product_attention.
+
+    Reason: proteina produces the pair bias via
+    ``rearrange(to_bias(pair_feats), "b ... h -> b h ...")`` which returns a
+    non-contiguous strided view. The fused SDPA kernels (FLASH, EFFICIENT,
+    CUDNN) all require ``stride(-1) == 1`` on ``attn_mask``; a strided input
+    causes torch to silently fall back to the MATH kernel (~4× slower per
+    attention call).
+
+    Numerical equivalence verified 2026-04-18 via
+    hpc-scripts/proteina/bench/diagnose_sdpa.py (MATH-strided vs
+    EFFICIENT-contiguous agree to worst-case 5.0e-3 relative, below bf16
+    eps). Output preserved at
+    evaluation/proteina/results/bench/sdpa_equivalence_2026-04-18.txt.
+
+    If this test starts failing, someone removed the .contiguous() call in
+    pair_bias_attn._attn_sdpa and training silently regressed onto MATH.
+    """
+
+    def test_sdpa_receives_contiguous_mask_when_input_is_strided(self):
+        """Even when _attn_sdpa is handed a strided bias (the actual proteina
+        rearrange pattern), the bias reaching F.scaled_dot_product_attention
+        must be contiguous."""
+        import sys
+        import os
+
+        sys.path.insert(
+            0,
+            os.path.join(
+                os.path.dirname(__file__), "../../src/proteina/proteinfoundation"
+            ),
+        )
+        from nn.pair_bias_attn.pair_bias_attn import PairBiasAttention
+        import torch.nn.functional as F_mod
+
+        attn = PairBiasAttention(
+            node_dim=32,
+            dim_head=8,
+            heads=H,
+            bias=True,
+            dim_out=32,
+            qkln=False,
+            pair_dim=16,
+            use_sdpa=True,
+        )
+
+        # Build inputs in proteina's actual layout: bias comes in as (B, H, N, N)
+        # from a rearrange("b ... h -> b h ..."), which is a non-contiguous view.
+        q = torch.randn(B, H, N, D)
+        k = torch.randn(B, H, N, D)
+        v = torch.randn(B, H, N, D)
+        bias_src = torch.randn(B, N, N, H)
+        strided_bias = bias_src.permute(0, 3, 1, 2)  # (B, H, N, N), non-contig
+        assert (
+            not strided_bias.is_contiguous()
+        ), "test setup: strided_bias should be non-contiguous before the fix"
+
+        captured = {}
+        original_sdpa = F_mod.scaled_dot_product_attention
+
+        def spy_sdpa(q, k, v, attn_mask=None, **kwargs):
+            captured["attn_mask"] = attn_mask
+            return original_sdpa(q, k, v, attn_mask=attn_mask, **kwargs)
+
+        F_mod.scaled_dot_product_attention = spy_sdpa
+        try:
+            attn._attn_sdpa(q, k, v, b=strided_bias, mask=None)
+        finally:
+            F_mod.scaled_dot_product_attention = original_sdpa
+
+        assert "attn_mask" in captured, "F.scaled_dot_product_attention was not invoked"
+        assert captured["attn_mask"] is not None, "attn_mask was dropped before SDPA"
+        assert captured["attn_mask"].is_contiguous(), (
+            "attn_mask reaching F.scaled_dot_product_attention is NOT contiguous. "
+            "The .contiguous() fix in pair_bias_attn._attn_sdpa is missing or broken — "
+            "training will fall back to the slow MATH kernel (~4× slower per "
+            "attention call). See evaluation/proteina/results/bench/"
+            "sdpa_equivalence_2026-04-18.txt for numerical-equivalence evidence."
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA required")
+    def test_prod_attn_dispatches_to_fused_kernel_not_math(self):
+        """Runtime check: with the .contiguous() fix in place, prod's
+        _attn_sdpa call must be accepted by a fused kernel (EFFICIENT /
+        FLASH / CUDNN), not silently fall back to MATH.
+
+        Stronger than the contiguity-spy test above: that only checks the
+        necessary condition (stride==1 on last dim). This test proves the
+        sufficient condition (a fused kernel actually accepts our full
+        input tuple) by excluding MATH from the allowed-backends list and
+        asserting the call still succeeds.
+        """
+        import sys
+        import os
+
+        sys.path.insert(
+            0,
+            os.path.join(
+                os.path.dirname(__file__), "../../src/proteina/proteinfoundation"
+            ),
+        )
+        from nn.pair_bias_attn.pair_bias_attn import PairBiasAttention
+        from torch.nn.attention import SDPBackend, sdpa_kernel
+
+        attn = PairBiasAttention(
+            node_dim=32,
+            dim_head=8,
+            heads=H,
+            bias=True,
+            dim_out=32,
+            qkln=False,
+            pair_dim=16,
+            use_sdpa=True,
+        ).cuda()
+
+        # Match prod conditions: bf16, requires_grad, strided bias from rearrange.
+        dtype = torch.bfloat16
+        q = torch.randn(B, H, N, D, device="cuda", dtype=dtype, requires_grad=True)
+        k = torch.randn(B, H, N, D, device="cuda", dtype=dtype, requires_grad=True)
+        v = torch.randn(B, H, N, D, device="cuda", dtype=dtype, requires_grad=True)
+        bias_src = torch.randn(
+            B, N, N, H, device="cuda", dtype=dtype, requires_grad=True
+        )
+        strided_bias = bias_src.permute(0, 3, 1, 2)
+        assert not strided_bias.is_contiguous()
+
+        # Exclude MATH from the backend whitelist. If _attn_sdpa still works,
+        # a fused kernel (EFFICIENT / FLASH / CUDNN) handled the call — which
+        # is only possible because .contiguous() was applied to the bias.
+        fused_only = [
+            SDPBackend.EFFICIENT_ATTENTION,
+            SDPBackend.FLASH_ATTENTION,
+        ]
+        cudnn = getattr(SDPBackend, "CUDNN_ATTENTION", None)
+        if cudnn is not None:
+            fused_only.append(cudnn)
+
+        with sdpa_kernel(fused_only):
+            try:
+                out = attn._attn_sdpa(q, k, v, b=strided_bias, mask=None)
+                out.sum().backward()
+            except RuntimeError as e:
+                pytest.fail(
+                    "prod _attn_sdpa failed when MATH is disabled — no fused "
+                    "kernel accepted the inputs, meaning training is on the "
+                    "slow MATH path. Inner error: " + str(e).splitlines()[0]
+                )

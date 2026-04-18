@@ -198,5 +198,73 @@ def main():
             print(f"  {label:35s}  fwd+bwd  FAIL   {first[:120]}")
 
 
+def scenario_numerical_equivalence():
+    """F: Compare MATH(strided bias) vs EFFICIENT(contiguous bias) on IDENTICAL inputs.
+
+    This is the safety check before swapping prod's attention path from MATH → EFFICIENT
+    via `.contiguous()` on the bias. Returns max/mean abs and relative diff for forward
+    and all four backward grads.
+    """
+    print(
+        "\n─── F: numerical equivalence (MATH strided vs EFFICIENT contiguous, same inputs) ───"
+    )
+    torch.manual_seed(42)
+    torch.cuda.manual_seed_all(42)
+
+    # One shared set of values, produced via proteina's rearrange pattern
+    q = torch.randn(B, H, N, D, device=DEVICE, dtype=DTYPE)
+    k = torch.randn(B, H, N, D, device=DEVICE, dtype=DTYPE)
+    v = torch.randn(B, H, N, D, device=DEVICE, dtype=DTYPE)
+    bias_src = torch.randn(B, N, N, H, device=DEVICE, dtype=DTYPE)
+    bias_strided = bias_src.permute(0, 3, 1, 2)  # proteina's actual layout (non-contig)
+    bias_contig = bias_strided.contiguous()  # what we'd swap to in prod
+
+    assert not bias_strided.is_contiguous() and bias_contig.is_contiguous()
+    assert torch.equal(bias_strided, bias_contig), ".contiguous() changed values"
+
+    def run_with(backend, bias):
+        qq = q.clone().detach().requires_grad_(True)
+        kk = k.clone().detach().requires_grad_(True)
+        vv = v.clone().detach().requires_grad_(True)
+        bb = bias.clone().detach().requires_grad_(True)
+        with sdpa_kernel([backend]):
+            out = F.scaled_dot_product_attention(
+                qq, kk, vv, attn_mask=bb, scale=1.0 / (D**0.5)
+            )
+        out.sum().backward()
+        return out.detach(), qq.grad, kk.grad, vv.grad, bb.grad
+
+    out_m, gq_m, gk_m, gv_m, gb_m = run_with(SDPBackend.MATH, bias_strided)
+    out_e, gq_e, gk_e, gv_e, gb_e = run_with(
+        SDPBackend.EFFICIENT_ATTENTION, bias_contig
+    )
+
+    def report(a, b, name):
+        af, bf = a.float(), b.float()
+        d = (af - bf).abs()
+        ref = af.abs().max().item() + 1e-12
+        print(
+            f"  {name:4s}  max_abs={d.max().item():.3e}  mean_abs={d.mean().item():.3e}  "
+            f"rel_max={d.max().item()/ref:.3e}  ref_max={af.abs().max().item():.3e}"
+        )
+        return d.max().item() / ref
+
+    rels = [
+        report(out_m, out_e, "out"),
+        report(gq_m, gq_e, "gq"),
+        report(gk_m, gk_e, "gk"),
+        report(gv_m, gv_e, "gv"),
+        report(gb_m, gb_e, "gb"),
+    ]
+    worst = max(rels)
+    bf16_eps = 2.0**-7  # ~7.8e-3
+    verdict = "OK" if worst < 5e-2 else ("MARGINAL" if worst < 1e-1 else "FAIL")
+    print(
+        f"\n  worst_rel_max={worst:.3e}  bf16_eps≈{bf16_eps:.1e}  "
+        f"VERDICT: {verdict} (threshold: OK<5e-2, MARGINAL<1e-1, else FAIL)"
+    )
+
+
 if __name__ == "__main__":
     main()
+    scenario_numerical_equivalence()

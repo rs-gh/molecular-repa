@@ -14,6 +14,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
 #SBATCH --time=0:04:47
+#SBATCH --qos=intr
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-user=sr2173@cam.ac.uk
 #SBATCH --output=/rds/user/sr2173/hpc-work/proteina/logs/sdpa-diag-%j.out
@@ -35,6 +36,9 @@ echo "=== GPU: $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader)
 echo ""
 
 python -u "$REPO_DIR/hpc-scripts/proteina/bench/diagnose_sdpa.py"
+PY_EXIT=$?
 
 echo ""
-echo "=== DONE: $(date) ==="
+echo "=== DONE: $(date) (python exit=$PY_EXIT) ==="
+
+exit $PY_EXIT
