@@ -1,14 +1,19 @@
 #!/bin/bash
 #!
-#! SLURM job script for Proteina REPA (60M, GearNet alignment, torch.compile)
+#! SLURM job script for Proteina (baseline or REPA, GearNet/ESM alignment, torch.compile)
 #! Wilkes3 (AMD EPYC 7763, ConnectX-6, A100 80GB)
 #!
-#! Usage:
-#!   sbatch hpc-scripts/proteina/training/train_repa.sh                                                                 # default: training_repa (flat/symlink)
-#!   sbatch hpc-scripts/proteina/training/train_repa.sh training_repa training/512                                      # 512 REPA (subdir)
-#!   sbatch hpc-scripts/proteina/training/train_repa.sh training_baseline_256 training/256                              # 256 baseline (subdir)
-#!   sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l4_256_per_residue training/256/per_residue       # 256 REPA layer 4, per_residue averaging
-#!   sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l4_256_per_sample  training/256/per_sample        # 256 REPA layer 4, per_sample averaging
+#! Config tree: training/<seq_len>/[<encoder>/[<averaging>/]]<config_name>.yaml
+#!   - Baselines live at training/<seq_len>/ (no encoder subdir).
+#!   - REPA configs live at training/<seq_len>/<encoder>/[<averaging>/],
+#!     where <encoder> ∈ {gearnet, esm2, ...}.
+#!
+#! Usage (pass <config_name> and <config_subdir>):
+#!   sbatch .../train_repa.sh training_repa training/512/gearnet                                  # 512 REPA gearnet (implicit layer 4)
+#!   sbatch .../train_repa.sh training_baseline_256 training/256                                  # 256 baseline
+#!   sbatch .../train_repa.sh training_repa_l4_256_per_residue training/256/gearnet/per_residue   # 256 REPA gearnet l4, per_residue
+#!   sbatch .../train_repa.sh training_repa_l4_256_per_sample  training/256/gearnet/per_sample    # 256 REPA gearnet l4, per_sample
+#!   sbatch .../train_repa.sh training_repa_l9_256_per_residue training/256/esm2/per_residue      # 256 REPA ESM-2, l9, per_residue
 #!
 #! Checkpoint resume is automatic: if a last.ckpt exists under the run's
 #! store directory, train_repa.py picks it up and continues training.

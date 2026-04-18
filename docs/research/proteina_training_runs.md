@@ -2,6 +2,28 @@
 
 WandB project: [`sr2173-university-of-cambridge/proteina-repa`](https://wandb.ai/sr2173-university-of-cambridge/proteina-repa)
 
+## Training-config layout
+
+```
+configs/experiment_config/training/<seq_len>/[<encoder>/[<averaging>/]]<config>.yaml
+```
+
+- **Baselines** live at `training/<seq_len>/training_baseline*.yaml` — no encoder subdir (they don't use REPA).
+- **REPA configs** live at `training/<seq_len>/<encoder>/[<averaging>/]<config>.yaml`, where `<encoder>` ∈ `{gearnet, esm2, ...}`.
+- The encoder also appears in-config at `repa.encoder.type` — single source of truth; the factory in [`proteina_repa.py::_build_encoder`](../../src/proteina/proteinfoundation/repa/proteina_repa.py) matches on it. Legacy flat-schema configs (`repa.gearnet_ckpt_path` at top of `repa:`) are still accepted via backward-compat.
+
+**Adding a new encoder**: drop a config under `training/<seq_len>/<new_encoder>/<averaging>/...yaml`, set `repa.encoder.type: <new_encoder>`, and add a branch in `_build_encoder` that returns the encoder instance. WandB will auto-group the run by `encoder_<type>` tag/group ([`train_repa.py`](../../src/proteina/proteinfoundation/train_repa.py) derives this from `cfg_exp.repa.encoder.type`).
+
+**SLURM**:
+```bash
+# REPA (gearnet)
+sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l4_256_per_residue training/256/gearnet/per_residue
+# REPA (ESM-2)
+sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l9_256_per_residue training/256/esm2/per_residue
+# Baseline (no encoder subdir)
+sbatch hpc-scripts/proteina/training/train_baseline.sh training_baseline_256 training/256
+```
+
 ## Dataset
 
 PDB LMDB (579,823 CIF files). Train/val/test split: 98%/1.9%/0.1%.
@@ -65,7 +87,9 @@ Early runs before production configuration was finalized.
 
 Smaller runs for faster iteration (256 max residues instead of 512).
 
-Config layout: `src/proteina/configs/experiment_config/training/256/{per_residue,per_sample}/training_repa_l{0,4,9}_256_{per_residue,per_sample}.yaml`.
+Config layout: `src/proteina/configs/experiment_config/training/256/gearnet/{per_residue,per_sample}/training_repa_l{0,4,9}_256_{per_residue,per_sample}.yaml`.
+
+ESM-2 REPA variant (added 2026-04-18): `.../training/256/esm2/per_residue/training_repa_l9_256_per_residue.yaml`.
 
 ### Active runs (post-2026-04-17 rename)
 
@@ -100,7 +124,7 @@ Prior collision bug: `training_repa_l{0,9}_256_persamp.yaml` had `run_name_` poi
 
 Added 2026-04-17 for faster iteration than the 256 tier — ~4× lower attention cost. Intended for overnight convergence experiments rather than multi-day production runs.
 
-Config layout: `src/proteina/configs/experiment_config/training/128/{training_baseline_128.yaml, per_residue/training_repa_l{0,4,9}_128_per_residue.yaml}`. Dataset: `pdb_lmdb_128` (batch_size 24 placeholder, `lmdb_max_num_residues: 128`, `PaddingTransform max_size: 128`, `dataselector.max_length: 128`).
+Config layout: `src/proteina/configs/experiment_config/training/128/{training_baseline_128.yaml, gearnet/per_residue/training_repa_l{0,4,9}_128_per_residue.yaml}`. Dataset: `pdb_lmdb_128` (batch_size 24 placeholder, `lmdb_max_num_residues: 128`, `PaddingTransform max_size: 128`, `dataselector.max_length: 128`).
 
 | Model | WandB Run ID (= run_name) | REPA Layer | Averaging | Projector depth |
 |---|---|---|---|---|
@@ -113,12 +137,12 @@ Config layout: `src/proteina/configs/experiment_config/training/128/{training_ba
 
 **Batch size**: 24 is a placeholder based on L² attention scaling from 256 (B=12). First launch may OOM or leave headroom — adjust `pdb_lmdb_128.yaml` if needed.
 
-**per_sample variants**: not shipped initially. Add via the 256 pattern (`training/128/per_sample/training_repa_l{0,4,9}_128_per_sample.yaml`) if needed.
+**per_sample variants**: not shipped initially. Add via the 256 pattern (`training/128/gearnet/per_sample/training_repa_l{0,4,9}_128_per_sample.yaml`) if needed.
 
 **Submission:**
 ```bash
 sbatch hpc-scripts/proteina/training/train_baseline.sh training_baseline_128 training/128
-sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l4_128_per_residue training/128/per_residue
+sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l4_128_per_residue training/128/gearnet/per_residue
 # (same pattern for l0, l9)
 ```
 
