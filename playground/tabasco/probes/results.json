@@ -1,0 +1,467 @@
+[
+  {
+    "source": "chemeleon_frozen",
+    "dim": 2048,
+    "atom_type": {
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "n_train": 20994,
+      "n_test": 5249,
+      "n_classes": 7
+    },
+    "descriptors": [
+      {
+        "target": "MolWt",
+        "pearson": 0.9965965151786804,
+        "r2": 0.9926396012306213,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "MolLogP",
+        "pearson": 0.9943346977233887,
+        "r2": 0.9878685474395752,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRings",
+        "pearson": 0.9978219866752625,
+        "r2": 0.9949950575828552,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRotatableBonds",
+        "pearson": 0.9949191212654114,
+        "r2": 0.9889302849769592,
+        "n_train": 800,
+        "n_test": 200
+      }
+    ],
+    "extract_seconds": 21.648088932037354,
+    "probe_seconds": 2.613821029663086
+  },
+  {
+    "source": "mace_frozen",
+    "dim": 192,
+    "atom_type": {
+      "accuracy": 0.9971423128214898,
+      "macro_f1": 0.8456846481310281,
+      "n_train": 20994,
+      "n_test": 5249,
+      "n_classes": 7
+    },
+    "descriptors": [
+      {
+        "target": "MolWt",
+        "pearson": 0.31639036536216736,
+        "r2": 0.022248029708862305,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "MolLogP",
+        "pearson": 0.663296639919281,
+        "r2": 0.30677318572998047,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRings",
+        "pearson": 0.36066365242004395,
+        "r2": 0.08131664991378784,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRotatableBonds",
+        "pearson": 0.03162744641304016,
+        "r2": -0.014361739158630371,
+        "n_train": 800,
+        "n_test": 200
+      }
+    ],
+    "extract_seconds": 22.103634119033813,
+    "probe_seconds": 0.6702489852905273
+  },
+  {
+    "source": "dummy_frozen",
+    "dim": 256,
+    "atom_type": {
+      "accuracy": 0.6961325966850829,
+      "macro_f1": 0.12059979854923279,
+      "n_train": 20994,
+      "n_test": 5249,
+      "n_classes": 7
+    },
+    "descriptors": [
+      {
+        "target": "MolWt",
+        "pearson": 0.9079719185829163,
+        "r2": 0.822191596031189,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "MolLogP",
+        "pearson": 0.40400901436805725,
+        "r2": 0.16018879413604736,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRings",
+        "pearson": 0.6613010168075562,
+        "r2": 0.43244147300720215,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRotatableBonds",
+        "pearson": 0.5947988629341125,
+        "r2": 0.3449092507362366,
+        "n_train": 800,
+        "n_test": 200
+      }
+    ],
+    "extract_seconds": 0.0574641227722168,
+    "probe_seconds": 5.182082176208496
+  },
+  {
+    "source": "ckpt:baseline",
+    "dim": 128,
+    "atom_type": {
+      "accuracy": 0.9992379500857306,
+      "macro_f1": 0.9930524821009907,
+      "n_train": 20994,
+      "n_test": 5249,
+      "n_classes": 7
+    },
+    "descriptors": [
+      {
+        "target": "MolWt",
+        "pearson": 0.9593995213508606,
+        "r2": 0.9197555780410767,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "MolLogP",
+        "pearson": 0.8452639579772949,
+        "r2": 0.7130608558654785,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRings",
+        "pearson": 0.8637182116508484,
+        "r2": 0.7420231103897095,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRotatableBonds",
+        "pearson": 0.7986476421356201,
+        "r2": 0.6362251043319702,
+        "n_train": 800,
+        "n_test": 200
+      }
+    ],
+    "extract_seconds": 3.7682945728302,
+    "probe_seconds": 1.0751595497131348,
+    "meta": {
+      "epoch": 32,
+      "global_step": 151107,
+      "stripped": true
+    }
+  },
+  {
+    "source": "ckpt:chemeleon_additive_same",
+    "dim": 128,
+    "atom_type": {
+      "accuracy": 0.9998094875214326,
+      "macro_f1": 0.9969410473314609,
+      "n_train": 20994,
+      "n_test": 5249,
+      "n_classes": 7
+    },
+    "descriptors": [
+      {
+        "target": "MolWt",
+        "pearson": 0.9687411785125732,
+        "r2": 0.937975287437439,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "MolLogP",
+        "pearson": 0.8215506076812744,
+        "r2": 0.6720631122589111,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRings",
+        "pearson": 0.8670627474784851,
+        "r2": 0.7457199692726135,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRotatableBonds",
+        "pearson": 0.7779395580291748,
+        "r2": 0.5996910333633423,
+        "n_train": 800,
+        "n_test": 200
+      }
+    ],
+    "extract_seconds": 3.7252602577209473,
+    "probe_seconds": 0.8320891857147217,
+    "meta": {
+      "epoch": 15,
+      "global_step": 73264,
+      "stripped": true
+    }
+  },
+  {
+    "source": "ckpt:chemeleon_tradeoff_same",
+    "dim": 128,
+    "atom_type": {
+      "accuracy": 0.9977138502571918,
+      "macro_f1": 0.977126259681033,
+      "n_train": 20994,
+      "n_test": 5249,
+      "n_classes": 7
+    },
+    "descriptors": [
+      {
+        "target": "MolWt",
+        "pearson": 0.964887261390686,
+        "r2": 0.9296863079071045,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "MolLogP",
+        "pearson": 0.7546579837799072,
+        "r2": 0.5649126172065735,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRings",
+        "pearson": 0.8009954690933228,
+        "r2": 0.6384789943695068,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRotatableBonds",
+        "pearson": 0.7321133613586426,
+        "r2": 0.532058596611023,
+        "n_train": 800,
+        "n_test": 200
+      }
+    ],
+    "extract_seconds": 3.7472662925720215,
+    "probe_seconds": 1.2910027503967285,
+    "meta": {
+      "epoch": 15,
+      "global_step": 73264,
+      "stripped": true
+    }
+  },
+  {
+    "source": "ckpt:chemeleon_additive_fused",
+    "dim": 128,
+    "atom_type": {
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "n_train": 20994,
+      "n_test": 5249,
+      "n_classes": 7
+    },
+    "descriptors": [
+      {
+        "target": "MolWt",
+        "pearson": 0.9719135761260986,
+        "r2": 0.9426701664924622,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "MolLogP",
+        "pearson": 0.8240697383880615,
+        "r2": 0.6693218946456909,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRings",
+        "pearson": 0.8613650798797607,
+        "r2": 0.7355570197105408,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRotatableBonds",
+        "pearson": 0.7783085107803345,
+        "r2": 0.6056614518165588,
+        "n_train": 800,
+        "n_test": 200
+      }
+    ],
+    "extract_seconds": 3.7457187175750732,
+    "probe_seconds": 0.9604992866516113,
+    "meta": {
+      "epoch": 15,
+      "global_step": 73264,
+      "stripped": true
+    }
+  },
+  {
+    "source": "ckpt:chemeleon_tradeoff_fused",
+    "dim": 128,
+    "atom_type": {
+      "accuracy": 0.9982853876928939,
+      "macro_f1": 0.9905401128662532,
+      "n_train": 20994,
+      "n_test": 5249,
+      "n_classes": 7
+    },
+    "descriptors": [
+      {
+        "target": "MolWt",
+        "pearson": 0.9461308121681213,
+        "r2": 0.8944693803787231,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "MolLogP",
+        "pearson": 0.8032469153404236,
+        "r2": 0.6332601308822632,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRings",
+        "pearson": 0.8618908524513245,
+        "r2": 0.7331480383872986,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRotatableBonds",
+        "pearson": 0.775178074836731,
+        "r2": 0.5974229574203491,
+        "n_train": 800,
+        "n_test": 200
+      }
+    ],
+    "extract_seconds": 3.7517168521881104,
+    "probe_seconds": 1.2767000198364258,
+    "meta": {
+      "epoch": 16,
+      "global_step": 77843,
+      "stripped": true
+    }
+  },
+  {
+    "source": "ckpt:mace_additive",
+    "dim": 128,
+    "atom_type": {
+      "accuracy": 0.999428462564298,
+      "macro_f1": 0.9908281391878864,
+      "n_train": 20994,
+      "n_test": 5249,
+      "n_classes": 7
+    },
+    "descriptors": [
+      {
+        "target": "MolWt",
+        "pearson": 0.967278242111206,
+        "r2": 0.9352222681045532,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "MolLogP",
+        "pearson": 0.8401699662208557,
+        "r2": 0.702977180480957,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRings",
+        "pearson": 0.8417702913284302,
+        "r2": 0.7041846513748169,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRotatableBonds",
+        "pearson": 0.7667405605316162,
+        "r2": 0.5816894769668579,
+        "n_train": 800,
+        "n_test": 200
+      }
+    ],
+    "extract_seconds": 3.734076738357544,
+    "probe_seconds": 0.9646961688995361,
+    "meta": {
+      "epoch": 14,
+      "global_step": 68685,
+      "stripped": true
+    }
+  },
+  {
+    "source": "ckpt:mace_tradeoff",
+    "dim": 128,
+    "atom_type": {
+      "accuracy": 0.999428462564298,
+      "macro_f1": 0.9854734657114986,
+      "n_train": 20994,
+      "n_test": 5249,
+      "n_classes": 7
+    },
+    "descriptors": [
+      {
+        "target": "MolWt",
+        "pearson": 0.9770259857177734,
+        "r2": 0.9545064568519592,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "MolLogP",
+        "pearson": 0.8543480634689331,
+        "r2": 0.7295653820037842,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRings",
+        "pearson": 0.8562765717506409,
+        "r2": 0.7316949963569641,
+        "n_train": 800,
+        "n_test": 200
+      },
+      {
+        "target": "NumRotatableBonds",
+        "pearson": 0.8161207437515259,
+        "r2": 0.6655693054199219,
+        "n_train": 800,
+        "n_test": 200
+      }
+    ],
+    "extract_seconds": 3.7550063133239746,
+    "probe_seconds": 0.6662962436676025,
+    "meta": {
+      "epoch": 14,
+      "global_step": 68685,
+      "stripped": true
+    }
+  }
+]
