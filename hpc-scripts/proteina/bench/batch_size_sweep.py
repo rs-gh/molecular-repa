@@ -82,7 +82,7 @@ def run_single_test(
         import hydra
         import lightning as L
         import torch
-        from omegaconf import OmegaConf
+        from omegaconf import OmegaConf, open_dict
         from torch_geometric.data import Data, Dataset
 
         from proteinfoundation.datasets.base_data import BaseLightningDataModule
@@ -128,7 +128,7 @@ def run_single_test(
         # --- Load base config ---
         config_path = os.path.join(
             os.path.dirname(__file__),
-            "../../src/proteina/configs/experiment_config",
+            "../../../src/proteina/configs/experiment_config",
         )
         with hydra.initialize_config_dir(
             os.path.abspath(config_path), version_base=hydra.__version__
@@ -137,7 +137,8 @@ def run_single_test(
 
         cfg_exp.hardware.ngpus_per_node_ = 1
         cfg_exp.hardware.nnodes_ = 1
-        cfg_exp.compile = compile_flag
+        with open_dict(cfg_exp):
+            cfg_exp.compile = compile_flag
         cfg_exp.run_name_ = f"bs_sweep_{seq_len}_{model_type}_{batch_size}"
 
         # --- Load transforms ---
@@ -169,7 +170,8 @@ def run_single_test(
                 "projector_hidden_dim": 512,
                 "projector_num_layers": 2,
             }
-            OmegaConf.update(cfg_exp, "repa", repa_cfg)
+            with open_dict(cfg_exp):
+                OmegaConf.update(cfg_exp, "repa", repa_cfg, force_add=True)
 
         # --- Create model ---
         tmp_dir = tempfile.mkdtemp(prefix="bs_sweep_")

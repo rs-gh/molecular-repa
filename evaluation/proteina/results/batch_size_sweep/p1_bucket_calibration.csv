@@ -1,0 +1,8 @@
+seq_len,model_type,compile,gc_layers,max_bs,peak_mem_gb,steps_per_sec,time_per_step,eff_bs_256_accum
+128,baseline,True,0,0,,,,
+192,baseline,True,0,0,,,,
+256,baseline,True,0,0,,,,
+320,baseline,True,0,0,,,,
+384,baseline,True,0,0,,,,
+448,baseline,True,0,0,,,,
+512,baseline,True,0,0,,,,
