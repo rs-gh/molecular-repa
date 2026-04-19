@@ -44,7 +44,7 @@ def parse_args():
     p.add_argument(
         "--config_subdir",
         default="",
-        help="Config subdir (e.g. training/256 or training/256/per_residue)",
+        help="Config subdir (e.g. training/256 or training/256/gearnet/per_residue)",
     )
     p.add_argument(
         "--optimization",

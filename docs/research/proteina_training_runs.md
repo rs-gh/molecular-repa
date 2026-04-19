@@ -308,13 +308,16 @@ Note: the project default was flipped to `per_residue` on 2026-04-17 to match th
 
 | Config | Description |
 |---|---|
-| `src/proteina/configs/experiment_config/training_baseline.yaml` | Baseline (no REPA) |
-| `src/proteina/configs/experiment_config/training_repa.yaml` | REPA L4 (full dataset) |
-| `src/proteina/configs/experiment_config/training_repa_layer0.yaml` | REPA L0 (full dataset) |
-| `src/proteina/configs/experiment_config/training_repa_layer9.yaml` | REPA L9 (full dataset) |
-| `src/proteina/configs/experiment_config/training_repa_l0_256.yaml` | REPA L0 (256 max len) |
-| `src/proteina/configs/experiment_config/training_repa_l4_256.yaml` | REPA L4 (256 max len) |
-| `src/proteina/configs/experiment_config/training_repa_l9_256.yaml` | REPA L9 (256 max len) |
+| `src/proteina/configs/experiment_config/training_baseline.yaml` | Baseline (no REPA) — 512 max len |
+| `src/proteina/configs/experiment_config/training/512/gearnet/training_repa.yaml` | REPA L4 GearNet (512 max len) |
+| `src/proteina/configs/experiment_config/training/512/gearnet/training_repa_layer0.yaml` | REPA L0 GearNet (512 max len) |
+| `src/proteina/configs/experiment_config/training/512/gearnet/training_repa_layer9.yaml` | REPA L9 GearNet (512 max len) |
+| `src/proteina/configs/experiment_config/training/256/gearnet/per_residue/training_repa_l{0,4,9}_256_per_residue.yaml` | REPA L{0,4,9} GearNet (256 max len), per_residue averaging |
+| `src/proteina/configs/experiment_config/training/256/gearnet/per_sample/training_repa_l{0,4,9}_256_per_sample.yaml` | REPA L{0,4,9} GearNet (256 max len), per_sample averaging |
+| `src/proteina/configs/experiment_config/training/256/esm2/per_residue/training_repa_l9_256_per_residue.yaml` | REPA L9 ESM-2 (256 max len), per_residue |
+| `src/proteina/configs/experiment_config/training/128/gearnet/per_residue/training_repa_l{0,4,9}_128_per_residue.yaml` | REPA L{0,4,9} GearNet (128 max len), per_residue |
+| `src/proteina/configs/experiment_config/training/{128,256}/training_baseline_{128,256}.yaml` | Baselines at 128 / 256 max len |
+| Legacy flat paths (`training_repa.yaml`, `training_repa_l{0,4,9}_256.yaml`, `training_repa_layer{0,9}.yaml`) | Symlinks kept for backwards-compat; resolve into the tree above |
 
 ## Evaluation Configs
 

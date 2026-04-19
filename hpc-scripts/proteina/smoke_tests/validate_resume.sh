@@ -17,7 +17,7 @@
 #!   # REPA l4 128, test EFFICIENT_ATTENTION backend is safe:
 #!   sbatch validate_resume.sh \
 #!     /rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_l4_128_per_residue/checkpoints/last.ckpt \
-#!     training_repa_l4_128_per_residue training/128/per_residue sdpa_efficient
+#!     training_repa_l4_128_per_residue training/128/gearnet/per_residue sdpa_efficient
 
 #SBATCH -J validate-resume
 #SBATCH -A LIO-CHARM-SL2-GPU

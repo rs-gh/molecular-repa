@@ -14,7 +14,7 @@ Slurm launchers for proteina training. Both scripts auto-resume from `last.ckpt`
 ```bash
 sbatch hpc-scripts/proteina/training/train_baseline.sh
 sbatch hpc-scripts/proteina/training/train_repa.sh
-sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l4_256_per_residue training/256/per_residue
+sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l4_256_per_residue training/256/gearnet/per_residue
 ```
 
 Before submitting:
