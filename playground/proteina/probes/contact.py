@@ -1,24 +1,19 @@
-"""P1 — long-range contact prediction (P@L/5) probe (proteina).
-
-Thin wrapper around `linear_probe_contacts` in utils.py. Trains a small MLP
-on pair features and reports precision-at-top-L/k for the three canonical
-cutoffs (L, L/2, L/5). Long-range means |i − j| ≥ 24, contact threshold 8 Å.
-"""
+# ruff: noqa: F401
+"""Compatibility shim — forwards to ``probelib.probes.contact``."""
 
 from __future__ import annotations
 
-from typing import Dict
+import sys
+from pathlib import Path
 
-import torch
+_HERE = Path(__file__).resolve().parent
+if str(_HERE) not in sys.path:
+    sys.path.insert(0, str(_HERE))
 
-from utils import ContactResult, linear_probe_contacts
+from probelib.probes.contact import (  # noqa: E402
+    ContactResult,
+    linear_probe_contacts,
+    run_contact_probe,
+)
 
-
-def run_contact_probe(
-    reps: torch.Tensor,  # [B, N, D] CPU
-    batch: Dict,  # must contain 'coords' (ang, [B, N, 37, 3]) and 'mask' ([B, N]), 'lengths'
-) -> ContactResult:
-    ca = batch["coords"][:, :, 1, :].cpu()
-    mask = batch["mask"].cpu()
-    lengths = batch["lengths"].cpu()
-    return linear_probe_contacts(reps, ca, mask, lengths)
+__all__ = ["ContactResult", "linear_probe_contacts", "run_contact_probe"]
