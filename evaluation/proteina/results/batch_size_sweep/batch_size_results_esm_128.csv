@@ -1,0 +1,2 @@
+seq_len,model_type,encoder,compile,gc_layers,max_bs,peak_mem_gb,steps_per_sec,time_per_step,eff_bs_256_accum
+128,repa,esm,True,0,80,61.99,0.962,1.039,4

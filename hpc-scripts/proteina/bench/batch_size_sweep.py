@@ -58,11 +58,24 @@ def parse_args():
         help="Test all combinations: compile × gc_layers variants",
     )
     parser.add_argument("--output_csv", type=str, default="batch_size_results.csv")
+    parser.add_argument(
+        "--encoder_type",
+        default="gearnet",
+        choices=["gearnet", "esm"],
+        help="REPA encoder to use. Only meaningful with model_types=repa.",
+    )
     return parser.parse_args()
 
 
 def run_single_test(
-    seq_len, batch_size, model_type, compile_flag, gc_layers, num_steps, result_queue
+    seq_len,
+    batch_size,
+    model_type,
+    compile_flag,
+    gc_layers,
+    num_steps,
+    result_queue,
+    encoder_type="gearnet",
 ):
     """Run a single batch size test in a child process.
 
@@ -98,6 +111,9 @@ def run_single_test(
                     coords=torch.randn(max_len, 37, 3),
                     coord_mask=torch.ones(max_len, 37, dtype=torch.bool),
                     seq=torch.randint(0, 20, (max_len,)),
+                    # ESM encoder needs residue_type (OpenFold AA indices, 0..19 standard).
+                    # Real LMDB sets this in lmdb_utils.py:60; fake dataset must too.
+                    residue_type=torch.randint(0, 20, (max_len,), dtype=torch.long),
                     res_seq_pdb_idx=torch.arange(max_len, dtype=torch.long),
                     chain_break_per_res=torch.zeros(max_len, dtype=torch.long),
                     num_nodes=max_len,
@@ -157,19 +173,40 @@ def run_single_test(
 
         # --- Inject REPA config if needed ---
         if model_type == "repa":
-            repa_cfg = {
-                "gearnet_ckpt_path": os.path.join(
-                    os.environ["DATA_PATH"],
-                    "metric_factory/model_weights/gearnet_ca.pth",
-                ),
-                "layers": [4],
-                "lambda_repa": 0.5,
-                "combination_mode": "additive",
-                "similarity_type": "cosine",
-                "averaging": "per_residue",
-                "projector_hidden_dim": 512,
-                "projector_num_layers": 2,
-            }
+            if encoder_type == "esm":
+                repa_cfg = {
+                    "encoder": {
+                        "type": "esm",
+                        "model_id": os.environ.get(
+                            "ESM_MODEL_PATH", "facebook/esm2_t33_650M_UR50D"
+                        ),
+                        "layer": None,
+                    },
+                    "layers": [4],
+                    "lambda_repa": 0.5,
+                    "combination_mode": "additive",
+                    "similarity_type": "cosine",
+                    "averaging": "per_residue",
+                    "projector_hidden_dim": 1280,  # ESM2-650M hidden_size
+                    "projector_num_layers": 3,
+                }
+            else:
+                repa_cfg = {
+                    "encoder": {
+                        "type": "gearnet",
+                        "gearnet_ckpt_path": os.path.join(
+                            os.environ["DATA_PATH"],
+                            "metric_factory/model_weights/gearnet_ca.pth",
+                        ),
+                    },
+                    "layers": [4],
+                    "lambda_repa": 0.5,
+                    "combination_mode": "additive",
+                    "similarity_type": "cosine",
+                    "averaging": "per_residue",
+                    "projector_hidden_dim": 512,
+                    "projector_num_layers": 2,
+                }
             with open_dict(cfg_exp):
                 OmegaConf.update(cfg_exp, "repa", repa_cfg, force_add=True)
 
@@ -265,7 +302,14 @@ def run_single_test(
 
 
 def test_batch_size(
-    seq_len, batch_size, model_type, compile_flag, gc_layers, num_steps, timeout
+    seq_len,
+    batch_size,
+    model_type,
+    compile_flag,
+    gc_layers,
+    num_steps,
+    timeout,
+    encoder_type="gearnet",
 ):
     """Run a single test in a subprocess, return result dict."""
     ctx = mp.get_context("spawn")
@@ -280,6 +324,7 @@ def test_batch_size(
             gc_layers,
             num_steps,
             result_queue,
+            encoder_type,
         ),
     )
     proc.start()
@@ -304,7 +349,15 @@ def test_batch_size(
 
 
 def binary_search_max_bs(
-    seq_len, model_type, compile_flag, gc_layers, lo, hi, num_steps, timeout
+    seq_len,
+    model_type,
+    compile_flag,
+    gc_layers,
+    lo,
+    hi,
+    num_steps,
+    timeout,
+    encoder_type="gearnet",
 ):
     """Binary search for the maximum batch size that doesn't OOM."""
     best_result = None
@@ -326,7 +379,14 @@ def binary_search_max_bs(
             shutil.rmtree(cache_dir, ignore_errors=True)
 
         result = test_batch_size(
-            seq_len, mid, model_type, compile_flag, gc_layers, num_steps, timeout
+            seq_len,
+            mid,
+            model_type,
+            compile_flag,
+            gc_layers,
+            num_steps,
+            timeout,
+            encoder_type=encoder_type,
         )
 
         if result["status"] == "ok":
@@ -388,11 +448,13 @@ def main():
                     args.max_bs,
                     args.num_steps,
                     args.timeout,
+                    encoder_type=args.encoder_type,
                 )
 
                 row = {
                     "seq_len": seq_len,
                     "model_type": model_type,
+                    "encoder": args.encoder_type if model_type == "repa" else "",
                     "compile": compile_flag,
                     "gc_layers": gc_layers,
                     "max_bs": max_bs,
