@@ -113,11 +113,34 @@ def _probe_one(reps: torch.Tensor, batch, raw, cath_level) -> Dict:
     }
 
 
-def _load_ckpt_with_retry(ckpt_path, is_repa, device, retries=3, backoff=10):
+class _LoadTimeout(Exception):
+    pass
+
+
+def _load_ckpt_with_retry(
+    ckpt_path, is_repa, device, retries=3, backoff=10, timeout_s=600
+):
+    """Load with retries AND a wall-clock timeout per attempt.
+
+    SIGALRM-based timeout so one stuck checkpoint (network hang, corrupted
+    state, GearNet re-init deadlock…) doesn't kill the whole sweep.
+    """
+    import signal
+
+    def _handler(signum, frame):
+        raise _LoadTimeout(f"checkpoint load exceeded {timeout_s}s")
+
     last_err = None
     for attempt in range(retries):
         try:
-            return load_checkpoint_by_path(ckpt_path, is_repa=is_repa, device=device)
+            signal.signal(signal.SIGALRM, _handler)
+            signal.alarm(timeout_s)
+            try:
+                return load_checkpoint_by_path(
+                    ckpt_path, is_repa=is_repa, device=device
+                )
+            finally:
+                signal.alarm(0)
         except Exception as e:
             last_err = e
             print(f"    load attempt {attempt + 1}/{retries} failed: {e}")
@@ -353,14 +376,23 @@ def main():
         run_dir, is_repa, _, steps = RUN_SCHEDULES[run_name]
         print(f"\n=== {run_name} ({run_dir}, {len(steps)} steps) ===")
 
+        # Proteina 60M uses 10 trunk layers; fixed across _v2 runs. We use
+        # this to skip fully-cached (run, step) pairs BEFORE paying a load.
+        EXPECTED_NLAYERS = 10
+
         for step in steps:
+            # Pre-load skip: if all expected layers are cached, don't load.
+            if all((run_name, int(step), L) in done for L in range(EXPECTED_NLAYERS)):
+                print(
+                    f"  step {step}: all {EXPECTED_NLAYERS} layers cached, skip (no load)"
+                )
+                continue
+
             ckpt = find_checkpoint_path(run_dir, step, prefer_ema=True)
             if ckpt is None:
                 print(f"  step {step}: NO EMA CKPT — skip")
                 continue
 
-            # Infer layer list from an already-loaded result if we have one for this run.
-            # Otherwise peek at the model once (below).
             print(f"\n  --- step {step} @ {ckpt.name} ---")
 
             try:
