@@ -41,11 +41,35 @@ RUN_COLORS = {
     "repa_l4": "#d62728",  # red
     "repa_l9": "#2ca02c",  # green
     "gearnet": "black",
+    "random_gauss": "#7f7f7f",  # gray
+    "seq_onehot": "#8c564b",  # brown
+    "random_rank": "#bcbd22",  # olive
+    "distance_only": "#17becf",  # cyan
+    "untrained_proteina": "#e377c2",  # pink
 }
 RUN_ALIGNED_LAYER = {"baseline": None, "repa_l0": 0, "repa_l4": 4, "repa_l9": 9}
 
+# Baseline rows with a single sentinel layer — plotted as horizontal reference
+# lines (same convention as the gearnet encoder row at layer=-1).
+BASELINE_SENTINELS = {
+    -1: "gearnet",
+    -2: "random_gauss",
+    -3: "seq_onehot",
+    -100: "random_rank",
+    -101: "distance_only",
+}
+# Untrained-proteina sentinel offset: probe row for trunk layer L has
+# `layer = -(L + 10)`. Inverse: trunk_layer = -L - 10 for L in [-19, -10].
+UNTRAINED_LAYER_MIN, UNTRAINED_LAYER_MAX = -19, -10
+
 # Per-run batch sizes for the 512 _v2 runs (see reference_proteina_batch_sizes.md).
 # bs differs because GearNet adds ~10GB GPU memory on top of the main model.
+# NOTE (2026-04-19): when adding 128-residue runs, bs is NOT uniform.
+#   baseline-128 (job 27971089, current) trained at bs=24 throughout.
+#   All REPA-128 variants (gearnet + esm, per_residue + per_sample) train at bs=80.
+#   Future baseline-128 runs / restarts will most likely adopt bs=80 — CONFIRM per run
+#   before appending an entry (a mid-run bs switch means one run has two regimes, and
+#   nsamples = step * bs is no longer a single scalar multiply).
 RUN_BATCH_SIZE = {
     "baseline": 6,
     "repa_l0": 4,
@@ -54,7 +78,7 @@ RUN_BATCH_SIZE = {
 }
 
 
-def _load() -> pd.DataFrame:
+def _load(manifest: str = None) -> pd.DataFrame:
     df = pd.read_csv(CSV)
     # Drop error rows
     df = df[df["error"].isna() | (df["error"] == "")].copy()
@@ -70,6 +94,15 @@ def _load() -> pd.DataFrame:
     ]:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c], errors="coerce")
+    # Manifest filter — apples-to-apples: v1 and v2 rows come from different
+    # protein samples so their numbers aren't directly comparable. If the
+    # caller doesn't specify, auto-pick the most common manifest in the CSV.
+    if "manifest" in df.columns:
+        if manifest is None:
+            counts = df["manifest"].fillna("v1").value_counts()
+            manifest = str(counts.index[0]) if len(counts) else "v1"
+        df = df[df["manifest"].fillna("v1") == manifest].copy()
+        print(f"[plot] manifest filter: keeping manifest='{manifest}' ({len(df)} rows)")
     # Add fair-comparison x-axis: nsamples_processed = step × batch_size.
     # (At 512 res, baseline bs=6, REPA bs=4 — using raw step would misrepresent REPA.)
     df["nsamples"] = df.apply(
@@ -82,11 +115,13 @@ def _load() -> pd.DataFrame:
 
 
 def _encoder_values(df: pd.DataFrame, metric: str) -> Dict[str, float]:
-    """Mean value per encoder (sentinel layer = -1)."""
-    enc = df[df["layer"] == -1]
+    """Mean value per reference run (one of the BASELINE_SENTINELS layers)."""
     out: Dict[str, float] = {}
-    for run, grp in enc.groupby("run"):
-        out[run] = float(grp[metric].mean())
+    for sentinel, name in BASELINE_SENTINELS.items():
+        sub = df[df["layer"] == sentinel]
+        if sub.empty:
+            continue
+        out[name] = float(sub[metric].mean())
     return out
 
 
@@ -107,6 +142,28 @@ def _plot_layerwise(df: pd.DataFrame, metric: str, title: str, out_path: Path) -
             label=f"{run} @ step {int(max_step):,}",
             linewidth=2,
             markersize=5,
+        )
+
+    # Untrained-proteina: plot as a full transformer curve by remapping its
+    # sentinel layers -(L+10) back to L ∈ [0, 9]. Lets you visualize the
+    # "random weights" shape alongside trained runs.
+    untr = df[
+        (df["run"] == "untrained_proteina")
+        & (df["layer"] >= UNTRAINED_LAYER_MIN)
+        & (df["layer"] <= UNTRAINED_LAYER_MAX)
+    ].copy()
+    if not untr.empty:
+        untr["trunk_layer"] = -untr["layer"] - 10  # invert _untrained_layer_sentinel
+        untr = untr.sort_values("trunk_layer")
+        ax.plot(
+            untr["trunk_layer"],
+            untr[metric],
+            "--s",
+            color=RUN_COLORS["untrained_proteina"],
+            label="untrained_proteina",
+            linewidth=1.5,
+            markersize=4,
+            alpha=0.8,
         )
         # Mark the alignment layer with a vertical tick
         al = RUN_ALIGNED_LAYER.get(run)
@@ -188,6 +245,11 @@ def _plot_progression(df: pd.DataFrame, out_path: Path) -> None:
     for ax, m in [(ax1, "p_at_L_5"), (ax2, "cath_acc")]:
         v = _encoder_values(df, m)
         for run, val in v.items():
+            # Skip NaN reference lines — breaks log-scale tight_layout and
+            # gives a meaningless "(frozen)" entry in the legend. Happens
+            # commonly on CATH when the 40-protein subset has too few labels.
+            if val != val:  # NaN check
+                continue
             ax.axhline(
                 val,
                 linestyle="--",
@@ -219,16 +281,26 @@ def _plot_progression(df: pd.DataFrame, out_path: Path) -> None:
 
 
 def main():
+    global CSV, FIG_DIR
     ap = argparse.ArgumentParser()
     ap.add_argument("--csv", type=str, default=str(CSV))
     ap.add_argument("--outdir", type=str, default=str(FIG_DIR))
+    ap.add_argument(
+        "--manifest",
+        type=str,
+        default=None,
+        help=(
+            "Manifest version to plot (v1 = cursor-first, v2+ = reservoir). "
+            "Default: whichever appears most in the CSV. v1 and v2 rows come "
+            "from different protein subsets and should not be mixed."
+        ),
+    )
     args = ap.parse_args()
 
-    global CSV, FIG_DIR
     CSV = Path(args.csv)
     FIG_DIR = Path(args.outdir)
 
-    df = _load()
+    df = _load(manifest=args.manifest)
     if df.empty:
         print(f"No usable rows in {CSV}")
         return

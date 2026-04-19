@@ -22,6 +22,18 @@ Resume behaviour:
 Usage:
   sbatch hpc-scripts/proteina/evaluation/run_probes.sh --sweep
   python playground/proteina/probes/run_sweep.py --n_proteins 200
+
+Sample selection:
+  Default — first-N proteins ≤ max_size in LMDB cursor order. Deterministic
+  but biased by insertion order. Every historical row in sweep_results.jsonl
+  (the 231 present before 2026-04-19) was collected this way; they carry
+  ``manifest: "v1"`` implicitly when re-consolidated.
+
+  --manifest_version v2 opts into uniform-random reservoir sampling. The
+  sampled LMDB keys are cached to ``batch_manifest_v2.json`` alongside the
+  JSONL so all reruns of the same version see identical proteins. New rows
+  are tagged ``manifest: "v2"`` so ``plot.py`` / ``pareto.py`` can filter
+  apples-to-apples.
 """
 
 from __future__ import annotations
@@ -43,6 +55,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from utils import (
+    LMDB_PATH,
     RUN_SCHEDULES,
     _default_device,
     extract_gearnet_embeddings,
@@ -51,6 +64,25 @@ from utils import (
     load_checkpoint_by_path,
     load_proteina_batch,
     model_num_layers,
+)
+from probelib.manifest import (
+    build_or_load_manifest,
+    load_proteina_batch_from_manifest,
+)
+from probelib.probes.contact import (
+    evaluate_contact_from_scores,
+    run_contact_probe_full,
+)
+from probelib.sources import (
+    LAYER_DISTANCE_ONLY,
+    LAYER_RANDOM_GAUSS,
+    LAYER_RANDOM_RANK,
+    LAYER_SEQ_ONEHOT,
+    DistanceOnlyScorer,
+    RandomGaussianRepSource,
+    RandomRankScorer,
+    SeqOnehotRepSource,
+    UntrainedProteinaRepSource,
 )
 from contact import run_contact_probe
 from cath import run_cath_probe
@@ -92,7 +124,15 @@ def _load_done_set(jsonl_path: Path) -> Tuple[Set[Tuple[str, int, int]], List[Di
     return done, rows
 
 
-def _append_row(jsonl_path: Path, row: Dict) -> None:
+def _append_row(jsonl_path: Path, row: Dict, manifest_tag: str = None) -> None:
+    """Append a result row to the JSONL.
+
+    If ``manifest_tag`` is given AND the row has no existing ``manifest`` key,
+    inject it so downstream plots can filter apples-to-apples across sample
+    selections. Rows written before this flag existed implicitly are ``v1``.
+    """
+    if manifest_tag is not None and "manifest" not in row:
+        row = {**row, "manifest": manifest_tag}
     with open(jsonl_path, "a") as f:
         f.write(json.dumps(row, default=str) + "\n")
         f.flush()
@@ -103,13 +143,89 @@ def _append_row(jsonl_path: Path, row: Dict) -> None:
 # --------------------------------------------------------------------------- #
 
 
-def _probe_one(reps: torch.Tensor, batch, raw, cath_level) -> Dict:
-    contact = run_contact_probe(reps, batch)
+def _probe_one(
+    reps: torch.Tensor,
+    batch,
+    raw,
+    cath_level: str,
+    heads: List[str] = None,
+    seeds: List[int] = None,
+) -> Dict:
+    """Run P1 + P2 on the given reps.
+
+    heads=None, seeds=None (default) → legacy flat schema matching the 231
+    historical rows: ``contact: {p_at_L, p_at_L_2, p_at_L_5, n_proteins_test}``.
+    heads/seeds set explicitly → rich schema with per-head / per-seed sub-dicts
+    plus back-compat flat fields (so consolidate() + historical readers still
+    work).
+    """
+    if heads is None and seeds is None:
+        contact = asdict(run_contact_probe(reps, batch))
+    else:
+        heads = heads or ["mlp"]
+        seeds = seeds or [42]
+        contact = run_contact_probe_full(reps, batch, heads=heads, seeds=seeds)
     cath = run_cath_probe(reps, batch["mask"], raw, preferred_level=cath_level)
     return {
         "dim": int(reps.shape[-1]),
-        "contact": asdict(contact),
+        "contact": contact,
         "cath": asdict(cath),
+    }
+
+
+def _probe_analytic(
+    source,
+    batch,
+    raw,
+    cath_level: str,
+) -> Dict:
+    """Run P1 for an AnalyticScorer (random_rank / distance_only).
+
+    Analytic sources don't emit per-residue reps, so CATH is skipped (no
+    mean-pooling target). Contact path uses ``evaluate_contact_from_scores``
+    over whatever scores the source produces.
+
+    For RandomRankScorer: averages P@L/k over all seeds.
+    For DistanceOnlyScorer: single deterministic scoring.
+    """
+    if hasattr(source, "score_pairs_per_seed"):
+        per_seed = []
+        for seed, scores in source.score_pairs_per_seed(batch):
+            per_seed.append(evaluate_contact_from_scores(scores, batch))
+        import numpy as _np
+
+        p_L = _np.array([r.p_at_L for r in per_seed])
+        p_L2 = _np.array([r.p_at_L_2 for r in per_seed])
+        p_L5 = _np.array([r.p_at_L_5 for r in per_seed])
+        contact = {
+            "p_at_L": float(p_L.mean()),
+            "p_at_L_2": float(p_L2.mean()),
+            "p_at_L_5": float(p_L5.mean()),
+            "p_at_L_std": float(p_L.std(ddof=0)),
+            "p_at_L_2_std": float(p_L2.std(ddof=0)),
+            "p_at_L_5_std": float(p_L5.std(ddof=0)),
+            "n_proteins_test": per_seed[0].n_proteins_test if per_seed else 0,
+            "seeds": list(source.seeds),
+        }
+    else:
+        scores = source.score_pairs(batch)
+        r = evaluate_contact_from_scores(scores, batch)
+        contact = asdict(r)
+
+    # CATH is undefined for analytic scorers; keep the sentinel shape so
+    # consolidate() still reads ``r["cath"]["accuracy"]`` without KeyError.
+    cath = {
+        "level": "none",
+        "accuracy": float("nan"),
+        "macro_f1": float("nan"),
+        "n_train": 0,
+        "n_test": 0,
+        "n_classes": 0,
+    }
+    return {
+        "dim": 0,  # no rep dim — analytic path
+        "contact": contact,
+        "cath": cath,
     }
 
 
@@ -195,11 +311,15 @@ def consolidate(outdir: Path) -> None:
                 "cath_acc",
                 "cath_f1",
                 "cath_classes",
+                "manifest",
                 "ckpt_path",
                 "error",
             ]
         )
         for r in rows:
+            # Rows written before the manifest flag existed implicitly belong
+            # to the cursor-first sample, recorded here as "v1" for clarity.
+            manifest = r.get("manifest", "v1")
             if "error" in r:
                 w.writerow(
                     [
@@ -215,6 +335,7 @@ def consolidate(outdir: Path) -> None:
                         "",
                         "",
                         "",
+                        manifest,
                         r.get("ckpt_path", ""),
                         r["error"],
                     ]
@@ -235,6 +356,7 @@ def consolidate(outdir: Path) -> None:
                     f"{ca['accuracy']:.4f}",
                     f"{ca['macro_f1']:.4f}",
                     ca["n_classes"],
+                    manifest,
                     r.get("ckpt_path", ""),
                     "",
                 ]
@@ -272,6 +394,60 @@ def main():
     ap.add_argument("--max_size", type=int, default=256)
     ap.add_argument("--cath_level", type=str, default="T", choices=["C", "A", "T"])
     ap.add_argument(
+        "--manifest_version",
+        type=str,
+        default=None,
+        help=(
+            "Opt into reservoir-sampled protein selection. When set (e.g. 'v2'), "
+            "the sweep loads / builds `batch_manifest_<version>.json` and uses "
+            "those proteins. When unset, falls back to the legacy cursor-first "
+            "load_proteina_batch behavior (manifest='v1' implicit, matches "
+            "historical records in sweep_results.jsonl)."
+        ),
+    )
+    ap.add_argument(
+        "--manifest_seed",
+        type=int,
+        default=42,
+        help="Seed for reservoir sampling when building a new manifest.",
+    )
+    ap.add_argument(
+        "--heads",
+        type=str,
+        default="mlp",
+        help=(
+            "Comma-separated probe heads to train on trained/untrained/encoder "
+            "sources. Choices: mlp, linear, both. 'both' is sugar for 'mlp,linear'. "
+            "Default 'mlp' preserves the legacy flat schema."
+        ),
+    )
+    ap.add_argument(
+        "--seeds",
+        type=str,
+        default="42",
+        help=(
+            "Comma-separated seeds for the contact probe train/test split and "
+            "head init. Multi-seed runs produce mean + std per head. "
+            "Default '42' is single-seed (legacy)."
+        ),
+    )
+    ap.add_argument(
+        "--baselines",
+        type=str,
+        default=None,
+        help=(
+            "Comma-separated list of baseline sources to include in the sweep. "
+            "Choices: random_gauss, seq_onehot, untrained_proteina, "
+            "random_rank, distance_only. None = skip all (legacy behavior)."
+        ),
+    )
+    ap.add_argument(
+        "--rep_dim_random",
+        type=int,
+        default=512,
+        help="D for random_gauss reps (match the backbone's hidden dim — default 512).",
+    )
+    ap.add_argument(
         "--runs",
         type=str,
         default=None,
@@ -295,6 +471,18 @@ def main():
         print(f"Consolidated to {outdir}/sweep_results.{{csv,md,json}}")
         return
 
+    # Normalize --heads / --seeds. Default "mlp" + "42" preserves the legacy
+    # flat schema; anything else flips _probe_one to rich sub-dict output.
+    heads_arg = args.heads.strip().lower()
+    if heads_arg == "both":
+        heads_list = ["mlp", "linear"]
+    else:
+        heads_list = [h.strip() for h in heads_arg.split(",") if h.strip()]
+    seeds_list = [int(s) for s in args.seeds.split(",") if s.strip()]
+    rich_schema = heads_list != ["mlp"] or seeds_list != [42]
+    if rich_schema:
+        print(f"Rich schema: heads={heads_list}, seeds={seeds_list}")
+
     done, _ = _load_done_set(jsonl_path)
     if done:
         print(f"Resuming: {len(done)} probes already cached in {jsonl_path.name}")
@@ -302,11 +490,36 @@ def main():
     device = _default_device()
 
     # --- Shared batch: loaded once, reused everywhere ---
-    print(f"Loading {args.n_proteins} proteins (≤ {args.max_size} residues)...")
-    batch, raw = load_proteina_batch(
-        n=args.n_proteins, max_size=args.max_size, device=device
-    )
+    # Two paths:
+    #   1. --manifest_version v2+  → uniform-random sample, cached to JSON, tagged
+    #                                 in each record as ``manifest=v2``.
+    #   2. legacy (no flag)        → cursor-first, implicit ``manifest=v1``, matches
+    #                                 the 231 historical rows in sweep_results.jsonl.
+    manifest_tag = "v1"
+    if args.manifest_version:
+        print(
+            f"Building/loading manifest '{args.manifest_version}' "
+            f"({args.n_proteins} proteins, ≤ {args.max_size} residues, seed={args.manifest_seed})..."
+        )
+        manifest = build_or_load_manifest(
+            outdir=outdir,
+            version=args.manifest_version,
+            lmdb_path=LMDB_PATH,
+            n=args.n_proteins,
+            max_size=args.max_size,
+            seed=args.manifest_seed,
+        )
+        batch, raw = load_proteina_batch_from_manifest(manifest, device=device)
+        manifest_tag = args.manifest_version
+    else:
+        print(
+            f"Loading {args.n_proteins} proteins (≤ {args.max_size} residues) via cursor-first..."
+        )
+        batch, raw = load_proteina_batch(
+            n=args.n_proteins, max_size=args.max_size, device=device
+        )
     print(f"  Loaded {len(raw)} proteins, mask sum = {int(batch['mask'].sum().item())}")
+    print(f"  Manifest tag for new rows: '{manifest_tag}'")
 
     # One-shot diagnostic: what does cath_code look like? CATH probe needs ≥2 classes.
     from collections import Counter
@@ -331,7 +544,14 @@ def main():
         try:
             enc = _load_gearnet()
             reps = extract_gearnet_embeddings(enc, batch)
-            out = _probe_one(reps, batch, raw, args.cath_level)
+            out = _probe_one(
+                reps,
+                batch,
+                raw,
+                args.cath_level,
+                heads=heads_list if rich_schema else None,
+                seeds=seeds_list if rich_schema else None,
+            )
             out.update(
                 {
                     "run": "gearnet",
@@ -340,7 +560,7 @@ def main():
                     "ckpt_path": None,
                 }
             )
-            _append_row(jsonl_path, out)
+            _append_row(jsonl_path, out, manifest_tag=manifest_tag)
             done.add(gearnet_key)
             print(
                 f"  gearnet: P@L/5={out['contact']['p_at_L_5']:.3f}  "
@@ -360,6 +580,7 @@ def main():
                     "layer": ENCODER_LAYER_SENTINEL,
                     "error": f"{type(e).__name__}: {e}",
                 },
+                manifest_tag=manifest_tag,
             )
         finally:
             gc.collect()
@@ -424,7 +645,14 @@ def main():
 
                 for L in todo_layers:
                     try:
-                        out = _probe_one(reps_by_layer[L], batch, raw, args.cath_level)
+                        out = _probe_one(
+                            reps_by_layer[L],
+                            batch,
+                            raw,
+                            args.cath_level,
+                            heads=heads_list if rich_schema else None,
+                            seeds=seeds_list if rich_schema else None,
+                        )
                         out.update(
                             {
                                 "run": run_name,
@@ -433,7 +661,7 @@ def main():
                                 "ckpt_path": str(ckpt),
                             }
                         )
-                        _append_row(jsonl_path, out)
+                        _append_row(jsonl_path, out, manifest_tag=manifest_tag)
                         done.add((run_name, int(step), L))
                         print(
                             f"      L{L:2d}: P@L/5={out['contact']['p_at_L_5']:.3f}  "
@@ -452,6 +680,7 @@ def main():
                                 "ckpt_path": str(ckpt),
                                 "error": f"{type(e).__name__}: {e}",
                             },
+                            manifest_tag=manifest_tag,
                         )
                 del model, reps_by_layer
 
@@ -470,6 +699,178 @@ def main():
                         "ckpt_path": str(ckpt),
                         "error": f"{type(e).__name__}: {e}",
                     },
+                    manifest_tag=manifest_tag,
+                )
+            finally:
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+
+    # --- Baseline sources: random_gauss, seq_onehot, untrained_proteina,
+    #      random_rank, distance_only. Each produces additive rows with
+    #      negative-layer sentinels so they never collide with trunk layers 0..9.
+    if args.baselines:
+        requested = [b.strip() for b in args.baselines.split(",") if b.strip()]
+        print(f"\n=== Baseline sources: {requested} ===")
+        for name in requested:
+            try:
+                if name == "random_gauss":
+                    src = RandomGaussianRepSource(dim=args.rep_dim_random, seed=42)
+                    key = (name, 0, LAYER_RANDOM_GAUSS)
+                    if key in done:
+                        print(f"  {name}: cached, skip")
+                        continue
+                    reps = src.get_reps(batch, [LAYER_RANDOM_GAUSS])[LAYER_RANDOM_GAUSS]
+                    row = _probe_one(
+                        reps,
+                        batch,
+                        raw,
+                        args.cath_level,
+                        heads=heads_list if rich_schema else None,
+                        seeds=seeds_list if rich_schema else None,
+                    )
+                    row.update(
+                        {
+                            "run": name,
+                            "step": 0,
+                            "layer": LAYER_RANDOM_GAUSS,
+                            "ckpt_path": None,
+                        }
+                    )
+                    _append_row(jsonl_path, row, manifest_tag=manifest_tag)
+                    done.add(key)
+                    print(f"  {name}: P@L/5={row['contact']['p_at_L_5']:.3f}")
+
+                elif name == "seq_onehot":
+                    src = SeqOnehotRepSource()
+                    key = (name, 0, LAYER_SEQ_ONEHOT)
+                    if key in done:
+                        print(f"  {name}: cached, skip")
+                        continue
+                    reps = src.get_reps(batch, [LAYER_SEQ_ONEHOT])[LAYER_SEQ_ONEHOT]
+                    row = _probe_one(
+                        reps,
+                        batch,
+                        raw,
+                        args.cath_level,
+                        heads=heads_list if rich_schema else None,
+                        seeds=seeds_list if rich_schema else None,
+                    )
+                    row.update(
+                        {
+                            "run": name,
+                            "step": 0,
+                            "layer": LAYER_SEQ_ONEHOT,
+                            "ckpt_path": None,
+                        }
+                    )
+                    _append_row(jsonl_path, row, manifest_tag=manifest_tag)
+                    done.add(key)
+                    print(f"  {name}: P@L/5={row['contact']['p_at_L_5']:.3f}")
+
+                elif name == "untrained_proteina":
+                    src = UntrainedProteinaRepSource()
+                    todo = [L for L in src.emits_layers if (name, 0, L) not in done]
+                    if not todo:
+                        print(
+                            f"  {name}: all {len(src.emits_layers)} layers cached, skip"
+                        )
+                        continue
+                    reps_by_layer = src.get_reps(batch, todo)
+                    for L, reps in reps_by_layer.items():
+                        try:
+                            row = _probe_one(
+                                reps,
+                                batch,
+                                raw,
+                                args.cath_level,
+                                heads=heads_list if rich_schema else None,
+                                seeds=seeds_list if rich_schema else None,
+                            )
+                            row.update(
+                                {
+                                    "run": name,
+                                    "step": 0,
+                                    "layer": int(L),
+                                    "ckpt_path": None,
+                                }
+                            )
+                            _append_row(jsonl_path, row, manifest_tag=manifest_tag)
+                            done.add((name, 0, L))
+                            print(f"    L{L}: P@L/5={row['contact']['p_at_L_5']:.3f}")
+                        except Exception as e:
+                            import traceback
+
+                            traceback.print_exc()
+                            _append_row(
+                                jsonl_path,
+                                {
+                                    "run": name,
+                                    "step": 0,
+                                    "layer": int(L),
+                                    "error": f"{type(e).__name__}: {e}",
+                                },
+                                manifest_tag=manifest_tag,
+                            )
+                    src.unload()
+
+                elif name == "random_rank":
+                    src = RandomRankScorer()
+                    key = (name, 0, LAYER_RANDOM_RANK)
+                    if key in done:
+                        print(f"  {name}: cached, skip")
+                        continue
+                    row = _probe_analytic(src, batch, raw, args.cath_level)
+                    row.update(
+                        {
+                            "run": name,
+                            "step": 0,
+                            "layer": LAYER_RANDOM_RANK,
+                            "ckpt_path": None,
+                        }
+                    )
+                    _append_row(jsonl_path, row, manifest_tag=manifest_tag)
+                    done.add(key)
+                    print(
+                        f"  {name}: P@L/5={row['contact']['p_at_L_5']:.3f}  (mean over {len(src.seeds)} seeds)"
+                    )
+
+                elif name == "distance_only":
+                    src = DistanceOnlyScorer()
+                    key = (name, 0, LAYER_DISTANCE_ONLY)
+                    if key in done:
+                        print(f"  {name}: cached, skip")
+                        continue
+                    row = _probe_analytic(src, batch, raw, args.cath_level)
+                    row.update(
+                        {
+                            "run": name,
+                            "step": 0,
+                            "layer": LAYER_DISTANCE_ONLY,
+                            "ckpt_path": None,
+                        }
+                    )
+                    _append_row(jsonl_path, row, manifest_tag=manifest_tag)
+                    done.add(key)
+                    print(f"  {name}: P@L/5={row['contact']['p_at_L_5']:.3f}")
+
+                else:
+                    print(f"  [skip] unknown baseline: {name}")
+
+            except Exception as e:
+                import traceback
+
+                traceback.print_exc()
+                print(f"  ❌ baseline {name} failed: {e}")
+                _append_row(
+                    jsonl_path,
+                    {
+                        "run": name,
+                        "step": 0,
+                        "layer": -999,
+                        "error": f"{type(e).__name__}: {e}",
+                    },
+                    manifest_tag=manifest_tag,
                 )
             finally:
                 gc.collect()

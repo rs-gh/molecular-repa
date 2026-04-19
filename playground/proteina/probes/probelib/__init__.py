@@ -52,11 +52,36 @@ from probelib.labels import (
     contact_labels,
     mean_pool_by_mask,
 )
+from probelib.manifest import (
+    build_or_load_manifest,
+    load_proteina_batch_from_manifest,
+    sample_manifest,
+)
 from probelib.probes.cath import CATHResult, run_cath_probe
 from probelib.probes.contact import (
     ContactResult,
+    MultiSeedResult,
+    evaluate_contact_from_scores,
     linear_probe_contacts,
+    linear_probe_contacts_multi,
     run_contact_probe,
+    run_contact_probe_full,
+)
+from probelib.sources import (
+    LAYER_DISTANCE_ONLY,
+    LAYER_GEARNET,
+    LAYER_RANDOM_GAUSS,
+    LAYER_RANDOM_RANK,
+    LAYER_SEQ_ONEHOT,
+    AnalyticScorer,
+    CheckpointRepSource,
+    DistanceOnlyScorer,
+    GearnetRepSource,
+    RandomGaussianRepSource,
+    RandomRankScorer,
+    RepSource,
+    SeqOnehotRepSource,
+    UntrainedProteinaRepSource,
 )
 
 __all__ = [
@@ -74,6 +99,10 @@ __all__ = [
     # data
     "load_proteina_batch",
     "_default_device",
+    # manifest
+    "sample_manifest",
+    "build_or_load_manifest",
+    "load_proteina_batch_from_manifest",
     # checkpoints
     "find_checkpoint_path",
     "load_checkpoint_by_path",
@@ -90,8 +119,27 @@ __all__ = [
     "mean_pool_by_mask",
     # probes
     "ContactResult",
+    "MultiSeedResult",
     "linear_probe_contacts",
+    "linear_probe_contacts_multi",
     "run_contact_probe",
+    "run_contact_probe_full",
+    "evaluate_contact_from_scores",
     "CATHResult",
     "run_cath_probe",
+    # sources
+    "RepSource",
+    "AnalyticScorer",
+    "CheckpointRepSource",
+    "UntrainedProteinaRepSource",
+    "GearnetRepSource",
+    "RandomGaussianRepSource",
+    "SeqOnehotRepSource",
+    "RandomRankScorer",
+    "DistanceOnlyScorer",
+    "LAYER_GEARNET",
+    "LAYER_RANDOM_GAUSS",
+    "LAYER_SEQ_ONEHOT",
+    "LAYER_RANDOM_RANK",
+    "LAYER_DISTANCE_ONLY",
 ]
