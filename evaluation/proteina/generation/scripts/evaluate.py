@@ -149,6 +149,8 @@ def compute_designability_metrics(list_of_pdbs, subset_size, tmp_root):
         "_res_scRMSD_median": results["scRMSD_median"],
         "_res_designability_rate": results["designability_rate"],
         "_res_tm_score_self_mean": results["tm_score_mean"],
+        "_res_plddt_mean": results["plddt_mean"],
+        "_res_plddt_median": results["plddt_median"],
     }
 
 

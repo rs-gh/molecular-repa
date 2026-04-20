@@ -31,6 +31,13 @@ METRIC_INFO = {
     "_res_fS_C": ("Fold Score (Class, max 5)", False),
     "_res_fS_A": ("Fold Score (Architecture, max 43)", False),
     "_res_fS_T": ("Fold Score (Topology, max 1336)", False),
+    "_res_designability_rate": ("Designability rate (scRMSD < 2Å)", False),
+    "_res_scRMSD_mean": ("scRMSD mean (Å)", True),
+    "_res_scRMSD_median": ("scRMSD median (Å)", True),
+    "_res_tm_score_self_mean": ("Self-TM mean", False),
+    "_res_plddt_mean": ("ESMFold pLDDT mean", False),
+    "_res_plddt_median": ("ESMFold pLDDT median", False),
+    "_res_diversity_clusters_mean": ("Diversity (mean clusters/bin)", False),
 }
 
 # Display names and colours per run.
@@ -86,7 +93,7 @@ def _load_run_set(run_dict):
         step = row.get("global_step", DEFAULT_STEPS.get(fname, np.nan))
         if pd.isna(step):
             step = DEFAULT_STEPS.get(fname, np.nan)
-        metric_vals = {m: row[m] for m in METRIC_INFO}
+        metric_vals = {m: row[m] if m in row.index else np.nan for m in METRIC_INFO}
         results.append(
             (label, color, int(step) if not pd.isna(step) else None, metric_vals)
         )
@@ -426,11 +433,17 @@ def print_summary_table(results):
     print("=" * len(header))
     for key, (display_name, lower_better) in METRIC_INFO.items():
         vals = [r[3][key] for r in results]
-        best = min(vals) if lower_better else max(vals)
+        finite_vals = [v for v in vals if not pd.isna(v)]
+        if not finite_vals:
+            continue  # metric absent from every CSV in this set
+        best = min(finite_vals) if lower_better else max(finite_vals)
         row = f"{display_name:<30}"
         for v in vals:
-            marker = " *" if v == best else "  "
-            row += f"{v:>11.3f}{marker}"
+            if pd.isna(v):
+                row += f"{'—':>11}  "
+            else:
+                marker = " *" if v == best else "  "
+                row += f"{v:>11.3f}{marker}"
         row += f"   {'Lower' if lower_better else 'Higher'} = better"
         print(row)
     print("=" * len(header))

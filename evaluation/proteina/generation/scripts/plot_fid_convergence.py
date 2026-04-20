@@ -14,7 +14,10 @@ import pandas as pd
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "results", "pdb", "fid")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "figures")
 
-# All metric columns from the result CSVs
+# All metric columns from the result CSVs.
+# Designability/pLDDT/diversity columns populate only on full evals that ran
+# after the designability wiring landed; lite-sweep rows and pre-wiring full
+# evals will have NaN for these — plot code must handle that gracefully.
 METRICS = [
     "_res_PDB_FID",
     "_res_PDB_fJSD_C",
@@ -27,6 +30,13 @@ METRICS = [
     "_res_fS_C",
     "_res_fS_A",
     "_res_fS_T",
+    "_res_designability_rate",
+    "_res_scRMSD_mean",
+    "_res_scRMSD_median",
+    "_res_tm_score_self_mean",
+    "_res_plddt_mean",
+    "_res_plddt_median",
+    "_res_diversity_clusters_mean",
 ]
 
 # Human-readable labels for each metric
@@ -42,6 +52,13 @@ METRIC_LABELS = {
     "_res_fS_C": "Fold Score (Class)",
     "_res_fS_A": "Fold Score (Architecture)",
     "_res_fS_T": "Fold Score (Topology)",
+    "_res_designability_rate": "Designability rate (scRMSD < 2Å)",
+    "_res_scRMSD_mean": "scRMSD mean (Å)",
+    "_res_scRMSD_median": "scRMSD median (Å)",
+    "_res_tm_score_self_mean": "Self-TM mean",
+    "_res_plddt_mean": "ESMFold pLDDT mean",
+    "_res_plddt_median": "ESMFold pLDDT median",
+    "_res_diversity_clusters_mean": "Diversity (mean clusters/bin)",
 }
 
 # Style mapping: (color, marker, linestyle)
@@ -103,7 +120,7 @@ def load_results():
                 "eval_type": "full",
             }
             for metric in METRICS:
-                record[metric] = row[metric]
+                record[metric] = row.get(metric, np.nan)
             records.append(record)
 
     # Include the .bak file as an extra baseline data point
@@ -119,7 +136,7 @@ def load_results():
                 "eval_type": "full",
             }
             for metric in METRICS:
-                record[metric] = row[metric]
+                record[metric] = row.get(metric, np.nan)
             records.append(record)
 
     # Load lite sweep results if available

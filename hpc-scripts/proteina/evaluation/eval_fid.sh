@@ -67,6 +67,39 @@ export MKL_NUM_THREADS=1
 mkdir -p /rds/user/sr2173/hpc-work/proteina/logs
 
 ###############################################################
+### ProteinMPNN CA weights (for designability metric)       ###
+###############################################################
+
+#! ProteinMPNN itself is vendored at src/proteina/ProteinMPNN/ (2 files, no weights).
+#! Stash the CA weights on RDS (persistent across jobs, outside /home 50GB quota).
+CA_WEIGHTS_ROOT="/rds/user/sr2173/hpc-work/proteina/ProteinMPNN"
+mkdir -p "$CA_WEIGHTS_ROOT/ca_model_weights"
+for v in v_48_002 v_48_010 v_48_020; do
+    f="$CA_WEIGHTS_ROOT/ca_model_weights/${v}.pt"
+    if [ ! -f "$f" ]; then
+        echo "Downloading ProteinMPNN CA weights: ${v}.pt"
+        wget -q -O "$f" "https://github.com/dauparas/ProteinMPNN/raw/main/ca_model_weights/${v}.pt"
+    fi
+done
+export PROTEINMPNN_DIR="$REPO_DIR/src/proteina/ProteinMPNN"
+export PROTEINMPNN_WEIGHTS_DIR="$CA_WEIGHTS_ROOT"
+
+###############################################################
+### HF cache + TMPDIR on RDS (ESMFold ~3GB)                 ###
+###############################################################
+
+#! load_esmfold() at designability.py:149-166 reads CACHE_DIR. Compute-node /tmp
+#! is too small for ESMFold's staged download; xet_get writes to TMPDIR and
+#! fails with ENOSPC even with HF_HOME set — disable xet and route TMPDIR to RDS.
+export CACHE_DIR="/rds/user/sr2173/hpc-work/proteina/hf_cache"
+export HF_HOME="$CACHE_DIR"
+export HF_HUB_CACHE="$CACHE_DIR/hub"
+export TRANSFORMERS_CACHE="$CACHE_DIR"
+export HF_HUB_DISABLE_XET=1
+export TMPDIR="/rds/user/sr2173/hpc-work/proteina/tmp"
+mkdir -p "$CACHE_DIR/hub" "$TMPDIR"
+
+###############################################################
 ### Clean stale caches from previous runs on this node      ###
 ###############################################################
 
