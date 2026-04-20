@@ -4,7 +4,7 @@ Scans eval_output/inference_fid_60m_*_lite_step_*/ directories for result CSVs,
 extracts run type and step, computes samples_seen, and saves a unified CSV.
 
 Usage:
-    python evaluation/proteina/scripts/collect_lite_results.py
+    python evaluation/proteina/generation/scripts/collect_lite_results.py
 """
 
 import glob
@@ -13,8 +13,10 @@ import re
 
 import pandas as pd
 
-REPO_ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "..")
+# __file__ lives at evaluation/proteina/generation/scripts/ — 4 levels to repo root.
+REPO_ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")
 EVAL_OUTPUT = os.path.join(REPO_ROOT, "eval_output")
+# ../results/pdb/fid/ → evaluation/proteina/generation/results/pdb/fid/
 OUTPUT_PATH = os.path.join(
     os.path.dirname(__file__), "..", "results", "pdb", "fid", "lite_convergence_all.csv"
 )

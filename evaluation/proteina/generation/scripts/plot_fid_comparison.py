@@ -1,11 +1,11 @@
 """Bar-chart comparison of FID evaluation metrics across proteina runs.
 
-Reads from evaluation/proteina/results/pdb/fid/ CSVs and highlights the
-best model per metric. Companion to plot_fid_convergence.py (which shows
-metrics over training steps).
+Reads from evaluation/proteina/generation/results/pdb/fid/ CSVs and
+highlights the best model per metric. Companion to plot_fid_convergence.py
+(which shows metrics over training steps).
 
 Usage:
-    python evaluation/proteina/scripts/plot_fid_comparison.py
+    python evaluation/proteina/generation/scripts/plot_fid_comparison.py
 """
 
 import os
@@ -14,8 +14,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+# Layout: scripts/ sits next to results/ and figures/ under generation/.
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "results", "pdb", "fid")
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "results", "figures")
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "figures")
 
 # Which metrics exist and whether lower is better
 METRIC_INFO = {
@@ -59,6 +60,12 @@ DEFAULT_STEPS = {
 
 # Batch sizes differ: baseline=6, REPA=4 (GearNet memory overhead on A100).
 # Used to compute samples_seen = global_step * batch_size.
+# NOTE (2026-04-19): when adding 128-residue runs, bs is NOT uniform.
+#   baseline-128 (job 27971089, current) trained at bs=24 throughout.
+#   All REPA-128 variants (gearnet + esm, per_residue + per_sample) train at bs=80.
+#   Future baseline-128 runs / restarts will most likely adopt bs=80 — CONFIRM per run
+#   before appending an entry (a mid-run bs switch means one run has two regimes, and
+#   nsamples = step * bs is no longer a single scalar multiply).
 BATCH_SIZES = {
     "Baseline": 6,
     "REPA (L4)": 4,

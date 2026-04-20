@@ -1,7 +1,7 @@
 """Plot all evaluation metrics vs training step for proteina runs.
 
 Usage:
-    python evaluation/proteina/scripts/plot_fid_convergence.py
+    python evaluation/proteina/generation/scripts/plot_fid_convergence.py
 """
 
 import os
@@ -10,8 +10,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+# Layout: scripts/ sits next to results/ and figures/ under generation/.
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "results", "pdb", "fid")
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "results", "figures")
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "figures")
 
 # All metric columns from the result CSVs
 METRICS = [
@@ -53,6 +54,12 @@ STYLES = {
 
 # Batch sizes differ across runs: baseline=6, REPA=4 (GearNet memory overhead).
 # Multiply global_step by batch_size to get samples seen for fair comparison.
+# NOTE (2026-04-19): when adding 128-residue runs, bs is NOT uniform.
+#   baseline-128 (job 27971089, current) trained at bs=24 throughout.
+#   All REPA-128 variants (gearnet + esm, per_residue + per_sample) train at bs=80.
+#   Future baseline-128 runs / restarts will most likely adopt bs=80 — CONFIRM per run
+#   before appending an entry (a mid-run bs switch means one run has two regimes, and
+#   nsamples = step * bs is no longer a single scalar multiply).
 BATCH_SIZES = {
     "Baseline (60M)": 6,
     "REPA (L4)": 4,
