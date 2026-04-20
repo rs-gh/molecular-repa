@@ -1,7 +1,7 @@
 #!/bin/bash
 #!
 #! Slurm wrapper: run all four proteina performance benchmarks back-to-back
-#! on a single A100 node. CSVs land in evaluation/proteina/results/bench/.
+#! on a single A100 node. CSVs land in evaluation/proteina/bench/results/.
 #!
 #! Total wall time budget: ~90 min
 #!   - compile:  ~20 min (4 modes × 2 seq_lens × 100 steps + compile warmups)
@@ -64,7 +64,7 @@ echo "=== Benchmarks selected: $ONLY ==="
 echo ""
 
 cd "$REPO_DIR"
-RESULTS_DIR="evaluation/proteina/results/bench"
+RESULTS_DIR="evaluation/proteina/bench/results"
 mkdir -p "$RESULTS_DIR"
 
 #! --- 1. Compile sweep (fake data, fast) ---

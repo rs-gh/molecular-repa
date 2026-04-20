@@ -35,6 +35,13 @@ def parse_args():
     parser.add_argument("--min_bs", type=int, default=4)
     parser.add_argument("--max_bs", type=int, default=128)
     parser.add_argument("--num_steps", type=int, default=20)
+    parser.add_argument(
+        "--warmup_steps",
+        type=int,
+        default=5,
+        help="Steps to skip before starting the steady-state timer. "
+        "Ignored for max_bs selection (OOM uses peak mem, not throughput).",
+    )
     parser.add_argument("--timeout", type=int, default=300, help="Per-test timeout (s)")
     parser.add_argument("--compile", action="store_true", default=True)
     parser.add_argument("--no-compile", dest="compile", action="store_false")
@@ -57,7 +64,11 @@ def parse_args():
         default=False,
         help="Test all combinations: compile × gc_layers variants",
     )
-    parser.add_argument("--output_csv", type=str, default="batch_size_results.csv")
+    parser.add_argument(
+        "--output_csv",
+        type=str,
+        default="evaluation/proteina/bench/results/batch_size_sweep/batch_size_results.csv",
+    )
     parser.add_argument(
         "--encoder_type",
         default="gearnet",
@@ -74,6 +85,7 @@ def run_single_test(
     compile_flag,
     gc_layers,
     num_steps,
+    warmup_steps,
     result_queue,
     encoder_type="gearnet",
 ):
@@ -210,6 +222,19 @@ def run_single_test(
             with open_dict(cfg_exp):
                 OmegaConf.update(cfg_exp, "repa", repa_cfg, force_add=True)
 
+        # --- Steady-state timer (skips compile warmup, syncs CUDA) ---
+        class SteadyStateTimer(L.Callback):
+            def __init__(self, warmup):
+                self.warmup = warmup
+                self.count = 0
+                self.steady_start = None
+
+            def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
+                self.count += 1
+                if self.count == self.warmup:
+                    torch.cuda.synchronize()
+                    self.steady_start = time.time()
+
         # --- Create model ---
         tmp_dir = tempfile.mkdtemp(prefix="bs_sweep_")
         try:
@@ -254,12 +279,13 @@ def run_single_test(
                 transforms=transforms,
             )
 
+            timer = SteadyStateTimer(warmup=min(warmup_steps, max(num_steps - 1, 0)))
             trainer = L.Trainer(
                 max_steps=num_steps,
                 accelerator="gpu",
                 devices=1,
                 num_nodes=1,
-                callbacks=[],
+                callbacks=[timer],
                 logger=False,
                 log_every_n_steps=1,
                 enable_progress_bar=False,
@@ -273,13 +299,24 @@ def run_single_test(
             )
 
             torch.cuda.reset_peak_memory_stats()
-            start = time.time()
+            total_start = time.time()
             trainer.fit(model, datamodule)
-            elapsed = time.time() - start
+            torch.cuda.synchronize()
+            total_elapsed = time.time() - total_start
 
             peak_mem_gb = torch.cuda.max_memory_allocated() / (1024**3)
-            steps_per_sec = num_steps / elapsed
-            time_per_step = elapsed / num_steps
+
+            steady_steps = max(timer.count - timer.warmup, 0)
+            if timer.steady_start is not None and steady_steps > 0:
+                steady_elapsed = time.time() - timer.steady_start
+                steps_per_sec = steady_steps / steady_elapsed
+                time_per_step = steady_elapsed / steady_steps
+            else:
+                # Warmup >= num_steps or training never started: fall back to wall time.
+                steps_per_sec = (
+                    timer.count / total_elapsed if total_elapsed > 0 else 0.0
+                )
+                time_per_step = total_elapsed / max(timer.count, 1)
 
             result_queue.put(
                 {
@@ -287,6 +324,9 @@ def run_single_test(
                     "peak_mem_gb": round(peak_mem_gb, 2),
                     "steps_per_sec": round(steps_per_sec, 3),
                     "time_per_step": round(time_per_step, 3),
+                    "steady_steps": steady_steps,
+                    "warmup_steps": timer.warmup,
+                    "total_elapsed_s": round(total_elapsed, 2),
                 }
             )
         finally:
@@ -308,6 +348,7 @@ def test_batch_size(
     compile_flag,
     gc_layers,
     num_steps,
+    warmup_steps,
     timeout,
     encoder_type="gearnet",
 ):
@@ -323,6 +364,7 @@ def test_batch_size(
             compile_flag,
             gc_layers,
             num_steps,
+            warmup_steps,
             result_queue,
             encoder_type,
         ),
@@ -356,6 +398,7 @@ def binary_search_max_bs(
     lo,
     hi,
     num_steps,
+    warmup_steps,
     timeout,
     encoder_type="gearnet",
 ):
@@ -385,6 +428,7 @@ def binary_search_max_bs(
             compile_flag,
             gc_layers,
             num_steps,
+            warmup_steps,
             timeout,
             encoder_type=encoder_type,
         )
@@ -429,7 +473,7 @@ def main():
     print(f"  Seq lengths: {args.seq_lens}")
     print(f"  Model types: {args.model_types}")
     print(f"  BS range: [{args.min_bs}, {args.max_bs}]")
-    print(f"  Steps per test: {args.num_steps}")
+    print(f"  Steps per test: {args.num_steps} ({args.warmup_steps} warmup)")
     print(f"  Timeout: {args.timeout}s")
     print(f"  Variants: {variants}")
     print("=" * 70)
@@ -447,6 +491,7 @@ def main():
                     args.min_bs,
                     args.max_bs,
                     args.num_steps,
+                    args.warmup_steps,
                     args.timeout,
                     encoder_type=args.encoder_type,
                 )

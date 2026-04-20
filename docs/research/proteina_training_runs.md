@@ -344,7 +344,7 @@ Benchmarks run via `hpc-scripts/proteina/bench/` on A100 80GB (Wilkes3, `gpu-q-2
 
 ### torch.compile: 2.6× speedup, also saves GPU memory
 
-[evaluation/proteina/results/bench/compile.csv](../../evaluation/proteina/results/bench/compile.csv) — baseline (no REPA), bf16-mixed:
+[evaluation/proteina/bench/results/compile.csv](../../evaluation/proteina/bench/results/compile.csv) — baseline (no REPA), bf16-mixed:
 
 | seq_len | compile | batch | steps/s | peak GB | speedup |
 |---:|---|---:|---:|---:|---:|
@@ -357,7 +357,7 @@ Compile saves **5 GB at seq=256 / 14 GB at seq=512** — activation memory drops
 
 ### SDPA: calling the frontend, getting the slow kernel
 
-[evaluation/proteina/results/bench/sdpa.csv](../../evaluation/proteina/results/bench/sdpa.csv). Forced each backend via `torch.nn.attention.sdpa_kernel([...])`:
+[evaluation/proteina/bench/results/sdpa.csv](../../evaluation/proteina/bench/results/sdpa.csv). Forced each backend via `torch.nn.attention.sdpa_kernel([...])`:
 
 | backend | compile=off steps/s | compile=default steps/s | peak GB | status |
 |---|---:|---:|---:|---|

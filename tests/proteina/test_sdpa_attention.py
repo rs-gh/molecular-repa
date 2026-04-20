@@ -564,7 +564,7 @@ class TestContiguousBiasFix:
     hpc-scripts/proteina/bench/diagnose_sdpa.py (MATH-strided vs
     EFFICIENT-contiguous agree to worst-case 5.0e-3 relative, below bf16
     eps). Output preserved at
-    evaluation/proteina/results/bench/sdpa_equivalence_2026-04-18.txt.
+    evaluation/proteina/bench/results/sdpa_equivalence_2026-04-18.txt.
 
     If this test starts failing, someone removed the .contiguous() call in
     pair_bias_attn._attn_sdpa and training silently regressed onto MATH.
@@ -627,7 +627,7 @@ class TestContiguousBiasFix:
             "attn_mask reaching F.scaled_dot_product_attention is NOT contiguous. "
             "The .contiguous() fix in pair_bias_attn._attn_sdpa is missing or broken — "
             "training will fall back to the slow MATH kernel (~4× slower per "
-            "attention call). See evaluation/proteina/results/bench/"
+            "attention call). See evaluation/proteina/bench/results/"
             "sdpa_equivalence_2026-04-18.txt for numerical-equivalence evidence."
         )
 

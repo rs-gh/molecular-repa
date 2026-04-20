@@ -2,7 +2,7 @@
 
 Performance benchmarks for proteina training. Each variant runs in a fresh spawn subprocess (compile cache wiped, OOM isolated) and reports steady-state `steps/sec` after dropping a configurable warmup window — so compile overhead doesn't poison the mean.
 
-Results land in `evaluation/proteina/results/bench/*.csv`.
+Results land in `evaluation/proteina/bench/results/*.csv`.
 
 ## Scripts
 

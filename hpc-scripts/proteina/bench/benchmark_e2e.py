@@ -69,7 +69,7 @@ def parse_args():
     p.add_argument(
         "--output_csv",
         type=str,
-        default="evaluation/proteina/results/bench/e2e.csv",
+        default="evaluation/proteina/bench/results/e2e.csv",
     )
     return p.parse_args()
 

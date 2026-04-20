@@ -249,7 +249,7 @@ def run():
     # Write CSV
     out_dir = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        "../../../evaluation/proteina/results/batch_size_sweep",
+        "../../../evaluation/proteina/bench/results/batch_size_sweep",
     )
     out_dir = os.path.abspath(out_dir)
     os.makedirs(out_dir, exist_ok=True)

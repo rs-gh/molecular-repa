@@ -46,7 +46,7 @@ echo ""
 
 cd "$REPO_DIR"
 
-OUTPUT_DIR="evaluation/proteina/results/batch_size_sweep"
+OUTPUT_DIR="evaluation/proteina/bench/results/batch_size_sweep"
 mkdir -p "$OUTPUT_DIR"
 
 python -u hpc-scripts/proteina/bench/batch_size_sweep.py \

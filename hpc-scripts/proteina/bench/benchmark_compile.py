@@ -11,7 +11,7 @@ Usage:
         --model_types baseline \\
         --compile_modes off default \\
         --num_steps 100 --warmup 30 \\
-        --output_csv evaluation/proteina/results/bench/compile.csv
+        --output_csv evaluation/proteina/bench/results/compile.csv
 """
 
 from __future__ import annotations
@@ -74,7 +74,7 @@ def parse_args():
     p.add_argument(
         "--output_csv",
         type=str,
-        default="evaluation/proteina/results/bench/compile.csv",
+        default="evaluation/proteina/bench/results/compile.csv",
     )
     return p.parse_args()
 
