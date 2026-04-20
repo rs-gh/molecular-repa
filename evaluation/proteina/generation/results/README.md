@@ -1,4 +1,4 @@
-# Proteina Evaluation Results
+# Proteina generation-quality results
 
 ## Data pipeline
 
@@ -13,10 +13,10 @@ The CSVs are copied here for analysis, renamed for brevity:
 
 ```
 eval_output/inference_fid_60m_baseline/results_inference_fid_60m_baseline_fid.csv
-  → evaluation/proteina/results/pdb/fid/inference_fid_60m_baseline.csv
+  → evaluation/proteina/generation/results/pdb/fid/inference_fid_60m_baseline.csv
 
 eval_output/inference_fid_60m_repa/results_inference_fid_60m_repa_fid.csv
-  → evaluation/proteina/results/pdb/fid/inference_fid_60m_repa.csv
+  → evaluation/proteina/generation/results/pdb/fid/inference_fid_60m_repa.csv
 
 (same pattern for repa_layer0, repa_layer9, etc.)
 ```

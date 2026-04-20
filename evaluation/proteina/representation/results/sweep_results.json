@@ -1,0 +1,4853 @@
+[
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.42630081236888345,
+      "p_at_L_5": 0.6742866529108614,
+      "p_at_L_2": 0.5397517914913619,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "gearnet",
+    "step": 0,
+    "layer": -1,
+    "ckpt_path": null
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5888684726787388,
+      "p_at_L_5": 0.8870990370222586,
+      "p_at_L_2": 0.7489494289498346,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 10000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5816957531534447,
+      "p_at_L_5": 0.8820914805775182,
+      "p_at_L_2": 0.7472906146925608,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 10000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5727095503069488,
+      "p_at_L_5": 0.8766218325746836,
+      "p_at_L_2": 0.7413208889608659,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 10000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5769016032830411,
+      "p_at_L_5": 0.8786361362915256,
+      "p_at_L_2": 0.7445800996524197,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 10000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5669260943604659,
+      "p_at_L_5": 0.8661747968169198,
+      "p_at_L_2": 0.7334282891298228,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 10000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.542866541374136,
+      "p_at_L_5": 0.8400827321839307,
+      "p_at_L_2": 0.7043051495379983,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 10000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5416746585527402,
+      "p_at_L_5": 0.8425448939083637,
+      "p_at_L_2": 0.7069456542454366,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 10000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.513401189210092,
+      "p_at_L_5": 0.8056471360581391,
+      "p_at_L_2": 0.6693863292034017,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 10000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.515318060468443,
+      "p_at_L_5": 0.8036246419202037,
+      "p_at_L_2": 0.6726372307193753,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 10000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5077372147593495,
+      "p_at_L_5": 0.7910592770791338,
+      "p_at_L_2": 0.6647678587827259,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 10000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5923148916681846,
+      "p_at_L_5": 0.8829764280968682,
+      "p_at_L_2": 0.7561627049149994,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 20000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6124161672728222,
+      "p_at_L_5": 0.9060724385330932,
+      "p_at_L_2": 0.78617243445959,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 20000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5870529736409053,
+      "p_at_L_5": 0.890641574296741,
+      "p_at_L_2": 0.761374657776757,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 20000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5956229667167398,
+      "p_at_L_5": 0.8884992690979961,
+      "p_at_L_2": 0.7610181706450041,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 20000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5744874447410393,
+      "p_at_L_5": 0.8749834554396315,
+      "p_at_L_2": 0.7375299384291021,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 20000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5534980717484966,
+      "p_at_L_5": 0.851763145765134,
+      "p_at_L_2": 0.7208264232232982,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 20000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5481487668585991,
+      "p_at_L_5": 0.8461170155765864,
+      "p_at_L_2": 0.7082049535263096,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 20000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5439693601727298,
+      "p_at_L_5": 0.8285642189084008,
+      "p_at_L_2": 0.6977401481343299,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 20000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5127725307928142,
+      "p_at_L_5": 0.7996024820086276,
+      "p_at_L_2": 0.6623510243949425,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 20000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5231820264867955,
+      "p_at_L_5": 0.8066794110013964,
+      "p_at_L_2": 0.6704716698308616,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 20000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6114389437606228,
+      "p_at_L_5": 0.9125524800529103,
+      "p_at_L_2": 0.773585087997552,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 40000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6252477106801846,
+      "p_at_L_5": 0.9112978699396432,
+      "p_at_L_2": 0.7987057414044129,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 40000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6232841078551564,
+      "p_at_L_5": 0.9139523182285281,
+      "p_at_L_2": 0.7975636274893205,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 40000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6234212928673363,
+      "p_at_L_5": 0.9214648264808785,
+      "p_at_L_2": 0.7893499096055382,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 40000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6130181328350537,
+      "p_at_L_5": 0.911539645736644,
+      "p_at_L_2": 0.7813602669271816,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 40000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6013138962652411,
+      "p_at_L_5": 0.8995760926221473,
+      "p_at_L_2": 0.7716560999391003,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 40000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5993223530720042,
+      "p_at_L_5": 0.8943345035622808,
+      "p_at_L_2": 0.7647501553917728,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 40000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5722510697165143,
+      "p_at_L_5": 0.870790505831857,
+      "p_at_L_2": 0.733553014003678,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 40000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5777459257070428,
+      "p_at_L_5": 0.8649180202995572,
+      "p_at_L_2": 0.7349299804060286,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 40000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5614954073793247,
+      "p_at_L_5": 0.8444267332136128,
+      "p_at_L_2": 0.7143803220788891,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 40000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6220697760214657,
+      "p_at_L_5": 0.9110114101688047,
+      "p_at_L_2": 0.784217369144607,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 80000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000001_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6332366801793503,
+      "p_at_L_5": 0.9159331738059497,
+      "p_at_L_2": 0.8025311296839325,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 80000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000001_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6392945726174679,
+      "p_at_L_5": 0.9222705612530306,
+      "p_at_L_2": 0.8029581265435652,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 80000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000001_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6443713496477426,
+      "p_at_L_5": 0.9328741515749439,
+      "p_at_L_2": 0.8095522766858032,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 80000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000001_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6365350640981757,
+      "p_at_L_5": 0.9258899017533821,
+      "p_at_L_2": 0.8031596594085716,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 80000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000001_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6239877471804016,
+      "p_at_L_5": 0.9094551144432657,
+      "p_at_L_2": 0.7849575390363558,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 80000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000001_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6253102217104457,
+      "p_at_L_5": 0.9092123414643687,
+      "p_at_L_2": 0.7897752797852409,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 80000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000001_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6165205829872256,
+      "p_at_L_5": 0.9006030429754345,
+      "p_at_L_2": 0.7805493850296246,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 80000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000001_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6123460556533183,
+      "p_at_L_5": 0.8969949664655179,
+      "p_at_L_2": 0.769818717748083,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 80000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000001_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.612027849501799,
+      "p_at_L_5": 0.8961856076144381,
+      "p_at_L_2": 0.775229657837444,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 80000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000001_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.648839328760077,
+      "p_at_L_5": 0.9349691463197631,
+      "p_at_L_2": 0.8094708493766806,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 150000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000002_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6447499050863615,
+      "p_at_L_5": 0.9269556981124832,
+      "p_at_L_2": 0.812186734975417,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 150000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000002_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6497891120588166,
+      "p_at_L_5": 0.9262549818812534,
+      "p_at_L_2": 0.8154016826399261,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 150000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000002_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6497116100973022,
+      "p_at_L_5": 0.9306636996236695,
+      "p_at_L_2": 0.8223892060709664,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 150000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000002_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6484843591671391,
+      "p_at_L_5": 0.926997097498757,
+      "p_at_L_2": 0.8154091249011473,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 150000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000002_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6429197168002853,
+      "p_at_L_5": 0.9172304384579573,
+      "p_at_L_2": 0.8133994819493324,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 150000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000002_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6417870860743011,
+      "p_at_L_5": 0.9158587606904494,
+      "p_at_L_2": 0.8124932073593962,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 150000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000002_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6430369363028294,
+      "p_at_L_5": 0.9120079205898545,
+      "p_at_L_2": 0.814312580690706,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 150000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000002_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6408039868424414,
+      "p_at_L_5": 0.9109059188190403,
+      "p_at_L_2": 0.8121635305202506,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 150000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000002_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6389029346014357,
+      "p_at_L_5": 0.9146663996525983,
+      "p_at_L_2": 0.8072872271989653,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 150000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000002_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6686146110508325,
+      "p_at_L_5": 0.9444313154835301,
+      "p_at_L_2": 0.8432469318131204,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 250000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000003_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.652321859401866,
+      "p_at_L_5": 0.9364663319801796,
+      "p_at_L_2": 0.8268848965007631,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 250000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000003_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6498545009665676,
+      "p_at_L_5": 0.9307800187000671,
+      "p_at_L_2": 0.8202029768577711,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 250000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000003_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6509159628094092,
+      "p_at_L_5": 0.9310575341511615,
+      "p_at_L_2": 0.8230554055477398,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 250000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000003_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6423659772922546,
+      "p_at_L_5": 0.9299568776865973,
+      "p_at_L_2": 0.8146164494871326,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 250000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000003_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6340162200427293,
+      "p_at_L_5": 0.9266778826646498,
+      "p_at_L_2": 0.8021566187349756,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 250000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000003_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6363750242646585,
+      "p_at_L_5": 0.9270576744605418,
+      "p_at_L_2": 0.8062254948084749,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 250000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000003_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6350033898979256,
+      "p_at_L_5": 0.9226899570224163,
+      "p_at_L_2": 0.8116791585914621,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 250000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000003_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6321378944881715,
+      "p_at_L_5": 0.9206007859975063,
+      "p_at_L_2": 0.8014307167195659,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 250000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000003_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6241476596739142,
+      "p_at_L_5": 0.9160428996713007,
+      "p_at_L_2": 0.7938892249164028,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 250000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000003_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6670707642222488,
+      "p_at_L_5": 0.9426997208658431,
+      "p_at_L_2": 0.839943241111105,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 350000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000004_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6431763300505196,
+      "p_at_L_5": 0.91837583156723,
+      "p_at_L_2": 0.8103604531212907,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 350000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000004_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6553277855518707,
+      "p_at_L_5": 0.9295613035238599,
+      "p_at_L_2": 0.8254515774191109,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 350000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000004_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.651043052448169,
+      "p_at_L_5": 0.9225971190011573,
+      "p_at_L_2": 0.8191228279754116,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 350000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000004_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6266735773868799,
+      "p_at_L_5": 0.9097907351249525,
+      "p_at_L_2": 0.7926564572765831,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 350000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000004_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6322559149600551,
+      "p_at_L_5": 0.9069086696318791,
+      "p_at_L_2": 0.8093729529402311,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 350000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000004_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6350085015130039,
+      "p_at_L_5": 0.8994870531528949,
+      "p_at_L_2": 0.8034861652630994,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 350000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000004_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6356405012302888,
+      "p_at_L_5": 0.9064290617376141,
+      "p_at_L_2": 0.804109384168104,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 350000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000004_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6338001294013494,
+      "p_at_L_5": 0.9061233923996413,
+      "p_at_L_2": 0.8016777412929628,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 350000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000004_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6276320548179999,
+      "p_at_L_5": 0.9077658623613795,
+      "p_at_L_2": 0.7978005547080486,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 350000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000004_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6825134477392888,
+      "p_at_L_5": 0.9534804496077811,
+      "p_at_L_2": 0.8563640941931755,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 450000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000006_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6419708184597248,
+      "p_at_L_5": 0.9246706782538462,
+      "p_at_L_2": 0.8203885393386867,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 450000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000006_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6317161720922992,
+      "p_at_L_5": 0.9179883702929796,
+      "p_at_L_2": 0.8168676301054644,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 450000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000006_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.669256830425256,
+      "p_at_L_5": 0.9328691337899189,
+      "p_at_L_2": 0.8428078874693563,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 450000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000006_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6427466959816381,
+      "p_at_L_5": 0.9243869143842532,
+      "p_at_L_2": 0.8214286098072427,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 450000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000006_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6425507738478873,
+      "p_at_L_5": 0.9231233685215056,
+      "p_at_L_2": 0.8192170930314246,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 450000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000006_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6456622750818755,
+      "p_at_L_5": 0.9184647270357063,
+      "p_at_L_2": 0.8227162083992802,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 450000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000006_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.64217578232334,
+      "p_at_L_5": 0.9203963675096688,
+      "p_at_L_2": 0.8141071854469366,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 450000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000006_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6383315238325892,
+      "p_at_L_5": 0.9189600088419573,
+      "p_at_L_2": 0.814959541335386,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 450000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000006_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6292470367070305,
+      "p_at_L_5": 0.9126315553457942,
+      "p_at_L_2": 0.8067827633025548,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 450000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000006_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6823407064676366,
+      "p_at_L_5": 0.9487646329041596,
+      "p_at_L_2": 0.8548183241377082,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 550000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000007_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6659168632190313,
+      "p_at_L_5": 0.9349173608441399,
+      "p_at_L_2": 0.8385387572159108,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 550000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000007_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6668100415036127,
+      "p_at_L_5": 0.9281577393809185,
+      "p_at_L_2": 0.8403292117107923,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 550000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000007_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6644082606811011,
+      "p_at_L_5": 0.9308021390264208,
+      "p_at_L_2": 0.8412999032223926,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 550000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000007_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6639318202048364,
+      "p_at_L_5": 0.9252521350356566,
+      "p_at_L_2": 0.8366880060045488,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 550000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000007_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6590653397090164,
+      "p_at_L_5": 0.9281454844789577,
+      "p_at_L_2": 0.8339475457982317,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 550000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000007_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.657904283690559,
+      "p_at_L_5": 0.9245465038472995,
+      "p_at_L_2": 0.8346506611628026,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 550000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000007_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6607820569127726,
+      "p_at_L_5": 0.9268391344444872,
+      "p_at_L_2": 0.8352950905768755,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 550000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000007_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6608407303990839,
+      "p_at_L_5": 0.9267676137990406,
+      "p_at_L_2": 0.8372968262772655,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 550000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000007_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6548778030460514,
+      "p_at_L_5": 0.9244504882986673,
+      "p_at_L_2": 0.8289750989116896,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 550000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000007_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6882489386432027,
+      "p_at_L_5": 0.9482099907378151,
+      "p_at_L_2": 0.8535349606123546,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 650000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000009_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6522009814636174,
+      "p_at_L_5": 0.9361022441637697,
+      "p_at_L_2": 0.8298638454879669,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 650000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000009_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6608020603224436,
+      "p_at_L_5": 0.9308772550329382,
+      "p_at_L_2": 0.8390144346850071,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 650000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000009_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6625236935982297,
+      "p_at_L_5": 0.9288375759267999,
+      "p_at_L_2": 0.8370547300144071,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 650000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000009_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6613020100920762,
+      "p_at_L_5": 0.9233283312404208,
+      "p_at_L_2": 0.8316942836170748,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 650000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000009_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.643410407413356,
+      "p_at_L_5": 0.9148045134817252,
+      "p_at_L_2": 0.8198160005662298,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 650000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000009_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6628634637761637,
+      "p_at_L_5": 0.9225431449409551,
+      "p_at_L_2": 0.8342511760283585,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 650000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000009_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.661598578185446,
+      "p_at_L_5": 0.9222577921285801,
+      "p_at_L_2": 0.8260259740616567,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 650000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000009_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6568698043147612,
+      "p_at_L_5": 0.9169510137945952,
+      "p_at_L_2": 0.8249690366339918,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 650000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000009_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6271021916631234,
+      "p_at_L_5": 0.9016803238733442,
+      "p_at_L_2": 0.7984218054738481,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 650000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000009_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.671383505876476,
+      "p_at_L_5": 0.9426656105271043,
+      "p_at_L_2": 0.8452474118534408,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 740000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000010_step=000000740000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6535727666700146,
+      "p_at_L_5": 0.9370844842055878,
+      "p_at_L_2": 0.8271487614062881,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 740000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000010_step=000000740000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6570605204527535,
+      "p_at_L_5": 0.9302202176115003,
+      "p_at_L_2": 0.8288929990227933,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 740000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000010_step=000000740000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6490002941537716,
+      "p_at_L_5": 0.9221361777871447,
+      "p_at_L_2": 0.82307854869838,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 740000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000010_step=000000740000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6589340097876077,
+      "p_at_L_5": 0.9205277653603906,
+      "p_at_L_2": 0.8208896339104997,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 740000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000010_step=000000740000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6440816843068873,
+      "p_at_L_5": 0.9138446800897185,
+      "p_at_L_2": 0.813931580954424,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 740000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000010_step=000000740000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6618290092607022,
+      "p_at_L_5": 0.9264956937933109,
+      "p_at_L_2": 0.8278447154695648,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 740000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000010_step=000000740000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6577758695908534,
+      "p_at_L_5": 0.921216320064923,
+      "p_at_L_2": 0.8185986569619631,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 740000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000010_step=000000740000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6472673727790392,
+      "p_at_L_5": 0.9122193436053294,
+      "p_at_L_2": 0.804997949177421,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 740000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000010_step=000000740000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6185218956346414,
+      "p_at_L_5": 0.8921535062285593,
+      "p_at_L_2": 0.7838834098056859,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "baseline",
+    "step": 740000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000010_step=000000740000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5907158746605569,
+      "p_at_L_5": 0.8726365954301348,
+      "p_at_L_2": 0.7477387639349715,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 10000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5854898957652614,
+      "p_at_L_5": 0.8667695101477906,
+      "p_at_L_2": 0.7394100028092876,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 10000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5623817502946846,
+      "p_at_L_5": 0.8540366303298488,
+      "p_at_L_2": 0.722293506979693,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 10000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5338034064635495,
+      "p_at_L_5": 0.8136663733092984,
+      "p_at_L_2": 0.6800778347459149,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 10000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5334657033358985,
+      "p_at_L_5": 0.8186440904198647,
+      "p_at_L_2": 0.6835328634162254,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 10000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5381804992605932,
+      "p_at_L_5": 0.8202868325080452,
+      "p_at_L_2": 0.6802306325727283,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 10000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5247107909685491,
+      "p_at_L_5": 0.8188315694839433,
+      "p_at_L_2": 0.6730947851005631,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 10000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5173521300497299,
+      "p_at_L_5": 0.817406963090215,
+      "p_at_L_2": 0.6634664745878239,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 10000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5081345316825588,
+      "p_at_L_5": 0.8088661169632576,
+      "p_at_L_2": 0.6590937326255789,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 10000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.49545698602295174,
+      "p_at_L_5": 0.7570436859049197,
+      "p_at_L_2": 0.6278161476548434,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 10000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000010000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6023141022301775,
+      "p_at_L_5": 0.8900413888941268,
+      "p_at_L_2": 0.7550476789775539,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 20000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6085827814738679,
+      "p_at_L_5": 0.8895734371763829,
+      "p_at_L_2": 0.7587786733709077,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 20000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5678002379737271,
+      "p_at_L_5": 0.8527336982288304,
+      "p_at_L_2": 0.7270811060938345,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 20000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5547184775668097,
+      "p_at_L_5": 0.8363221149497575,
+      "p_at_L_2": 0.7084443764763806,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 20000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5468191645680689,
+      "p_at_L_5": 0.833949518617224,
+      "p_at_L_2": 0.7002650637473502,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 20000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5450337054614313,
+      "p_at_L_5": 0.8351741432179663,
+      "p_at_L_2": 0.6919489914685677,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 20000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5294313170473007,
+      "p_at_L_5": 0.8210357077698947,
+      "p_at_L_2": 0.6716800422787221,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 20000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5211493282640403,
+      "p_at_L_5": 0.8006370916619321,
+      "p_at_L_2": 0.6617153874787114,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 20000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5122764318312222,
+      "p_at_L_5": 0.7862224131199154,
+      "p_at_L_2": 0.6543404034940622,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 20000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.4817401324834346,
+      "p_at_L_5": 0.7435156055726126,
+      "p_at_L_2": 0.6069451326715314,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 20000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000020000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.619799080687858,
+      "p_at_L_5": 0.9050176404076209,
+      "p_at_L_2": 0.7816455814480301,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 40000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6023011301544722,
+      "p_at_L_5": 0.8901185859518822,
+      "p_at_L_2": 0.7670150994407183,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 40000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5872641197198044,
+      "p_at_L_5": 0.8789946503256424,
+      "p_at_L_2": 0.7456431144942572,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 40000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5465985775624296,
+      "p_at_L_5": 0.842113221753959,
+      "p_at_L_2": 0.6970036464048845,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 40000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5519571154717615,
+      "p_at_L_5": 0.8439305545540151,
+      "p_at_L_2": 0.6976324393551356,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 40000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5500844428825518,
+      "p_at_L_5": 0.8343184734824316,
+      "p_at_L_2": 0.700821506951982,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 40000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5409771852920411,
+      "p_at_L_5": 0.813867522078813,
+      "p_at_L_2": 0.683789846090747,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 40000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5412123326611902,
+      "p_at_L_5": 0.8109732802738222,
+      "p_at_L_2": 0.6834970169134328,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 40000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5304619124471526,
+      "p_at_L_5": 0.803891893817072,
+      "p_at_L_2": 0.6752565883537371,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 40000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5073608408031518,
+      "p_at_L_5": 0.7859021909674295,
+      "p_at_L_2": 0.6539743047540746,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 40000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000040000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.646882089074434,
+      "p_at_L_5": 0.9253177618199551,
+      "p_at_L_2": 0.8201136158537536,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 80000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6366656802348583,
+      "p_at_L_5": 0.9214334676939895,
+      "p_at_L_2": 0.808817819258271,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 80000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.620483615336595,
+      "p_at_L_5": 0.9202957011574652,
+      "p_at_L_2": 0.7923422502873705,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 80000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5578422423714936,
+      "p_at_L_5": 0.861088002115177,
+      "p_at_L_2": 0.7280533862027286,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 80000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5418419991398459,
+      "p_at_L_5": 0.8534620541922566,
+      "p_at_L_2": 0.7131716343940123,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 80000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5717640038756919,
+      "p_at_L_5": 0.8689883516888255,
+      "p_at_L_2": 0.7413881616819771,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 80000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5634546553189794,
+      "p_at_L_5": 0.8645107354831729,
+      "p_at_L_2": 0.7351011532002403,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 80000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5641057320201481,
+      "p_at_L_5": 0.8632555700930956,
+      "p_at_L_2": 0.7338477200776993,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 80000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5527703814224985,
+      "p_at_L_5": 0.8570869679812112,
+      "p_at_L_2": 0.7273184350208908,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 80000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5418866587022041,
+      "p_at_L_5": 0.8473558464206358,
+      "p_at_L_2": 0.7073790827225871,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 80000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000000_step=000000080000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6387359657578087,
+      "p_at_L_5": 0.9338935334388871,
+      "p_at_L_2": 0.8226388542722022,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 150000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000001_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6324764007645601,
+      "p_at_L_5": 0.9298928566352203,
+      "p_at_L_2": 0.8157936865017049,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 150000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000001_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6305388436549852,
+      "p_at_L_5": 0.9179160442705868,
+      "p_at_L_2": 0.7990090776972532,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 150000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000001_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5932026460500259,
+      "p_at_L_5": 0.8906934216632056,
+      "p_at_L_2": 0.7679927102245975,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 150000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000001_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5877570563653765,
+      "p_at_L_5": 0.8771569129535361,
+      "p_at_L_2": 0.7596958816195455,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 150000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000001_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5654683055455001,
+      "p_at_L_5": 0.8666645591195422,
+      "p_at_L_2": 0.7404521763605064,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 150000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000001_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5770741125043214,
+      "p_at_L_5": 0.8730914113454087,
+      "p_at_L_2": 0.7463691682435225,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 150000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000001_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5757803690276583,
+      "p_at_L_5": 0.8743067612321758,
+      "p_at_L_2": 0.7465288265136114,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 150000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000001_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5694820685704111,
+      "p_at_L_5": 0.8679756882990312,
+      "p_at_L_2": 0.7366858397053533,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 150000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000001_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5306743107241152,
+      "p_at_L_5": 0.8334734400467596,
+      "p_at_L_2": 0.6954792262755394,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 150000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000001_step=000000150000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6241405141030818,
+      "p_at_L_5": 0.9235895166552781,
+      "p_at_L_2": 0.8028591260786619,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 250000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000002_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6337358587900621,
+      "p_at_L_5": 0.9341038839898393,
+      "p_at_L_2": 0.8195514117713003,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 250000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000002_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6790639681941878,
+      "p_at_L_5": 0.9514766002641091,
+      "p_at_L_2": 0.8582942602041979,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 250000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000002_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6259988539459327,
+      "p_at_L_5": 0.927759658361541,
+      "p_at_L_2": 0.8022083603348138,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 250000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000002_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5985825272169192,
+      "p_at_L_5": 0.9030027338911715,
+      "p_at_L_2": 0.7747429073783062,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 250000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000002_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6227687218375322,
+      "p_at_L_5": 0.9164137141334306,
+      "p_at_L_2": 0.795379630823586,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 250000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000002_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.596333544978431,
+      "p_at_L_5": 0.8911114815345271,
+      "p_at_L_2": 0.7596180024276528,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 250000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000002_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6306422331924645,
+      "p_at_L_5": 0.9112836118336123,
+      "p_at_L_2": 0.8021642143373258,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 250000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000002_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6159327051390056,
+      "p_at_L_5": 0.9158266422763994,
+      "p_at_L_2": 0.7899126689758822,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 250000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000002_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5975357821747302,
+      "p_at_L_5": 0.8908991133440551,
+      "p_at_L_2": 0.7738234443276872,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 250000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000002_step=000000250000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.637443615295209,
+      "p_at_L_5": 0.9331704292341868,
+      "p_at_L_2": 0.8218924149033814,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 350000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000003_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6226876862997425,
+      "p_at_L_5": 0.9365363318748265,
+      "p_at_L_2": 0.8116675530076364,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 350000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000003_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6241528186233165,
+      "p_at_L_5": 0.9283474475405761,
+      "p_at_L_2": 0.8108404939935223,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 350000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000003_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6063964229339343,
+      "p_at_L_5": 0.9160076655218715,
+      "p_at_L_2": 0.782833818577043,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 350000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000003_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5720051538833372,
+      "p_at_L_5": 0.9002664148303585,
+      "p_at_L_2": 0.7583984666305772,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 350000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000003_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5861682069621068,
+      "p_at_L_5": 0.8925460873606778,
+      "p_at_L_2": 0.7631371903791913,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 350000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000003_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.592171182397929,
+      "p_at_L_5": 0.892955784571112,
+      "p_at_L_2": 0.7631333367667523,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 350000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000003_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5985480383117862,
+      "p_at_L_5": 0.8935425716591485,
+      "p_at_L_2": 0.7707228397591598,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 350000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000003_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.582672610594772,
+      "p_at_L_5": 0.895328058445363,
+      "p_at_L_2": 0.7525344779022931,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 350000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000003_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.58256295548171,
+      "p_at_L_5": 0.8833748569787861,
+      "p_at_L_2": 0.7523958898462215,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 350000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000003_step=000000350000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6326531473667186,
+      "p_at_L_5": 0.9375760908890927,
+      "p_at_L_2": 0.8156014181984599,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 450000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000004_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6563093943406615,
+      "p_at_L_5": 0.9449696611220638,
+      "p_at_L_2": 0.8376546480055544,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 450000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000004_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6443040106218028,
+      "p_at_L_5": 0.9400219097561813,
+      "p_at_L_2": 0.8340489788327762,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 450000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000004_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5919824671465824,
+      "p_at_L_5": 0.9111519070983073,
+      "p_at_L_2": 0.769938994995113,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 450000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000004_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.609651657497456,
+      "p_at_L_5": 0.902816229591432,
+      "p_at_L_2": 0.7804821949932925,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 450000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000004_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6101389812788993,
+      "p_at_L_5": 0.8988449823071111,
+      "p_at_L_2": 0.7854714922381272,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 450000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000004_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5933576420423885,
+      "p_at_L_5": 0.8828758182891832,
+      "p_at_L_2": 0.7638398734520739,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 450000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000004_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5953627985609081,
+      "p_at_L_5": 0.8892065891524179,
+      "p_at_L_2": 0.7599108683061069,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 450000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000004_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5907036886821688,
+      "p_at_L_5": 0.8806348506970021,
+      "p_at_L_2": 0.7626686433534375,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 450000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000004_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5776351584496083,
+      "p_at_L_5": 0.8794585469532354,
+      "p_at_L_2": 0.7470414190045915,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 450000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000004_step=000000450000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6519026167818639,
+      "p_at_L_5": 0.9383228481415525,
+      "p_at_L_2": 0.8285383044144471,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 550000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000005_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6340572439104084,
+      "p_at_L_5": 0.9304723076591029,
+      "p_at_L_2": 0.8098931383755488,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 550000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000005_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6357714744081494,
+      "p_at_L_5": 0.9303113645806924,
+      "p_at_L_2": 0.8234280908691002,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 550000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000005_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5934754541204674,
+      "p_at_L_5": 0.9038823455102651,
+      "p_at_L_2": 0.7607943515212341,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 550000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000005_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6056068036051276,
+      "p_at_L_5": 0.9076414683369632,
+      "p_at_L_2": 0.7741392842199485,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 550000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000005_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6032588019760828,
+      "p_at_L_5": 0.901628150473262,
+      "p_at_L_2": 0.7708928806276341,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 550000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000005_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.605742910862728,
+      "p_at_L_5": 0.8980008864479003,
+      "p_at_L_2": 0.7750579757428604,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 550000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000005_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5893302649088176,
+      "p_at_L_5": 0.9025164509185988,
+      "p_at_L_2": 0.7579083567764957,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 550000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000005_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6005978326906641,
+      "p_at_L_5": 0.9016043306825683,
+      "p_at_L_2": 0.7611395060639127,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 550000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000005_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5738877998986625,
+      "p_at_L_5": 0.8845212479788568,
+      "p_at_L_2": 0.74778085587435,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 550000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000005_step=000000550000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6611944227534974,
+      "p_at_L_5": 0.9451888169662197,
+      "p_at_L_2": 0.8384135538368053,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 650000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000006_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6516780988641537,
+      "p_at_L_5": 0.9444928486463541,
+      "p_at_L_2": 0.8338014309309795,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 650000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000006_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6153675066997513,
+      "p_at_L_5": 0.9143052683362793,
+      "p_at_L_2": 0.8042151632492732,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 650000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000006_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5972238609485255,
+      "p_at_L_5": 0.8993160095652966,
+      "p_at_L_2": 0.7672730073100162,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 650000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000006_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6016803942323304,
+      "p_at_L_5": 0.9042732407562468,
+      "p_at_L_2": 0.7690569220202976,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 650000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000006_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6122844278180939,
+      "p_at_L_5": 0.9076817290343382,
+      "p_at_L_2": 0.7744274195352212,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 650000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000006_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6020560529963765,
+      "p_at_L_5": 0.8951262084033316,
+      "p_at_L_2": 0.7650344704295577,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 650000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000006_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6037272951375535,
+      "p_at_L_5": 0.8953352823448679,
+      "p_at_L_2": 0.768515509785612,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 650000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000006_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5890566786154889,
+      "p_at_L_5": 0.8826719146099282,
+      "p_at_L_2": 0.7512573892861015,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 650000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000006_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5793761408429361,
+      "p_at_L_5": 0.8773532196511622,
+      "p_at_L_2": 0.7387754099563686,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 650000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000006_step=000000650000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6304231770967609,
+      "p_at_L_5": 0.9228693851083044,
+      "p_at_L_2": 0.8150598789531258,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 750000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000750000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6573400977652121,
+      "p_at_L_5": 0.9481645689207735,
+      "p_at_L_2": 0.8363132705694276,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 750000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000750000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6598535579929055,
+      "p_at_L_5": 0.9298329612865566,
+      "p_at_L_2": 0.8307931738480594,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 750000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000750000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6197723984539627,
+      "p_at_L_5": 0.9153371007213839,
+      "p_at_L_2": 0.7912765567019729,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 750000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000750000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.619770629601151,
+      "p_at_L_5": 0.9152595654001641,
+      "p_at_L_2": 0.7876382303118444,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 750000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000750000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.623985712644139,
+      "p_at_L_5": 0.9078032742506711,
+      "p_at_L_2": 0.7886759525260763,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 750000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000750000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5975718148651518,
+      "p_at_L_5": 0.8839703967935636,
+      "p_at_L_2": 0.7659049869129297,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 750000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000750000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5919430742246322,
+      "p_at_L_5": 0.8910007678753835,
+      "p_at_L_2": 0.7627436774330754,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 750000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000750000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6016172224035132,
+      "p_at_L_5": 0.8975513869660302,
+      "p_at_L_2": 0.7659280222235703,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 750000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000750000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5862242997786218,
+      "p_at_L_5": 0.877034244299136,
+      "p_at_L_2": 0.7589681085472011,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 750000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000750000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6591983291940198,
+      "p_at_L_5": 0.9433953487474467,
+      "p_at_L_2": 0.8362165344679703,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 840000,
+    "layer": 0,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000840000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6381846071755277,
+      "p_at_L_5": 0.9375728402991534,
+      "p_at_L_2": 0.8162433390038071,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 840000,
+    "layer": 1,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000840000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.618929807788678,
+      "p_at_L_5": 0.9196229257584875,
+      "p_at_L_2": 0.8023080618333539,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 840000,
+    "layer": 2,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000840000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6341755600446901,
+      "p_at_L_5": 0.9298687460625169,
+      "p_at_L_2": 0.8135491325133927,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 840000,
+    "layer": 3,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000840000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6269666604149667,
+      "p_at_L_5": 0.9132512841338205,
+      "p_at_L_2": 0.7895269421897678,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 840000,
+    "layer": 4,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000840000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6292533806720673,
+      "p_at_L_5": 0.9129500404176017,
+      "p_at_L_2": 0.7844286260709291,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 840000,
+    "layer": 5,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000840000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.599672471820916,
+      "p_at_L_5": 0.8908301578752992,
+      "p_at_L_2": 0.7723308117711851,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 840000,
+    "layer": 6,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000840000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.6067282378769201,
+      "p_at_L_5": 0.8992247075993977,
+      "p_at_L_2": 0.7732465472820708,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 840000,
+    "layer": 7,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000840000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5900234970049698,
+      "p_at_L_5": 0.8783721097308501,
+      "p_at_L_2": 0.751310416962341,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 840000,
+    "layer": 8,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000840000-EMA.ckpt"
+  },
+  {
+    "dim": 512,
+    "contact": {
+      "p_at_L": 0.5837958614809782,
+      "p_at_L_5": 0.8918176561025204,
+      "p_at_L_2": 0.7556745279158589,
+      "n_proteins_test": 40
+    },
+    "cath": {
+      "level": "none",
+      "accuracy": NaN,
+      "macro_f1": NaN,
+      "n_train": 0,
+      "n_test": 0,
+      "n_classes": 0
+    },
+    "run": "repa_l4",
+    "step": 840000,
+    "layer": 9,
+    "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_v2/checkpoints/chk_epoch=00000007_step=000000840000-EMA.ckpt"
+  }
+]
