@@ -13,6 +13,7 @@ Run:
   python playground/proteina/gearnet/explore_gearnet.py
 """
 
+import argparse
 import os
 import sys
 import pickle
@@ -69,9 +70,18 @@ RESIDUE_NAMES = [
 # ── Data Loading ────────────────────────────────────────────────────────────
 
 
-def load_proteins(n=N_PROTEINS):
-    """Load n proteins from the PDB LMDB."""
-    print(f"Loading proteins from {LMDB_PATH}...")
+def load_proteins(n=N_PROTEINS, seed=None):
+    """Load n proteins from the PDB LMDB.
+
+    Uses the pre-enumerated ``train_keys.pkl`` alongside the LMDB when present
+    — iterating the cursor over Lustre is pathologically slow (see
+    feedback_lmdb_local_nvme.md). Falls back to cursor walk otherwise.
+    """
+    keys_path = os.path.join(os.path.dirname(LMDB_PATH), "train_keys.pkl")
+    print(
+        f"Loading proteins from {LMDB_PATH} "
+        f"({'random seed=' + str(seed) if seed is not None else 'first-in-order'})..."
+    )
     db = lmdb.open(
         LMDB_PATH,
         readonly=True,
@@ -80,21 +90,62 @@ def load_proteins(n=N_PROTEINS):
         readahead=False,
         meminit=False,
     )
+
+    def _accept(graph):
+        return hasattr(graph, "coords") and graph.coords.shape[0] >= 10
+
+    if os.path.exists(keys_path):
+        with open(keys_path, "rb") as f:
+            keys = pickle.load(f)
+        print(f"  loaded {len(keys)} pre-enumerated keys from train_keys.pkl")
+    else:
+        keys = None
+
     proteins = []
     with db.begin() as txn:
-        cursor = txn.cursor()
-        for i, (key, value) in enumerate(cursor):
-            if key == b"__ids__":
-                continue
-            if len(proteins) >= n:
-                break
-            try:
-                graph = pickle.loads(value)
-                # Filter: need coords and reasonable length
-                if hasattr(graph, "coords") and graph.coords.shape[0] >= 10:
-                    proteins.append(graph)
-            except Exception:
-                continue
+        if keys is not None:
+            if seed is not None:
+                keys = list(keys)
+                random.Random(seed).shuffle(keys)
+            for key in keys:
+                if len(proteins) >= n:
+                    break
+                try:
+                    graph = pickle.loads(txn.get(key))
+                    if _accept(graph):
+                        proteins.append(graph)
+                except Exception:
+                    continue
+        else:
+            if seed is not None:
+                enum = []
+                cursor = txn.cursor()
+                for key, _ in cursor:
+                    if key != b"__ids__":
+                        enum.append(key)
+                random.Random(seed).shuffle(enum)
+                for key in enum:
+                    if len(proteins) >= n:
+                        break
+                    try:
+                        graph = pickle.loads(txn.get(key))
+                        if _accept(graph):
+                            proteins.append(graph)
+                    except Exception:
+                        continue
+            else:
+                cursor = txn.cursor()
+                for key, value in cursor:
+                    if key == b"__ids__":
+                        continue
+                    if len(proteins) >= n:
+                        break
+                    try:
+                        graph = pickle.loads(value)
+                        if _accept(graph):
+                            proteins.append(graph)
+                    except Exception:
+                        continue
     db.close()
     print(f"Loaded {len(proteins)} proteins")
     return proteins
@@ -715,7 +766,18 @@ def analyze_layerwise(encoder, proteins):
 
 
 def main():
-    proteins = load_proteins(N_PROTEINS)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--n-proteins", type=int, default=N_PROTEINS)
+    ap.add_argument(
+        "--random-seed",
+        type=int,
+        default=None,
+        help="If set, randomize protein selection with this seed "
+        "instead of taking the first N LMDB keys in byte order.",
+    )
+    args = ap.parse_args()
+
+    proteins = load_proteins(args.n_proteins, seed=args.random_seed)
     encoder = setup_encoder()
 
     all_emb, all_types, per_protein = collect_all_embeddings(encoder, proteins)
