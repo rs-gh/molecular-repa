@@ -342,10 +342,10 @@ All data referenced in this document is available in the repository:
 | Tabasco evaluation metrics | `evaluation/tabasco/results/geom/evaluation/evaluation_summary.csv` |
 | Tabasco training performance | `evaluation/tabasco/results/geom/training_performance/training_performance.csv` |
 | Tabasco training run log | `docs/tabasco_training_runs.md` |
-| Proteina FID results (baseline) | `evaluation/proteina/results/pdb/fid/inference_fid_60m_baseline.csv` |
-| Proteina FID results (REPA L0) | `evaluation/proteina/results/pdb/fid/inference_fid_60m_repa_layer0.csv` |
-| Proteina FID results (REPA L4) | `evaluation/proteina/results/pdb/fid/inference_fid_60m_repa.csv` |
-| Proteina FID results (REPA L9) | `evaluation/proteina/results/pdb/fid/inference_fid_60m_repa_layer9.csv` |
+| Proteina FID results (baseline) | `evaluation/proteina/generation/results/pdb/fid/inference_fid_60m_baseline.csv` |
+| Proteina FID results (REPA L0) | `evaluation/proteina/generation/results/pdb/fid/inference_fid_60m_repa_layer0.csv` |
+| Proteina FID results (REPA L4) | `evaluation/proteina/generation/results/pdb/fid/inference_fid_60m_repa.csv` |
+| Proteina FID results (REPA L9) | `evaluation/proteina/generation/results/pdb/fid/inference_fid_60m_repa_layer9.csv` |
 | Proteina baseline overfitting analysis | `playground/proteina/baseline_overfitting/baseline_training_analysis.md` |
 | CheMeleon encoder characterisation | `playground/tabasco/chemeleon/FINDINGS.md` |
 | MACE encoder characterisation | `playground/tabasco/mace/FINDINGS.md` |

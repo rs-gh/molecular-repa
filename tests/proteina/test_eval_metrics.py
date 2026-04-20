@@ -22,7 +22,10 @@ sys.path.insert(
 )
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../src/proteina"))
 sys.path.insert(
-    0, os.path.join(os.path.dirname(__file__), "../../evaluation/proteina/scripts")
+    0,
+    os.path.join(
+        os.path.dirname(__file__), "../../evaluation/proteina/generation/scripts"
+    ),
 )
 sys.path.insert(
     0, os.path.join(os.path.dirname(__file__), "../../hpc-scripts/proteina/data_prep")

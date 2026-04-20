@@ -155,7 +155,7 @@ sys.argv = ['evaluate.py',
     '--diversity_subset_per_bin', '0',
 ]
 import runpy
-runpy.run_path('evaluation/proteina/scripts/evaluate.py', run_name='__main__')
+runpy.run_path('evaluation/proteina/generation/scripts/evaluate.py', run_name='__main__')
 "
 EVAL_EXIT=$?
 

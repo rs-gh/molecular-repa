@@ -131,7 +131,7 @@ if '$CONFIG_SUBDIR':
     argv += ['--config_subdir', '$CONFIG_SUBDIR']
 sys.argv = argv + '$EXTRA_ARGS'.split()
 import runpy
-runpy.run_path('evaluation/proteina/scripts/evaluate.py', run_name='__main__')
+runpy.run_path('evaluation/proteina/generation/scripts/evaluate.py', run_name='__main__')
 "
 EVAL_EXIT=$?
 

@@ -18,7 +18,7 @@ Usage:
   source .venv/bin/activate
   export PROJECT_ROOT=$(pwd)/src/proteina
   export DATA_PATH=/rds/user/sr2173/hpc-work/proteina/data
-  python playground/proteina/probes/run_all.py --n_proteins 200
+  python evaluation/proteina/representation/scripts/run_all.py --n_proteins 200
 """
 
 from __future__ import annotations

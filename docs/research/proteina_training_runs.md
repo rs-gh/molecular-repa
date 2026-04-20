@@ -175,9 +175,9 @@ sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l4_128_per_resi
 
 ## Lite Eval Convergence Sweep (300 samples, 100 Euler steps)
 
-Figures: `evaluation/proteina/results/figures/fid_convergence.png`, `fjsd_convergence.png`, `feature_scores_convergence.png`
-Data: `evaluation/proteina/results/pdb/fid/lite_convergence_all.csv`
-Scripts: `evaluation/proteina/scripts/collect_lite_results.py`, `plot_fid_convergence.py`
+Figures: `evaluation/proteina/generation/figures/fid_convergence.png`, `fjsd_convergence.png`, `feature_scores_convergence.png`
+Data: `evaluation/proteina/generation/results/pdb/fid/lite_convergence_all.csv`
+Scripts: `evaluation/proteina/generation/scripts/collect_lite_results.py`, `plot_fid_convergence.py`
 
 ### Baseline
 

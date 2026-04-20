@@ -2,13 +2,13 @@
 """Joint probe × FID plots — Fig 3c analogue + probe-redundancy scatter.
 
 Merges:
-  - `playground/proteina/probes/sweep_results.csv`   (probe quality metrics)
-  - `evaluation/proteina/results/pdb/fid/lite_convergence_all.csv`   (FID / fJSD / fS)
+  - `evaluation/proteina/representation/results/sweep_results.csv`        (probe quality metrics)
+  - `evaluation/proteina/generation/results/pdb/fid/lite_convergence_all.csv`  (FID / fJSD / fS)
 
 on `(run, samples_seen)` (nsamples = step × batch_size; that's the fair x-axis
 given baseline bs=6 vs REPA bs=4 at 512 residues).
 
-Outputs to `playground/proteina/probes/figures/`:
+Outputs to `evaluation/proteina/joint/figures/`:
 
   fig_pareto_fid_vs_probe.png        — Fig 3c analogue
     One point per (run, samples_seen). X = probe quality (P@L/5 at aligned
@@ -23,7 +23,7 @@ Outputs to `playground/proteina/probes/figures/`:
     scatter → orthogonal (keep both).
 
 Usage:
-  python playground/proteina/probes/pareto.py
+  python evaluation/proteina/joint/scripts/pareto.py
 """
 
 from __future__ import annotations

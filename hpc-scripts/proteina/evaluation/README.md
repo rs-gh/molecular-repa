@@ -1,6 +1,6 @@
 # evaluation
 
-FID evaluation pipelines for proteina checkpoints. The heavy lifting lives in `evaluation/proteina/scripts/evaluate.py`; these Slurm wrappers stand up the environment and pass the right args.
+FID evaluation pipelines for proteina checkpoints. The heavy lifting lives in `evaluation/proteina/generation/scripts/evaluate.py`; these Slurm wrappers stand up the environment and pass the right args.
 
 ## Scripts
 
@@ -24,4 +24,4 @@ sbatch --array=0-11 hpc-scripts/proteina/evaluation/eval_fid_lite_sweep.sh repa
 bash hpc-scripts/proteina/evaluation/transfer_lite_eval.sh bundle baseline 250000
 ```
 
-Collected results land under `evaluation/proteina/results/` and are plotted by the scripts in `evaluation/proteina/scripts/`.
+Collected results land under `evaluation/proteina/generation/results/` and are plotted by the scripts in `evaluation/proteina/generation/scripts/`.

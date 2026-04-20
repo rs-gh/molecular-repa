@@ -1,7 +1,7 @@
 """Plots for the proteina probe sweep — analogues of REPA paper figures.
 
 Reads `sweep_results.csv` (produced by run_sweep.py) and emits three figures
-into `playground/proteina/probes/figures/`:
+into `evaluation/proteina/representation/figures/`:
 
   fig_layerwise_P_at_L5.png        — Fig 3a analogue for contacts
       x = transformer layer index, y = P@L/5, one curve per run at a fixed step
@@ -16,7 +16,7 @@ into `playground/proteina/probes/figures/`:
       subplot for P@L/5, one for CATH accuracy, one for each run.
 
 Usage:
-  python playground/proteina/probes/plot.py
+  python evaluation/proteina/representation/scripts/plot.py
 """
 
 from __future__ import annotations

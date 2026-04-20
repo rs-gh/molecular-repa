@@ -21,7 +21,7 @@ Resume behaviour:
 
 Usage:
   sbatch hpc-scripts/proteina/evaluation/run_probes.sh --sweep
-  python playground/proteina/probes/run_sweep.py --n_proteins 200
+  python evaluation/proteina/representation/scripts/run_sweep.py --n_proteins 200
 
 Sample selection:
   Default — first-N proteins ≤ max_size in LMDB cursor order. Deterministic

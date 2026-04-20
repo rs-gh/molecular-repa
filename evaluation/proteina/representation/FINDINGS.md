@@ -68,7 +68,7 @@ source .venv/bin/activate
 export PROJECT_ROOT=$(pwd)/src/proteina
 export DATA_PATH=/rds/user/sr2173/hpc-work/proteina/data
 export LMDB_DIR=/rds/user/sr2173/hpc-work/proteina/data/pdb_train/lmdb
-python playground/proteina/probes/run_all.py --n_proteins 50 --only baseline
+python evaluation/proteina/representation/scripts/run_all.py --n_proteins 50 --only baseline
 ```
 
 ## Design notes
