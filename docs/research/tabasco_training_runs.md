@@ -102,7 +102,7 @@ Benchmarks run via [hpc-scripts/tabasco/bench/](../../hpc-scripts/tabasco/bench/
 
 ### torch.compile: 1.4× speedup, no meaningful memory savings
 
-[evaluation/tabasco/results/bench/compile.csv](../../evaluation/tabasco/results/bench/compile.csv) — baseline (no REPA), BS=256, N=71, fp16 vs bf16:
+[evaluation/tabasco/bench/results/compile.csv](../../evaluation/tabasco/bench/results/compile.csv) — baseline (no REPA), BS=256, N=71, fp16 vs bf16:
 
 | compile | precision | s/step | steps/s | peak GB | speedup |
 |---|---|---:|---:|---:|---:|
@@ -119,7 +119,7 @@ Benchmarks run via [hpc-scripts/tabasco/bench/](../../hpc-scripts/tabasco/bench/
 
 ### SDPA: already on EFFICIENT, no kernel unlock available
 
-[evaluation/tabasco/results/bench/sdpa.csv](../../evaluation/tabasco/results/bench/sdpa.csv). Forced each backend via `torch.nn.attention.sdpa_kernel([...])`, bf16-mixed:
+[evaluation/tabasco/bench/results/sdpa.csv](../../evaluation/tabasco/bench/results/sdpa.csv). Forced each backend via `torch.nn.attention.sdpa_kernel([...])`, bf16-mixed:
 
 | backend | compile | s/step | peak GB | status |
 |---|---|---:|---:|---|
@@ -135,12 +135,12 @@ Benchmarks run via [hpc-scripts/tabasco/bench/](../../hpc-scripts/tabasco/bench/
 Tabasco's attention path: [Attention](../../src/tabasco/src/tabasco/models/components/attention.py#L33) wraps `nn.MultiheadAttention(batch_first=True)`, which lowers to `F.scaled_dot_product_attention` internally when `need_weights=False` + bool `key_padding_mask`. Both the `reimplemented` and `pytorch` transformer implementations end up at the same MHA kernel.
 
 - **Auto-dispatch already picks EFFICIENT_ATTENTION**. Identical timings to forcing efficient directly. No `.contiguous()`-style unlock available (unlike proteina, which was stuck on MATH).
-- **FLASH is hard-blocked by torch 2.9.1** via *"Flash Attention does not support non-null attn_mask"* ([diagnose_sdpa.log](../../evaluation/tabasco/results/bench/diagnose_sdpa.log)). MHA lowers `key_padding_mask` to an additive float mask that FA's kernel rejects.
+- **FLASH is hard-blocked by torch 2.9.1** via *"Flash Attention does not support non-null attn_mask"* ([diagnose_sdpa.log](../../evaluation/tabasco/bench/results/diagnose_sdpa.log)). MHA lowers `key_padding_mask` to an additive float mask that FA's kernel rejects.
 - **MATH is the disaster fallback**: 1.6× slower, 1.7× more memory (22.4 vs 13.5 GB). Worth knowing the blast radius if EFFICIENT ever gets runtime-disabled.
 
 ### Kernel-level diagnose: MHA wrapper adds ~45% attention overhead
 
-[diagnose_sdpa.log](../../evaluation/tabasco/results/bench/diagnose_sdpa.log) — per-call microbenchmark (A100 bf16, B=256, N=71, H=8, D=16):
+[diagnose_sdpa.log](../../evaluation/tabasco/bench/results/diagnose_sdpa.log) — per-call microbenchmark (A100 bf16, B=256, N=71, H=8, D=16):
 
 | path | mask | FLASH | EFFICIENT | MATH | CUDNN |
 |---|---|---:|---:|---:|---:|
@@ -155,7 +155,7 @@ Tabasco's attention path: [Attention](../../src/tabasco/src/tabasco/models/compo
 
 ### Batch-size ceiling: BS ≤ 1456 fits; throughput is flat from BS=256
 
-[evaluation/tabasco/results/bench/batch_size_sweep.csv](../../evaluation/tabasco/results/bench/batch_size_sweep.csv) — baseline, `reduce-overhead`, fp16, binary-searched in [256, 2048]:
+[evaluation/tabasco/bench/results/batch_size_sweep.csv](../../evaluation/tabasco/bench/results/batch_size_sweep.csv) — baseline, `reduce-overhead`, fp16, binary-searched in [256, 2048]:
 
 | BS | peak GB | steps/s | samples/s | % of 80 GB |
 |---:|---:|---:|---:|---:|

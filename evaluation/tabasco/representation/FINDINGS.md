@@ -106,7 +106,7 @@ CheMeleon > MACE > Dummy, matching existing FINDINGS in
 ```bash
 source .venv/bin/activate
 export PROJECT_ROOT=$(pwd)/src/tabasco
-python playground/tabasco/probes/run_all.py --n_mols 1000
+python evaluation/tabasco/representation/scripts/run_all.py --n_mols 1000
 ```
 
 Results (machine-readable) → [results.json](results.json), [results.md](results.md).

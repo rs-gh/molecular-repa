@@ -81,7 +81,7 @@ machine.file.*
 segfault_log
 encoder_benchmark
 evaluation/results/tabasco/geom/evaluation/*/molecules.sdf
-evaluation/tabasco/results/geom/evaluation/*/molecules.sdf
+evaluation/tabasco/generation/results/geom/evaluation/*/molecules.sdf
 
 # Large outputs (not tracked)
 eval_output/

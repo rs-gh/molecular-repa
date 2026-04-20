@@ -26,7 +26,7 @@ Writes:
 Usage:
   source .venv/bin/activate
   export PROJECT_ROOT=$(pwd)/src/tabasco
-  python playground/tabasco/probes/run_all.py --n_mols 1000
+  python evaluation/tabasco/representation/scripts/run_all.py --n_mols 1000
 """
 
 from __future__ import annotations

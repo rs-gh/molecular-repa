@@ -339,8 +339,8 @@ All data referenced in this document is available in the repository:
 
 | Data | Location |
 |------|----------|
-| Tabasco evaluation metrics | `evaluation/tabasco/results/geom/evaluation/evaluation_summary.csv` |
-| Tabasco training performance | `evaluation/tabasco/results/geom/training_performance/training_performance.csv` |
+| Tabasco evaluation metrics | `evaluation/tabasco/generation/results/geom/evaluation/evaluation_summary.csv` |
+| Tabasco training performance | `evaluation/tabasco/generation/results/geom/training_performance/training_performance.csv` |
 | Tabasco training run log | `docs/tabasco_training_runs.md` |
 | Proteina FID results (baseline) | `evaluation/proteina/generation/results/pdb/fid/inference_fid_60m_baseline.csv` |
 | Proteina FID results (REPA L0) | `evaluation/proteina/generation/results/pdb/fid/inference_fid_60m_repa_layer0.csv` |
