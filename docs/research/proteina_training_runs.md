@@ -380,6 +380,22 @@ Job 27960354 was re-submitted with a Lustre fallback after the first run hit `/t
 
 The 2026-04-01 production runs sustained **93-96% GPU utilization** over 36 h. With compile on plus the I/O stack we have today, there's not much headroom left at the occupancy layer — future gains will come from throughput (larger effective BS via grad accumulation, unlocking a fused attention kernel) rather than "fill the GPU more".
 
+## Length-bucketed training (2026-04-20)
+
+Global-max padding wastes massive compute on short samples (N=128 padded to 512 means 16× wasted attention FLOPs). Length-bucketed sampling pads each batch to its bucket's upper edge instead, yielding fixed `(B, N)` shapes per bucket so `torch.compile` caches one graph per bucket.
+
+**Pipeline:** `LengthBucketedBatchSampler` (existing, see [length_bucket_sampler.py](../../src/proteina/proteinfoundation/utils/length_bucket_sampler.py)) + `DensePaddingCollater(bucket_boundaries=...)` (pads to bucket upper edge) + `sampling_mode: length-bucketed` in the dataset YAML. Wired via `_get_dataloader` in [base_data.py](../../src/proteina/proteinfoundation/datasets/base_data.py). Val/test fall back to random sampling (bucketing is a train-only optimization because only train hits the compile hot loop).
+
+**Config:** [pdb_lmdb_512_bucketed.yaml](../../src/proteina/configs/datasets_config/pdb/pdb_lmdb_512_bucketed.yaml). Bucket boundaries `[128, 256, 384, 512]` with BS `[80, 24, 10, 6]` (from P1 calibration, ~15-20% OOM headroom vs measured max BS `[98, 28, 12, 7]`). For a different seq_len ceiling, trim both lists — e.g. n=256 uses boundaries `[128, 256]`.
+
+**P2 compile verification** (`hpc-scripts/proteina/bench/p2_compile_multishape.py`, job 28079962): PASS — 4 distinct shapes, revisit steps 400× faster than first-visit. No cache_size_limit bump needed.
+
+**P1 calibration** (`hpc-scripts/proteina/bench/bs_sweep_p1_bucket_calibration.sh`, job 28080969): max BS per seq_len at `evaluation/proteina/bench/results/batch_size_sweep/p1_bucket_calibration.csv`.
+
+**Per-bucket grad accumulation** via [PerBucketGradAccumCallback](../../src/proteina/proteinfoundation/callbacks/per_bucket_grad_accum.py) mutates `trainer.accumulate_grad_batches` per batch based on `batch.bucket_length`, targeting a fixed effective optimizer-step BS across buckets. Target BS is configurable; starting value = 80 (matches the largest bucket's BS) so `accum = [1, 3, 8, 13]` across the 4 buckets.
+
+**Known caveat (cross-bucket gradient mixing):** Lightning's accumulation counter is global, not per-bucket. When buckets interleave in the batch stream, gradients from a heavy-bucket batch can get folded into the next bucket's optimizer step. Mean effective BS per step still ≈ target, but the variance is stochastic rather than deterministic. Acceptable for initial runs; revisit if loss curves diverge from the global-max baseline. Alternatives if needed: (i) sort sampler output so buckets are contiguous, (ii) switch to manual optimization in the LightningModule.
+
 ## Related Analysis
 
 | Location | Description |

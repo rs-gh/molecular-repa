@@ -1,8 +1,8 @@
-seq_len,model_type,compile,gc_layers,max_bs,peak_mem_gb,steps_per_sec,time_per_step,eff_bs_256_accum
-128,baseline,True,0,0,,,,
-192,baseline,True,0,0,,,,
-256,baseline,True,0,0,,,,
-320,baseline,True,0,0,,,,
-384,baseline,True,0,0,,,,
-448,baseline,True,0,0,,,,
-512,baseline,True,0,0,,,,
+seq_len,model_type,encoder,compile,gc_layers,max_bs,peak_mem_gb,steps_per_sec,time_per_step,eff_bs_256_accum
+128,baseline,,True,0,98,72.52,1.33,0.752,3
+192,baseline,,True,0,47,71.91,1.378,0.726,6
+256,baseline,,True,0,28,72.88,1.554,0.643,10
+320,baseline,,True,0,18,71.31,1.659,0.603,15
+384,baseline,,True,0,12,67.3,1.707,0.586,22
+448,baseline,,True,0,9,67.8,1.596,0.627,29
+512,baseline,,True,0,7,68.19,1.592,0.628,37

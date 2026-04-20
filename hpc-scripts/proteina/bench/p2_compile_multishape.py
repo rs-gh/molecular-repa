@@ -52,7 +52,6 @@ N_ROUND_ROBIN_PASSES = 3
 def build_model_and_batch(seq_len: int, batch_size: int, device, cfg):
     import lightning as L
     import torch
-    from torch_geometric.data import Batch, Data
 
     L.seed_everything(42)
     from proteinfoundation.proteinflow.proteina import Proteina
@@ -61,21 +60,23 @@ def build_model_and_batch(seq_len: int, batch_size: int, device, cfg):
     model = Proteina(cfg, store_dir=tmp).to(device)
     model.train()
 
-    def make_batch(B, N):
-        datas = [
-            Data(
-                coords_ca=torch.randn(N, 3),
-                mask=torch.ones(N, dtype=torch.bool),
-                seq=torch.randint(0, 20, (N,)),
-                res_seq_pdb_idx=torch.arange(N, dtype=torch.long),
-                chain_break_per_res=torch.zeros(N, dtype=torch.long),
-                num_nodes=N,
-            )
-            for _ in range(B)
-        ]
-        return Batch.from_data_list(datas).to(device)
+    def make_nn_batch(B, N):
+        # Build a `batch_nn` dict matching what model.nn.forward expects
+        # (protein_transformer.py:647). We call model.nn directly rather than
+        # model.training_step because the latter hits self.trainer.world_size
+        # and needs Lightning wiring. Compile behavior only depends on the
+        # compiled module's inputs.
+        return {
+            "x_t": torch.randn(B, N, 3, device=device),
+            "t": torch.rand(B, device=device),
+            "mask": torch.ones(B, N, dtype=torch.bool, device=device),
+            "res_seq_pdb_idx": torch.arange(N, device=device)
+            .unsqueeze(0)
+            .expand(B, -1),
+            "chain_break_per_res": torch.zeros(B, N, dtype=torch.long, device=device),
+        }
 
-    return model, make_batch
+    return model, make_nn_batch
 
 
 def load_training_ca_config():
@@ -152,7 +153,7 @@ def run():
     for pass_idx in range(N_ROUND_ROBIN_PASSES):
         for name, B, N in SHAPES:
             log(f"pass {pass_idx}  shape={name}  B={B} N={N}")
-            batch = make_batch(B, N)
+            batch_nn = make_batch(B, N)
 
             before = dynamo_counters()
             optimizer.zero_grad()
@@ -160,8 +161,10 @@ def run():
             t0 = time.perf_counter()
 
             with torch.autocast(device.type, dtype=torch.bfloat16):
-                out = model.training_step(batch, 0)
-            loss = out if torch.is_tensor(out) else out.get("loss")
+                nn_out = model.nn(batch_nn)
+                # Fake loss: sum of predicted coords. Exercises backward through
+                # the full compiled module without needing Lightning scaffolding.
+                loss = nn_out["coors_pred"].float().pow(2).mean()
             loss.backward()
             optimizer.step()
 
