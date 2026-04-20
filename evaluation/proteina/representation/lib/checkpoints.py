@@ -67,6 +67,9 @@ REPA_L9_STEPS = REPA_STEPS  # matches the FID sweep — same schedule as layer-4
 
 RUN_SCHEDULES = {
     # name: (run_dir, is_repa, repa_layer, step_list)
+    # --------------------------------------------------------------------- #
+    # n=512 runs — existing FID-schedule probe sweep
+    # --------------------------------------------------------------------- #
     "baseline": (
         "proteina_60m_baseline_v2",
         False,
@@ -81,6 +84,31 @@ RUN_SCHEDULES = {
     ),  # default REPA trains layer 4
     "repa_l0": ("proteina_60m_repa_layer0_v2", True, 0, REPA_L0_STEPS),
     "repa_l9": ("proteina_60m_repa_layer9_v2", True, 9, REPA_L9_STEPS),
+    # --------------------------------------------------------------------- #
+    # n=128 — sample-matched @ ~19.5M samples (baseline bs=24 throughout;
+    # REPA bs=24→80 switch at step 220K, so step 400K = 220K×24 + 180K×80 = 19.68M)
+    # --------------------------------------------------------------------- #
+    "baseline_128": ("proteina_60m_baseline_128", False, 4, [800000]),
+    "repa_l0_128": ("proteina_60m_repa_l0_128_per_residue", True, 0, [400000]),
+    "repa_l4_128": ("proteina_60m_repa_l4_128_per_residue", True, 4, [400000]),
+    "repa_l9_128": ("proteina_60m_repa_l9_128_per_residue", True, 9, [400000]),
+    # --------------------------------------------------------------------- #
+    # n=256 — sample-matched @ ~7M samples (all runs bs=12→24 switch at step
+    # 220K, so step 400K = 220K×12 + 180K×24 = 6.96M)
+    # --------------------------------------------------------------------- #
+    "baseline_256": ("proteina_60m_baseline_256", False, 4, [400000]),
+    "repa_l0_256": ("proteina_60m_repa_l0_256_per_residue", True, 0, [400000]),
+    "repa_l4_256": ("proteina_60m_repa_l4_256_per_residue", True, 4, [400000]),
+    "repa_l9_256": ("proteina_60m_repa_l9_256_per_residue", True, 9, [400000]),
+    # --------------------------------------------------------------------- #
+    # n=512 — sample-matched single-step subsets of the existing _v2 dirs.
+    # The `_sm` suffix prevents collision with the full-schedule entries above;
+    # for the sample-matched multi-t probe we only need this one checkpoint per run.
+    # --------------------------------------------------------------------- #
+    "baseline_512_sm": ("proteina_60m_baseline_v2", False, 4, [450000]),
+    "repa_l0_512_sm": ("proteina_60m_repa_layer0_v2", True, 0, [830000]),
+    "repa_l4_512_sm": ("proteina_60m_repa_v2", True, 4, [840000]),
+    "repa_l9_512_sm": ("proteina_60m_repa_layer9_v2", True, 9, [840000]),
 }
 
 # External / pretrained checkpoints — static files at known paths rather than

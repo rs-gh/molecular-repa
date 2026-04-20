@@ -107,11 +107,27 @@ ENCODER_LAYER_SENTINEL = -1
 # --------------------------------------------------------------------------- #
 
 
-def _load_done_set(jsonl_path: Path) -> Tuple[Set[Tuple[str, int, int]], List[Dict]]:
-    """Read existing JSONL; return set of completed (run, step, layer) keys + all rows."""
+def _t_tag(t: float) -> str:
+    """Canonical string form of a timestep for cache-key identity ('1.00', '0.75'...).
+
+    Using a fixed 2-decimal representation avoids floating-point jitter in
+    cache equality checks: 0.7500000001 and 0.75 hash to the same key.
+    """
+    return f"{float(t):.2f}"
+
+
+def _load_done_set(
+    jsonl_path: Path,
+) -> Tuple[Set[Tuple[str, int, int, str]], List[Dict]]:
+    """Read existing JSONL; return set of completed (run, step, layer, t_tag) keys + all rows.
+
+    Historical rows written before the t-sweep change have no ``t`` field and
+    are treated as t=1.0 (clean) for resume purposes — matches the original
+    clean-endpoint probing convention.
+    """
     if not jsonl_path.exists():
         return set(), []
-    done: Set[Tuple[str, int, int]] = set()
+    done: Set[Tuple[str, int, int, str]] = set()
     rows: List[Dict] = []
     with open(jsonl_path) as f:
         for line in f:
@@ -123,7 +139,8 @@ def _load_done_set(jsonl_path: Path) -> Tuple[Set[Tuple[str, int, int]], List[Di
             except json.JSONDecodeError:
                 continue
             if "error" not in r and all(k in r for k in ("run", "step", "layer")):
-                done.add((r["run"], int(r["step"]), int(r["layer"])))
+                t_tag = _t_tag(r.get("t", 1.0))
+                done.add((r["run"], int(r["step"]), int(r["layer"]), t_tag))
             rows.append(r)
     return done, rows
 
@@ -298,6 +315,36 @@ def consolidate(outdir: Path) -> None:
     # JSON (consolidated list)
     (outdir / "sweep_results.json").write_text(json.dumps(rows, indent=2, default=str))
 
+    def _primary_p_at_L_5(contact: Dict) -> float:
+        """Linear-head P@L/5 if the row was written with `--heads both`, else NaN.
+
+        Matches the REPA paper convention — linear probe is the headline metric
+        for representation quality (isolates what's linearly decodable).
+        Legacy rows written with `--heads mlp` only had an MLP head trained, so
+        there's no linear number to report — we return NaN rather than the MLP
+        value to avoid silently misrepresenting the probe type.
+        """
+        if (
+            isinstance(contact, dict)
+            and "linear" in contact
+            and isinstance(contact["linear"], dict)
+        ):
+            return float(contact["linear"].get("p_at_L_5_mean", float("nan")))
+        return float("nan")
+
+    def _mlp_p_at_L_5(contact: Dict) -> float:
+        """MLP head P@L/5 if available, else fall back to flat field."""
+        if isinstance(contact, dict):
+            if "mlp" in contact and isinstance(contact["mlp"], dict):
+                return float(
+                    contact["mlp"].get(
+                        "p_at_L_5_mean", contact.get("p_at_L_5", float("nan"))
+                    )
+                )
+            # Flat-schema rows store p_at_L_5 from the MLP (legacy default).
+            return float(contact.get("p_at_L_5", float("nan")))
+        return float("nan")
+
     # CSV
     with open(outdir / "sweep_results.csv", "w", newline="") as f:
         w = csv.writer(f)
@@ -306,7 +353,10 @@ def consolidate(outdir: Path) -> None:
                 "run",
                 "step",
                 "layer",
+                "t",
                 "dim",
+                "p_at_L_5_linear",
+                "p_at_L_5_mlp",
                 "p_at_L",
                 "p_at_L_2",
                 "p_at_L_5",
@@ -324,12 +374,17 @@ def consolidate(outdir: Path) -> None:
             # Rows written before the manifest flag existed implicitly belong
             # to the cursor-first sample, recorded here as "v1" for clarity.
             manifest = r.get("manifest", "v1")
+            # Rows written before the t-sweep change default to t=1.0 (clean).
+            t_val = r.get("t", 1.0)
             if "error" in r:
                 w.writerow(
                     [
                         r.get("run", ""),
                         r.get("step", ""),
                         r.get("layer", ""),
+                        f"{float(t_val):.2f}",
+                        "",
+                        "",
                         "",
                         "",
                         "",
@@ -351,11 +406,14 @@ def consolidate(outdir: Path) -> None:
                     r["run"],
                     r["step"],
                     r["layer"],
+                    f"{float(t_val):.2f}",
                     r["dim"],
-                    f"{c['p_at_L']:.4f}",
-                    f"{c['p_at_L_2']:.4f}",
-                    f"{c['p_at_L_5']:.4f}",
-                    c["n_proteins_test"],
+                    f"{_primary_p_at_L_5(c):.4f}",
+                    f"{_mlp_p_at_L_5(c):.4f}",
+                    f"{c.get('p_at_L', float('nan')):.4f}",
+                    f"{c.get('p_at_L_2', float('nan')):.4f}",
+                    f"{c.get('p_at_L_5', float('nan')):.4f}",
+                    c.get("n_proteins_test", 0),
                     ca["level"],
                     f"{ca['accuracy']:.4f}",
                     f"{ca['macro_f1']:.4f}",
@@ -366,22 +424,45 @@ def consolidate(outdir: Path) -> None:
                 ]
             )
 
-    # MD summary: one table grouped by (run, step), showing the best-layer peak.
-    lines = ["# Proteina Probe Sweep — peak-layer summary\n"]
-    lines.append("| run | step | best_layer | P@L/5 | CATH-acc | CATH-classes |")
-    lines.append("|---|---:|---:|---:|---:|---:|")
-    # Group by (run, step), take max P@L/5 across layers
-    buckets: Dict[Tuple[str, int], List[Dict]] = {}
+    # MD summary: one table grouped by (run, step, t), showing the best-layer peak.
+    # Linear-head P@L/5 is the primary metric (matches REPA paper).
+    lines = [
+        "# Proteina Probe Sweep — peak-layer summary\n",
+        "Primary metric: linear-head P@L/5 at the best layer for each (run, step, t).\n",
+        "`P@L/5-mlp` column shows the MLP-head number at the same best-layer choice,",
+        "to flag cases where nonlinear decodability is inflating estimates.\n",
+    ]
+    lines.append(
+        "| run | step | t | best_layer | P@L/5 (linear) | P@L/5 (mlp) | CATH-acc | CATH-classes |"
+    )
+    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|")
+    # Group by (run, step, t), take max LINEAR P@L/5 across layers
+    buckets: Dict[Tuple[str, int, str], List[Dict]] = {}
     for r in rows:
         if "error" in r:
             continue
-        key = (r["run"], int(r["step"]))
+        t_tag = f"{float(r.get('t', 1.0)):.2f}"
+        key = (r["run"], int(r["step"]), t_tag)
         buckets.setdefault(key, []).append(r)
-    for (run, step), group in sorted(buckets.items()):
-        best = max(group, key=lambda r: r["contact"]["p_at_L_5"])
+    import math
+
+    def _rank_key(r: Dict) -> float:
+        # Rank by linear if present, else by MLP (legacy rows); NaN sorts last.
+        v = _primary_p_at_L_5(r["contact"])
+        if math.isnan(v):
+            v = _mlp_p_at_L_5(r["contact"])
+        return v if not math.isnan(v) else -1.0
+
+    for (run, step, t_tag), group in sorted(buckets.items()):
+        best = max(group, key=_rank_key)
+        lin = _primary_p_at_L_5(best["contact"])
+        mlp = _mlp_p_at_L_5(best["contact"])
+        lin_str = f"{lin:.3f}" if not math.isnan(lin) else "—"
+        mlp_str = f"{mlp:.3f}" if not math.isnan(mlp) else "—"
         lines.append(
-            f"| {run} | {step} | {best['layer']} | "
-            f"{best['contact']['p_at_L_5']:.3f} | {best['cath']['accuracy']:.3f} | "
+            f"| {run} | {step} | {t_tag} | {best['layer']} | "
+            f"{lin_str} | {mlp_str} | "
+            f"{best['cath']['accuracy']:.3f} | "
             f"{best['cath']['n_classes']} |"
         )
     (outdir / "sweep_results.md").write_text("\n".join(lines) + "\n")
@@ -418,11 +499,13 @@ def main():
     ap.add_argument(
         "--heads",
         type=str,
-        default="mlp",
+        default="both",
         help=(
             "Comma-separated probe heads to train on trained/untrained/encoder "
             "sources. Choices: mlp, linear, both. 'both' is sugar for 'mlp,linear'. "
-            "Default 'mlp' preserves the legacy flat schema."
+            "Default 'both' reports linear as the primary metric (matches the REPA "
+            "paper) and MLP as a nonlinear-decodability check. Pass 'mlp' to "
+            "restore the legacy flat schema."
         ),
     )
     ap.add_argument(
@@ -438,11 +521,11 @@ def main():
     ap.add_argument(
         "--baselines",
         type=str,
-        default=None,
+        default="random_rank,distance_only,seq_onehot,random_gauss,untrained_proteina",
         help=(
             "Comma-separated list of baseline sources to include in the sweep. "
             "Choices: random_gauss, seq_onehot, untrained_proteina, "
-            "random_rank, distance_only. None = skip all (legacy behavior)."
+            "random_rank, distance_only. Pass '' (empty) to skip all."
         ),
     )
     ap.add_argument(
@@ -456,6 +539,18 @@ def main():
         type=str,
         default=None,
         help="Comma-separated subset of runs to probe (e.g. baseline,repa_l4).",
+    )
+    ap.add_argument(
+        "--timesteps",
+        type=str,
+        default="1.0,0.75,0.5",
+        help=(
+            "Comma-separated flow-matching timesteps at which to probe trunk "
+            "hidden states. Proteina convention: t=1.0 is clean, t=0.0 is pure "
+            "noise — so '1.0,0.75,0.5' is clean + two noisy points, matching "
+            "REPA paper Fig 7. Each (run, step, layer, t) tuple is an independent "
+            "JSONL row. Pass '1.0' to restore legacy single-t behavior."
+        ),
     )
     ap.add_argument("--skip_gearnet", action="store_true")
     # Default writes to .../representation/results/ (sibling of scripts/).
@@ -487,6 +582,12 @@ def main():
     rich_schema = heads_list != ["mlp"] or seeds_list != [42]
     if rich_schema:
         print(f"Rich schema: heads={heads_list}, seeds={seeds_list}")
+
+    # Normalize --timesteps. Proteina convention: t=1.0 clean, t=0.0 noise.
+    timesteps = [float(t.strip()) for t in args.timesteps.split(",") if t.strip()]
+    if not timesteps:
+        timesteps = [1.0]
+    print(f"Probing timesteps: {timesteps}")
 
     done, _ = _load_done_set(jsonl_path)
     if done:
@@ -543,7 +644,9 @@ def main():
     print(f"  cath_code sample values: {cath_examples}")
 
     # --- Gearnet (flat reference, single "layer" = -1 sentinel) ---
-    gearnet_key = ("gearnet", 0, ENCODER_LAYER_SENTINEL)
+    # Gearnet is a structure-only encoder; t is irrelevant (no model forward
+    # with a timestep input). Tag at t=1.0 so it lives in the clean-input bucket.
+    gearnet_key = ("gearnet", 0, ENCODER_LAYER_SENTINEL, _t_tag(1.0))
     if not args.skip_gearnet and gearnet_key not in done:
         print("\n=== gearnet (frozen reference) ===")
         try:
@@ -562,6 +665,7 @@ def main():
                     "run": "gearnet",
                     "step": 0,
                     "layer": ENCODER_LAYER_SENTINEL,
+                    "t": 1.0,
                     "ckpt_path": None,
                 }
             )
@@ -594,23 +698,31 @@ def main():
     elif gearnet_key in done:
         print("gearnet already cached, skip")
 
-    # --- Iterate (run, step) grid — probe all layers per checkpoint ---
+    # --- Iterate (run, step, t) grid — probe all layers per (checkpoint, t) ---
     chosen_runs = set(args.runs.split(",")) if args.runs else set(RUN_SCHEDULES)
     for run_name in RUN_SCHEDULES:
         if run_name not in chosen_runs:
             continue
         run_dir, is_repa, _, steps = RUN_SCHEDULES[run_name]
-        print(f"\n=== {run_name} ({run_dir}, {len(steps)} steps) ===")
+        print(
+            f"\n=== {run_name} ({run_dir}, {len(steps)} steps, {len(timesteps)} timesteps) ==="
+        )
 
         # Proteina 60M uses 10 trunk layers; fixed across _v2 runs. We use
         # this to skip fully-cached (run, step) pairs BEFORE paying a load.
         EXPECTED_NLAYERS = 10
 
         for step in steps:
-            # Pre-load skip: if all expected layers are cached, don't load.
-            if all((run_name, int(step), L) in done for L in range(EXPECTED_NLAYERS)):
+            # Pre-load skip: if all expected (layer, t) cells are cached, don't load.
+            all_cached = all(
+                (run_name, int(step), L, _t_tag(t)) in done
+                for L in range(EXPECTED_NLAYERS)
+                for t in timesteps
+            )
+            if all_cached:
                 print(
-                    f"  step {step}: all {EXPECTED_NLAYERS} layers cached, skip (no load)"
+                    f"  step {step}: all {EXPECTED_NLAYERS} layers × {len(timesteps)} "
+                    f"timesteps cached, skip (no load)"
                 )
                 continue
 
@@ -622,72 +734,82 @@ def main():
             print(f"\n  --- step {step} @ {ckpt.name} ---")
 
             try:
-                # Load model once; probe all layers from one forward pass.
+                # Load model once; probe all (layer, t) combinations against it.
                 model = _load_ckpt_with_retry(ckpt, is_repa=is_repa, device=device)
                 n_layers = model_num_layers(model)
                 all_layers = list(range(n_layers))
 
-                # Skip layers already done; run the remaining set.
-                todo_layers = [
-                    L for L in all_layers if (run_name, int(step), L) not in done
-                ]
-                if not todo_layers:
-                    print(f"    all {n_layers} layers already cached, skip")
-                    del model
-                    continue
-                if len(todo_layers) < n_layers:
+                for t_val in timesteps:
+                    t_tag = _t_tag(t_val)
+                    todo_layers = [
+                        L
+                        for L in all_layers
+                        if (run_name, int(step), L, t_tag) not in done
+                    ]
+                    if not todo_layers:
+                        print(f"    t={t_tag}: all {n_layers} layers cached, skip")
+                        continue
+                    if len(todo_layers) < n_layers:
+                        print(
+                            f"    t={t_tag}: resuming "
+                            f"{n_layers - len(todo_layers)}/{n_layers} cached, "
+                            f"probing {len(todo_layers)} more"
+                        )
+
+                    t0 = time.time()
+                    reps_by_layer = extract_model_hidden_states_multilayer(
+                        model, batch, todo_layers, t_value=t_val
+                    )
+                    t_extract = time.time() - t0
                     print(
-                        f"    resuming: {len(all_layers) - len(todo_layers)}/{n_layers} "
-                        f"layers already cached, probing {len(todo_layers)} more"
+                        f"    t={t_tag}: extracted {len(todo_layers)} layers in "
+                        f"{t_extract:.1f}s"
                     )
 
-                t0 = time.time()
-                reps_by_layer = extract_model_hidden_states_multilayer(
-                    model, batch, todo_layers
-                )
-                t_extract = time.time() - t0
-                print(f"    extracted {len(todo_layers)} layers in {t_extract:.1f}s")
+                    for L in todo_layers:
+                        try:
+                            out = _probe_one(
+                                reps_by_layer[L],
+                                batch,
+                                raw,
+                                args.cath_level,
+                                heads=heads_list if rich_schema else None,
+                                seeds=seeds_list if rich_schema else None,
+                            )
+                            out.update(
+                                {
+                                    "run": run_name,
+                                    "step": int(step),
+                                    "layer": int(L),
+                                    "t": float(t_val),
+                                    "ckpt_path": str(ckpt),
+                                }
+                            )
+                            _append_row(jsonl_path, out, manifest_tag=manifest_tag)
+                            done.add((run_name, int(step), L, t_tag))
+                            print(
+                                f"      L{L:2d} t={t_tag}: "
+                                f"P@L/5={out['contact']['p_at_L_5']:.3f}  "
+                                f"CATH-{out['cath']['level']}-acc={out['cath']['accuracy']:.3f}"
+                            )
+                        except Exception as e:
+                            import traceback
 
-                for L in todo_layers:
-                    try:
-                        out = _probe_one(
-                            reps_by_layer[L],
-                            batch,
-                            raw,
-                            args.cath_level,
-                            heads=heads_list if rich_schema else None,
-                            seeds=seeds_list if rich_schema else None,
-                        )
-                        out.update(
-                            {
-                                "run": run_name,
-                                "step": int(step),
-                                "layer": int(L),
-                                "ckpt_path": str(ckpt),
-                            }
-                        )
-                        _append_row(jsonl_path, out, manifest_tag=manifest_tag)
-                        done.add((run_name, int(step), L))
-                        print(
-                            f"      L{L:2d}: P@L/5={out['contact']['p_at_L_5']:.3f}  "
-                            f"CATH-{out['cath']['level']}-acc={out['cath']['accuracy']:.3f}"
-                        )
-                    except Exception as e:
-                        import traceback
-
-                        traceback.print_exc()
-                        _append_row(
-                            jsonl_path,
-                            {
-                                "run": run_name,
-                                "step": int(step),
-                                "layer": int(L),
-                                "ckpt_path": str(ckpt),
-                                "error": f"{type(e).__name__}: {e}",
-                            },
-                            manifest_tag=manifest_tag,
-                        )
-                del model, reps_by_layer
+                            traceback.print_exc()
+                            _append_row(
+                                jsonl_path,
+                                {
+                                    "run": run_name,
+                                    "step": int(step),
+                                    "layer": int(L),
+                                    "t": float(t_val),
+                                    "ckpt_path": str(ckpt),
+                                    "error": f"{type(e).__name__}: {e}",
+                                },
+                                manifest_tag=manifest_tag,
+                            )
+                    del reps_by_layer
+                del model
 
             except Exception as e:
                 import traceback
@@ -729,7 +851,9 @@ def main():
             print(f"\n=== {pre_name} ({ckpt_path}) ===")
 
             # Pre-load skip: all expected layers already probed?
-            if all((pre_name, 0, L) in done for L in range(exp_nlayers)):
+            # Pretrained refs are anchors — always probed at t=1.0 (clean) only.
+            _pre_t_tag = _t_tag(1.0)
+            if all((pre_name, 0, L, _pre_t_tag) in done for L in range(exp_nlayers)):
                 print(f"  all {exp_nlayers} layers cached, skip (no load)")
                 continue
 
@@ -756,7 +880,9 @@ def main():
                         f"  note: expected {exp_nlayers} layers, got {n_layers} — using actual"
                     )
                 all_layers = list(range(n_layers))
-                todo_layers = [L for L in all_layers if (pre_name, 0, L) not in done]
+                todo_layers = [
+                    L for L in all_layers if (pre_name, 0, L, _pre_t_tag) not in done
+                ]
                 if not todo_layers:
                     print(f"  all {n_layers} layers cached, skip")
                     del model
@@ -790,11 +916,12 @@ def main():
                                 "run": pre_name,
                                 "step": 0,
                                 "layer": int(L),
+                                "t": 1.0,
                                 "ckpt_path": ckpt_path,
                             }
                         )
                         _append_row(jsonl_path, out, manifest_tag=manifest_tag)
-                        done.add((pre_name, 0, L))
+                        done.add((pre_name, 0, L, _pre_t_tag))
                         print(
                             f"    L{L:2d}: P@L/5={out['contact']['p_at_L_5']:.3f}  "
                             f"CATH-{out['cath']['level']}-acc={out['cath']['accuracy']:.3f}"
@@ -845,9 +972,12 @@ def main():
         print(f"\n=== Baseline sources: {requested} ===")
         for name in requested:
             try:
+                # Baselines are t-independent (don't go through the model with
+                # a timestep input), so we tag every row at t=1.0 for consistency.
+                _bl_t_tag = _t_tag(1.0)
                 if name == "random_gauss":
                     src = RandomGaussianRepSource(dim=args.rep_dim_random, seed=42)
-                    key = (name, 0, LAYER_RANDOM_GAUSS)
+                    key = (name, 0, LAYER_RANDOM_GAUSS, _bl_t_tag)
                     if key in done:
                         print(f"  {name}: cached, skip")
                         continue
@@ -865,6 +995,7 @@ def main():
                             "run": name,
                             "step": 0,
                             "layer": LAYER_RANDOM_GAUSS,
+                            "t": 1.0,
                             "ckpt_path": None,
                         }
                     )
@@ -874,7 +1005,7 @@ def main():
 
                 elif name == "seq_onehot":
                     src = SeqOnehotRepSource()
-                    key = (name, 0, LAYER_SEQ_ONEHOT)
+                    key = (name, 0, LAYER_SEQ_ONEHOT, _bl_t_tag)
                     if key in done:
                         print(f"  {name}: cached, skip")
                         continue
@@ -892,6 +1023,7 @@ def main():
                             "run": name,
                             "step": 0,
                             "layer": LAYER_SEQ_ONEHOT,
+                            "t": 1.0,
                             "ckpt_path": None,
                         }
                     )
@@ -901,12 +1033,18 @@ def main():
 
                 elif name == "untrained_proteina":
                     src = UntrainedProteinaRepSource()
-                    todo = [L for L in src.emits_layers if (name, 0, L) not in done]
+                    todo = [
+                        L
+                        for L in src.emits_layers
+                        if (name, 0, L, _bl_t_tag) not in done
+                    ]
                     if not todo:
                         print(
                             f"  {name}: all {len(src.emits_layers)} layers cached, skip"
                         )
                         continue
+                    # Architectural-prior baseline — single t=1.0 is sufficient
+                    # (we're asking "what does the arch give you before training").
                     reps_by_layer = src.get_reps(batch, todo)
                     for L, reps in reps_by_layer.items():
                         try:
@@ -923,11 +1061,12 @@ def main():
                                     "run": name,
                                     "step": 0,
                                     "layer": int(L),
+                                    "t": 1.0,
                                     "ckpt_path": None,
                                 }
                             )
                             _append_row(jsonl_path, row, manifest_tag=manifest_tag)
-                            done.add((name, 0, L))
+                            done.add((name, 0, L, _bl_t_tag))
                             print(f"    L{L}: P@L/5={row['contact']['p_at_L_5']:.3f}")
                         except Exception as e:
                             import traceback
@@ -939,6 +1078,7 @@ def main():
                                     "run": name,
                                     "step": 0,
                                     "layer": int(L),
+                                    "t": 1.0,
                                     "error": f"{type(e).__name__}: {e}",
                                 },
                                 manifest_tag=manifest_tag,
@@ -947,7 +1087,7 @@ def main():
 
                 elif name == "random_rank":
                     src = RandomRankScorer()
-                    key = (name, 0, LAYER_RANDOM_RANK)
+                    key = (name, 0, LAYER_RANDOM_RANK, _bl_t_tag)
                     if key in done:
                         print(f"  {name}: cached, skip")
                         continue
@@ -957,6 +1097,7 @@ def main():
                             "run": name,
                             "step": 0,
                             "layer": LAYER_RANDOM_RANK,
+                            "t": 1.0,
                             "ckpt_path": None,
                         }
                     )
@@ -968,7 +1109,7 @@ def main():
 
                 elif name == "distance_only":
                     src = DistanceOnlyScorer()
-                    key = (name, 0, LAYER_DISTANCE_ONLY)
+                    key = (name, 0, LAYER_DISTANCE_ONLY, _bl_t_tag)
                     if key in done:
                         print(f"  {name}: cached, skip")
                         continue
@@ -978,6 +1119,7 @@ def main():
                             "run": name,
                             "step": 0,
                             "layer": LAYER_DISTANCE_ONLY,
+                            "t": 1.0,
                             "ckpt_path": None,
                         }
                     )

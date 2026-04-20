@@ -1,8 +1,11 @@
 """Hidden-state extraction from Proteina trunks + frozen GearNet encoder.
 
-Clean-endpoint probing convention: ``x_t = x_1`` (clean CA coords in nm) and
-``t = 1.0``. Matches the setting in which REPA itself is evaluated — we probe
-what the student has learned about real structures, not about noise.
+Timestep convention (flow matching): ``x_t = (1-t)·x_0 + t·x_1`` where
+``x_0`` is the reference-noise sample and ``x_1`` is the clean structure.
+``t=1.0`` is clean, ``t=0.0`` is pure noise. At ``t=1.0`` we skip noise
+sampling entirely (fast path); for any ``t<1.0`` we sample x_0 from the
+model's flow-matching reference distribution and interpolate — matching the
+training-time noisy-input regime used in REPA paper Fig 7.
 """
 
 from __future__ import annotations
@@ -38,8 +41,10 @@ def extract_model_hidden_states_multilayer(
     batch: Dict,
     layers: List[int],
     chunk_size: int = 8,
+    t_value: float = 1.0,
+    noise_seed: int = 42,
 ) -> Dict[int, torch.Tensor]:
-    """Run a clean forward pass and return one ``[B, N, D]`` tensor per layer.
+    """Run a forward pass at timestep ``t_value`` and return one ``[B, N, D]`` tensor per layer.
 
     Extracting all layers in one pass is nearly free: the transformer runs the
     same forward regardless of how many layers we capture, so we amortize the
@@ -53,12 +58,23 @@ def extract_model_hidden_states_multilayer(
                        residue_type, chain_break_per_res, ... (per-residue)
         layers:      which trunk layer outputs to capture, e.g. [0, 4, 9]
         chunk_size:  sub-batch size for memory — default 8
+        t_value:     flow-matching timestep. 1.0 = clean (fast path, no noise);
+                     values <1.0 sample x_0 from the model's reference distribution
+                     and interpolate x_t = (1-t)·x_0 + t·x_1 — matches training.
+        noise_seed:  RNG seed for reproducible x_0 sampling. Fixed per sweep so
+                     the same proteins see the same noise across (run, step, layer)
+                     probes, making cross-checkpoint comparisons fair.
 
-    Flow per chunk:
+    Flow per chunk (clean, t=1.0):
         sub["x_t"] = ang_to_nm(coords[:, :, 1, :])   # [b, n, 3]
         sub["t"]   = torch.ones(b)                    # clean endpoint
-        nn_out     = model.nn(sub, return_hidden_states=True)
-        hs         = nn_out["hidden_states"]          # list aligned to `layers`
+
+    Flow per chunk (noisy, t<1.0):
+        x_1    = mask_and_zero_com(ang_to_nm(coords[CA]))
+        x_0    = model.fm.sample_reference(..., mask)
+        x_t    = model.fm.interpolate(x_0, x_1, t_vec)
+        sub["x_t"] = x_t
+        sub["t"]   = t_vec
 
     Returns:
         {layer: [B, N, D]} all on CPU for downstream probes.
@@ -68,6 +84,12 @@ def extract_model_hidden_states_multilayer(
     enable_hidden_states(model, layers)
     device = next(model.parameters()).device
     model.eval()
+    fm = getattr(model, "fm", None)
+    if t_value < 1.0 and fm is None:
+        raise RuntimeError(
+            f"Cannot probe at t={t_value}: model has no .fm attribute for "
+            "noise sampling / interpolation."
+        )
 
     B = batch["coords"].shape[0]
     per_layer: Dict[int, List[torch.Tensor]] = {lyr: [] for lyr in layers}
@@ -78,8 +100,31 @@ def extract_model_hidden_states_multilayer(
 
         ca = sub["coords"][:, :, 1, :]  # [b, n, 3] Å
         x_1_nm = ang_to_nm(ca)  # [b, n, 3] nm
-        sub["x_t"] = x_1_nm
-        sub["t"] = torch.ones(e - s, device=device, dtype=x_1_nm.dtype)
+        b_here = e - s
+        if t_value >= 1.0:
+            sub["x_t"] = x_1_nm
+            sub["t"] = torch.ones(b_here, device=device, dtype=x_1_nm.dtype)
+        else:
+            mask_b = sub["mask"].bool()
+            x_1_c = fm._mask_and_zero_com(x_1_nm, mask_b)
+            n_res = x_1_c.shape[1]
+            # Deterministic x_0: seed offset per chunk, stable across (run, step, layer)
+            # so every checkpoint sees the same noise for the same proteins.
+            torch.manual_seed(noise_seed + s)
+            # sample_reference concatenates `shape + (n, 3)` → pass only batch dim
+            x_0 = fm.sample_reference(
+                n=n_res,
+                shape=(b_here,),
+                device=device,
+                dtype=x_1_c.dtype,
+                mask=mask_b,
+            )
+            t_vec = torch.full(
+                (b_here,), float(t_value), device=device, dtype=x_1_c.dtype
+            )
+            x_t = fm.interpolate(x_0, x_1_c, t_vec, mask=mask_b)
+            sub["x_t"] = x_t
+            sub["t"] = t_vec
 
         nn_out = model.nn(sub, return_hidden_states=True)
         hs = nn_out["hidden_states"]  # list of [b, n, D], aligned to `layers`
