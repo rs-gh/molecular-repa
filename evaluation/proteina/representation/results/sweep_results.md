@@ -14,6 +14,7 @@
 | baseline | 650000 | 0 | 0.948 | nan | 0 |
 | baseline | 740000 | 0 | 0.943 | nan | 0 |
 | gearnet | 0 | -1 | 0.674 | nan | 0 |
+| pretrained_dfs_60m | 0 | 0 | 0.958 | nan | 0 |
 | repa_l4 | 10000 | 0 | 0.873 | nan | 0 |
 | repa_l4 | 20000 | 0 | 0.890 | nan | 0 |
 | repa_l4 | 40000 | 0 | 0.905 | nan | 0 |

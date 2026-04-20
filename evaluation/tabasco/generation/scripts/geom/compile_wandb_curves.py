@@ -7,9 +7,9 @@ See compile_results.py for evaluation metrics.
 
 Usage:
     source .venv/bin/activate
-    python evaluation/scripts/tabasco/geom/compile_wandb_curves.py
+    python evaluation/tabasco/generation/scripts/tabasco/geom/compile_wandb_curves.py
 
-Outputs (in evaluation/results/tabasco/geom/validation/):
+Outputs (in evaluation/tabasco/generation/results/geom/validation/):
     validation_curves.csv              — All per-epoch validation metrics for every model
     figures/validation_curves.png      — Line plots of validation metrics over training
     figures/validation_epoch_matched.png — Bar chart at epoch 15 (apples-to-apples)
@@ -100,7 +100,7 @@ BAR_METRICS = [
     "val/connectivity",
 ]
 
-OUTPUT_DIR = Path("evaluation/results/tabasco/geom/validation")
+OUTPUT_DIR = Path("evaluation/tabasco/generation/results/geom/validation")
 
 
 # ---------------------------------------------------------------------------

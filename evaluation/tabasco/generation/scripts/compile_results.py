@@ -7,7 +7,7 @@ See compile_wandb_curves.py for validation metrics.
 
 Usage:
     source .venv/bin/activate
-    python evaluation/scripts/compile_results.py evaluation/results/tabasco/geom
+    python evaluation/tabasco/generation/scripts/compile_results.py evaluation/tabasco/generation/results/geom
 
 Outputs (written to the results directory):
     evaluation_summary.csv       — All evaluation metrics in one table

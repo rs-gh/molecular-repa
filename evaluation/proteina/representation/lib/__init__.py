@@ -29,6 +29,7 @@ from lib.checkpoints import (
     BASELINE_STEPS,
     CHECKPOINT_REGISTRY,
     LMDB_PATH,
+    PRETRAINED_CHECKPOINTS,
     PROTEINA_ROOT,
     REPA_L0_STEPS,
     REPA_L9_STEPS,
@@ -96,6 +97,7 @@ __all__ = [
     "REPA_L9_STEPS",
     "RUN_SCHEDULES",
     "CHECKPOINT_REGISTRY",
+    "PRETRAINED_CHECKPOINTS",
     # data
     "load_proteina_batch",
     "_default_device",

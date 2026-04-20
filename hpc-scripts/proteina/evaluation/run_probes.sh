@@ -42,6 +42,9 @@ EXTRA_ARGS="${PY_ARGS[@]}"
 . /etc/profile.d/modules.sh
 module purge
 module load rhel8/ampere/base
+#! torch_scatter wheels need CXXABI_1.3.15 (gcc 13+); system libstdc++ only has 1.3.11.
+module use /usr/local/software/spack/csd3/spack-modules/a100-2025-06-01/linux-rocky8-zen3
+module load gcc-runtime/14.3.0
 
 REPO_DIR="/home/sr2173/git/molecular-repa"
 conda deactivate 2>/dev/null || true

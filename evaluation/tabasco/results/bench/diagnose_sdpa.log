@@ -1,0 +1,58 @@
+torch: 2.9.1+cu128
+cuda:  12.8
+device: NVIDIA A100-SXM4-80GB
+flash_enabled=True mem_eff_enabled=True math_enabled=True
+
+─── A: MHA w/ padding_mask (prod path)  B=256 N=71 hidden=128 H=8 D=16 dtype=torch.bfloat16 with padding_mask ───
+/home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch/nn/functional.py:6487: UserWarning: Memory efficient kernel not used because: (Triggered internally at /pytorch/aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:915.)
+  attn_output = scaled_dot_product_attention(
+/home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch/nn/functional.py:6487: UserWarning: Memory Efficient attention has been runtime disabled. (Triggered internally at /pytorch/aten/src/ATen/native/transformers/sdp_utils_cpp.h:552.)
+  attn_output = scaled_dot_product_attention(
+/home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch/nn/functional.py:6487: UserWarning: Flash attention kernel not used because: (Triggered internally at /pytorch/aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:917.)
+  attn_output = scaled_dot_product_attention(
+/home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch/nn/functional.py:6487: UserWarning: Flash Attention does not support non-null attn_mask. (Triggered internally at /pytorch/aten/src/ATen/native/transformers/sdp_utils_cpp.h:262.)
+  attn_output = scaled_dot_product_attention(
+/home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch/nn/functional.py:6487: UserWarning: cuDNN attention kernel not used because: (Triggered internally at /pytorch/aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:919.)
+  attn_output = scaled_dot_product_attention(
+/home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch/nn/functional.py:6487: UserWarning: cuDNN attention has been runtime disabled. (Triggered internally at /pytorch/aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:635.)
+  attn_output = scaled_dot_product_attention(
+  FLASH_ATTENTION                   fwd+bwd  FAIL   No available kernel. Aborting execution.
+  EFFICIENT_ATTENTION               fwd+bwd  OK       1.21 ms/iter
+  MATH                              fwd+bwd  OK       2.92 ms/iter
+  CUDNN_ATTENTION                   fwd+bwd  OK       1.16 ms/iter
+
+─── B: MHA w/o mask (best-case for FLASH)  B=256 N=71 hidden=128 H=8 D=16 dtype=torch.bfloat16 no mask ───
+  FLASH_ATTENTION                   fwd+bwd  OK       1.00 ms/iter
+  EFFICIENT_ATTENTION               fwd+bwd  OK       1.12 ms/iter
+  MATH                              fwd+bwd  OK       2.80 ms/iter
+  CUDNN_ATTENTION                   fwd+bwd  OK       1.05 ms/iter
+
+─── C: bare SDPA w/ additive -inf mask (what MHA lowers to)  B=256 N=71 hidden=128 H=8 D=16 dtype=torch.bfloat16 additive -inf mask (bare SDPA) ───
+/home/sr2173/git/molecular-repa/hpc-scripts/tabasco/bench/diagnose_sdpa.py:48: UserWarning: Memory efficient kernel not used because: (Triggered internally at /pytorch/aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:915.)
+  return F.scaled_dot_product_attention(q, k, v, attn_mask=additive_mask, scale=scale)
+/home/sr2173/git/molecular-repa/hpc-scripts/tabasco/bench/diagnose_sdpa.py:48: UserWarning: Memory Efficient attention has been runtime disabled. (Triggered internally at /pytorch/aten/src/ATen/native/transformers/sdp_utils_cpp.h:552.)
+  return F.scaled_dot_product_attention(q, k, v, attn_mask=additive_mask, scale=scale)
+/home/sr2173/git/molecular-repa/hpc-scripts/tabasco/bench/diagnose_sdpa.py:48: UserWarning: Flash attention kernel not used because: (Triggered internally at /pytorch/aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:917.)
+  return F.scaled_dot_product_attention(q, k, v, attn_mask=additive_mask, scale=scale)
+/home/sr2173/git/molecular-repa/hpc-scripts/tabasco/bench/diagnose_sdpa.py:48: UserWarning: Flash Attention does not support non-null attn_mask. (Triggered internally at /pytorch/aten/src/ATen/native/transformers/sdp_utils_cpp.h:262.)
+  return F.scaled_dot_product_attention(q, k, v, attn_mask=additive_mask, scale=scale)
+/home/sr2173/git/molecular-repa/hpc-scripts/tabasco/bench/diagnose_sdpa.py:48: UserWarning: cuDNN attention kernel not used because: (Triggered internally at /pytorch/aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:919.)
+  return F.scaled_dot_product_attention(q, k, v, attn_mask=additive_mask, scale=scale)
+/home/sr2173/git/molecular-repa/hpc-scripts/tabasco/bench/diagnose_sdpa.py:48: UserWarning: cuDNN attention has been runtime disabled. (Triggered internally at /pytorch/aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:635.)
+  return F.scaled_dot_product_attention(q, k, v, attn_mask=additive_mask, scale=scale)
+  FLASH_ATTENTION                   fwd+bwd  FAIL   No available kernel. Aborting execution.
+  EFFICIENT_ATTENTION               fwd+bwd  OK       0.67 ms/iter
+  MATH                              fwd+bwd  OK       2.42 ms/iter
+  CUDNN_ATTENTION                   fwd+bwd  OK       0.71 ms/iter
+
+─── D: bare SDPA w/o mask  B=256 N=71 hidden=128 H=8 D=16 dtype=torch.bfloat16 no mask (bare SDPA) ───
+  FLASH_ATTENTION                   fwd+bwd  OK       0.42 ms/iter
+  EFFICIENT_ATTENTION               fwd+bwd  OK       0.58 ms/iter
+  MATH                              fwd+bwd  OK       2.30 ms/iter
+  CUDNN_ATTENTION                   fwd+bwd  OK       0.48 ms/iter
+
+─── E: MHA fp16 w/ padding_mask  B=256 N=71 hidden=128 H=8 D=16 dtype=torch.float16 with padding_mask ───
+  FLASH_ATTENTION                   fwd+bwd  FAIL   No available kernel. Aborting execution.
+  EFFICIENT_ATTENTION               fwd+bwd  OK       1.19 ms/iter
+  MATH                              fwd+bwd  OK       2.94 ms/iter
+  CUDNN_ATTENTION                   fwd+bwd  OK       1.16 ms/iter

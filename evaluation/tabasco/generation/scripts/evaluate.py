@@ -4,21 +4,23 @@ Generates molecules, computes evaluation metrics, and saves results.
 
 "Evaluation" metrics = post-hoc generation from final checkpoints (1000 mols, on disk).
 "Validation" metrics = computed during training by callbacks (100 mols/epoch, logged to WandB).
-See scripts/tabasco/geom/compile_wandb_curves.py for validation metrics.
+See evaluation/tabasco/generation/scripts/geom/compile_wandb_curves.py for validation metrics.
 
 Usage:
     # Stripped checkpoint (from strip_checkpoint.py):
-    python evaluation/scripts/evaluate.py \
-        --checkpoint evaluation/checkpoints/tabasco/geom/baseline.ckpt \
-        --num_mols 1000 --output_dir evaluation/results/tabasco/geom/evaluation/baseline/
+    python evaluation/tabasco/generation/scripts/evaluate.py \
+        --checkpoint evaluation/tabasco/checkpoints/geom/baseline.ckpt \
+        --num_mols 1000 \
+        --output_dir evaluation/tabasco/generation/results/geom/evaluation/baseline/
 
     # Full training checkpoint:
-    python evaluation/scripts/evaluate.py \
+    python evaluation/tabasco/generation/scripts/evaluate.py \
         --checkpoint /rds/.../last.ckpt \
-        --num_mols 1000 --output_dir evaluation/results/tabasco/geom/evaluation/baseline/
+        --num_mols 1000 \
+        --output_dir evaluation/tabasco/generation/results/geom/evaluation/baseline/
 
     # Batch evaluate all stripped checkpoints:
-    python evaluation/scripts/evaluate.py --all
+    python evaluation/tabasco/generation/scripts/evaluate.py --all
 """
 
 import argparse
@@ -33,7 +35,10 @@ from rdkit import Chem
 # --- Project imports ---
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src" / "tabasco" / "src"))
+# parents[4] = repo root. `src/tabasco/src/` is where the tabasco package lives;
+# tabasco is typically pip-installed via pyproject, but this fallback ensures
+# imports work even from a fresh venv that hasn't installed the editable pkg.
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "src" / "tabasco" / "src"))
 
 from tabasco.chem.convert import MoleculeConverter
 from tabasco.flow.interpolate import SDEMetricInterpolant, DiscreteInterpolant
@@ -570,8 +575,8 @@ def _save_molecules_csv(mol_list, output_path):
 # Main
 # ---------------------------------------------------------------------------
 
-CHECKPOINT_DIR = Path("evaluation/checkpoints/tabasco/geom")
-RESULTS_DIR = Path("evaluation/results/tabasco/geom/evaluation")
+CHECKPOINT_DIR = Path("evaluation/tabasco/checkpoints/geom")
+RESULTS_DIR = Path("evaluation/tabasco/generation/results/geom/evaluation")
 
 ALL_MODELS = {
     "baseline": CHECKPOINT_DIR / "baseline.ckpt",
@@ -695,7 +700,7 @@ def main():
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Evaluate all models in evaluation/checkpoints/tabasco/geom/",
+        help="Evaluate all models in evaluation/tabasco/checkpoints/geom/",
     )
     args = parser.parse_args()
 

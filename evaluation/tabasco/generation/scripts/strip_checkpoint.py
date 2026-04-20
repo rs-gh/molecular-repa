@@ -4,12 +4,12 @@ Extracts EMA weights for model.net, data_stats, and hyper_parameters,
 producing ~15MB files instead of 4.2GB originals.
 
 Usage:
-    python evaluation/scripts/strip_checkpoint.py \
+    python evaluation/tabasco/generation/scripts/strip_checkpoint.py \
         --input /rds/.../checkpoints/last.ckpt \
         --output ./checkpoints/baseline.ckpt
 
     # Or strip all known GEOM checkpoints at once:
-    python evaluation/scripts/strip_checkpoint.py --all
+    python evaluation/tabasco/generation/scripts/strip_checkpoint.py --all
 """
 
 import argparse
@@ -184,12 +184,12 @@ def main():
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Strip all known GEOM checkpoints to evaluation/checkpoints/tabasco/geom/",
+        help="Strip all known GEOM checkpoints to evaluation/tabasco/checkpoints/geom/",
     )
     args = parser.parse_args()
 
     if args.all:
-        out_dir = Path("evaluation/checkpoints/tabasco/geom")
+        out_dir = Path("evaluation/tabasco/checkpoints/geom")
         for name, rel_path in CHECKPOINT_MAP.items():
             input_path = OUTPUTS_ROOT / rel_path
             if not input_path.exists():

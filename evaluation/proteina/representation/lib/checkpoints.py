@@ -83,6 +83,23 @@ RUN_SCHEDULES = {
     "repa_l9": ("proteina_60m_repa_layer9_v2", True, 9, REPA_L9_STEPS),
 }
 
+# External / pretrained checkpoints — static files at known paths rather than
+# sweep dirs under STORE_ROOT. Used to probe NVIDIA's released Proteina weights
+# at all transformer layers, mirroring REPA Fig. 3a (layer-wise representation
+# quality of the unconditional generative model).
+#
+# Shape: name -> (absolute_path, is_repa, expected_nlayers)
+PRETRAINED_CHECKPOINTS = {
+    # 58.93M params, ProteinTransformerAF3 with nlayers=12
+    # (distinct from our 10-layer in-house 60M runs).
+    "pretrained_dfs_60m": (
+        "/home/sr2173/git/molecular-repa/.local_ckpts/proteina_v1.3_DFS_60M_notri.ckpt",
+        False,
+        12,
+    ),
+}
+
+
 # Flat last.ckpt registry used by run_all.py (single-point mode).
 CHECKPOINT_REGISTRY = {
     "baseline": (RUN_SCHEDULES["baseline"][0], False, None),

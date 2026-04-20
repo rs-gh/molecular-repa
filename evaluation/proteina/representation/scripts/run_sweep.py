@@ -68,6 +68,7 @@ from utils import (
     load_proteina_batch,
     model_num_layers,
 )
+from lib.checkpoints import PRETRAINED_CHECKPOINTS
 from lib.manifest import (
     build_or_load_manifest,
     load_proteina_batch_from_manifest,
@@ -701,6 +702,132 @@ def main():
                         "step": int(step),
                         "layer": -999,
                         "ckpt_path": str(ckpt),
+                        "error": f"{type(e).__name__}: {e}",
+                    },
+                    manifest_tag=manifest_tag,
+                )
+            finally:
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+
+    # --- Pretrained / static checkpoints (e.g. NGC's released Proteina 60M).
+    #      Single ckpt per entry at step=0, probed at every transformer layer.
+    #      Different `nlayers` than the in-house 60M runs (NGC 60M is 12 layers
+    #      vs our 10), so we defer the layer list until after load.
+    if PRETRAINED_CHECKPOINTS:
+        chosen_pre = (
+            set(args.runs.split(",")) if args.runs else set(PRETRAINED_CHECKPOINTS)
+        )
+        for pre_name, (
+            ckpt_path,
+            is_repa,
+            exp_nlayers,
+        ) in PRETRAINED_CHECKPOINTS.items():
+            if pre_name not in chosen_pre:
+                continue
+            print(f"\n=== {pre_name} ({ckpt_path}) ===")
+
+            # Pre-load skip: all expected layers already probed?
+            if all((pre_name, 0, L) in done for L in range(exp_nlayers)):
+                print(f"  all {exp_nlayers} layers cached, skip (no load)")
+                continue
+
+            if not Path(ckpt_path).exists():
+                print(f"  ❌ ckpt not found: {ckpt_path}")
+                _append_row(
+                    jsonl_path,
+                    {
+                        "run": pre_name,
+                        "step": 0,
+                        "layer": -999,
+                        "ckpt_path": ckpt_path,
+                        "error": "FileNotFoundError",
+                    },
+                    manifest_tag=manifest_tag,
+                )
+                continue
+
+            try:
+                model = _load_ckpt_with_retry(ckpt_path, is_repa=is_repa, device=device)
+                n_layers = model_num_layers(model)
+                if n_layers != exp_nlayers:
+                    print(
+                        f"  note: expected {exp_nlayers} layers, got {n_layers} — using actual"
+                    )
+                all_layers = list(range(n_layers))
+                todo_layers = [L for L in all_layers if (pre_name, 0, L) not in done]
+                if not todo_layers:
+                    print(f"  all {n_layers} layers cached, skip")
+                    del model
+                    continue
+                if len(todo_layers) < n_layers:
+                    print(
+                        f"  resuming: {n_layers - len(todo_layers)}/{n_layers} layers "
+                        f"cached, probing {len(todo_layers)} more"
+                    )
+
+                t0 = time.time()
+                reps_by_layer = extract_model_hidden_states_multilayer(
+                    model, batch, todo_layers
+                )
+                print(
+                    f"  extracted {len(todo_layers)} layers in {time.time() - t0:.1f}s"
+                )
+
+                for L in todo_layers:
+                    try:
+                        out = _probe_one(
+                            reps_by_layer[L],
+                            batch,
+                            raw,
+                            args.cath_level,
+                            heads=heads_list if rich_schema else None,
+                            seeds=seeds_list if rich_schema else None,
+                        )
+                        out.update(
+                            {
+                                "run": pre_name,
+                                "step": 0,
+                                "layer": int(L),
+                                "ckpt_path": ckpt_path,
+                            }
+                        )
+                        _append_row(jsonl_path, out, manifest_tag=manifest_tag)
+                        done.add((pre_name, 0, L))
+                        print(
+                            f"    L{L:2d}: P@L/5={out['contact']['p_at_L_5']:.3f}  "
+                            f"CATH-{out['cath']['level']}-acc={out['cath']['accuracy']:.3f}"
+                        )
+                    except Exception as e:
+                        import traceback
+
+                        traceback.print_exc()
+                        _append_row(
+                            jsonl_path,
+                            {
+                                "run": pre_name,
+                                "step": 0,
+                                "layer": int(L),
+                                "ckpt_path": ckpt_path,
+                                "error": f"{type(e).__name__}: {e}",
+                            },
+                            manifest_tag=manifest_tag,
+                        )
+                del model, reps_by_layer
+
+            except Exception as e:
+                import traceback
+
+                traceback.print_exc()
+                print(f"  ❌ {pre_name} failed at ckpt load / extract: {e}")
+                _append_row(
+                    jsonl_path,
+                    {
+                        "run": pre_name,
+                        "step": 0,
+                        "layer": -999,
+                        "ckpt_path": ckpt_path,
                         "error": f"{type(e).__name__}: {e}",
                     },
                     manifest_tag=manifest_tag,

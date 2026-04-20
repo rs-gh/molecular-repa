@@ -1,0 +1,9 @@
+experiment,sdpa_backend,compile_mode,precision,batch_size,num_atoms,status,peak_mem_gb,n_total,n_warmup,n_measured,median_s_per_step,p10_s,p90_s,p99_s,steps_per_sec,total_s,samples_per_sec
+geom/mild,default,off,bf16-mixed,256,71,ok,13.49,100,30,70,0.2713,0.2709,0.272,0.2725,3.686,27.19,943.71
+geom/mild,flash,off,bf16-mixed,256,71,unsupported,,,,,,,,,,,
+geom/mild,efficient,off,bf16-mixed,256,71,ok,13.49,100,30,70,0.2712,0.2707,0.2717,0.2722,3.687,28.0,943.82
+geom/mild,math,off,bf16-mixed,256,71,ok,22.44,100,30,70,0.4406,0.4401,0.4411,0.4419,2.27,44.27,581.07
+geom/mild,default,default,bf16-mixed,256,71,ok,13.25,100,30,70,0.1944,0.1939,0.195,0.1957,5.145,55.59,1317.04
+geom/mild,flash,default,bf16-mixed,256,71,unsupported,,,,,,,,,,,
+geom/mild,efficient,default,bf16-mixed,256,71,ok,13.25,100,30,70,0.1946,0.1941,0.1952,0.1956,5.139,55.33,1315.64
+geom/mild,math,default,bf16-mixed,256,71,ok,19.09,100,30,70,0.2548,0.2543,0.2554,0.2557,3.924,74.68,1004.55

@@ -1,0 +1,2 @@
+experiment,compile_mode,gc_layers,precision,num_atoms,max_bs,peak_mem_gb,steps_per_sec,time_per_step,accum_to_256
+geom/mild,reduce-overhead,0,16,71,1456,74.46,0.905,1.105,1

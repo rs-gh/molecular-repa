@@ -1,0 +1,7 @@
+experiment,compile_mode,precision,batch_size,num_atoms,status,peak_mem_gb,n_total,n_warmup,n_measured,median_s_per_step,p10_s,p90_s,p99_s,steps_per_sec,total_s,samples_per_sec
+geom/mild,off,16,256,71,ok,13.49,100,30,70,0.2676,0.2673,0.2682,0.2695,3.737,33.31,956.55
+geom/mild,off,bf16-mixed,256,71,ok,13.49,100,30,70,0.2714,0.271,0.2719,0.2725,3.685,28.84,943.27
+geom/mild,default,16,256,71,ok,13.25,100,30,70,0.1912,0.1908,0.1918,0.1921,5.23,55.71,1338.85
+geom/mild,default,bf16-mixed,256,71,ok,13.25,100,30,70,0.194,0.1935,0.1946,0.1948,5.155,55.61,1319.62
+geom/mild,reduce-overhead,16,256,71,ok,13.22,100,30,70,0.1885,0.1882,0.1888,0.189,5.305,56.06,1357.98
+geom/mild,reduce-overhead,bf16-mixed,256,71,ok,13.24,100,30,70,0.1917,0.1915,0.1921,0.1924,5.216,55.95,1335.41

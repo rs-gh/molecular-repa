@@ -1,11 +1,11 @@
 """Collect training performance statistics across all GEOM runs and generate plots.
 
 Outputs:
-    evaluation/results/tabasco/geom/training_performance/training_performance.csv  — raw data
-    evaluation/results/tabasco/geom/training_performance/figures/training_perf_*.png — plots
+    evaluation/tabasco/generation/results/geom/training_performance/training_performance.csv  — raw data
+    evaluation/tabasco/generation/results/geom/training_performance/figures/training_perf_*.png — plots
 
 Usage:
-    python evaluation/scripts/tabasco/geom/collect_training_perf.py
+    python evaluation/tabasco/generation/scripts/tabasco/geom/collect_training_perf.py
 """
 
 import os

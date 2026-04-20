@@ -97,10 +97,13 @@ def _build_dummy_encoder():
 def _load_tabasco_checkpoint(path: str):
     # Reuse the evaluation loader so we match production inference exactly.
     # parents[4] = repo root (scripts → representation → tabasco → evaluation
-    #              → molecular-repa). Points at the generation-side eval
-    #              scripts (moved in the parallel generation commit).
+    #              → molecular-repa).
     eval_scripts = (
-        Path(__file__).resolve().parents[4] / "evaluation" / "tabasco" / "scripts"
+        Path(__file__).resolve().parents[4]
+        / "evaluation"
+        / "tabasco"
+        / "generation"
+        / "scripts"
     )
     sys.path.insert(0, str(eval_scripts))
     from evaluate import load_checkpoint  # noqa: E402
