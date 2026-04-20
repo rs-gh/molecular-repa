@@ -87,3 +87,9 @@ evaluation/tabasco/generation/results/geom/evaluation/*/molecules.sdf
 eval_output/
 report/
 evaluation/tabasco/checkpoints/
+
+# Personal, machine-local symlinks into /rds (per-user, never committed)
+.local_ckpts
+
+# Transient smoke-test outputs from the representation sweep harness
+evaluation/proteina/representation/results/smoketest/
