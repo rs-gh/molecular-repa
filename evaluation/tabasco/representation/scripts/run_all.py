@@ -20,8 +20,8 @@ For each source we compute:
   P4 — RDKit-descriptor regression (per-molecule ridge probe, 4 targets)
 
 Writes:
-  playground/tabasco/probes/results.json     — full results
-  playground/tabasco/probes/results.md       — pretty markdown table
+  evaluation/tabasco/representation/results/results.json     — full results
+  evaluation/tabasco/representation/results/results.md       — pretty markdown table
 
 Usage:
   source .venv/bin/activate
@@ -44,7 +44,11 @@ from typing import Callable, Dict, List
 import torch
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
+# HERE        = .../representation/scripts
+# HERE.parent = .../representation (contains the lib/ module dir)
+# Add lib/ to sys.path so the flat `from utils/atom_type/descriptors import X`
+# form (same as the legacy playground layout) still works.
+sys.path.insert(0, str(HERE.parent / "lib"))
 
 from utils import (
     DESCRIPTOR_NAMES,
@@ -92,8 +96,11 @@ def _build_dummy_encoder():
 
 def _load_tabasco_checkpoint(path: str):
     # Reuse the evaluation loader so we match production inference exactly.
+    # parents[4] = repo root (scripts → representation → tabasco → evaluation
+    #              → molecular-repa). Points at the generation-side eval
+    #              scripts (moved in the parallel generation commit).
     eval_scripts = (
-        Path(__file__).resolve().parents[3] / "evaluation" / "tabasco" / "scripts"
+        Path(__file__).resolve().parents[4] / "evaluation" / "tabasco" / "scripts"
     )
     sys.path.insert(0, str(eval_scripts))
     from evaluate import load_checkpoint  # noqa: E402
@@ -110,7 +117,9 @@ ENCODER_SOURCES = {
 }
 
 CKPT_DIR = (
-    Path(__file__).resolve().parents[3]
+    # parents[4] = repo root; evaluation/tabasco/checkpoints/geom/ still holds
+    # the model checkpoints (caches, not reorganized by this PR).
+    Path(__file__).resolve().parents[4]
     / "evaluation"
     / "tabasco"
     / "checkpoints"
@@ -227,7 +236,8 @@ def main():
         default=None,
         help="Comma-separated list of sources to run (subset).",
     )
-    ap.add_argument("--output_dir", type=str, default=str(HERE))
+    # Default writes to .../representation/results/ (sibling of scripts/).
+    ap.add_argument("--output_dir", type=str, default=str(HERE.parent / "results"))
     args = ap.parse_args()
 
     # --- Load one shared batch ---

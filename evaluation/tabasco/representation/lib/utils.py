@@ -33,7 +33,8 @@ from rdkit.Chem import rdMolDescriptors
 
 PROJECT_ROOT = os.environ.get(
     "PROJECT_ROOT",
-    str(Path(__file__).resolve().parents[3] / "src" / "tabasco"),
+    # evaluation/tabasco/representation/lib/utils.py → parents[4] = repo root.
+    str(Path(__file__).resolve().parents[4] / "src" / "tabasco"),
 )
 
 # Matches tabasco ATOM_NAMES (encoders.py / convert.py). Index 8 is the '*' dummy used for padding.
