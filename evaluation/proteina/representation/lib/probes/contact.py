@@ -19,7 +19,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from probelib.labels import contact_labels
+from lib.labels import contact_labels
 
 
 @dataclass

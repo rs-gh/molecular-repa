@@ -54,7 +54,7 @@ import torch
 import torch.nn.functional as F
 from torch_geometric.data import Data
 
-from probelib.data import _default_device
+from lib.data import _default_device
 
 
 def _sidecars(lmdb_path: str) -> Tuple[Optional[Path], Optional[Path]]:

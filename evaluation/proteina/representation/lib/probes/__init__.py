@@ -1,7 +1,7 @@
 """Probe heads — each takes ``[B, N, D]`` reps and produces a scalar summary."""
 
-from probelib.probes.cath import CATHResult, run_cath_probe
-from probelib.probes.contact import (
+from lib.probes.cath import CATHResult, run_cath_probe
+from lib.probes.contact import (
     ContactResult,
     MultiSeedResult,
     evaluate_contact_from_scores,

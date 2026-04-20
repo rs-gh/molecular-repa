@@ -36,6 +36,9 @@ from typing import Dict, List
 import torch
 
 HERE = Path(__file__).resolve().parent
+# HERE        = .../representation/scripts (for utils/contact/cath shims)
+# HERE.parent = .../representation         (so `from lib import ...` works)
+sys.path.insert(0, str(HERE.parent))
 sys.path.insert(0, str(HERE))
 
 from utils import (
@@ -143,7 +146,8 @@ def main():
     ap.add_argument("--skip_gearnet", action="store_true")
     ap.add_argument("--skip_checkpoints", action="store_true")
     ap.add_argument("--cath_level", type=str, default="T", choices=["C", "A", "T"])
-    ap.add_argument("--output_dir", type=str, default=str(HERE))
+    # Default writes to .../representation/results/ (sibling of scripts/).
+    ap.add_argument("--output_dir", type=str, default=str(HERE.parent / "results"))
     args = ap.parse_args()
 
     device = _default_device()

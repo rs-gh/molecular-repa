@@ -18,7 +18,7 @@ import numpy as np
 import torch
 from torch_geometric.data import Data
 
-from probelib.labels import cath_labels_from_raw, mean_pool_by_mask
+from lib.labels import cath_labels_from_raw, mean_pool_by_mask
 
 
 @dataclass

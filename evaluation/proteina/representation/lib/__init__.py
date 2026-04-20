@@ -20,12 +20,12 @@ Shape-annotation convention:
     feats:   [P, 3D]          pair features, h_i ‖ h_j ‖ |h_i - h_j|
 
 The public names below are re-exported here so callers can write
-``from probelib import load_proteina_batch, run_contact_probe`` in new code.
+``from lib import load_proteina_batch, run_contact_probe`` in new code.
 The legacy ``utils.py`` / ``contact.py`` / ``cath.py`` are thin shims around
 these exports — don't add new code there.
 """
 
-from probelib.checkpoints import (
+from lib.checkpoints import (
     BASELINE_STEPS,
     CHECKPOINT_REGISTRY,
     LMDB_PATH,
@@ -39,26 +39,26 @@ from probelib.checkpoints import (
     load_checkpoint,
     load_checkpoint_by_path,
 )
-from probelib.data import _default_device, load_proteina_batch
-from probelib.extract import (
+from lib.data import _default_device, load_proteina_batch
+from lib.extract import (
     enable_hidden_states,
     extract_gearnet_embeddings,
     extract_model_hidden_states,
     extract_model_hidden_states_multilayer,
     model_num_layers,
 )
-from probelib.labels import (
+from lib.labels import (
     cath_labels_from_raw,
     contact_labels,
     mean_pool_by_mask,
 )
-from probelib.manifest import (
+from lib.manifest import (
     build_or_load_manifest,
     load_proteina_batch_from_manifest,
     sample_manifest,
 )
-from probelib.probes.cath import CATHResult, run_cath_probe
-from probelib.probes.contact import (
+from lib.probes.cath import CATHResult, run_cath_probe
+from lib.probes.contact import (
     ContactResult,
     MultiSeedResult,
     evaluate_contact_from_scores,
@@ -67,7 +67,7 @@ from probelib.probes.contact import (
     run_contact_probe,
     run_contact_probe_full,
 )
-from probelib.sources import (
+from lib.sources import (
     LAYER_DISTANCE_ONLY,
     LAYER_GEARNET,
     LAYER_RANDOM_GAUSS,

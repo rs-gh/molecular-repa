@@ -1,9 +1,9 @@
 # ruff: noqa: F401
-"""Compatibility shim — forwards to ``probelib``.
+"""Compatibility shim — forwards to ``lib``.
 
-Historical entry point. New code should import from ``probelib`` directly:
+Historical entry point. New code should import from ``lib`` directly:
 
-    from probelib import load_proteina_batch, extract_model_hidden_states_multilayer
+    from lib import load_proteina_batch, extract_model_hidden_states_multilayer
 
 This shim exists so ``run_sweep.py``, ``run_all.py``, ``patch_cath.py``,
 ``pareto.py``, and any external callers keep working unchanged.
@@ -14,13 +14,16 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# ``probelib`` lives next to this file; make sure the package is importable even
-# when utils.py is imported before the package path is on sys.path.
+# ``lib`` lives in the parent dir (.../representation/lib); make sure it's
+# importable even when utils.py is imported before sys.path is set up.
 _HERE = Path(__file__).resolve().parent
+_PARENT = _HERE.parent
+if str(_PARENT) not in sys.path:
+    sys.path.insert(0, str(_PARENT))
 if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
-from probelib import (  # noqa: E402
+from lib import (  # noqa: E402
     BASELINE_STEPS,
     CATHResult,
     CHECKPOINT_REGISTRY,
@@ -48,7 +51,7 @@ from probelib import (  # noqa: E402
     run_cath_probe,
     run_contact_probe,
 )
-from probelib.data import _default_device  # noqa: E402, F401 — private but used by run_sweep
+from lib.data import _default_device  # noqa: E402, F401 — private but used by run_sweep
 
 __all__ = [
     # constants

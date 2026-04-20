@@ -30,8 +30,9 @@ import pandas as pd
 
 
 HERE = Path(__file__).resolve().parent
-CSV = HERE / "sweep_results.csv"
-FIG_DIR = HERE / "figures"
+# Results live in .../representation/results/, figures in .../representation/figures/.
+CSV = HERE.parent / "results" / "sweep_results.csv"
+FIG_DIR = HERE.parent / "figures"
 
 
 RUN_ORDER = ["baseline", "repa_l0", "repa_l4", "repa_l9"]

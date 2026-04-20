@@ -13,7 +13,7 @@ import torch
 import torch.nn.functional as F
 from torch_geometric.data import Data
 
-from probelib.checkpoints import LMDB_PATH
+from lib.checkpoints import LMDB_PATH
 
 
 def _default_device() -> str:

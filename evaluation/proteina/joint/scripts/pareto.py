@@ -37,9 +37,16 @@ import pandas as pd
 
 
 HERE = Path(__file__).resolve().parent
-PROBE_CSV = HERE / "sweep_results.csv"
-FID_CSV = HERE / "../../../evaluation/proteina/results/pdb/fid/lite_convergence_all.csv"
-FIG_DIR = HERE / "figures"
+# joint/ sits at the same level as representation/ and generation/.
+# HERE = .../proteina/joint/scripts
+# .parent          = .../proteina/joint
+# .parent.parent   = .../proteina
+PROJECT = HERE.parent.parent
+PROBE_CSV = PROJECT / "representation" / "results" / "sweep_results.csv"
+FID_CSV = (
+    PROJECT / "generation" / "results" / "pdb" / "fid" / "lite_convergence_all.csv"
+)
+FIG_DIR = HERE.parent / "figures"  # .../proteina/joint/figures
 
 # Map FID CSV run names ↔ probe CSV run names (same underlying _v2 runs).
 PROBE_TO_FID = {

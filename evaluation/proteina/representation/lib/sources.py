@@ -41,7 +41,7 @@ from typing import Dict, List, Optional, Protocol
 import torch
 import torch.nn.functional as F
 
-from probelib.extract import (
+from lib.extract import (
     extract_gearnet_embeddings,
     extract_model_hidden_states_multilayer,
 )
@@ -121,7 +121,7 @@ class CheckpointRepSource:
     _model: Optional[object] = None
 
     def _load(self, device: str):
-        from probelib.checkpoints import load_checkpoint_by_path
+        from lib.checkpoints import load_checkpoint_by_path
 
         self._model = load_checkpoint_by_path(
             self.ckpt_path, is_repa=self.is_repa, device=device

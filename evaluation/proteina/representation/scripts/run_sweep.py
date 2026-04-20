@@ -52,6 +52,9 @@ from typing import Dict, List, Set, Tuple
 import torch
 
 HERE = Path(__file__).resolve().parent
+# HERE        = .../representation/scripts (for the utils/contact/cath shims)
+# HERE.parent = .../representation         (so `from lib import ...` works)
+sys.path.insert(0, str(HERE.parent))
 sys.path.insert(0, str(HERE))
 
 from utils import (
@@ -65,15 +68,15 @@ from utils import (
     load_proteina_batch,
     model_num_layers,
 )
-from probelib.manifest import (
+from lib.manifest import (
     build_or_load_manifest,
     load_proteina_batch_from_manifest,
 )
-from probelib.probes.contact import (
+from lib.probes.contact import (
     evaluate_contact_from_scores,
     run_contact_probe_full,
 )
-from probelib.sources import (
+from lib.sources import (
     LAYER_DISTANCE_ONLY,
     LAYER_RANDOM_GAUSS,
     LAYER_RANDOM_RANK,
@@ -454,7 +457,8 @@ def main():
         help="Comma-separated subset of runs to probe (e.g. baseline,repa_l4).",
     )
     ap.add_argument("--skip_gearnet", action="store_true")
-    ap.add_argument("--output_dir", type=str, default=str(HERE))
+    # Default writes to .../representation/results/ (sibling of scripts/).
+    ap.add_argument("--output_dir", type=str, default=str(HERE.parent / "results"))
     ap.add_argument(
         "--consolidate_only",
         action="store_true",
