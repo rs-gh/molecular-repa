@@ -320,7 +320,7 @@ def main():
         else args.config_name
     )
     with hydra.initialize(
-        config_path="../../../src/proteina/configs/experiment_config",
+        config_path="../../../../src/proteina/configs/experiment_config",
         version_base=hydra.__version__,
     ):
         cfg = hydra.compose(config_name=config_name)
