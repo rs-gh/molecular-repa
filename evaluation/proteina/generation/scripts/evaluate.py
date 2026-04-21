@@ -16,6 +16,7 @@ import os
 import re
 import sys
 from collections import defaultdict
+from contextlib import nullcontext
 
 import hydra
 import lightning as L
@@ -89,6 +90,15 @@ def parse_args():
         type=str,
         default=None,
         help="Suffix appended to output directory (e.g. step_100000)",
+    )
+    parser.add_argument(
+        "--fast_inference",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Use torch.compile(reduce-overhead) + bf16 autocast for generation. "
+        "Validated at L=256 as ~4.6x faster with matching geometry distributions. "
+        "First batch per length absorbs a one-time ~60-90s compile warmup. "
+        "Disable with --no-fast_inference for the legacy eager fp32 path.",
     )
     return parser.parse_args()
 
@@ -348,6 +358,25 @@ def main():
         model.eval()
         model.cuda()
 
+        # Fast inference: validated at L=256 as ~4.6x speedup with matching
+        # geometry distributions (bond, Rg, clash, angles) — see
+        # playground/proteina/generation_speedup/. Compile is static-shape so
+        # each unique (batch_size, nres) triggers a one-time ~60-90s recompile;
+        # over a 200-sample eval this is amortized into throughput.
+        if args.fast_inference:
+            logger.info(
+                "Fast inference ON: torch.compile(reduce-overhead) + bf16 autocast"
+            )
+            model.nn = torch.compile(
+                model.nn, mode="reduce-overhead", dynamic=False, fullgraph=False
+            )
+
+            def autocast_ctx():
+                return torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+        else:
+            logger.info("Fast inference OFF: using eager fp32 path")
+            autocast_ctx = nullcontext
+
         L.seed_everything(cfg.seed)
 
         # ── Build batch schedule ──
@@ -398,7 +427,7 @@ def main():
 
             # Generate using model.generate() directly (avoids Lightning trainer overhead)
             sampling_args = cfg.sampling_caflow
-            with torch.no_grad():
+            with torch.no_grad(), autocast_ctx():
                 x = model.generate(
                     nsamples=ns,
                     n=nres,
