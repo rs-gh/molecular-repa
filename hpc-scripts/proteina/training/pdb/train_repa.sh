@@ -76,15 +76,6 @@ scontrol update JobId="$SLURM_JOB_ID" JobName="$JOB_SHORT" 2>/dev/null
 mkdir -p /rds/user/sr2173/hpc-work/proteina/logs
 
 ###############################################################
-### Clean stale caches from previous runs on this node      ###
-###############################################################
-
-echo "Clearing stale caches..."
-rm -rf /tmp/torchinductor_${USER} 2>/dev/null
-find "$REPO_DIR/src/proteina" -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null
-echo "Done"
-
-###############################################################
 ### Diagnostics                                             ###
 ###############################################################
 

@@ -5,7 +5,7 @@ PDBLightningDataModule against a given LMDB directory, iterates
 train_dataloader() for N batches, and reports per-batch latency.
 
 The NVMe variant copies the LMDB to /tmp/proteina_pdb_lmdb first, matching
-what hpc-scripts/proteina/training/train_baseline.sh does at job start.
+what hpc-scripts/proteina/training/pdb/train_baseline.sh does at job start.
 
 Usage:
     python benchmark_io.py \\

@@ -19,7 +19,7 @@ data_prep/download_raw_pdb{,_fast}.sh      # 1. Pull CIF files
 data_prep/convert_to_lmdb.sh               # 2. Pack into LMDB
 data_prep/build_length_index.sh            # 3. Precompute length index (one-off, ~90 min)
 data_prep/precompute_centroids.py          # 4. Precompute novelty centroids (one-off)
-training/train_baseline.sh                 # 5. Train
+training/pdb/train_baseline.sh             # 5. Train
 evaluation/eval_fid_lite_sweep.sh          # 6. Lite FID across checkpoints (convergence curve)
 evaluation/eval_fid.sh                     # 7. Full FID on final ckpt
 ```

@@ -17,11 +17,11 @@ configs/experiment_config/training/<seq_len>/[<encoder>/[<averaging>/]]<config>.
 **SLURM**:
 ```bash
 # REPA (gearnet)
-sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l4_256_per_residue training/256/gearnet/per_residue
+sbatch hpc-scripts/proteina/training/pdb/train_repa.sh training_repa_l4_256_per_residue training/256/gearnet/per_residue
 # REPA (ESM-2)
-sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l9_256_per_residue training/256/esm2/per_residue
+sbatch hpc-scripts/proteina/training/pdb/train_repa.sh training_repa_l9_256_per_residue training/256/esm2/per_residue
 # Baseline (no encoder subdir)
-sbatch hpc-scripts/proteina/training/train_baseline.sh training_baseline_256 training/256
+sbatch hpc-scripts/proteina/training/pdb/train_baseline.sh training_baseline_256 training/256
 ```
 
 ## Dataset
@@ -141,8 +141,8 @@ Config layout: `src/proteina/configs/experiment_config/training/128/{training_ba
 
 **Submission:**
 ```bash
-sbatch hpc-scripts/proteina/training/train_baseline.sh training_baseline_128 training/128
-sbatch hpc-scripts/proteina/training/train_repa.sh training_repa_l4_128_per_residue training/128/gearnet/per_residue
+sbatch hpc-scripts/proteina/training/pdb/train_baseline.sh training_baseline_128 training/128
+sbatch hpc-scripts/proteina/training/pdb/train_repa.sh training_repa_l4_128_per_residue training/128/gearnet/per_residue
 # (same pattern for l0, l9)
 ```
 
@@ -333,10 +333,11 @@ Note: the project default was flipped to `per_residue` on 2026-04-17 to match th
 
 | Script | Description |
 |---|---|
-| `hpc-scripts/proteina/training/train_baseline.sh` | Train baseline model |
-| `hpc-scripts/proteina/training/train_repa.sh` | Train REPA models (configurable layer) |
-| `hpc-scripts/proteina/evaluation/eval_fid.sh` | Full FID evaluation (6,125 samples) |
-| `hpc-scripts/proteina/evaluation/eval_fid_lite_sweep.sh` | Convergence curves across checkpoints |
+| `hpc-scripts/proteina/training/pdb/train_baseline.sh` | Train PDB baseline model |
+| `hpc-scripts/proteina/training/pdb/train_repa.sh` | Train PDB REPA models (configurable layer) |
+| `hpc-scripts/proteina/training/afdb/train_baseline.sh` | Train AFDB Swiss-Prot baseline model |
+| `hpc-scripts/proteina/evaluation/generation/eval_fid.sh` | Full FID evaluation (6,125 samples) |
+| `hpc-scripts/proteina/evaluation/generation/eval_fid_lite_sweep.sh` | Convergence curves across checkpoints |
 
 ## Training Performance (2026-04-17)
 
@@ -374,7 +375,7 @@ Proteina's forward calls `F.scaled_dot_product_attention` (`use_sdpa=True` in co
 
 Job 27960354 was re-submitted with a Lustre fallback after the first run hit `/tmp` full on `gpu-q-22` (12 GB free vs 50 GB needed). Results TBD.
 
-**Takeaway from the `/tmp` failure itself:** the LMDB-to-NVMe copy logic in [train_baseline.sh](../../hpc-scripts/proteina/training/train_baseline.sh) is load-bearing — nodes routinely lack ~50 GB of `/tmp` headroom. Its Lustre-fallback branch catches this; without it, training would have died at startup. The benchmark scripts' initial version didn't have that fallback — fixed in [benchmark_io.py](../../hpc-scripts/proteina/bench/benchmark_io.py) / [benchmark_e2e.py](../../hpc-scripts/proteina/bench/benchmark_e2e.py).
+**Takeaway from the `/tmp` failure itself:** the LMDB-to-NVMe copy logic in [train_baseline.sh](../../hpc-scripts/proteina/training/pdb/train_baseline.sh) is load-bearing — nodes routinely lack ~50 GB of `/tmp` headroom. Its Lustre-fallback branch catches this; without it, training would have died at startup. The benchmark scripts' initial version didn't have that fallback — fixed in [benchmark_io.py](../../hpc-scripts/proteina/bench/benchmark_io.py) / [benchmark_e2e.py](../../hpc-scripts/proteina/bench/benchmark_e2e.py).
 
 ### Other findings from GPU monitor
 
