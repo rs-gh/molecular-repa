@@ -6,7 +6,7 @@ Replaces inference.py's monolithic predict-then-evaluate flow with:
 3. Compute metrics only after all generation is done
 4. Compute designability, diversity, and novelty metrics
 
-Usage (called by hpc-scripts/proteina/evaluation/eval_fid.sh):
+Usage (called by hpc-scripts/proteina/evaluation/generation/eval_fid.sh):
     python evaluate.py --config_name inference_fid_60m_baseline
 """
 
@@ -26,7 +26,7 @@ import torch
 from loguru import logger
 from omegaconf import OmegaConf
 
-# proteina imports (pyg_compat and torch.load patching done in hpc-scripts/proteina/evaluation/eval_fid.sh wrapper)
+# proteina imports (pyg_compat and torch.load patching done in hpc-scripts/proteina/evaluation/generation/eval_fid.sh wrapper)
 from proteinfoundation.proteinflow.proteina import Proteina
 from proteinfoundation.metrics.metric_factory import (
     GenerationMetricFactory,
@@ -100,6 +100,14 @@ def parse_args():
         "First batch per length absorbs a one-time ~60-90s compile warmup. "
         "Disable with --no-fast_inference for the legacy eager fp32 path.",
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Random seed for generation and PDB subset sampling. Overrides cfg.seed "
+        "(default in config is 5). Controls both L.seed_everything and all "
+        "np.random subsampling (designability, diversity, novelty subsets).",
+    )
     return parser.parse_args()
 
 
@@ -132,7 +140,7 @@ def build_length_to_pdbs(tensors_dir, samples_dir):
     return dict(length_to_pdbs)
 
 
-def compute_designability_metrics(list_of_pdbs, subset_size, tmp_root):
+def compute_designability_metrics(list_of_pdbs, subset_size, tmp_root, seed=42):
     """Run designability on a random subset of generated PDBs.
 
     Loads ESMFold on-demand and offloads after completion.
@@ -146,7 +154,7 @@ def compute_designability_metrics(list_of_pdbs, subset_size, tmp_root):
         return {}
 
     n_eval = min(subset_size, len(list_of_pdbs))
-    rng = np.random.RandomState(42)
+    rng = np.random.RandomState(seed)
     indices = rng.choice(len(list_of_pdbs), size=n_eval, replace=False)
     subset_pdbs = [list_of_pdbs[i] for i in sorted(indices)]
 
@@ -165,7 +173,7 @@ def compute_designability_metrics(list_of_pdbs, subset_size, tmp_root):
 
 
 def compute_diversity_metrics(
-    tensors_dir, samples_dir, subset_per_bin, tm_threshold=0.5
+    tensors_dir, samples_dir, subset_per_bin, tm_threshold=0.5, seed=42
 ):
     """Compute structural diversity per length bin via TM-score clustering.
 
@@ -186,7 +194,7 @@ def compute_diversity_metrics(
 
     bin_clusters = []
     bin_lengths = []
-    rng = np.random.RandomState(42)
+    rng = np.random.RandomState(seed)
 
     for nres in sorted(length_to_pdbs.keys()):
         pdbs = length_to_pdbs[nres]
@@ -223,7 +231,7 @@ def compute_diversity_metrics(
 
 
 def compute_novelty_metrics(
-    list_of_pdbs, centroid_path, tm_threshold=0.5, max_eval=500
+    list_of_pdbs, centroid_path, tm_threshold=0.5, max_eval=500, seed=42
 ):
     """Compute novelty as fraction of generated structures dissimilar to training centroids.
 
@@ -255,7 +263,7 @@ def compute_novelty_metrics(
 
     # Subsample generated PDBs
     n_eval = min(max_eval, len(list_of_pdbs))
-    rng = np.random.RandomState(42)
+    rng = np.random.RandomState(seed)
     indices = rng.choice(len(list_of_pdbs), size=n_eval, replace=False)
     eval_pdbs = [list_of_pdbs[i] for i in sorted(indices)]
 
@@ -338,7 +346,9 @@ def main():
     # Apply CLI overrides
     if args.ckpt_name_override:
         cfg = OmegaConf.merge(cfg, {"ckpt_name": args.ckpt_name_override})
-    logger.info(f"Config: {args.config_name}")
+    if args.seed is not None:
+        cfg = OmegaConf.merge(cfg, {"seed": args.seed})
+    logger.info(f"Config: {args.config_name}, seed: {cfg.seed}")
 
     # ── Paths (persist across restarts) ──
     suffix = f"_{args.output_suffix}" if args.output_suffix else ""
@@ -517,6 +527,7 @@ def main():
         list_of_pdbs,
         subset_size=args.designability_subset,
         tmp_root=os.path.join(root_path, "tmp_designability"),
+        seed=cfg.seed,
     )
     for k, v in desig_results.items():
         columns.append(k)
@@ -532,6 +543,7 @@ def main():
         tensors_dir,
         samples_dir,
         subset_per_bin=args.diversity_subset_per_bin,
+        seed=cfg.seed,
     )
     for k, v in div_results.items():
         columns.append(k)
@@ -547,6 +559,7 @@ def main():
         list_of_pdbs,
         centroid_path=args.centroid_path,
         tm_threshold=args.novelty_tm_threshold,
+        seed=cfg.seed,
     )
     for k, v in nov_results.items():
         columns.append(k)

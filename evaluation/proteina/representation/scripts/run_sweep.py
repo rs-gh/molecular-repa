@@ -20,7 +20,7 @@ Resume behaviour:
   waste more than one in-flight probe. Removing the JSONL forces a clean run.
 
 Usage:
-  sbatch hpc-scripts/proteina/evaluation/run_probes.sh --sweep
+  sbatch hpc-scripts/proteina/evaluation/representation/run_probes.sh --sweep
   python evaluation/proteina/representation/scripts/run_sweep.py --n_proteins 200
 
 Sample selection:
@@ -68,7 +68,7 @@ from utils import (
     load_proteina_batch,
     model_num_layers,
 )
-from lib.checkpoints import PRETRAINED_CHECKPOINTS
+from lib.checkpoints import PRETRAINED_CHECKPOINTS, resolve_step
 from lib.manifest import (
     build_or_load_manifest,
     load_proteina_batch_from_manifest,
@@ -475,6 +475,17 @@ def consolidate(outdir: Path) -> None:
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "--config",
+        type=str,
+        default=None,
+        help=(
+            "Named profile from sweep_config.yaml (e.g. 'n128', 'n256', 'n512'). "
+            "Loads canonical defaults for that regime; any extra CLI flags override "
+            "individual fields.  Every production sweep should pass --config so that "
+            "deviations from canonical settings are explicit, not silent."
+        ),
+    )
     ap.add_argument("--n_proteins", type=int, default=200)
     ap.add_argument("--max_size", type=int, default=256)
     ap.add_argument("--cath_level", type=str, default="T", choices=["C", "A", "T"])
@@ -560,9 +571,35 @@ def main():
         action="store_true",
         help="Just rebuild CSV/MD from existing JSONL without probing anything.",
     )
+
+    # Load --config profile AFTER all add_argument calls so set_defaults wins over
+    # add_argument defaults (argparse applies add_argument defaults last if called
+    # after set_defaults, overwriting them — so we must set_defaults last).
+    pre, _ = ap.parse_known_args()
+    if pre.config is not None:
+        import yaml
+
+        cfg_path = HERE.parent / "sweep_config.yaml"
+        with open(cfg_path) as _f:
+            all_profiles = yaml.safe_load(_f)
+        if pre.config not in all_profiles:
+            ap.error(
+                f"Unknown --config '{pre.config}'. "
+                f"Available: {[k for k in all_profiles if not k.startswith('_')]}"
+            )
+        profile = {k: v for k, v in all_profiles[pre.config].items() if v is not None}
+        ap.set_defaults(**profile)
+        print(
+            f"[config] Loaded profile '{pre.config}' from sweep_config.yaml: {profile}"
+        )
+
     args = ap.parse_args()
 
-    outdir = Path(args.output_dir)
+    _outdir = Path(args.output_dir)
+    # Relative paths in --output_dir / sweep_config.yaml are resolved against the
+    # representation/ directory (HERE.parent), not the CWD, so they work regardless
+    # of where the job is launched from.
+    outdir = _outdir if _outdir.is_absolute() else HERE.parent / _outdir
     outdir.mkdir(parents=True, exist_ok=True)
     jsonl_path = outdir / "sweep_results.jsonl"
 
@@ -714,7 +751,9 @@ def main():
 
         for step in steps:
             # Pre-load skip: if all expected (layer, t) cells are cached, don't load.
-            all_cached = all(
+            # Skip this optimisation for last-EMA entries (step=None) since we don't
+            # know the actual step integer until after we've read the ckpt file.
+            all_cached = step is not None and all(
                 (run_name, int(step), L, _t_tag(t)) in done
                 for L in range(EXPECTED_NLAYERS)
                 for t in timesteps
@@ -731,6 +770,7 @@ def main():
                 print(f"  step {step}: NO EMA CKPT — skip")
                 continue
 
+            step = resolve_step(ckpt, step)
             print(f"\n  --- step {step} @ {ckpt.name} ---")
 
             try:
@@ -976,7 +1016,9 @@ def main():
                 # a timestep input), so we tag every row at t=1.0 for consistency.
                 _bl_t_tag = _t_tag(1.0)
                 if name == "random_gauss":
-                    src = RandomGaussianRepSource(dim=args.rep_dim_random, seed=42)
+                    src = RandomGaussianRepSource(
+                        dim=args.rep_dim_random, seed=seeds_list[0]
+                    )
                     key = (name, 0, LAYER_RANDOM_GAUSS, _bl_t_tag)
                     if key in done:
                         print(f"  {name}: cached, skip")
