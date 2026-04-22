@@ -7,10 +7,17 @@
 #!   (default)   run_all.py    → one probe per run (last.ckpt), fast sanity
 #!   --sweep     run_sweep.py  → FID-style log-spaced step schedule (11-12 points × 4 runs + gearnet)
 #!
+#! ALWAYS pass --config <name> for production sweeps. This loads the canonical
+#! parameter set (max_size, output_dir, etc.) for that regime from
+#! evaluation/proteina/representation/sweep_config.yaml so settings can't
+#! silently diverge between jobs. Available profiles: n128, n256, n512.
+#! Any extra flags (e.g. --runs, --n_proteins) override individual fields.
+#!
 #! Usage:
-#!   sbatch hpc-scripts/proteina/evaluation/run_probes.sh                        # last.ckpt only
-#!   sbatch hpc-scripts/proteina/evaluation/run_probes.sh --sweep                # full sweep
-#!   sbatch hpc-scripts/proteina/evaluation/run_probes.sh --sweep --n_proteins 300
+#!   sbatch hpc-scripts/proteina/evaluation/representation/run_sweep.sh --sweep --config n128
+#!   sbatch hpc-scripts/proteina/evaluation/representation/run_sweep.sh --sweep --config n256
+#!   sbatch hpc-scripts/proteina/evaluation/representation/run_sweep.sh --sweep --config n128 --runs esm_repa_l0_128,esm_repa_l4_128
+#!   sbatch hpc-scripts/proteina/evaluation/representation/run_sweep.sh --sweep --config n128 --n_proteins 50  # override one field
 #!
 
 #SBATCH -A LIO-CHARM-SL2-GPU
@@ -60,10 +67,10 @@ LOCAL_LMDB="/dev/shm/proteina_probe_lmdb_${SLURM_JOB_ID:-local}"
 mkdir -p "$LOCAL_LMDB"
 
 echo "=== Copying LMDB to local NVMe at $LOCAL_LMDB ==="
-#! Use train.lmdb: it's the ~95% majority of the PDB data. val/test splits are
-#! tiny (<1k proteins), and a random sample of train is a fine held-out set for
-#! probe training/evaluation (probes are independent models).
-SPLIT="${PROBE_SPLIT:-train}"
+#! Default to val.lmdb — proper ~5K held-out split disjoint from train by PDB ID
+#! (rebuilt 2026-04-21; see hpc-scripts/proteina/data_prep/build_val_lmdb.py).
+#! Override via PROBE_SPLIT=train for train-leak numbers or ad-hoc diagnostics.
+SPLIT="${PROBE_SPLIT:-val}"
 for f in "${SPLIT}.lmdb" "${SPLIT}_keys.pkl" "${SPLIT}_lengths.npy"; do
     if [ -f "$LUSTRE_LMDB/$f" ]; then
         echo "  copying $f ($(du -h "$LUSTRE_LMDB/$f" | cut -f1))"

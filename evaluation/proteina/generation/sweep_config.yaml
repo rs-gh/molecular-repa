@@ -1,0 +1,64 @@
+# Named profiles for generation/scripts/run_sweep.py.
+# Pass --config <name>; any CLI flag overrides individual fields.
+#
+# Profile taxonomy (mirrors representation/sweep_config.yaml naming):
+#
+#   n512_convergence  -- full 11-12 point log-spaced step schedule for n=512 runs.
+#                        Use for training-progression / convergence curves.
+#                        ~11-12 array tasks per run, ~35 min each.
+#                        Step rationale and batch-size arithmetic documented in
+#                        evaluation/proteina/lib/checkpoints.py.
+#
+#   n128, n256, n512_sm -- single sample-matched checkpoint per run.
+#                        Use for cross-size / cross-method comparisons at equal
+#                        training budget. 4 array tasks each (one per run variant).
+#                        Sample-matching arithmetic documented in lib/checkpoints.py.
+#
+# Usage:
+#   # n=512 convergence (11 tasks for baseline, 12 for repa variants)
+#   python evaluation/proteina/generation/scripts/run_sweep.py --config n512_convergence --dry_run
+#   sbatch --array=0-10 hpc-scripts/proteina/evaluation/generation/run_sweep.sh --config n512_convergence
+#
+#   # sample-matched (4 tasks each)
+#   sbatch --array=0-3 hpc-scripts/proteina/evaluation/generation/run_sweep.sh --config n128
+#   sbatch --array=0-3 hpc-scripts/proteina/evaluation/generation/run_sweep.sh --config n256
+#   sbatch --array=0-3 hpc-scripts/proteina/evaluation/generation/run_sweep.sh --config n512_sm
+#
+#   # backfill a single run within a profile
+#   sbatch --array=0-11 hpc-scripts/proteina/evaluation/generation/run_sweep.sh \
+#     --config n512_convergence --runs repa_l4
+#
+#   # ad-hoc single checkpoint (no --array needed)
+#   sbatch hpc-scripts/proteina/evaluation/generation/run_sweep.sh \
+#     --ckpt_path /rds/...ckpt --ckpt_label myrun_100k \
+#     --config_name inference/inference_fid_60m_baseline_lite
+
+_defaults: &defaults
+  seed: 42
+  designability_subset: 0     # 0 = skip (lite sweep); set >0 for full eval
+  diversity_subset_per_bin: 0
+  skip_fid: false
+
+# n=512: full convergence curve (11-12 log-spaced checkpoints per run)
+n512_convergence:
+  <<: *defaults
+  runs: "baseline,repa_l0,repa_l4,repa_l9"
+  output_dir: results/n512_convergence
+
+# n=128: sample-matched @ ~19.5M samples (baseline step=800K, repa step=400K)
+n128:
+  <<: *defaults
+  runs: "baseline_128,repa_l0_128,repa_l4_128,repa_l9_128"
+  output_dir: results/n128
+
+# n=256: sample-matched @ ~7M samples (all runs step=400K)
+n256:
+  <<: *defaults
+  runs: "baseline_256,repa_l0_256,repa_l4_256,repa_l9_256"
+  output_dir: results/n256
+
+# n=512: sample-matched @ 3.0M samples (baseline step=500K, repa step=750K)
+n512_sm:
+  <<: *defaults
+  runs: "baseline_512_sm,repa_l0_512_sm,repa_l4_512_sm,repa_l9_512_sm"
+  output_dir: results/n512_sm

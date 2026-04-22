@@ -7,6 +7,7 @@
 #!   sbatch hpc-scripts/proteina/evaluation/eval_fid.sh inference_fid_60m_baseline                   # flat (symlink)
 #!   sbatch hpc-scripts/proteina/evaluation/eval_fid.sh inference_fid_60m_baseline inference          # subdir
 #!   sbatch hpc-scripts/proteina/evaluation/eval_fid.sh inference_fid_60m_repa inference
+#!   sbatch hpc-scripts/proteina/evaluation/eval_fid.sh inference_fid_60m_baseline inference --seed 42
 #!
 
 #SBATCH -A LIO-CHARM-SL2-GPU

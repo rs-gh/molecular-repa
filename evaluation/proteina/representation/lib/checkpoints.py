@@ -1,209 +1,33 @@
-"""Run schedules, checkpoint path resolution, LightningModule loading."""
-
-from __future__ import annotations
-
-import os
-import sys
+# Re-export from the shared evaluation/proteina/lib/checkpoints.py so that
+# existing imports (from lib.checkpoints import ...) continue to work unchanged.
+import importlib.util
+import sys as _sys
 from pathlib import Path
-from typing import Optional
 
-import torch
-
-PROTEINA_ROOT = Path("/home/sr2173/git/molecular-repa/src/proteina")
-if str(PROTEINA_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROTEINA_ROOT))
-
-LMDB_PATH = os.environ.get(
-    "PROBES_LMDB_PATH",
-    "/rds/user/sr2173/hpc-work/proteina/data/pdb_train/lmdb/val.lmdb",
+_shared_path = Path(__file__).resolve().parents[2] / "lib" / "checkpoints.py"
+_spec = importlib.util.spec_from_file_location(
+    "_proteina_shared_checkpoints", _shared_path
 )
-STORE_ROOT = Path("/rds/user/sr2173/hpc-work/proteina/store")
+_mod = importlib.util.module_from_spec(_spec)
+# Register before exec so any internal imports don't re-trigger loading.
+_sys.modules["_proteina_shared_checkpoints"] = _mod
+_spec.loader.exec_module(_mod)
 
-
-# Log-spaced step schedule mirroring hpc-scripts/proteina/evaluation/eval_fid_lite_sweep.sh.
-# Uses EMA checkpoints, matching the FID-sweep convention.
-BASELINE_STEPS = [
-    10000,
-    20000,
-    40000,
-    80000,
-    150000,
-    250000,
-    350000,
-    450000,
-    550000,
-    650000,
-    740000,
-]
-REPA_STEPS = [
-    10000,
-    20000,
-    40000,
-    80000,
-    150000,
-    250000,
-    350000,
-    450000,
-    550000,
-    650000,
-    750000,
-    840000,
-]
-REPA_L0_STEPS = [
-    10000,
-    20000,
-    40000,
-    80000,
-    150000,
-    250000,
-    350000,
-    450000,
-    550000,
-    650000,
-    750000,
-    830000,
-]
-REPA_L9_STEPS = REPA_STEPS  # matches the FID sweep — same schedule as layer-4 default
-
-RUN_SCHEDULES = {
-    # name: (run_dir, is_repa, repa_layer, step_list)
-    # --------------------------------------------------------------------- #
-    # n=512 runs — existing FID-schedule probe sweep
-    # --------------------------------------------------------------------- #
-    "baseline": (
-        "proteina_60m_baseline_v2",
-        False,
-        4,
-        BASELINE_STEPS,
-    ),  # probed at layer 4 (midpoint)
-    "repa_l4": (
-        "proteina_60m_repa_v2",
-        True,
-        4,
-        REPA_STEPS,
-    ),  # default REPA trains layer 4
-    "repa_l0": ("proteina_60m_repa_layer0_v2", True, 0, REPA_L0_STEPS),
-    "repa_l9": ("proteina_60m_repa_layer9_v2", True, 9, REPA_L9_STEPS),
-    # --------------------------------------------------------------------- #
-    # n=128 — sample-matched @ ~19.5M samples (baseline bs=24 throughout;
-    # REPA bs=24→80 switch at step 220K, so step 400K = 220K×24 + 180K×80 = 19.68M)
-    # --------------------------------------------------------------------- #
-    "baseline_128": ("proteina_60m_baseline_128", False, 4, [800000]),
-    "repa_l0_128": ("proteina_60m_repa_l0_128_per_residue", True, 0, [400000]),
-    "repa_l4_128": ("proteina_60m_repa_l4_128_per_residue", True, 4, [400000]),
-    "repa_l9_128": ("proteina_60m_repa_l9_128_per_residue", True, 9, [400000]),
-    # --------------------------------------------------------------------- #
-    # n=256 — sample-matched @ ~7M samples (all runs bs=12→24 switch at step
-    # 220K, so step 400K = 220K×12 + 180K×24 = 6.96M)
-    # --------------------------------------------------------------------- #
-    "baseline_256": ("proteina_60m_baseline_256", False, 4, [400000]),
-    "repa_l0_256": ("proteina_60m_repa_l0_256_per_residue", True, 0, [400000]),
-    "repa_l4_256": ("proteina_60m_repa_l4_256_per_residue", True, 4, [400000]),
-    "repa_l9_256": ("proteina_60m_repa_l9_256_per_residue", True, 9, [400000]),
-    # --------------------------------------------------------------------- #
-    # n=512 — sample-matched single-step subsets of the existing _v2 dirs.
-    # The `_sm` suffix prevents collision with the full-schedule entries above;
-    # for the sample-matched multi-t probe we only need this one checkpoint per run.
-    # --------------------------------------------------------------------- #
-    "baseline_512_sm": ("proteina_60m_baseline_v2", False, 4, [450000]),
-    "repa_l0_512_sm": ("proteina_60m_repa_layer0_v2", True, 0, [830000]),
-    "repa_l4_512_sm": ("proteina_60m_repa_v2", True, 4, [840000]),
-    "repa_l9_512_sm": ("proteina_60m_repa_layer9_v2", True, 9, [840000]),
-}
-
-# External / pretrained checkpoints — static files at known paths rather than
-# sweep dirs under STORE_ROOT. Used to probe NVIDIA's released Proteina weights
-# at all transformer layers, mirroring REPA Fig. 3a (layer-wise representation
-# quality of the unconditional generative model).
-#
-# Shape: name -> (absolute_path, is_repa, expected_nlayers)
-PRETRAINED_CHECKPOINTS = {
-    # 58.93M params, ProteinTransformerAF3 with nlayers=12
-    # (distinct from our 10-layer in-house 60M runs).
-    "pretrained_dfs_60m": (
-        "/home/sr2173/git/molecular-repa/.local_ckpts/proteina_v1.3_DFS_60M_notri.ckpt",
-        False,
-        12,
-    ),
-}
-
-
-# Flat last.ckpt registry used by run_all.py (single-point mode).
-CHECKPOINT_REGISTRY = {
-    "baseline": (RUN_SCHEDULES["baseline"][0], False, None),
-    "repa_l0": (RUN_SCHEDULES["repa_l0"][0], True, [0]),
-    "repa_l4": (RUN_SCHEDULES["repa_l4"][0], True, [4]),
-    "repa_l9": (RUN_SCHEDULES["repa_l9"][0], True, [9]),
-}
-
-
-def find_checkpoint_path(
-    run_dir: str, step: int, prefer_ema: bool = True
-) -> Optional[Path]:
-    """Locate the checkpoint file for a given (run_dir, step).
-
-    Matches the naming convention ``chk_epoch=*_step=<12-digit>.ckpt``
-    (or the ``-EMA`` variant).
-
-    Args:
-        run_dir: Run directory name under STORE_ROOT (e.g. ``proteina_60m_baseline_v2``).
-        step: Global step number.
-        prefer_ema: If True, return the EMA variant (matches FID sweep convention).
-
-    Returns:
-        Path to the checkpoint or None if not found.
-    """
-    ckpt_dir = STORE_ROOT / run_dir / "checkpoints"
-    padded = f"{step:012d}"
-    suffix = "-EMA.ckpt" if prefer_ema else ".ckpt"
-    # Dir listing is unavoidable; do it once per lookup.
-    for entry in os.listdir(ckpt_dir):
-        if f"step={padded}" in entry and entry.endswith(suffix):
-            # Reject the non-EMA when we want EMA (both share "step=...ckpt" prefix).
-            if prefer_ema and "-EMA" not in entry:
-                continue
-            if not prefer_ema and "-EMA" in entry:
-                continue
-            return ckpt_dir / entry
-    return None
-
-
-def load_checkpoint_by_path(ckpt_path: str, is_repa: bool, device: str = None):
-    """Load a Proteina / ProteinaREPA LightningModule from an explicit ckpt path.
-
-    Returns a fully-loaded eval-mode model on ``device`` (defaults to cuda if available).
-    For REPA checkpoints this includes the frozen encoder + REPA loss module.
-    """
-    if device is None:
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    print(f"Loading {'ProteinaREPA' if is_repa else 'Proteina'} from {ckpt_path}")
-
-    if is_repa:
-        from proteinfoundation.repa.proteina_repa import ProteinaREPA
-
-        model = ProteinaREPA.load_from_checkpoint(str(ckpt_path), map_location="cpu")
-    else:
-        from proteinfoundation.proteinflow.proteina import Proteina
-
-        model = Proteina.load_from_checkpoint(str(ckpt_path), map_location="cpu")
-
-    model.eval()
-    model.to(device)
-    return model
-
-
-def load_checkpoint(name: str, device: str = None):
-    """Load a last.ckpt for a registry entry (used by run_all.py).
-
-    Returns:
-        (model, meta) where meta = {"is_repa", "repa_layers", "run_dir"}.
-    """
-    if name not in CHECKPOINT_REGISTRY:
-        raise KeyError(
-            f"Unknown checkpoint: {name}. Registry: {list(CHECKPOINT_REGISTRY)}"
-        )
-    run_dir, is_repa, repa_layers = CHECKPOINT_REGISTRY[name]
-    ckpt_path = STORE_ROOT / run_dir / "checkpoints" / "last.ckpt"
-    model = load_checkpoint_by_path(ckpt_path, is_repa, device=device)
-    return model, {"is_repa": is_repa, "repa_layers": repa_layers, "run_dir": run_dir}
+# Populate this module's namespace with everything from the shared module.
+from _proteina_shared_checkpoints import *  # noqa: E402,F401,F403
+from _proteina_shared_checkpoints import (  # noqa: E402,F401 -- explicit for type checkers
+    BASELINE_STEPS,
+    CHECKPOINT_REGISTRY,
+    GEN_RUN_CONFIGS,
+    LMDB_PATH,
+    PRETRAINED_CHECKPOINTS,
+    REPA_L0_STEPS,
+    REPA_L9_STEPS,
+    REPA_STEPS,
+    RUN_SCHEDULES,
+    STORE_ROOT,
+    find_checkpoint_path,
+    load_checkpoint,
+    load_checkpoint_by_path,
+    resolve_step,
+)
