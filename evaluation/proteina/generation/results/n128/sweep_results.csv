@@ -1,0 +1,11 @@
+run,step,config_name,ckpt_path,seed,error,_res_PDB_FID,_res_PDB_fJSD_C,_res_PDB_fJSD_A,_res_PDB_fJSD_T,_res_AFDB_FID,_res_AFDB_fJSD_C,_res_AFDB_fJSD_A,_res_AFDB_fJSD_T,_res_fS_C,_res_fS_A,_res_fS_T
+repa_l0_128,400000,inference/inference_fid_60m_repa_l0_128_lite,,,"AcceleratorError: CUDA error: CUDA-capable device(s) is/are busy or unavailable
+Search for `cudaErrorDevicesUnavailable' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+",,,,,,,,,,,
+repa_l9_128,400000,inference/inference_fid_60m_repa_l9_128_lite,/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_l9_128_per_residue/checkpoints/chk_epoch=00000194_step=000000400000-EMA.ckpt,42,,975.3275146484376,1.319993799654689,3.185005098111453,5.220660845672642,998.0885620117188,1.7959045565824616,3.840850296748108,5.739578963886047,2.165623426437378,2.567324161529541,2.851015567779541
+repa_l4_128,400000,inference/inference_fid_60m_repa_l4_128_lite,/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_l4_128_per_residue/checkpoints/chk_epoch=00000194_step=000000400000-EMA.ckpt,42,,746.59814453125,0.816505492245089,2.2906743798807816,4.475216344957734,774.7235107421875,1.1997347016961415,2.9028543848705257,5.095097032931252,2.509651660919189,3.515597105026245,4.393465518951416
+baseline_128,800000,inference/inference_fid_60m_baseline_128_lite,/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_128/checkpoints/chk_epoch=00000184_step=000000800000-EMA.ckpt,42,,401.7283020019531,0.1129765468391209,0.7550123123246941,2.8587769539638908,448.5233154296875,0.5248265342087699,1.2954862920082966,3.3156948327241653,2.6702451705932617,5.517460346221924,18.926069259643555
+repa_l0_128,400000,inference/inference_fid_60m_repa_l0_128_lite,/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_repa_l0_128_per_residue/checkpoints/chk_epoch=00000195_step=000000400000-EMA.ckpt,42,,842.9530639648438,1.8596514907261263,3.0404485216348,4.747013049919238,863.08447265625,2.0536929691071952,3.485906940706458,5.041419584054422,1.8515876531600952,2.2421247959136963,3.0476202964782715
