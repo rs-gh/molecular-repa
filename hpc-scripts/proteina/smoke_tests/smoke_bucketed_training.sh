@@ -22,6 +22,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --time=0:45:00
+#SBATCH --qos=intr
 #SBATCH --output=/rds/user/sr2173/hpc-work/proteina/logs/smoke-bucket-%j.out
 #SBATCH --error=/rds/user/sr2173/hpc-work/proteina/logs/smoke-bucket-%j.err
 #SBATCH -p ampere
