@@ -352,7 +352,8 @@ def main():
 
     # ── Paths (persist across restarts) ──
     suffix = f"_{args.output_suffix}" if args.output_suffix else ""
-    root_path = f"./eval_output/{args.config_name}{suffix}"
+    config_slug = args.config_name.replace("/", "_")
+    root_path = f"./eval_output/{config_slug}{suffix}"
     samples_dir = os.path.join(root_path, "samples_fid")
     tensors_dir = os.path.join(root_path, "tensors")
     os.makedirs(samples_dir, exist_ok=True)
@@ -403,10 +404,12 @@ def main():
                 [cfg.nsamples_per_len] * len(lens_list)
             ),
         }
-        lens_sample, nsamples = split_nlens(nlens_dict, max_nsamples=cfg.max_nsamples)
+        lens_sample, nsamples = split_nlens(
+            nlens_dict, max_nsamples=cfg.generation_batch_size
+        )
         total_batches = len(lens_sample)
         logger.info(
-            f"Total batches: {total_batches} ({len(lens_list)} lengths x ~{cfg.nsamples_per_len}/{cfg.max_nsamples} batches/len)"
+            f"Total batches: {total_batches} ({len(lens_list)} lengths x ~{cfg.nsamples_per_len}/{cfg.generation_batch_size} batches/len)"
         )
 
         # ── Generate with checkpointing ──
@@ -575,7 +578,7 @@ def main():
     if "metric_factory" in df.columns:
         df = df.drop("metric_factory", axis=1)
 
-    results_csv = os.path.join(root_path, f"results_{args.config_name}{suffix}_fid.csv")
+    results_csv = os.path.join(root_path, f"results_{config_slug}{suffix}_fid.csv")
 
     # If skipping FID and an existing CSV has FID columns, merge new columns in
     if args.skip_fid and os.path.exists(results_csv):

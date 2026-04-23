@@ -77,7 +77,7 @@ def main():
     if not csv_files:
         print(f"No lite result CSVs found matching: {pattern}")
         print(
-            "Have you run the hpc-scripts/proteina/evaluation/eval_fid_lite_sweep.sh jobs?"
+            "Have you run the hpc-scripts/proteina/evaluation/generation/eval_fid_lite_sweep.sh jobs?"
         )
         return
 

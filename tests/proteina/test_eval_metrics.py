@@ -31,7 +31,7 @@ sys.path.insert(
     0, os.path.join(os.path.dirname(__file__), "../../hpc-scripts/proteina/data_prep")
 )
 
-# Patch broken torch_scatter/torch_cluster CUDA extensions (same as hpc-scripts/proteina/evaluation/eval_fid.sh)
+# Patch broken torch_scatter/torch_cluster CUDA extensions (same as hpc-scripts/proteina/evaluation/generation/eval_fid.sh)
 import proteinfoundation.repa.pyg_compat  # noqa: F401
 
 REPO_ROOT = os.path.join(os.path.dirname(__file__), "../..")

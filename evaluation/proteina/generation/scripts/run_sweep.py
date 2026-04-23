@@ -47,6 +47,7 @@ HERE = Path(__file__).resolve().parent
 # HERE        = .../generation/scripts
 # HERE.parent = .../generation
 # HERE.parent.parent = .../proteina  (evaluation/proteina)
+sys.path.insert(0, str(HERE))  # -> generation/scripts/ for evaluate module
 sys.path.insert(
     0, str(HERE.parent.parent)
 )  # -> evaluation/proteina/ for lib.checkpoints
@@ -287,10 +288,11 @@ def run_one_task(
         evaluate.main()
         # Read back the per-checkpoint CSV to get metric values
         output_suffix = f"sweep_{run_name}_step_{actual_step}"
+        config_slug = config_name.replace("/", "_")
         results_csv = (
             HERE.parent.parent.parent.parent  # repo root
-            / f"eval_output/{config_name}_{output_suffix}"
-            / f"results_{config_name}_{output_suffix}_fid.csv"
+            / f"eval_output/{config_slug}_{output_suffix}"
+            / f"results_{config_slug}_{output_suffix}_fid.csv"
         )
         row: Dict = {
             "run": run_name,
