@@ -1,0 +1,38 @@
+# Canonical parameter profiles for run_sweep.py.
+#
+# Pass --config <name> to load a named profile as base defaults; any
+# additional CLI flags override individual fields.  Every production sweep
+# should specify a --config so that deviations from the canonical settings
+# are explicit overrides visible in the job log, not silent argparse defaults.
+#
+# Usage examples:
+#   sbatch run_probes.sh --sweep --config n128
+#   sbatch run_probes.sh --sweep --config n128 --runs esm_repa_l0_128,esm_repa_l4_128
+#   sbatch run_probes.sh --sweep --config n256 --n_proteins 50   # override one field
+
+_defaults: &defaults
+  n_proteins: 200
+  manifest_version: null        # null = legacy cursor-first (v1)
+  manifest_seed: 42
+  cath_level: T
+  heads: both
+  seeds: "42"
+  timesteps: "1.0,0.75,0.5"
+  baselines: "random_rank,distance_only,seq_onehot,random_gauss,untrained_proteina"
+  rep_dim_random: 512
+  skip_gearnet: false
+
+n128:
+  <<: *defaults
+  max_size: 128
+  output_dir: results/n128_val
+
+n256:
+  <<: *defaults
+  max_size: 256
+  output_dir: results/n256_val
+
+n512:
+  <<: *defaults
+  max_size: 512
+  output_dir: results/n512_val
