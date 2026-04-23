@@ -182,56 +182,60 @@ def enrich_split(
 
     t0 = time.time()
     total = skipped_already = written = with_cath = no_cath = 0
-    pending_writes: list[tuple] = []  # (key, serialized_graph)
 
-    def flush(txn):
-        for k, v in pending_writes:
-            txn.put(k, v)
-        pending_writes.clear()
-
-    with db.begin(write=not dry_run) as txn:
+    # Pass 1: collect all keys (keys-only scan — does NOT page in values)
+    print("    Pass 1: collecting keys...", flush=True)
+    with db.begin(write=False) as txn:
         cursor = txn.cursor()
-        for key, value in cursor:
-            if key == b"__ids__":
-                continue
-            if max_entries and total >= max_entries:
-                break
+        all_keys = [
+            k for k in cursor.iternext(keys=True, values=False) if k != b"__ids__"
+        ]
+    print(
+        f"    Pass 1: {len(all_keys):,} keys collected in {time.time()-t0:.0f}s",
+        flush=True,
+    )
 
-            graph = pickle.loads(value)
-            total += 1
+    if max_entries:
+        all_keys = all_keys[:max_entries]
 
-            # Idempotent: skip if already enriched
-            existing = getattr(graph, "cath_code", None)
-            if existing is not None and len(existing) > 0:
-                skipped_already += 1
-                continue
+    # Pass 2: batch read-modify-write, committing every `commit_every` entries
+    print("    Pass 2: enriching in batches...", flush=True)
+    for batch_start in range(0, len(all_keys), commit_every):
+        batch = all_keys[batch_start : batch_start + commit_every]
+        with db.begin(write=not dry_run) as txn:
+            for key in batch:
+                value = txn.get(key)
+                if value is None:
+                    continue
+                graph = pickle.loads(value)
+                total += 1
 
-            lookup_key = id_transform(graph.id) if id_transform else graph.id
-            codes = cath_lookup.get(lookup_key, [])
-            graph.cath_code = codes
+                existing = getattr(graph, "cath_code", None)
+                if existing is not None and len(existing) > 0:
+                    skipped_already += 1
+                    continue
 
-            if codes:
-                with_cath += 1
-            else:
-                no_cath += 1
+                lookup_key = id_transform(graph.id) if id_transform else graph.id
+                codes = cath_lookup.get(lookup_key, [])
+                graph.cath_code = codes
 
-            if not dry_run:
-                pending_writes.append((key, pickle.dumps(graph)))
-                written += 1
-                if len(pending_writes) >= commit_every:
-                    flush(txn)
+                if codes:
+                    with_cath += 1
+                else:
+                    no_cath += 1
 
-            if total % 50_000 == 0:
-                elapsed = time.time() - t0
-                print(
-                    f"    Processed {total:,} | written {written:,} | "
-                    f"with_cath {with_cath:,} | {elapsed:.0f}s",
-                    flush=True,
-                )
+                if not dry_run:
+                    txn.put(key, pickle.dumps(graph))
+                    written += 1
+        # txn commits here at end of `with` block
 
-        # Flush remaining
-        if not dry_run and pending_writes:
-            flush(txn)
+        if total // 50_000 > (total - len(batch)) // 50_000:
+            elapsed = time.time() - t0
+            print(
+                f"    Processed {total:,} | written {written:,} | "
+                f"with_cath {with_cath:,} | {elapsed:.0f}s",
+                flush=True,
+            )
 
     db.close()
 

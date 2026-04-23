@@ -13,7 +13,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=06:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=sr2173@cam.ac.uk
 #SBATCH --output=/rds/user/sr2173/hpc-work/proteina/logs/bake-cath-%j.out
