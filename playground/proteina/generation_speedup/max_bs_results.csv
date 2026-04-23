@@ -1,0 +1,9 @@
+ckpt,mode,length,max_batch_size,probe_steps,start_bs
+baseline_512_sm,eager_fp32,128,474,20,8
+baseline_512_sm,eager_fp32,256,119,20,8
+baseline_512_sm,eager_fp32,384,53,20,8
+baseline_512_sm,eager_fp32,512,29,20,8
+baseline_512_sm,compile_bf16,128,422,20,8
+baseline_512_sm,compile_bf16,256,105,20,8
+baseline_512_sm,compile_bf16,384,47,20,8
+baseline_512_sm,compile_bf16,512,26,20,8
