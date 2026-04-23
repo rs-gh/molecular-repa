@@ -16,7 +16,10 @@ import pandas as pd
 
 # Layout: scripts/ sits next to results/ and figures/ under generation/.
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "results", "pdb", "fid")
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "figures")
+OUTPUT_DIR = os.path.join(
+    os.path.dirname(__file__), "..", "figures", "n512_convergence"
+)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Which metrics exist and whether lower is better
 METRIC_INFO = {

@@ -32,7 +32,10 @@ import pandas as pd
 HERE = Path(__file__).resolve().parent
 # Results live in .../representation/results/, figures in .../representation/figures/.
 CSV = HERE.parent / "results" / "sweep_results.csv"
-FIG_DIR = HERE.parent / "figures"
+# n=512 multi-checkpoint sweep outputs (layerwise + step-progression). Grouped
+# into a subdir since these are n=512-specific; the per-size `fig_grid_*`
+# plots (plot_per_n.py) stay at the top level.
+FIG_DIR = HERE.parent / "figures" / "n512_convergence"
 
 
 RUN_ORDER = ["baseline", "repa_l0", "repa_l4", "repa_l9"]

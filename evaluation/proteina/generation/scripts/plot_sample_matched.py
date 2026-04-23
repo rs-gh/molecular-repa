@@ -87,20 +87,21 @@ def plot(data: dict) -> None:
 
     n_metrics = len(METRICS)
     n_sizes = len(SIZES)
+    # Layout matches representation fig_grid_*: rows = model size, cols = metric.
     fig, axes = plt.subplots(
-        n_metrics,
         n_sizes,
-        figsize=(13, 7),
-        sharey="row",
+        n_metrics,
+        figsize=(4.5 * n_metrics, 3.3 * n_sizes),
+        sharey="col",
     )
 
     bar_width = 0.18
     x_positions = np.arange(len(RUN_ORDER))
 
-    for col, (size_key, size_cfg) in enumerate(SIZES.items()):
+    for row, (size_key, size_cfg) in enumerate(SIZES.items()):
         size_data = data[size_key]
 
-        for row, (metric_key, (metric_label, lower_better)) in enumerate(
+        for col, (metric_key, (metric_label, lower_better)) in enumerate(
             METRICS.items()
         ):
             ax = axes[row, col]
@@ -174,16 +175,18 @@ def plot(data: dict) -> None:
             ax.grid(axis="y", alpha=0.3, zorder=0)
             ax.set_axisbelow(True)
 
-            if col == 0:
+            if row == 0:
                 direction = "↓ better" if lower_better else "↑ better"
-                ax.set_ylabel(
-                    f"{metric_label}\n({direction})", fontsize=10, fontweight="bold"
+                ax.set_title(
+                    f"{metric_label} ({direction})",
+                    fontsize=11,
+                    fontweight="bold",
                 )
 
-            if row == 0:
-                ax.set_title(
-                    f"{size_cfg['label']}\n{size_cfg['samples']}\n200 proteins generated",
-                    fontsize=11,
+            if col == 0:
+                ax.set_ylabel(
+                    f"{size_cfg['label']}\n{size_cfg['samples']}\n200 generated",
+                    fontsize=10,
                     fontweight="bold",
                 )
 
@@ -205,7 +208,7 @@ def plot(data: dict) -> None:
         y=1.01,
     )
     plt.tight_layout()
-    out = FIGURES_DIR / "sample_matched_comparison.png"
+    out = FIGURES_DIR / "fig_grid_sample_matched.png"
     fig.savefig(out, dpi=150, bbox_inches="tight")
     print(f"Saved {out}")
 
