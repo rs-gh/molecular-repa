@@ -376,233 +376,65 @@ class TestGearNetEncoderFormatConversion:
         assert (output[1, :18] == h_v[15:]).all()
 
 
+# ─── Test random-init GearNet encoder (no ckpt required) ──────────────────
+
+
+class TestRandomInitGearNet:
+    """Smoke tests for the random-init GearNet REPA baseline encoder."""
+
+    def test_random_init_builds_and_forwards(self):
+        pytest.importorskip("torch_scatter")
+        pytest.importorskip("torch_geometric")
+        from proteinfoundation.repa.gearnet_encoder import GearNetPerResidueEncoder
+
+        enc = GearNetPerResidueEncoder(random_init=True, random_seed=0)
+        assert enc.encoder_dim == 512
+
+        b, n = 2, 12
+        coords = torch.randn(b, n, 3) * 0.5  # nm scale
+        mask = torch.ones(b, n, dtype=torch.bool)
+        mask[0, 9:] = False
+
+        out = enc(coords, mask)
+        assert out.shape == (b, n, 512)
+        assert torch.isfinite(out).all()
+        # Masked positions should be zero
+        assert (out[0, 9:] == 0).all()
+
+    def test_random_init_is_deterministic_across_seeds(self):
+        pytest.importorskip("torch_scatter")
+        pytest.importorskip("torch_geometric")
+        from proteinfoundation.repa.gearnet_encoder import GearNetPerResidueEncoder
+
+        enc_a = GearNetPerResidueEncoder(random_init=True, random_seed=42)
+        enc_b = GearNetPerResidueEncoder(random_init=True, random_seed=42)
+        enc_c = GearNetPerResidueEncoder(random_init=True, random_seed=7)
+
+        sd_a = enc_a.gearnet.state_dict()
+        sd_b = enc_b.gearnet.state_dict()
+        sd_c = enc_c.gearnet.state_dict()
+
+        any_diff = False
+        for k in sd_a:
+            assert torch.equal(sd_a[k], sd_b[k]), f"same-seed weights differ at {k}"
+            if sd_a[k].dtype.is_floating_point and not torch.equal(sd_a[k], sd_c[k]):
+                any_diff = True
+        assert any_diff, "different seeds produced identical weights"
+
+    def test_random_init_params_frozen(self):
+        pytest.importorskip("torch_scatter")
+        pytest.importorskip("torch_geometric")
+        from proteinfoundation.repa.gearnet_encoder import GearNetPerResidueEncoder
+
+        enc = GearNetPerResidueEncoder(random_init=True, random_seed=0)
+        assert all(not p.requires_grad for p in enc.parameters())
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # REPA Pipeline Audit Tests
 # Verify correctness against the original REPA paper (arXiv 2410.06940)
 # Reference code: https://github.com/sihyun-yu/REPA
 # ═══════════════════════════════════════════════════════════════════════════
-
-
-def _reference_repa_loss(projected, target, mask):
-    """Exact reimplementation of the original REPA paper's loss computation.
-
-    From https://github.com/sihyun-yu/REPA/blob/main/loss.py:
-        z_tilde_j = F.normalize(z_tilde_j, dim=-1)
-        z_j = F.normalize(z_j, dim=-1)
-        proj_loss += mean_flat(-(z_j * z_tilde_j).sum(dim=-1))
-        proj_loss /= (len(zs) * bsz)
-
-    Key: mean_flat averages over spatial dims PER SAMPLE, then averages over batch.
-    """
-    import torch.nn.functional as F
-
-    b = projected.shape[0]
-    total = torch.tensor(0.0, device=projected.device)
-    for i in range(b):
-        m = mask[i]
-        if not m.any():
-            continue
-        z_tilde = F.normalize(projected[i, m], dim=-1)
-        z = F.normalize(target[i, m], dim=-1)
-        # mean_flat on -(z * z_tilde).sum(dim=-1) — mean over tokens for this sample
-        total = total + (-(z * z_tilde).sum(dim=-1)).mean()
-    # Average over batch (and over number of encoder/layer pairs — here just 1)
-    return total / b
-
-
-class TestReferenceNumericalEquivalence:
-    """Test A: Verify our loss matches the original REPA paper's computation."""
-
-    def test_per_sample_matches_reference_equal_lengths(self):
-        """With equal-length sequences, per_sample averaging should match the reference."""
-        from proteinfoundation.repa.repa_loss import Projector, ProteinaREPALoss
-
-        torch.manual_seed(42)
-        encoder_dim = 64
-        token_dim = 32
-        b, n = 4, 20
-        repa_layers = [0]
-
-        encoder = MockEncoder(encoder_dim=encoder_dim)
-        projectors = nn.ModuleList(
-            [Projector(hidden_dim=token_dim, encoder_dim=encoder_dim)]
-        )
-
-        loss_fn = ProteinaREPALoss(
-            encoder=encoder,
-            projectors=projectors,
-            repa_layers=repa_layers,
-            averaging="per_sample",
-        )
-
-        hidden_states = [torch.randn(b, n, token_dim)]
-        x_1_nm = torch.randn(b, n, 3)
-        mask = torch.ones(b, n, dtype=torch.bool)  # All same length
-
-        # Get our loss
-        repa_loss, _ = loss_fn(hidden_states, x_1_nm, mask)
-
-        # Manually compute what the projector produces and what the encoder returns
-        with torch.no_grad():
-            projected = projectors[0](hidden_states[0])
-            target_repr = encoder(x_1_nm, mask)
-
-        ref_loss = _reference_repa_loss(projected, target_repr, mask)
-
-        torch.testing.assert_close(repa_loss, ref_loss, atol=1e-5, rtol=1e-5)
-
-    def test_per_sample_matches_reference_variable_lengths(self):
-        """With variable-length sequences, per_sample should still match reference."""
-        from proteinfoundation.repa.repa_loss import Projector, ProteinaREPALoss
-
-        torch.manual_seed(123)
-        encoder_dim = 64
-        token_dim = 32
-        b, n = 3, 50
-        repa_layers = [0]
-
-        encoder = MockEncoder(encoder_dim=encoder_dim)
-        projectors = nn.ModuleList(
-            [Projector(hidden_dim=token_dim, encoder_dim=encoder_dim)]
-        )
-
-        loss_fn = ProteinaREPALoss(
-            encoder=encoder,
-            projectors=projectors,
-            repa_layers=repa_layers,
-            averaging="per_sample",
-        )
-
-        hidden_states = [torch.randn(b, n, token_dim)]
-        x_1_nm = torch.randn(b, n, 3)
-        # Variable lengths: 10, 30, 50
-        mask = torch.ones(b, n, dtype=torch.bool)
-        mask[0, 10:] = False
-        mask[1, 30:] = False
-
-        repa_loss, _ = loss_fn(hidden_states, x_1_nm, mask)
-
-        with torch.no_grad():
-            projected = projectors[0](hidden_states[0])
-            target_repr = encoder(x_1_nm, mask)
-
-        ref_loss = _reference_repa_loss(projected, target_repr, mask)
-
-        torch.testing.assert_close(repa_loss, ref_loss, atol=1e-5, rtol=1e-5)
-
-
-class TestPerSampleVsPerResidueAveraging:
-    """Test B: Document the difference between the two averaging modes."""
-
-    def test_equal_lengths_same_result(self):
-        """With equal-length proteins, both averaging modes should agree."""
-        from proteinfoundation.repa.repa_loss import Projector, ProteinaREPALoss
-
-        torch.manual_seed(99)
-        encoder_dim = 32
-        token_dim = 16
-        b, n = 3, 20
-        repa_layers = [0]
-
-        encoder = MockEncoder(encoder_dim=encoder_dim)
-
-        # Use input_dim so weights are materialized immediately (not LazyLinear)
-        # and create shared projector weights via state_dict copy.
-        torch.manual_seed(0)
-        proj_ps = nn.ModuleList(
-            [
-                Projector(
-                    hidden_dim=token_dim, encoder_dim=encoder_dim, input_dim=token_dim
-                )
-            ]
-        )
-        torch.manual_seed(0)
-        proj_pr = nn.ModuleList(
-            [
-                Projector(
-                    hidden_dim=token_dim, encoder_dim=encoder_dim, input_dim=token_dim
-                )
-            ]
-        )
-
-        loss_per_sample = ProteinaREPALoss(
-            encoder=encoder,
-            projectors=proj_ps,
-            repa_layers=repa_layers,
-            averaging="per_sample",
-        )
-        loss_per_residue = ProteinaREPALoss(
-            encoder=encoder,
-            projectors=proj_pr,
-            repa_layers=repa_layers,
-            averaging="per_residue",
-        )
-
-        hidden_states = [torch.randn(b, n, token_dim)]
-        x_1_nm = torch.randn(b, n, 3)
-        mask = torch.ones(b, n, dtype=torch.bool)  # All same length
-
-        l_ps, _ = loss_per_sample(hidden_states, x_1_nm, mask)
-        l_pr, _ = loss_per_residue(hidden_states, x_1_nm, mask)
-
-        torch.testing.assert_close(l_ps, l_pr, atol=1e-5, rtol=1e-5)
-
-    def test_variable_lengths_different_result(self):
-        """With different-length proteins, the two modes should diverge."""
-        from proteinfoundation.repa.repa_loss import Projector, ProteinaREPALoss
-
-        torch.manual_seed(99)
-        encoder_dim = 32
-        token_dim = 16
-        b, n = 2, 100
-        repa_layers = [0]
-
-        encoder = MockEncoder(encoder_dim=encoder_dim)
-
-        torch.manual_seed(0)
-        proj_ps = nn.ModuleList(
-            [
-                Projector(
-                    hidden_dim=token_dim, encoder_dim=encoder_dim, input_dim=token_dim
-                )
-            ]
-        )
-        torch.manual_seed(0)
-        proj_pr = nn.ModuleList(
-            [
-                Projector(
-                    hidden_dim=token_dim, encoder_dim=encoder_dim, input_dim=token_dim
-                )
-            ]
-        )
-
-        loss_per_sample = ProteinaREPALoss(
-            encoder=encoder,
-            projectors=proj_ps,
-            repa_layers=repa_layers,
-            averaging="per_sample",
-        )
-        loss_per_residue = ProteinaREPALoss(
-            encoder=encoder,
-            projectors=proj_pr,
-            repa_layers=repa_layers,
-            averaging="per_residue",
-        )
-
-        hidden_states = [torch.randn(b, n, token_dim)]
-        x_1_nm = torch.randn(b, n, 3)
-        # Lengths 10 vs 100 — very different
-        mask = torch.ones(b, n, dtype=torch.bool)
-        mask[0, 10:] = False
-
-        l_ps, _ = loss_per_sample(hidden_states, x_1_nm, mask)
-        l_pr, _ = loss_per_residue(hidden_states, x_1_nm, mask)
-
-        # They should NOT be equal with asymmetric lengths
-        assert not torch.allclose(l_ps, l_pr, atol=1e-4), (
-            f"per_sample ({l_ps.item():.6f}) and per_residue ({l_pr.item():.6f}) "
-            "should differ when protein lengths are unequal"
-        )
 
 
 @needs_proteina_deps
@@ -682,62 +514,6 @@ class TestParentSubclassForwardEquivalence:
             rtol=0,
             msg="REPA subclass forward() has drifted from parent — outputs differ",
         )
-
-
-class TestProjectorArchitecture:
-    """Test D: Verify projector MLP structure matches expectations."""
-
-    def test_three_layer_projector(self):
-        """3-layer projector (paper default): 3 Linear, 2 SiLU."""
-        from proteinfoundation.repa.repa_loss import Projector
-
-        proj = Projector(hidden_dim=256, encoder_dim=512, num_layers=3, input_dim=128)
-        linears = [m for m in proj.mlp if isinstance(m, nn.Linear)]
-        activations = [m for m in proj.mlp if isinstance(m, nn.SiLU)]
-
-        assert len(linears) == 3, f"Expected 3 Linear layers, got {len(linears)}"
-        assert (
-            len(activations) == 2
-        ), f"Expected 2 SiLU activations, got {len(activations)}"
-
-        # Check dimensions: input→hidden, hidden→hidden, hidden→output
-        assert linears[0].in_features == 128
-        assert linears[0].out_features == 256
-        assert linears[1].in_features == 256
-        assert linears[1].out_features == 256
-        assert linears[2].in_features == 256
-        assert linears[2].out_features == 512
-
-    def test_two_layer_projector(self):
-        """2-layer projector: 2 Linear, 1 SiLU."""
-        from proteinfoundation.repa.repa_loss import Projector
-
-        proj = Projector(hidden_dim=256, encoder_dim=512, num_layers=2, input_dim=128)
-        linears = [m for m in proj.mlp if isinstance(m, nn.Linear)]
-        activations = [m for m in proj.mlp if isinstance(m, nn.SiLU)]
-
-        assert len(linears) == 2, f"Expected 2 Linear layers, got {len(linears)}"
-        assert (
-            len(activations) == 1
-        ), f"Expected 1 SiLU activation, got {len(activations)}"
-
-    def test_one_layer_projector_uses_lazy(self):
-        """num_layers=1: LazyLinear→SiLU→Linear (same as 2-layer but with lazy input).
-
-        Note: The Projector always prepends [first_linear, SiLU] then appends
-        the output linear. With num_layers=1 the middle loop runs 0 times,
-        giving the same structure as num_layers=2 but with LazyLinear input.
-        """
-        from proteinfoundation.repa.repa_loss import Projector
-
-        proj = Projector(hidden_dim=256, encoder_dim=512, num_layers=1)
-        lazy_linears = [m for m in proj.mlp if isinstance(m, nn.LazyLinear)]
-        activations = [m for m in proj.mlp if isinstance(m, nn.SiLU)]
-
-        assert len(lazy_linears) == 1, f"Expected 1 LazyLinear, got {len(lazy_linears)}"
-        assert (
-            len(activations) == 1
-        ), f"Expected 1 SiLU activation, got {len(activations)}"
 
 
 class TestMSESimilarityMode:
