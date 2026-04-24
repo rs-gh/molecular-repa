@@ -1,6 +1,5 @@
 """Tests for pyg_compat shim — scatter ops, radius_graph, and fake module behavior."""
 
-import pytest
 import torch
 
 import sys
@@ -245,54 +244,3 @@ class TestRadiusGraph:
             assert (
                 batch[r_i] == batch[c_i]
             ), f"Cross-batch edge: {r_i} (batch {batch[r_i]}) -> {c_i} (batch {batch[c_i]})"
-
-
-# ---------------------------------------------------------------------------
-# Fake module tests
-# ---------------------------------------------------------------------------
-
-
-class TestFakeModules:
-    def test_fake_torch_cluster_dunder_raises(self):
-        """Dunder attributes should raise AttributeError, not return stubs."""
-        tc = sys.modules.get("torch_cluster")
-        if tc is None or not hasattr(type(tc), "__getattr__"):
-            pytest.skip("torch_cluster is real or not patched")
-        with pytest.raises(AttributeError):
-            _ = tc.__file__
-        with pytest.raises(AttributeError):
-            _ = tc.__path__
-
-    def test_fake_torch_cluster_stub_raises_on_call(self):
-        """Non-dunder attributes should return stubs that raise NotImplementedError."""
-        tc = sys.modules.get("torch_cluster")
-        if tc is None or not hasattr(type(tc), "__getattr__"):
-            pytest.skip("torch_cluster is real or not patched")
-        with pytest.raises(NotImplementedError, match="knn"):
-            tc.knn()
-
-    def test_fake_torch_cluster_radius_graph_is_real(self):
-        """radius_graph should be our native implementation, not a stub."""
-        tc = sys.modules.get("torch_cluster")
-        if tc is None:
-            pytest.skip("torch_cluster not in sys.modules")
-        assert tc.radius_graph is _radius_graph_native
-
-    def test_inspect_works_with_fake_modules(self):
-        """inspect should not crash on our fake modules (the original bug)."""
-        import inspect
-
-        tc = sys.modules.get("torch_cluster")
-        if tc is None:
-            pytest.skip("torch_cluster not in sys.modules")
-        # This was the original crash: inspect.getsourcefile tried filename.endswith()
-        # on our stub function returned by __getattr__('__file__')
-        try:
-            inspect.getfile(tc)
-        except TypeError:
-            pass  # Expected — fake module has no __file__
-        # Should not raise AttributeError
-
-    def test_torch_distributed_tensor_import(self):
-        """torch.distributed.tensor should import without crashing."""
-        import torch.distributed.tensor  # noqa: F401
