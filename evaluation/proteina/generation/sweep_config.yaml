@@ -35,7 +35,9 @@
 
 _defaults: &defaults
   seed: 42
-  designability_subset: 0     # 0 = skip (lite sweep); set >0 for full eval
+  designability_subset: 100   # ProteinMPNN(8 seqs) -> ESMFold -> scRMSD on N PDBs.
+                              # 100 is the lite-sweep default; headline/standalone
+                              # reruns can bump to 500 via --designability_subset 500.
   diversity_subset_per_bin: 0
   skip_fid: false
 
