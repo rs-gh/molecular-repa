@@ -52,10 +52,49 @@ RUN_COLORS = {
     "REPA L9": "#F39C12",
 }
 
+#! Tuples are (label, lower_is_better, n_note).
+#! FID / fS use every generated PDB (200 for n=128/n=512_sm, 240 for n=256);
+#! designability / scRMSD use a fixed 100-PDB subset.
 METRICS = {
-    "_res_PDB_FID": ("PDB FID", True),  # lower is better
-    "_res_fS_C": ("Fold Score (Class)", False),  # higher is better
+    "_res_PDB_FID": ("PDB FID", True, "N=200"),
+    "_res_fS_C": ("Fold Score (Class)", False, "N=200"),
+    "_res_designability_rate": ("Designability", False, "N=100"),
+    "_res_scRMSD_mean": ("scRMSD (Å)", True, "N=100"),
 }
+
+#! eval_output is two levels above HERE (scripts -> generation -> proteina -> evaluation -> repo-root)
+REPO_ROOT = HERE.parent.parent.parent.parent
+EVAL_OUTPUT_DIR = REPO_ROOT / "eval_output"
+
+
+def _load_per_run_csv_metrics(config_name: str, run_key: str, step) -> dict:
+    """Pull metrics from the per-run evaluate.py CSV when JSONL doesn't have them.
+
+    Designability columns are populated post-hoc via eval_designability_only.sh
+    after the sweep JSONL was already written; this reads the merged CSV so
+    the plot picks up backfilled columns without mutating the JSONL.
+    """
+    import pandas as pd
+
+    config_slug = config_name.replace("/", "_")
+    suffix = f"sweep_{run_key}_step_{step}"
+    csv_path = (
+        EVAL_OUTPUT_DIR
+        / f"{config_slug}_{suffix}"
+        / f"results_{config_slug}_{suffix}_fid.csv"
+    )
+    if not csv_path.exists():
+        return {}
+    df = pd.read_csv(csv_path)
+    if len(df) == 0:
+        return {}
+    out = {}
+    for m in METRICS:
+        if m in df.columns:
+            v = df[m].iloc[0]
+            if pd.notna(v):
+                out[m] = float(v)
+    return out
 
 
 def load_results() -> dict:
@@ -77,7 +116,17 @@ def load_results() -> dict:
                     if run_key not in RUNS:
                         continue
                     label = RUNS[run_key][0]
-                    size_data[label] = {m: r.get(m) for m in METRICS}
+                    metrics = {m: r.get(m) for m in METRICS}
+                    #! Backfill missing metrics (e.g. designability) from per-run CSV
+                    missing = [m for m, v in metrics.items() if v is None]
+                    if missing and r.get("config_name"):
+                        csv_metrics = _load_per_run_csv_metrics(
+                            r["config_name"], run_key, r["step"]
+                        )
+                        for m in missing:
+                            if m in csv_metrics:
+                                metrics[m] = csv_metrics[m]
+                    size_data[label] = metrics
         data[size_key] = size_data
     return data
 
@@ -101,7 +150,7 @@ def plot(data: dict) -> None:
     for row, (size_key, size_cfg) in enumerate(SIZES.items()):
         size_data = data[size_key]
 
-        for col, (metric_key, (metric_label, lower_better)) in enumerate(
+        for col, (metric_key, (metric_label, lower_better, n_note)) in enumerate(
             METRICS.items()
         ):
             ax = axes[row, col]
@@ -146,7 +195,8 @@ def plot(data: dict) -> None:
                         style="italic",
                     )
                 else:
-                    fmt = f"{val:.0f}" if lower_better else f"{val:.2f}"
+                    #! Small values (designability, scRMSD) need 2dp; large (FID) don't
+                    fmt = f"{val:.2f}" if abs(val) < 10 else f"{val:.0f}"
                     ax.text(
                         bar.get_x() + bar.get_width() / 2,
                         val + max_val * 0.02,
@@ -178,14 +228,14 @@ def plot(data: dict) -> None:
             if row == 0:
                 direction = "↓ better" if lower_better else "↑ better"
                 ax.set_title(
-                    f"{metric_label} ({direction})",
+                    f"{metric_label} ({n_note}, {direction})",
                     fontsize=11,
                     fontweight="bold",
                 )
 
             if col == 0:
                 ax.set_ylabel(
-                    f"{size_cfg['label']}\n{size_cfg['samples']}\n200 generated",
+                    f"{size_cfg['label']}\n{size_cfg['samples']}",
                     fontsize=10,
                     fontweight="bold",
                 )
