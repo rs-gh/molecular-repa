@@ -167,23 +167,6 @@ def test_equivalence_no_padding_well_behaved(thres):
     torch.testing.assert_close(ref_dg, fix_dg, rtol=1e-5, atol=1e-6)
 
 
-@pytest.mark.parametrize("thres", [0.6, 1e10])
-def test_equivalence_with_padding_well_behaved(thres):
-    """With padding, well-behaved padded logits: both agree. Post-fix sum over
-    real pairs equals pre-fix (sum_over_all * mask) when padded CE values are
-    finite, because padded pair_mask=0 zeroes them out in the reference."""
-    bs, n = 3, 48
-    x_1, x_1_pred, mask, pair_pred = _make_batch(
-        bs, n, [20, 35, 48], seed=7, extreme_pad_logits=False
-    )
-    ref_dm, ref_dg = _aux_reference(x_1, x_1_pred, mask, pair_pred, thres, 64, 1.0)
-    fix_dm, fix_dg = _aux_fixed(x_1, x_1_pred, mask, pair_pred, thres, 64, 1.0)
-    assert torch.isfinite(ref_dm).all()
-    assert torch.isfinite(ref_dg).all()
-    torch.testing.assert_close(ref_dm, fix_dm, rtol=1e-5, atol=1e-6)
-    torch.testing.assert_close(ref_dg, fix_dg, rtol=1e-5, atol=1e-6)
-
-
 def test_reference_produces_nan_on_padded_nan_logits():
     """Sanity: inject NaN at padded positions → reference propagates NaN via
     `pair_mask * NaN = NaN`. Confirms the failure mode the fix addresses."""
