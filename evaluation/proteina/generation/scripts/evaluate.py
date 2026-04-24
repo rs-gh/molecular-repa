@@ -140,6 +140,31 @@ def build_length_to_pdbs(tensors_dir, samples_dir):
     return dict(length_to_pdbs)
 
 
+def compute_fid_metrics(list_of_pdbs, metric_factory_cfgs):
+    """Run GearNet FID / fJSD / fS metrics against each reference set.
+
+    Each entry in `metric_factory_cfgs` is one reference distribution (typically
+    PDB and AFDB); its metrics are prefixed via `cfg_mf.prefix` inside the
+    factory. Loads the GearNet factory on GPU per entry and frees it before
+    returning so downstream metrics (ESMFold etc.) have headroom.
+
+    Returns:
+        dict with FID/fJSD/fS metric columns (e.g. _res_PDB_FID, _res_fS_C).
+    """
+    results = {}
+    for cfg_mf in metric_factory_cfgs:
+        assert cfg_mf.ca_only, "Please turn on ca_only for CAFlow model"
+        metric_factory = GenerationMetricFactory(**cfg_mf).cuda()
+        metrics = generation_metric_from_list(list_of_pdbs, metric_factory)
+        for k, v in metrics.items():
+            results["_res_" + k] = v.cpu().item()
+        logger.info(f"Metrics ({cfg_mf.get('prefix', '')}) computed")
+        #! Free GearNet before next factory / downstream ESMFold
+        del metric_factory
+        torch.cuda.empty_cache()
+    return results
+
+
 def compute_designability_metrics(list_of_pdbs, subset_size, tmp_root, seed=42):
     """Run designability on a random subset of generated PDBs.
 
@@ -300,7 +325,20 @@ def compute_novelty_metrics(
 
 
 def split_nlens(nlens_dict, max_nsamples=16):
-    """Split lengths into (length, nsample) pairs. Copied from inference.py."""
+    """Split lengths into (length, nsample) pairs. Copied from inference.py.
+
+    WARNING: if `cnt` is not a multiple of `max_nsamples`, the final partial
+    batch is rounded UP to a full batch, so actual samples generated > cnt.
+    Example: cnt=200, max_nsamples=80 → batches [80, 80, 40] → forced to
+    [80, 80, 80] → 240 samples. This is intentional: torch.compile with
+    dynamic=False recompiles per unique (batch_size, nres) shape (~60-90s),
+    so forcing a uniform batch avoids a tail recompile.
+
+    Takeaway: pick `generation_batch_size` that divides `nsamples_per_len`
+    (i.e. nsamples_per_len % generation_batch_size == 0) to get exactly the
+    requested count. Mismatches inflate FID/fS statistics but don't bias
+    them; subset-based metrics (designability) re-sample so are unaffected.
+    """
     lengths_range = nlens_dict["length_ranges"].tolist()
     length_distribution = nlens_dict["length_distribution"].tolist()
     lens_sample, nsamples = [], []
@@ -509,19 +547,12 @@ def main():
     columns = list(flat_dict.keys())
     res_row = list(flat_dict.values())
 
+    # ── FID / fJSD / fS metrics ──
     if not args.skip_fid:
-        for cfg_mf in cfg.metric_factory:
-            assert cfg_mf.ca_only, "Please turn on ca_only for CAFlow model"
-            metric_factory = GenerationMetricFactory(**cfg_mf).cuda()
-            metrics = generation_metric_from_list(list_of_pdbs, metric_factory)
-            for k, v in metrics.items():
-                columns += ["_res_" + k]
-                res_row += [v.cpu().item()]
-            logger.info(f"Metrics ({cfg_mf.get('prefix', '')}) computed")
-
-        # Free GearNet from GPU before loading ESMFold
-        del metric_factory
-        torch.cuda.empty_cache()
+        fid_results = compute_fid_metrics(list_of_pdbs, cfg.metric_factory)
+        for k, v in fid_results.items():
+            columns.append(k)
+            res_row.append(v)
     else:
         logger.info("Skipping GearNet FID/fJSD/fS metrics (--skip_fid)")
 
