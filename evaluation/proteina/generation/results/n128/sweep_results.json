@@ -1,11 +1,5 @@
 [
   {
-    "run": "repa_l0_128",
-    "step": 400000,
-    "config_name": "inference/inference_fid_60m_repa_l0_128_lite",
-    "error": "AcceleratorError: CUDA error: CUDA-capable device(s) is/are busy or unavailable\nSearch for `cudaErrorDevicesUnavailable' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
-  },
-  {
     "run": "repa_l9_128",
     "step": 400000,
     "config_name": "inference/inference_fid_60m_repa_l9_128_lite",
@@ -21,7 +15,22 @@
     "_res_AFDB_fJSD_T": 5.739578963886047,
     "_res_fS_C": 2.165623426437378,
     "_res_fS_A": 2.567324161529541,
-    "_res_fS_T": 2.851015567779541
+    "_res_fS_T": 2.851015567779541,
+    "_res_designability_n": "100",
+    "_res_scRMSD_mean": 3.1661783236265184,
+    "_res_scRMSD_median": 1.2222284078598022,
+    "_res_designability_rate": 0.77,
+    "_res_tm_score_self_mean": 0.8231551001966,
+    "_res_plddt_mean": 0.7576134186983109,
+    "_res_plddt_median": 0.7645170092582703,
+    "_res_diversity_n_bins": "1",
+    "_res_diversity_clusters_mean": 13.0,
+    "_res_diversity_clusters_median": 13.0,
+    "_res_diversity_clusters_total": "13",
+    "_res_novelty_n": "200",
+    "_res_novelty_rate": 0.175,
+    "_res_novelty_max_tm_mean": 0.5805254907815774,
+    "_res_novelty_max_tm_median": 0.5507627061837436
   },
   {
     "run": "repa_l4_128",
@@ -39,7 +48,22 @@
     "_res_AFDB_fJSD_T": 5.095097032931252,
     "_res_fS_C": 2.509651660919189,
     "_res_fS_A": 3.515597105026245,
-    "_res_fS_T": 4.393465518951416
+    "_res_fS_T": 4.393465518951416,
+    "_res_designability_n": "100",
+    "_res_scRMSD_mean": 3.4979346936941145,
+    "_res_scRMSD_median": 1.0041399598121643,
+    "_res_designability_rate": 0.76,
+    "_res_tm_score_self_mean": 0.7932347030937672,
+    "_res_plddt_mean": 0.7345012792944908,
+    "_res_plddt_median": 0.7765191793441772,
+    "_res_diversity_n_bins": "1",
+    "_res_diversity_clusters_mean": 24.0,
+    "_res_diversity_clusters_median": 24.0,
+    "_res_diversity_clusters_total": "24",
+    "_res_novelty_n": "200",
+    "_res_novelty_rate": 0.245,
+    "_res_novelty_max_tm_mean": 0.5605718760581927,
+    "_res_novelty_max_tm_median": 0.5359906474436362
   },
   {
     "run": "baseline_128",
@@ -57,7 +81,22 @@
     "_res_AFDB_fJSD_T": 3.3156948327241653,
     "_res_fS_C": 2.6702451705932617,
     "_res_fS_A": 5.517460346221924,
-    "_res_fS_T": 18.926069259643555
+    "_res_fS_T": 18.926069259643555,
+    "_res_designability_n": "100",
+    "_res_scRMSD_mean": 3.369428921341896,
+    "_res_scRMSD_median": 2.028456389904022,
+    "_res_designability_rate": 0.5,
+    "_res_tm_score_self_mean": 0.7633077175915242,
+    "_res_plddt_mean": 0.5909495505690575,
+    "_res_plddt_median": 0.5961054265499115,
+    "_res_diversity_n_bins": "1",
+    "_res_diversity_clusters_mean": 9.0,
+    "_res_diversity_clusters_median": 9.0,
+    "_res_diversity_clusters_total": "9",
+    "_res_novelty_n": "200",
+    "_res_novelty_rate": 0.38,
+    "_res_novelty_max_tm_mean": 0.5574275857163858,
+    "_res_novelty_max_tm_median": 0.5444027891284542
   },
   {
     "run": "repa_l0_128",
@@ -75,6 +114,21 @@
     "_res_AFDB_fJSD_T": 5.041419584054422,
     "_res_fS_C": 1.8515876531600952,
     "_res_fS_A": 2.2421247959136963,
-    "_res_fS_T": 3.0476202964782715
+    "_res_fS_T": 3.0476202964782715,
+    "_res_designability_n": "100",
+    "_res_scRMSD_mean": 4.01357163131237,
+    "_res_scRMSD_median": 1.896704196929932,
+    "_res_designability_rate": 0.54,
+    "_res_tm_score_self_mean": 0.7418732126057148,
+    "_res_plddt_mean": 0.6274300080537796,
+    "_res_plddt_median": 0.6789591014385223,
+    "_res_diversity_n_bins": "1",
+    "_res_diversity_clusters_mean": 44.0,
+    "_res_diversity_clusters_median": 44.0,
+    "_res_diversity_clusters_total": "44",
+    "_res_novelty_n": "200",
+    "_res_novelty_rate": 0.25,
+    "_res_novelty_max_tm_mean": 0.5431776390363136,
+    "_res_novelty_max_tm_median": 0.5321227465906451
   }
 ]

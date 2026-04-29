@@ -38,8 +38,22 @@ _defaults: &defaults
   designability_subset: 100   # ProteinMPNN(8 seqs) -> ESMFold -> scRMSD on N PDBs.
                               # 100 is the lite-sweep default; headline/standalone
                               # reruns can bump to 500 via --designability_subset 500.
-  diversity_subset_per_bin: 0
+  diversity_subset_per_bin: 200  # use all generated PDBs; generations are fixed-length
+                                 # so there is one bin per run → O(N^2/2)=20K TM-aligns,
+                                 # ~3 min overhead per checkpoint.
   skip_fid: false
+  cath_subset: 100            # 2026-04-27: GearNet+CATH-head scoring on N generated PDBs.
+                              # Emits _res_cath_topclass_conf_mean / _res_cath_n_unique /
+                              # _res_cath_distribution_kl / _res_cath_entropy. Requires
+                              # --cath_head_path pointing at the artifact from
+                              # build_cath_classifier.py; missing artifact = skip with
+                              # a warning. 0 disables the metric outright.
+  # Novelty: max TM-score against training-set centroids; <0.5 => novel fold.
+  # Built by hpc-scripts/proteina/data_prep/precompute_centroids.sh
+  # (length-binned greedy TM-cluster, max_per_length_group=200, bin_width=16).
+  # All current profiles use PDB-trained models; AFDB profiles would override
+  # this to /rds/.../centroids_afdb_swissprot.pt.
+  centroid_path: /rds/user/sr2173/hpc-work/proteina/data/centroids_pdb.pt
 
 # n=512: full convergence curve (11-12 log-spaced checkpoints per run)
 n512_convergence:

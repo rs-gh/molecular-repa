@@ -20,7 +20,21 @@
 #!   # Single task (headline rerun at N=500)
 #!   DESIG_N=500 sbatch --array=5-5 hpc-scripts/proteina/evaluation/generation/eval_designability_only.sh
 #!
-#! Expected wall: ~12 min at N=100 (200 ProteinMPNN seqs + ESMFold on A100).
+#!   # Submit under a different account (see "FairShare" note below)
+#!   sbatch --array=0-11 -A computerlab-sl2-gpu hpc-scripts/.../eval_designability_only.sh
+#!
+#! Measured wall times (A100, N=100, 800 ESMFold forwards per task):
+#!   n=128:    ~30-40 min per task  (seq len 128)
+#!   n=256:    ~70 min per task     (seq len 256; hit 1h wall on first run)
+#!   n=512_sm: ~70-90 min estimate  (pending; ESMFold ~linear in seq length)
+#! Wall limit is 2h to give headroom for n=512_sm; n=128-only batches could
+#! drop to 1h for better queue priority.
+#!
+#! FairShare: LIO-CHARM-SL2-GPU has been heavily oversubscribed by the group
+#! (fairshare factor ≈ 0.0 as of 2026-04-24). Submitting with
+#!   -A computerlab-sl2-gpu
+#! uses a less-loaded account (fairshare ≈ 0.07) and starts sooner.
+#! Check with: `sshare -U -u $USER -o account,fairshare,rawusage`
 #!
 #SBATCH -J desig-only
 #SBATCH -A LIO-CHARM-SL2-GPU
@@ -40,6 +54,13 @@ set -e
 #! --- Task table: (config_name, output_suffix) pairs --- #
 #! These reproduce the 12 eval_output/inference_inference_fid_60m_*_sweep_*_step_* dirs
 #! from the n128 / n256 / n512_sm sample-matched sweeps.
+#!
+#! Status (2026-04-29):
+#!   tasks 0-7 (n=128, n=256): done at DESIG_N=100
+#!   tasks 8, 10 (n=512 baseline, repa_l4): done at DESIG_N=50 (~2h30m wall)
+#!   TODO tasks 9, 11 (n=512 repa_l0, repa_l9): submit with DESIG_N=50, 3h wall:
+#!     DESIG_N=50 sbatch --array=9,11 --time=03:00:00 hpc-scripts/proteina/evaluation/generation/eval_designability_only.sh
+#!   At n=512, DESIG_N=100 does not fit in 4h wall (ESMFold ~3 min/protein).
 
 TASKS=(
     "inference/inference_fid_60m_baseline_128_lite|sweep_baseline_128_step_800000"

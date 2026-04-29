@@ -108,6 +108,19 @@ def parse_args():
         "(default in config is 5). Controls both L.seed_everything and all "
         "np.random subsampling (designability, diversity, novelty subsets).",
     )
+    parser.add_argument(
+        "--cath_head_path",
+        type=str,
+        default=None,
+        help="Path to .pkl from build_cath_classifier.py. Required for CATH metrics. "
+        "If unset or file missing, CATH metrics are skipped silently.",
+    )
+    parser.add_argument(
+        "--cath_subset",
+        type=int,
+        default=100,
+        help="Number of PDBs to score with the CATH head (0 to skip).",
+    )
     return parser.parse_args()
 
 
@@ -321,6 +334,130 @@ def compute_novelty_metrics(
         "_res_novelty_rate": novelty_rate,
         "_res_novelty_max_tm_mean": float(max_tm_arr.mean()),
         "_res_novelty_max_tm_median": float(np.median(max_tm_arr)),
+    }
+
+
+def compute_cath_metrics(
+    list_of_pdbs,
+    head_path,
+    max_eval=100,
+    batch_size=16,
+    gearnet_ckpt=None,
+    seed=42,
+):
+    """Score generated PDBs against a frozen GearNet + CATH head.
+
+    Loads the artifact written by ``build_cath_classifier.py``, embeds each
+    generated PDB through the same GearNet checkpoint (so train and inference
+    embeddings live in the same space), and reports four columns:
+
+        _res_cath_topclass_conf_mean   mean top-class softmax prob — recognizability
+        _res_cath_n_unique_T            # distinct classes the head assigns
+        _res_cath_distribution_kl       KL(p_gen || p_train) over the head's vocab
+        _res_cath_entropy               Shannon entropy of p_gen
+        _res_cath_n_pdbs                # PDBs scored (subset cap)
+
+    The KL is over the head's vocab only (Laplace-smoothed on classes that the
+    train side has but generation didn't produce, and vice versa). Generated
+    samples that the head assigns to a class outside its vocab can't happen
+    by construction — the head only outputs vocab classes.
+
+    If ``head_path`` is missing, returns ``{}`` and logs a warning so the
+    sweep keeps making progress without this column.
+    """
+    if head_path is None or not os.path.exists(head_path):
+        if head_path is not None:
+            logger.warning(
+                f"CATH classifier artifact not found: {head_path}, skipping CATH metrics"
+            )
+        return {}
+
+    import pickle as _pickle
+
+    from proteinfoundation.metrics.gearnet_utils import NoTrainCAGearNet
+    from proteinfoundation.metrics.metric_factory import DatasetWrapper
+    from torch_geometric.loader import DataLoader as _PyGLoader
+
+    logger.info(f"Loading CATH classifier from {head_path}")
+    with open(head_path, "rb") as f:
+        bundle = _pickle.load(f)
+    head = bundle["head"]
+    train_meta = bundle["train_meta"]
+    train_dist = bundle.get("train_dist", {})
+    ckpt = gearnet_ckpt or bundle.get("gearnet_ckpt")
+    if ckpt is None or not os.path.exists(ckpt):
+        logger.warning(
+            f"GearNet ckpt for CATH metric not found ({ckpt}), skipping CATH metrics"
+        )
+        return {}
+
+    n_eval = min(max_eval, len(list_of_pdbs))
+    rng = np.random.RandomState(seed)
+    indices = rng.choice(len(list_of_pdbs), size=n_eval, replace=False)
+    eval_pdbs = [list_of_pdbs[i] for i in sorted(indices)]
+    logger.info(
+        f"Computing CATH metrics on {n_eval} PDBs (level={train_meta['level']})"
+    )
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    gearnet = NoTrainCAGearNet(ckpt).to(device).eval()
+
+    # Reuse the FID code path's PDB→PyG converter so generated samples are
+    # processed exactly the way the FID metric processes them.
+    dataset = DatasetWrapper(eval_pdbs)
+    loader = _PyGLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+    feats = []
+    with torch.no_grad():
+        for batch in loader:
+            batch = batch.to(device)
+            out = gearnet(batch)
+            feats.append(out["protein_feature"].detach().cpu())
+    feats = torch.cat(feats, dim=0).numpy()
+
+    del gearnet
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+    # Predict in the head's class space. ``head.classes_`` indexes into
+    # ``train_meta['vocab']`` (set up by train_cath_probe).
+    proba = head.predict_proba(feats)  # [n_eval, K]
+    pred_idx = head.classes_[proba.argmax(axis=1)]  # [n_eval]
+    top1 = proba.max(axis=1)  # [n_eval]
+    vocab = train_meta["vocab"]
+
+    # Empirical generated distribution over the head's vocab.
+    gen_counts = np.bincount(pred_idx, minlength=len(vocab)).astype(float)
+    gen_counts_total = float(gen_counts.sum())
+    p_gen = gen_counts / max(1.0, gen_counts_total)
+
+    # Train distribution over the same vocab. Vocab indices match the head's,
+    # which were derived from train.lmdb at the same level by build_cath_classifier.
+    p_train = np.array([train_dist.get(c, 0.0) for c in vocab], dtype=float)
+    if p_train.sum() == 0.0:
+        # Defensive: if the artifact wasn't shipped with train_dist, fall back
+        # to uniform over vocab so KL is at least defined and finite.
+        p_train = np.full(len(vocab), 1.0 / max(1, len(vocab)))
+    else:
+        p_train = p_train / p_train.sum()
+
+    # Laplace-smoothed KL(p_gen || p_train). eps absorbs any class with zero
+    # support on either side.
+    eps = 1e-8
+    pg = p_gen + eps
+    pt = p_train + eps
+    pg = pg / pg.sum()
+    pt = pt / pt.sum()
+    kl = float(np.sum(pg * np.log(pg / pt)))
+    entropy = float(-np.sum(pg * np.log(pg + 1e-12)))
+    n_unique = int((gen_counts > 0).sum())
+
+    return {
+        "_res_cath_n_pdbs": int(n_eval),
+        "_res_cath_level": str(train_meta["level"]),
+        "_res_cath_topclass_conf_mean": float(top1.mean()),
+        "_res_cath_n_unique": n_unique,
+        "_res_cath_distribution_kl": kl,
+        "_res_cath_entropy": entropy,
     }
 
 
@@ -604,6 +741,27 @@ def main():
             f"max_tm_mean={nov_results.get('_res_novelty_max_tm_mean', 'N/A'):.3f}"
         )
 
+    # ── CATH metrics ──
+    if args.cath_subset > 0 and list_of_pdbs:
+        cath_results = compute_cath_metrics(
+            list_of_pdbs,
+            head_path=args.cath_head_path,
+            max_eval=args.cath_subset,
+            seed=cfg.seed,
+        )
+        for k, v in cath_results.items():
+            columns.append(k)
+            res_row.append(v)
+        if cath_results:
+            logger.info(
+                f"CATH: top1_conf={cath_results['_res_cath_topclass_conf_mean']:.3f}, "
+                f"n_unique={cath_results['_res_cath_n_unique']}, "
+                f"KL={cath_results['_res_cath_distribution_kl']:.3f}, "
+                f"entropy={cath_results['_res_cath_entropy']:.3f}"
+            )
+    else:
+        logger.info("Skipping CATH metrics (--cath_subset 0)")
+
     # ── Save results ──
     df = pd.DataFrame([res_row], columns=columns)
     if "metric_factory" in df.columns:
@@ -611,23 +769,21 @@ def main():
 
     results_csv = os.path.join(root_path, f"results_{config_slug}{suffix}_fid.csv")
 
-    # If skipping FID and an existing CSV has FID columns, merge new columns in
+    # If skipping FID and an existing CSV has FID columns, merge new columns in.
+    # Also overwrite any _res_ columns already present — allows a retry to fix
+    # stale/corrupted values written by a previously timed-out run.
     if args.skip_fid and os.path.exists(results_csv):
         existing_df = pd.read_csv(results_csv)
-        new_cols = [
-            c
-            for c in df.columns
-            if c.startswith("_res_") and c not in existing_df.columns
-        ]
-        if new_cols:
-            for c in new_cols:
+        update_cols = [c for c in df.columns if c.startswith("_res_")]
+        if update_cols:
+            for c in update_cols:
                 existing_df[c] = df[c].iloc[0]
             existing_df.to_csv(results_csv, index=False)
             logger.info(
-                f"Merged {len(new_cols)} new columns into {results_csv}: {new_cols}"
+                f"Merged/updated {len(update_cols)} columns in {results_csv}: {update_cols}"
             )
         else:
-            logger.info(f"No new columns to add to {results_csv}")
+            logger.info(f"No _res_ columns to merge into {results_csv}")
     else:
         df.to_csv(results_csv, index=False)
         logger.info(f"Results saved to {results_csv}")

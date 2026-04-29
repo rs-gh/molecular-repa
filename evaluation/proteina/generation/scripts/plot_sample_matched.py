@@ -53,11 +53,14 @@ RUN_COLORS = {
 }
 
 #! Tuples are (label, lower_is_better, n_note).
-#! FID / fS use every generated PDB (200 for n=128/n=512_sm, 240 for n=256);
+#! FID / fS / fJSD use every generated PDB (200 for n=128/n=512_sm, 240 for n=256);
 #! designability / scRMSD use a fixed 100-PDB subset.
 METRICS = {
     "_res_PDB_FID": ("PDB FID", True, "N=200"),
     "_res_fS_C": ("Fold Score (Class)", False, "N=200"),
+    "_res_PDB_fJSD_C": ("fJSD (Class)", True, "N=200"),
+    "_res_PDB_fJSD_A": ("fJSD (AA)", True, "N=200"),
+    "_res_PDB_fJSD_T": ("fJSD (Topology)", True, "N=200"),
     "_res_designability_rate": ("Designability", False, "N=100"),
     "_res_scRMSD_mean": ("scRMSD (Å)", True, "N=100"),
 }

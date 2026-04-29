@@ -166,12 +166,65 @@ _METRIC_COLS = [
 ]
 
 
+def _backfill_from_csv(rows: List[Dict], repo_root: Path) -> int:
+    """For each result row missing _res_ columns, try to read them from the
+    per-checkpoint CSV written by evaluate.py.  Returns number of rows updated."""
+    try:
+        import pandas as pd
+    except ImportError:
+        return 0
+    updated = 0
+    for r in rows:
+        if "error" in r or "run" not in r or "step" not in r or "config_name" not in r:
+            continue
+        config_slug = r["config_name"].replace("/", "_")
+        output_suffix = f"sweep_{r['run']}_step_{r['step']}"
+        csv_path = (
+            repo_root
+            / f"eval_output/{config_slug}_{output_suffix}"
+            / f"results_{config_slug}_{output_suffix}_fid.csv"
+        )
+        if not csv_path.exists():
+            continue
+        try:
+            df = pd.read_csv(csv_path)
+        except Exception:
+            continue
+        if len(df) == 0:
+            continue
+        new_vals = {
+            k: v
+            for k, v in df.iloc[0].items()
+            if str(k).startswith("_res_") and k not in r
+        }
+        if new_vals:
+            r.update(new_vals)
+            updated += 1
+    return updated
+
+
 def consolidate(jsonl_path: Path, output_dir: Path) -> None:
     """Rebuild sweep_results.csv and sweep_results.md from the JSONL."""
     _, rows = _load_done_set(jsonl_path)
     if not rows:
         print("No rows in JSONL yet, skipping consolidation.")
         return
+
+    # Deduplicate: for each (run, step) pair keep only the last non-error entry.
+    seen_keys: Dict[Tuple, int] = {}
+    for i, r in enumerate(rows):
+        if "error" not in r and "run" in r and "step" in r:
+            seen_keys[(r["run"], int(r["step"]))] = i
+    rows = [r for i, r in enumerate(rows) if i in seen_keys.values()]
+
+    # Backfill _res_ columns from per-checkpoint CSVs for rows that were written
+    # before diversity/novelty/cath metrics existed.
+    repo_root = HERE.parent.parent.parent.parent  # repo root
+    n_updated = _backfill_from_csv(rows, repo_root)
+    if n_updated:
+        print(
+            f"  Backfilled _res_ columns from per-checkpoint CSVs for {n_updated} rows."
+        )
 
     # Write full JSON list
     json_path = output_dir / "sweep_results.json"
@@ -236,6 +289,9 @@ def run_one_task(
     skip_fid: bool,
     fast_inference: bool,
     jsonl_path: Path,
+    cath_subset: int = 0,
+    cath_head_path: Optional[str] = None,
+    centroid_path: Optional[str] = None,
 ) -> None:
     """Run evaluate.py for one (run_name, step) and append to JSONL."""
     import importlib
@@ -276,6 +332,11 @@ def run_one_task(
         argv.append("--skip_fid")
     if not fast_inference:
         argv.append("--no-fast_inference")
+    argv.extend(["--cath_subset", str(cath_subset)])
+    if cath_head_path:
+        argv.extend(["--cath_head_path", cath_head_path])
+    if centroid_path:
+        argv.extend(["--centroid_path", centroid_path])
 
     # Patch cfg.ckpt_path via env so evaluate.py uses our resolved path
     os.environ["_GEN_SWEEP_CKPT_DIR_OVERRIDE"] = ckpt_dir
@@ -411,6 +472,25 @@ def parse_args():
     p.add_argument(
         "--fast_inference", action=argparse.BooleanOptionalAction, default=True
     )
+    p.add_argument(
+        "--cath_subset",
+        type=int,
+        default=None,
+        help="PDBs to score with the CATH head (0=skip).",
+    )
+    p.add_argument(
+        "--cath_head_path",
+        type=str,
+        default=None,
+        help="Path to .pkl from build_cath_classifier.py. Required for CATH metrics.",
+    )
+    p.add_argument(
+        "--centroid_path",
+        type=str,
+        default=None,
+        help="Path to training-set centroid .pt from precompute_centroids.py. "
+        "Required for novelty metrics (skipped if absent).",
+    )
 
     # Utility modes
     p.add_argument(
@@ -452,6 +532,13 @@ def main():
         else bool(profile_cfg.get("skip_fid", False))
     )
     fast_inference = args.fast_inference
+    cath_subset = (
+        args.cath_subset
+        if args.cath_subset is not None
+        else int(profile_cfg.get("cath_subset", 0))
+    )
+    cath_head_path = args.cath_head_path or profile_cfg.get("cath_head_path")
+    centroid_path = args.centroid_path or profile_cfg.get("centroid_path")
 
     # ── Resolve output dir ────────────────────────────────────────────────── #
     if args.output_dir:
@@ -490,6 +577,9 @@ def main():
                 skip_fid=skip_fid,
                 fast_inference=fast_inference,
                 jsonl_path=jsonl_path,
+                cath_subset=cath_subset,
+                cath_head_path=cath_head_path,
+                centroid_path=centroid_path,
             )
         consolidate(jsonl_path, output_dir)
         return
@@ -556,6 +646,7 @@ def main():
             skip_fid=skip_fid,
             fast_inference=fast_inference,
             jsonl_path=jsonl_path,
+            centroid_path=centroid_path,
         )
 
     consolidate(jsonl_path, output_dir)
