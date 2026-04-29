@@ -22,15 +22,15 @@ import torch
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "src" / "proteina"))
-sys.path.insert(0, str(REPO_ROOT / "playground" / "proteina"))
+sys.path.insert(0, str(REPO_ROOT / "encoder_profiling" / "proteina"))
 
-from _encoder_probes import (  # noqa: E402
+from _probes import (  # noqa: E402
     EncoderProbe,
     load_proteins,
     make_embed_fn,
     run_pipeline,
 )
-from _encoder_probes.lib import graph_to_inputs  # noqa: E402
+from _probes.lib import graph_to_inputs  # noqa: E402
 
 from proteinfoundation.repa.esm_encoder import ESMPerResidueEncoder  # noqa: E402
 

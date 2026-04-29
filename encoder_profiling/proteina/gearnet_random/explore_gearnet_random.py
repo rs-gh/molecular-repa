@@ -28,13 +28,13 @@ import torch
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "src" / "proteina"))
-sys.path.insert(0, str(REPO_ROOT / "playground" / "proteina"))
+sys.path.insert(0, str(REPO_ROOT / "encoder_profiling" / "proteina"))
 
 # Reuse the trained driver's setup + layerwise logic
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "gearnet"))
 from explore_gearnet import LMDB_PATH, layerwise_fn, setup_encoder  # noqa: E402
 
-from _encoder_probes import (  # noqa: E402
+from _probes import (  # noqa: E402
     EncoderProbe,
     load_proteins,
     make_embed_fn,

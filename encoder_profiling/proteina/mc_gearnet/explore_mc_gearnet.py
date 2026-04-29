@@ -17,11 +17,11 @@ import torch.nn.functional as F
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "src" / "proteina"))
-sys.path.insert(0, str(REPO_ROOT / "playground" / "proteina"))
+sys.path.insert(0, str(REPO_ROOT / "encoder_profiling" / "proteina"))
 
 import proteinfoundation.repa.pyg_compat  # noqa: F401, E402
 
-from _encoder_probes import (  # noqa: E402
+from _probes import (  # noqa: E402
     EncoderProbe,
     load_proteins,
     make_embed_fn,

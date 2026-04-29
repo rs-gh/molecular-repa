@@ -5,38 +5,32 @@
 **Checkpoint**: `mc_gearnet_edge.pth` (Zenodo 7593637)
 **Data**: 200 PDB train proteins (42,034 residues)
 **SLURM**: 28596016 (full sweep). Latest results: [results/20260429_135919/results.json](results/20260429_135919/results.json), [layerwise.csv](results/20260429_135919/layerwise.csv).
-**Cross-encoder context**: [../FINDINGS.md](../FINDINGS.md).
+**Cross-encoder context**: [../FINDINGS.md](../FINDINGS.md) — for the three-question framing (Q1 information, Q2 saturation, Q3 conditioning) used throughout.
 
 ## Summary
 
-**MC-GearNet-Edge is unusable as a REPA target in its current form.** The `concat_hidden=True` output concatenates 6 BatchNorm + residual layers whose mean L2 norms grow ~17,500× from layer 0 (82) to layer 5 (1.45 × 10⁶). Layer 5 dominates the concatenated 3072-d output; the whole representation collapses onto a 1-D subspace (effective rank **1.1 / 3072**, top direction carries ≥95% of variance). The mean-direction baseline reaches **0.855** test cos-sim, and no projector input (random, AA one-hot, +position) beats it by more than 0.001 — the saturation gap is **negative** (−0.002). The residue-shuffle test (coords fixed, labels permuted) yields cos = 0.983: residue identity barely modulates the embedding despite being fed in as node features. Geometry is preserved (0.5 Å noise drops cos only to 0.81), but the gradient signal sits in the 1-D exploding subspace and carries almost no information to align against.
+**MC-GearNet-Edge is unusable as a REPA target in its current form.** This is a **Q3 conditioning catastrophe** that propagates downstream: the `concat_hidden=True` output concatenates 6 BatchNorm + residual layers whose mean L2 norms grow ~17,500× from layer 0 (82) to layer 5 (1.45 × 10⁶). Layer 5 dominates the concatenated 3072-d output; the whole representation collapses onto a 1-D subspace (effective rank **1.1 / 3072**, top direction carries ≥95% of variance). The Q2 mean-direction baseline reaches **0.855** test cos-sim, and no projector input (random, AA one-hot, +position) beats it by more than 0.001 — the saturation gap is **negative** (−0.002).
 
-## 1. Value distribution & sparsity
+The Q1 evidence supports the same diagnosis: the residue-shuffle test (Q1.1, coords fixed, labels permuted) yields cos = 0.983 — residue identity barely modulates the embedding despite being fed in as node features. Q1.2 geometry is preserved in the sense that 0.5 Å noise drops cos only to 0.81, but the gradient signal sits in the 1-D exploding subspace and carries almost no information to align against.
 
-| Metric | Value |
-|--------|-------|
-| Exact zeros | 0.00% |
-| Negative values | 85.1% |
-| Mean | 601.7 |
-| Std | 52 290 |
-| Min / Max | −41 487 / **52 008 680** |
+## Q1. What information does the encoder encode?
 
-Values are enormous — max 5.2 × 10⁷. Fully dense, but "dense" is meaningless when one axis dwarfs the rest.
-
-## 2. Dimensionality & singular values
+### 1.1 Residue identity
 
 | Metric | Value |
 |--------|-------|
-| Output dim | 3072 |
-| Effective rank | **1.1** |
-| Participation ratio | 1.0 |
-| Dims for 90% / 95% / 99% variance | **1 / 1 / 2** |
-| Top singular value | 4.3 × 10⁸ |
-| S[0] / S[−1] | **4.3 × 10²⁰** |
+| Linear probe accuracy | 15.0% |
+| Mean cos between AA centroids | **0.9999** |
+| Within-type cos | 0.770 ± 0.365 |
+| Between-type cos | 0.729 ± 0.394 |
+| Δ (within − between) | **+0.041** |
+| Residue-shuffle cos (coords fixed, labels permuted) | **0.983 ± 0.005** |
 
-**Catastrophic rank collapse.** Eff rank 1.1 / 3072 means the representation occupies essentially a single direction. S[0]/S[−1] = 10²⁰ is numerical-precision territory — layer 5 (see § 9) accounts for nearly all variance because its norm is ~60× the sum of layers 0–4.
+Per-AA centroids have pairwise cos 0.9999 — they all point in the same direction. The within/between Δ of +0.04 swims inside the ±0.4 standard deviations: it is not a meaningful discrimination signal. Probe accuracy 15.0% is comparable to CA-GearNet's 13.7% — but CA-GearNet doesn't see residue types at all.
 
-## 3. 3D sensitivity
+**Residue-shuffle cos = 0.983 is the most damning Q1 finding.** MC-GearNet-Edge takes residue identity as its node features (one-hot → 21 dims), and yet permuting the labels within a protein barely moves the embedding. Whatever information the network transmits is neither from *which* residues nor from *where* they are.
+
+### 1.2 3D geometric sensitivity
 
 | Perturbation | Cosine similarity |
 |--------------|------------------:|
@@ -46,27 +40,10 @@ Values are enormous — max 5.2 × 10⁷. Fully dense, but "dense" is meaningles
 | 2.0 Å Gaussian | 0.740 ± 0.081 |
 | 5.0 Å Gaussian | **0.696 ± 0.110** |
 | Random rotation | 0.99974 ± 0.0011 |
-| **Residue-type shuffle** | **0.983 ± 0.005** |
 
-CA-GearNet drops to 0.37 at 0.5 Å. MC-GearNet stays above 0.70 even at 5 Å. The embedding is dominated by a direction that depends only weakly on coordinates — consistent with an exploding-BN attractor that all inputs converge toward.
+CA-GearNet drops to 0.37 at 0.5 Å. MC-GearNet stays above 0.70 even at 5 Å. The embedding is dominated by a direction that depends only weakly on coordinates — consistent with an exploding-BN attractor that all inputs converge toward. **Rotation invariant** (0.99974) — geometry is used only via invariant features, as designed; the bug is in the conditioning, not the symmetry.
 
-**Rotation invariant** (0.99974) — geometry is used only via invariant features, as designed.
-
-**Residue-shuffle cos = 0.983** is the most damning. MC-GearNet-Edge takes residue identity as its node features (one-hot → 21 dims), and yet permuting the labels within a protein barely moves the embedding. Whatever information the network transmits is neither from *which* residues nor from *where* they are.
-
-## 4. Residue-type discrimination
-
-| Metric | Value |
-|--------|-------|
-| Linear probe accuracy | 15.0% |
-| Mean cos between AA centroids | **0.9999** |
-| Within-type cos | 0.770 ± 0.365 |
-| Between-type cos | 0.729 ± 0.394 |
-| Δ (within − between) | **+0.041** |
-
-Per-AA centroids have pairwise cos 0.9999 — they all point in the same direction. The within/between Δ of +0.04 swims inside the ±0.4 standard deviations: it is not a meaningful discrimination signal. Probe accuracy 15.0% is comparable to CA-GearNet's 13.7% — but CA-GearNet doesn't see residue types at all.
-
-## 5. Structural context sensitivity
+### 1.3 Structural context (helix / sheet / loop)
 
 | AA  | within-SS cos | between-SS cos | Δ      |
 |-----|--------------:|---------------:|-------:|
@@ -77,19 +54,17 @@ Per-AA centroids have pairwise cos 0.9999 — they all point in the same directi
 
 Two of four AAs show *negative* delta (between > within), again consistent with noise. CA-GearNet had clear positive deltas for most AAs. MC-GearNet has no meaningful within- vs between-context structure.
 
-## 6. Embedding norms & conditioning
+### 1.4 Protein-level identity (within-protein vs between-protein)
 
-| Metric | Value |
-|--------|-------|
-| Mean L2 norm | **1 476 209** |
-| Std L2 norm | 2 494 352 |
-| Min / Max | 35.3 / 5.2 × 10⁷ |
-| Dead dimensions | **507 / 3072** |
-| Dim std range | [0.0, 2.48 × 10⁶] |
+| Metric                | Value          |
+|-----------------------|----------------|
+| Within-protein cos    | 0.757 ± 0.376  |
+| Between-protein cos   | 0.714 ± 0.402  |
+| **Δ**                 | **0.043**      |
 
-Mean norm 1.48 million — ~18 500× CA-GearNet. **507 dead dimensions** — close to one full 512-dim layer slab (any of the early layers; see § 9), confirming one of the 6 concatenated slabs contributes nothing. Norm ratio max/min ≈ 1.5 × 10⁶ per residue — no consistent magnitude scale.
+Δ 0.043 — residues in the same protein are barely more similar than residues in different proteins, with overlapping ±0.4 std bands. By contrast CA-GearNet has Δ 0.222, ESM2 (sequence-only) has Δ 0.098. Pretraining is contributing essentially nothing to protein-level identity here.
 
-## 7. Projector saturation (key result)
+## Q2. How much is reachable from cheap inputs?
 
 3-layer MLP, 80/20 train/test, 300 epochs.
 
@@ -102,17 +77,54 @@ Mean norm 1.48 million — ~18 500× CA-GearNet. **507 dead dimensions** — clo
 
 **Saturation gap = best − mean-dir = −0.002.** The projector cannot beat the zero-parameter mean-direction baseline. Three radically different inputs (random noise, AA one-hot, AA one-hot + position) all land within 0.001 of each other and below the constant baseline. A 3-layer MLP with 512 hidden has hundreds of thousands of parameters and 300 epochs to beat a constant — and cannot. The target is a ray in 3072-d; any prediction that points down that ray wins, regardless of input.
 
-## 8. Within-protein vs between-protein similarity
+This is the textbook Q3 → Q2 propagation: rank collapse + norm explosion → variance concentrated on one direction → projector matches by pointing along that ray → REPA has no operating budget.
 
-| Metric                | Value          |
-|-----------------------|----------------|
-| Within-protein cos    | 0.757 ± 0.376  |
-| Between-protein cos   | 0.714 ± 0.402  |
-| **Δ**                 | **0.043**      |
+## Q3. Is the encoder a tractable optimisation target?
 
-Δ 0.043 — residues in the same protein are barely more similar than residues in different proteins, with overlapping ±0.4 std bands. By contrast CA-GearNet has Δ 0.222, ESM2 (sequence-only) has Δ 0.098.
+**No** — and the rest of this section walks through why each conditioning probe rejects it.
 
-## 9. Layer-wise representation
+### 3.1 Sparsity & value distribution
+
+| Metric | Value |
+|--------|-------|
+| Exact zeros | 0.00% |
+| Negative values | 85.1% |
+| Mean | 601.7 |
+| Std | 52 290 |
+| Min / Max | −41 487 / **52 008 680** |
+
+Values are enormous — max 5.2 × 10⁷. Fully dense, but "dense" is meaningless when one axis dwarfs the rest.
+
+### 3.2 Effective dimensionality & singular values
+
+| Metric | Value |
+|--------|-------|
+| Output dim | 3072 |
+| Effective rank | **1.1** |
+| Participation ratio | 1.0 |
+| Dims for 90% / 95% / 99% variance | **1 / 1 / 2** |
+| Top singular value | 4.3 × 10⁸ |
+| S[0] / S[−1] | **4.3 × 10²⁰** |
+
+**Catastrophic rank collapse.** Eff rank 1.1 / 3072 means the representation occupies essentially a single direction. S[0]/S[−1] = 10²⁰ is numerical-precision territory — layer 5 (see layer-wise table) accounts for nearly all variance because its norm is ~60× the sum of layers 0–4.
+
+### 3.3 Norms & dead dimensions
+
+| Metric | Value |
+|--------|-------|
+| Mean L2 norm | **1 476 209** |
+| Std L2 norm | 2 494 352 |
+| Min / Max | 35.3 / 5.2 × 10⁷ |
+| Dead dimensions | **507 / 3072** |
+| Dim std range | [0.0, 2.48 × 10⁶] |
+
+Mean norm 1.48 million — ~18 500× CA-GearNet. **507 dead dimensions** — close to one full 512-dim layer slab (any of the early layers; see layer-wise table), confirming one of the 6 concatenated slabs contributes nothing. Norm ratio max/min ≈ 1.5 × 10⁶ per residue — no consistent magnitude scale.
+
+### Root-cause analysis
+
+The three Q3 probes co-fail in a single coherent failure mode: `concat_hidden=True` over 6 BatchNorm + residual layers without a final LayerNorm — norms grow geometrically. Layer 5 has mean L2 ≈ 1.5 million; all earlier layers together contribute < 2% of the output magnitude. The concatenation is effectively layer 5 padded with noise.
+
+## Layer-wise representation
 
 The final output is the **concatenation** of all 6 hidden layers (`concat_hidden=True`), each 512-dim → 3072-d. From [layerwise.csv](results/20260429_135919/layerwise.csv):
 
@@ -135,11 +147,7 @@ In isolation, **layer 0 or layer 1** (norms 82 and 36, eff rank 5–10, 0% spars
 
 ### Do not use MC-GearNet-Edge as a REPA target in its current form
 
-The representation is 1-dimensional with exploding norms. No projector can fit it above the mean-direction baseline, and no gradient signal can flow back to the student transformer. Any REPA run using MC-GearNet will plateau at cos-sim ≈ 0.85 on the first few steps and contribute nothing afterward — the loss curve will look *better* than CA-GearNet (higher cos-sim!) while teaching the model nothing.
-
-### Root cause
-
-`concat_hidden=True` over 6 BatchNorm + residual layers without a final LayerNorm — norms grow geometrically. Layer 5 has mean L2 ≈ 1.5 million; all earlier layers together contribute < 2% of the output magnitude. The concatenation is effectively layer 5 padded with noise.
+The representation is 1-dimensional with exploding norms. No projector can fit it above the mean-direction baseline (Q2), and no gradient signal can flow back to the student transformer. Any REPA run using MC-GearNet will plateau at cos-sim ≈ 0.85 on the first few steps and contribute nothing afterward — the loss curve will look *better* than CA-GearNet (higher cos-sim!) while teaching the model nothing.
 
 ### Possible fixes (not tested here)
 
@@ -154,6 +162,6 @@ The representation is 1-dimensional with exploding norms. No projector can fit i
 
 ## Caveats
 
-- 200 proteins, randomized seed 0. Same sample as the other encoders so comparisons are apples-to-apples.
+- 200 proteins, randomised seed 0. Same sample as the other encoders so comparisons are apples-to-apples.
 - SVD/probe subsampled to 30k residues for memory. Qualitative result (eff rank ≈ 1) is robust to sample size; the collapse is structural.
 - Linear probe did not converge (`lbfgs` hit max_iter=1000). Scaling features first would likely help, but the probe is near chance anyway.

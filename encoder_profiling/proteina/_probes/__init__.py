@@ -1,6 +1,6 @@
 """Shared encoder-probe pipeline.
 
-Each encoder driver in playground/proteina/{esm,gearnet,mc_gearnet,...}/explore_*.py
+Each encoder driver in encoder_profiling/proteina/{esm,gearnet,mc_gearnet,...}/explore_*.py
 imports `EncoderProbe` and `run_pipeline` from `lib`, supplies an `embed_fn` that
 wraps its encoder's forward pass, and delegates the standard battery of analyses
 to the lib. Encoder-specific bits (layerwise hooks, ckpt loading) stay local.
