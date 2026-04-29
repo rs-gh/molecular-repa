@@ -79,7 +79,7 @@ class TestRotationAugmentation:
         aug_smiles = list(aug.get_non_tensor("smiles"))
 
         assert len(aug_smiles) == len(SAMPLE_SMILES) * (n_aug + 1)
-        # coords.repeat uses block repetition: [s0,s1,...,sB-1] × naug
+        # coords.repeat uses block repetition: [s0,s1,...,sB-1] x naug
         assert aug_smiles == SAMPLE_SMILES * (n_aug + 1)
 
     def test_smiles_order_matches_tensor_order(self):
@@ -179,7 +179,7 @@ class TestChemPropEncoderFastPath:
         assert len(fresh_encoder._molgraph_cache) == size_after_first
 
     def test_duplicate_smiles_single_cache_entry(self, fresh_encoder):
-        # Two identical SMILES in a batch → only one cache entry
+        # Two identical SMILES in a batch -> only one cache entry
         duped = ["CCO", "CCO"]
         batch = _make_batch_with_smiles(duped)
         with torch.no_grad():
@@ -235,7 +235,7 @@ class TestEndToEndSMILESFlow:
         loss.backward()
 
         assert len(encoder._molgraph_cache) > 0, (
-            "Cache is empty — SMILES did not reach the encoder. "
+            "Cache is empty - SMILES did not reach the encoder. "
             "Check apply_random_rotation propagates non-tensor fields."
         )
 

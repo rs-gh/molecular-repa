@@ -1,9 +1,9 @@
 # MACE Encoder Investigation: Findings
 
 **Date**: 2026-03-19
-**Scripts**: `playground/tabasco/mace/explore_mace.py`, `playground/tabasco/mace/generate_figures.py`
-**Figures**: `playground/tabasco/mace/figures/`
-**Related**: `playground/tabasco/chemeleon/FINDINGS.md` (CheMeleon investigation)
+**Scripts**: `encoder_profiling/tabasco/mace/explore_mace.py`, `encoder_profiling/tabasco/mace/generate_figures.py`
+**Figures**: `encoder_profiling/tabasco/mace/figures/`
+**Related**: `encoder_profiling/tabasco/chemeleon/FINDINGS.md` (CheMeleon investigation)
 
 ## Background
 
@@ -163,7 +163,7 @@ As recommended in the CheMeleon findings, compare MACE-REPA against a simple ato
 
 ## Additional Analyses (2026-04-02)
 
-**Script**: `playground/tabasco/mace/probe_and_saturation.py`
+**Script**: `encoder_profiling/tabasco/mace/probe_and_saturation.py`
 
 ### Linear Probe: Atom-Type Discrimination
 

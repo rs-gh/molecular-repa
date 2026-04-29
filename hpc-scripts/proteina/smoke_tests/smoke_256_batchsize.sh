@@ -2,7 +2,7 @@
 #!
 #! Smoke test: find max batch size for REPA at 256 max length.
 #! Tests batch_size=12 and batch_size=16 with REPA L4 (worst-case memory).
-#! Runs 20 training steps each — if it doesn't OOM, the batch size works.
+#! Runs 20 training steps each - if it doesn't OOM, the batch size works.
 #!
 #! Usage: sbatch hpc-scripts/proteina/smoke_tests/smoke_256_batchsize.sh
 #!

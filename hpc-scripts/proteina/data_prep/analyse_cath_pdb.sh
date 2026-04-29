@@ -1,5 +1,5 @@
 #!/bin/bash
-#! CATH distribution characterisation — PDB only.
+#! CATH distribution characterisation - PDB only.
 #! Usage: sbatch hpc-scripts/proteina/data_prep/analyse_cath_pdb.sh
 
 #SBATCH -J prot-cath-pdb

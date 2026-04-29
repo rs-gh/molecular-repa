@@ -13,15 +13,15 @@ import re
 
 import pandas as pd
 
-# __file__ lives at evaluation/proteina/generation/scripts/ — 4 levels to repo root.
+# __file__ lives at evaluation/proteina/generation/scripts/ - 4 levels to repo root.
 REPO_ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")
 EVAL_OUTPUT = os.path.join(REPO_ROOT, "eval_output")
-# ../results/pdb/fid/ → evaluation/proteina/generation/results/pdb/fid/
+# ../results/pdb/fid/ -> evaluation/proteina/generation/results/pdb/fid/
 OUTPUT_PATH = os.path.join(
     os.path.dirname(__file__), "..", "results", "pdb", "fid", "lite_convergence_all.csv"
 )
 
-# Map directory name fragment → display name + batch size
+# Map directory name fragment -> display name + batch size
 RUN_MAP = {
     "baseline": ("Baseline (60M)", 6),
     "repa_layer0": ("REPA (L0)", 4),
@@ -48,7 +48,7 @@ def identify_run(dirname: str) -> tuple:
     """Parse directory name to extract run type and step.
 
     Example: "inference_fid_60m_repa_layer0_lite_step_250000"
-             → ("repa_layer0", 250000)
+             -> ("repa_layer0", 250000)
     """
     step_match = re.search(r"step_(\d+)$", dirname)
     if not step_match:

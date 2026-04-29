@@ -2,11 +2,11 @@
 #! Build the held-out test.lmdb for the Proteina probe suite.
 #!
 #! Usage:
-#!   # Tier 2 (intr) smoke — n=50, ~5 min:
+#!   # Tier 2 (intr) smoke - n=50, ~5 min:
 #!   sbatch --qos=intr --time=00:15:00 hpc-scripts/proteina/data_prep/build_test_lmdb.sh \
 #!       --n_test 50 --output_path /tmp/test_smoke50.lmdb --commit_every 10 --skip_train_check
 #!
-#!   # Full build — n=500, ~10-20 min on 16 CPUs:
+#!   # Full build - n=500, ~10-20 min on 16 CPUs:
 #!   sbatch --qos=intr --time=00:30:00 hpc-scripts/proteina/data_prep/build_test_lmdb.sh \
 #!       --n_test 500 --commit_every 100 --skip_train_check --resume
 #!

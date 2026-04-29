@@ -267,7 +267,7 @@ Detailed in: `playground/proteina/baseline_overfitting/baseline_training_analysi
 
 ## GearNet Encoder Characterization
 
-Detailed in: `playground/proteina/gearnet/FINDINGS.md`
+Detailed in: `encoder_profiling/proteina/gearnet/FINDINGS.md`
 
 - CA-only, 8 layers, 512-dim output
 - 0% sparsity (LeakyReLU)
@@ -402,7 +402,7 @@ Global-max padding wastes massive compute on short samples (N=128 padded to 512 
 | Location | Description |
 |---|---|
 | `playground/proteina/baseline_overfitting/` | Baseline overfitting analysis |
-| `playground/proteina/gearnet/` | GearNet encoder characterization |
+| `encoder_profiling/proteina/gearnet/` | GearNet encoder characterization |
 | `playground/proteina/val_loss_breakdown/` | Validation loss decomposition |
 | `docs/research/repa-codeflow.md` | REPA pipeline code flow + audit findings |
 | `hpc-scripts/proteina/bench/` | Performance benchmarks (compile, I/O, E2E, SDPA) |

@@ -43,45 +43,43 @@ def fetch_run_by_name(api: wandb.Api, name: str):
 def strip_stalls(
     df: pd.DataFrame,
     key: str = KEY,
-    window_s: float = 1800.0,
-    std_thresh: float = 2e-3,
-    min_points: int = 5,
+    gap_mult: float = 3.0,
+    min_gap_s: float = 1500.0,
 ) -> pd.DataFrame:
-    """Drop points whose preceding `window_s` of loss values has std < threshold.
+    """Collapse inter-log gaps that are both >> typical cadence AND > min_gap_s.
 
-    Then build `runtime_corrected_h` by subtracting the removed gaps so the
-    surviving points sit on a contiguous time axis.
+    Each oversized gap is replaced by the run's typical inter-log spacing, so
+    the surviving points sit on a contiguous "productive runtime" axis.
     """
-    df = df.dropna(subset=[key]).sort_values("_runtime").reset_index(drop=True)
-    t = df["_runtime"].to_numpy()
-    y = df[key].to_numpy()
-
-    keep = np.ones(len(df), dtype=bool)
-    for i in range(len(df)):
-        lo = np.searchsorted(t, t[i] - window_s)
-        if i - lo + 1 >= min_points and y[lo : i + 1].std() < std_thresh:
-            keep[i] = False
-
-    kept = df[keep].reset_index(drop=True).copy()
-    if len(kept) == 0:
-        kept["runtime_corrected_h"] = []
-        return kept
-
-    raw_t = kept["_runtime"].to_numpy()
+    df = df.dropna(subset=[key]).sort_values("_runtime").reset_index(drop=True).copy()
+    raw_t = df["_runtime"].to_numpy()
     dt = np.diff(raw_t, prepend=raw_t[0])
     pos = dt[dt > 0]
     typical = float(np.median(pos)) if pos.size else 0.0
-    # any inter-point jump >> typical cadence is a removed stall; collapse it
-    excess = np.where(dt > 5 * typical, np.maximum(dt - typical, 0), 0).cumsum()
-    kept["runtime_corrected_h"] = (raw_t - excess) / 3600.0
-    kept["runtime_h"] = raw_t / 3600.0
-    return kept
+
+    bad = (dt > gap_mult * typical) & (dt > min_gap_s)
+    excess = np.where(bad, np.maximum(dt - typical, 0), 0).cumsum()
+    df["runtime_corrected_h"] = (raw_t - excess) / 3600.0
+    df["runtime_h"] = raw_t / 3600.0
+    df.attrs["n_gaps_collapsed"] = int(bad.sum())
+    df.attrs["seconds_removed"] = float(excess[-1]) if len(excess) else 0.0
+    return df
 
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("--window-s", type=float, default=1800.0)
-    p.add_argument("--std-thresh", type=float, default=2e-3)
+    p.add_argument(
+        "--gap-mult",
+        type=float,
+        default=3.0,
+        help="A gap counts as a stall if dt > gap_mult * median_dt",
+    )
+    p.add_argument(
+        "--min-gap-s",
+        type=float,
+        default=1500.0,
+        help="...AND dt > min_gap_s (absolute floor, seconds)",
+    )
     p.add_argument(
         "--out", type=Path, default=Path(__file__).parent / "loss_no_stalls.png"
     )
@@ -121,9 +119,10 @@ def main() -> None:
         if sub.empty:
             print(f"WARN: no rows for {name}")
             continue
-        cleaned = strip_stalls(sub, window_s=args.window_s, std_thresh=args.std_thresh)
-        n_drop = len(sub.dropna(subset=[KEY])) - len(cleaned)
-        label = f"{name}  (-{n_drop} pts)"
+        cleaned = strip_stalls(sub, gap_mult=args.gap_mult, min_gap_s=args.min_gap_s)
+        removed_h = cleaned.attrs["seconds_removed"] / 3600.0
+        n_gaps = cleaned.attrs["n_gaps_collapsed"]
+        label = f"{name}  (-{removed_h:.1f}h, {n_gaps} gaps)"
 
         raw_sorted = sub.dropna(subset=[KEY]).sort_values("_runtime")
         ax_raw.plot(
@@ -147,13 +146,15 @@ def main() -> None:
         (ax_raw, "raw"),
         (
             ax_clean,
-            f"stalls removed (window={args.window_s:.0f}s, std<{args.std_thresh})",
+            f"stalls removed (gap > {args.gap_mult}x median AND > {args.min_gap_s:.0f}s)",
         ),
     ]:
         ax.set_xlabel("Time (hours)")
         ax.set_title(title)
         ax.grid(True, alpha=0.3)
     ax_raw.set_ylabel("train/trans_loss_epoch")
+    ax_raw.set_ylim(0.3, 1.0)
+    ax_clean.set_ylim(0.3, 1.0)
     ax_clean.legend(loc="upper right", fontsize=8)
     fig.tight_layout()
     fig.savefig(args.out, dpi=150)

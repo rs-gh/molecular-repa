@@ -1,16 +1,16 @@
-"""Plots for the proteina probe sweep — analogues of REPA paper figures.
+"""Plots for the proteina probe sweep - analogues of REPA paper figures.
 
 Reads `sweep_results.csv` (produced by run_sweep.py) and emits three figures
 into `evaluation/proteina/representation/figures/`:
 
-  fig_layerwise_P_at_L5.png        — Fig 3a analogue for contacts
+  fig_layerwise_P_at_L5.png        - Fig 3a analogue for contacts
       x = transformer layer index, y = P@L/5, one curve per run at a fixed step
       (by default: each run's latest step). Encoder scores drawn as dashed
       horizontal reference lines.
 
-  fig_layerwise_cath_acc.png       — same shape, y = CATH accuracy
+  fig_layerwise_cath_acc.png       - same shape, y = CATH accuracy
 
-  fig_step_progression.png         — Fig 2c analogue
+  fig_step_progression.png         - Fig 2c analogue
       x = training step (log scale), y = probe metric at each run's "best"
       layer (chosen per run as the argmax layer at the largest step). One
       subplot for P@L/5, one for CATH accuracy, one for each run.
@@ -53,7 +53,7 @@ RUN_COLORS = {
 }
 RUN_ALIGNED_LAYER = {"baseline": None, "repa_l0": 0, "repa_l4": 4, "repa_l9": 9}
 
-# Baseline rows with a single sentinel layer — plotted as horizontal reference
+# Baseline rows with a single sentinel layer - plotted as horizontal reference
 # lines (same convention as the gearnet encoder row at layer=-1).
 BASELINE_SENTINELS = {
     -1: "gearnet",
@@ -71,7 +71,7 @@ UNTRAINED_LAYER_MIN, UNTRAINED_LAYER_MAX = -19, -10
 # NOTE (2026-04-19): when adding 128-residue runs, bs is NOT uniform.
 #   baseline-128 (job 27971089, current) trained at bs=24 throughout.
 #   All REPA-128 variants (gearnet + esm, per_residue + per_sample) train at bs=80.
-#   Future baseline-128 runs / restarts will most likely adopt bs=80 — CONFIRM per run
+#   Future baseline-128 runs / restarts will most likely adopt bs=80 - CONFIRM per run
 #   before appending an entry (a mid-run bs switch means one run has two regimes, and
 #   nsamples = step * bs is no longer a single scalar multiply).
 RUN_BATCH_SIZE = {
@@ -98,7 +98,7 @@ def _load(manifest: str = None) -> pd.DataFrame:
     ]:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c], errors="coerce")
-    # Manifest filter — apples-to-apples: v1 and v2 rows come from different
+    # Manifest filter - apples-to-apples: v1 and v2 rows come from different
     # protein samples so their numbers aren't directly comparable. If the
     # caller doesn't specify, auto-pick the most common manifest in the CSV.
     if "manifest" in df.columns:
@@ -107,8 +107,8 @@ def _load(manifest: str = None) -> pd.DataFrame:
             manifest = str(counts.index[0]) if len(counts) else "v1"
         df = df[df["manifest"].fillna("v1") == manifest].copy()
         print(f"[plot] manifest filter: keeping manifest='{manifest}' ({len(df)} rows)")
-    # Add fair-comparison x-axis: nsamples_processed = step × batch_size.
-    # (At 512 res, baseline bs=6, REPA bs=4 — using raw step would misrepresent REPA.)
+    # Add fair-comparison x-axis: nsamples_processed = step x batch_size.
+    # (At 512 res, baseline bs=6, REPA bs=4 - using raw step would misrepresent REPA.)
     df["nsamples"] = df.apply(
         lambda r: int(r["step"]) * RUN_BATCH_SIZE.get(r["run"], 1)
         if r["run"] in RUN_BATCH_SIZE
@@ -149,7 +149,7 @@ def _plot_layerwise(df: pd.DataFrame, metric: str, title: str, out_path: Path) -
         )
 
     # Untrained-proteina: plot as a full transformer curve by remapping its
-    # sentinel layers -(L+10) back to L ∈ [0, 9]. Lets you visualize the
+    # sentinel layers -(L+10) back to L in [0, 9]. Lets you visualize the
     # "random weights" shape alongside trained runs.
     untr = df[
         (df["run"] == "untrained_proteina")
@@ -210,7 +210,7 @@ def _plot_layerwise(df: pd.DataFrame, metric: str, title: str, out_path: Path) -
 
 def _plot_progression(df: pd.DataFrame, out_path: Path) -> None:
     """Two-panel: P@L/5 and CATH acc vs samples processed, one curve per run at its aligned layer.
-    X-axis is `nsamples` (step × batch_size) because baseline bs=6, REPA bs=4 at 512 res.
+    X-axis is `nsamples` (step x batch_size) because baseline bs=6, REPA bs=4 at 512 res.
     """
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.3))
     for run in RUN_ORDER:
@@ -249,7 +249,7 @@ def _plot_progression(df: pd.DataFrame, out_path: Path) -> None:
     for ax, m in [(ax1, "p_at_L_5"), (ax2, "cath_acc")]:
         v = _encoder_values(df, m)
         for run, val in v.items():
-            # Skip NaN reference lines — breaks log-scale tight_layout and
+            # Skip NaN reference lines - breaks log-scale tight_layout and
             # gives a meaningless "(frozen)" entry in the legend. Happens
             # commonly on CATH when the 40-protein subset has too few labels.
             if val != val:  # NaN check
@@ -263,14 +263,14 @@ def _plot_progression(df: pd.DataFrame, out_path: Path) -> None:
                 alpha=0.7,
             )
 
-    ax1.set_xlabel("Samples processed (step × batch_size)")
+    ax1.set_xlabel("Samples processed (step x batch_size)")
     ax1.set_xscale("log")
     ax1.set_ylabel("P@L/5")
     ax1.set_title("Contact P@L/5 vs training progress")
     ax1.grid(True, alpha=0.3)
     ax1.legend(fontsize=8)
 
-    ax2.set_xlabel("Samples processed (step × batch_size)")
+    ax2.set_xlabel("Samples processed (step x batch_size)")
     ax2.set_xscale("log")
     ax2.set_ylabel("CATH accuracy")
     ax2.set_title("CATH acc vs training progress")
@@ -314,13 +314,13 @@ def main():
     _plot_layerwise(
         df,
         "p_at_L_5",
-        "Contact P@L/5 — layer-wise (final checkpoint per run)",
+        "Contact P@L/5 - layer-wise (final checkpoint per run)",
         FIG_DIR / "fig_layerwise_P_at_L5.png",
     )
     _plot_layerwise(
         df,
         "cath_acc",
-        "CATH fold accuracy — layer-wise (final checkpoint per run)",
+        "CATH fold accuracy - layer-wise (final checkpoint per run)",
         FIG_DIR / "fig_layerwise_cath_acc.png",
     )
     _plot_progression(df, FIG_DIR / "fig_step_progression.png")

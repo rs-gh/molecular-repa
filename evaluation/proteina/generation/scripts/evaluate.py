@@ -351,7 +351,7 @@ def compute_cath_metrics(
     generated PDB through the same GearNet checkpoint (so train and inference
     embeddings live in the same space), and reports four columns:
 
-        _res_cath_topclass_conf_mean   mean top-class softmax prob — recognizability
+        _res_cath_topclass_conf_mean   mean top-class softmax prob - recognizability
         _res_cath_n_unique_T            # distinct classes the head assigns
         _res_cath_distribution_kl       KL(p_gen || p_train) over the head's vocab
         _res_cath_entropy               Shannon entropy of p_gen
@@ -360,7 +360,7 @@ def compute_cath_metrics(
     The KL is over the head's vocab only (Laplace-smoothed on classes that the
     train side has but generation didn't produce, and vice versa). Generated
     samples that the head assigns to a class outside its vocab can't happen
-    by construction — the head only outputs vocab classes.
+    by construction - the head only outputs vocab classes.
 
     If ``head_path`` is missing, returns ``{}`` and logs a warning so the
     sweep keeps making progress without this column.
@@ -402,7 +402,7 @@ def compute_cath_metrics(
     device = "cuda" if torch.cuda.is_available() else "cpu"
     gearnet = NoTrainCAGearNet(ckpt).to(device).eval()
 
-    # Reuse the FID code path's PDB→PyG converter so generated samples are
+    # Reuse the FID code path's PDB->PyG converter so generated samples are
     # processed exactly the way the FID metric processes them.
     dataset = DatasetWrapper(eval_pdbs)
     loader = _PyGLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
@@ -466,8 +466,8 @@ def split_nlens(nlens_dict, max_nsamples=16):
 
     WARNING: if `cnt` is not a multiple of `max_nsamples`, the final partial
     batch is rounded UP to a full batch, so actual samples generated > cnt.
-    Example: cnt=200, max_nsamples=80 → batches [80, 80, 40] → forced to
-    [80, 80, 80] → 240 samples. This is intentional: torch.compile with
+    Example: cnt=200, max_nsamples=80 -> batches [80, 80, 40] -> forced to
+    [80, 80, 80] -> 240 samples. This is intentional: torch.compile with
     dynamic=False recompiles per unique (batch_size, nres) shape (~60-90s),
     so forcing a uniform batch avoids a tail recompile.
 
@@ -506,7 +506,7 @@ def main():
         format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
     )
 
-    # ── Load config ──
+    # -- Load config --
     config_name = (
         f"{args.config_subdir}/{args.config_name}"
         if args.config_subdir
@@ -525,7 +525,7 @@ def main():
         cfg = OmegaConf.merge(cfg, {"seed": args.seed})
     logger.info(f"Config: {args.config_name}, seed: {cfg.seed}")
 
-    # ── Paths (persist across restarts) ──
+    # -- Paths (persist across restarts) --
     suffix = f"_{args.output_suffix}" if args.output_suffix else ""
     config_slug = args.config_name.replace("/", "_")
     root_path = f"./eval_output/{config_slug}{suffix}"
@@ -534,9 +534,9 @@ def main():
     os.makedirs(samples_dir, exist_ok=True)
     os.makedirs(tensors_dir, exist_ok=True)
 
-    # ── Generation phase ──
+    # -- Generation phase --
     if not args.skip_generation:
-        # ── Load model ──
+        # -- Load model --
         ckpt_file = os.path.join(cfg.ckpt_path, cfg.ckpt_name)
         logger.info(f"Loading checkpoint: {ckpt_file}")
         model = Proteina.load_from_checkpoint(ckpt_file)
@@ -545,7 +545,7 @@ def main():
         model.cuda()
 
         # Fast inference: validated at L=256 as ~4.6x speedup with matching
-        # geometry distributions (bond, Rg, clash, angles) — see
+        # geometry distributions (bond, Rg, clash, angles) - see
         # playground/proteina/generation_speedup/. Compile is static-shape so
         # each unique (batch_size, nres) triggers a one-time ~60-90s recompile;
         # over a 200-sample eval this is amortized into throughput.
@@ -565,7 +565,7 @@ def main():
 
         L.seed_everything(cfg.seed)
 
-        # ── Build batch schedule ──
+        # -- Build batch schedule --
         if cfg.nres_lens:
             lens_list = list(cfg.nres_lens)
         else:
@@ -587,7 +587,7 @@ def main():
             f"Total batches: {total_batches} ({len(lens_list)} lengths x ~{cfg.nsamples_per_len}/{cfg.generation_batch_size} batches/len)"
         )
 
-        # ── Generate with checkpointing ──
+        # -- Generate with checkpointing --
         n_skipped = 0
         n_generated = 0
 
@@ -668,7 +668,7 @@ def main():
     else:
         logger.info("Skipping generation (--skip_generation), using existing PDBs")
 
-    # ── Compute metrics ──
+    # -- Compute metrics --
     list_of_pdbs = sorted(
         glob.glob(os.path.join(samples_dir, "*_fid.pdb")),
         key=lambda p: int(os.path.basename(p).split("_")[0]),
@@ -684,7 +684,7 @@ def main():
     columns = list(flat_dict.keys())
     res_row = list(flat_dict.values())
 
-    # ── FID / fJSD / fS metrics ──
+    # -- FID / fJSD / fS metrics --
     if not args.skip_fid:
         fid_results = compute_fid_metrics(list_of_pdbs, cfg.metric_factory)
         for k, v in fid_results.items():
@@ -693,7 +693,7 @@ def main():
     else:
         logger.info("Skipping GearNet FID/fJSD/fS metrics (--skip_fid)")
 
-    # ── Designability metrics ──
+    # -- Designability metrics --
     desig_results = compute_designability_metrics(
         list_of_pdbs,
         subset_size=args.designability_subset,
@@ -709,7 +709,7 @@ def main():
             f"scRMSD_mean={desig_results.get('_res_scRMSD_mean', 'N/A'):.3f}"
         )
 
-    # ── Diversity metrics ──
+    # -- Diversity metrics --
     div_results = compute_diversity_metrics(
         tensors_dir,
         samples_dir,
@@ -725,7 +725,7 @@ def main():
             f"n_bins={div_results.get('_res_diversity_n_bins', 'N/A')}"
         )
 
-    # ── Novelty metrics ──
+    # -- Novelty metrics --
     nov_results = compute_novelty_metrics(
         list_of_pdbs,
         centroid_path=args.centroid_path,
@@ -741,7 +741,7 @@ def main():
             f"max_tm_mean={nov_results.get('_res_novelty_max_tm_mean', 'N/A'):.3f}"
         )
 
-    # ── CATH metrics ──
+    # -- CATH metrics --
     if args.cath_subset > 0 and list_of_pdbs:
         cath_results = compute_cath_metrics(
             list_of_pdbs,
@@ -762,7 +762,7 @@ def main():
     else:
         logger.info("Skipping CATH metrics (--cath_subset 0)")
 
-    # ── Save results ──
+    # -- Save results --
     df = pd.DataFrame([res_row], columns=columns)
     if "metric_factory" in df.columns:
         df = df.drop("metric_factory", axis=1)
@@ -770,7 +770,7 @@ def main():
     results_csv = os.path.join(root_path, f"results_{config_slug}{suffix}_fid.csv")
 
     # If skipping FID and an existing CSV has FID columns, merge new columns in.
-    # Also overwrite any _res_ columns already present — allows a retry to fix
+    # Also overwrite any _res_ columns already present - allows a retry to fix
     # stale/corrupted values written by a previously timed-out run.
     if args.skip_fid and os.path.exists(results_csv):
         existing_df = pd.read_csv(results_csv)

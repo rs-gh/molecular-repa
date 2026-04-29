@@ -161,7 +161,7 @@ def scan_lmdb(lmdb_path: str, cath_lookup: dict, id_transform=None, max_entries=
         subdir=False,
         readonly=True,
         lock=False,
-        readahead=True,  # sequential full-scan — readahead helps on NVMe
+        readahead=True,  # sequential full-scan - readahead helps on NVMe
         meminit=False,
     )
 
@@ -287,7 +287,7 @@ def plot_distributions(summaries: list[dict], out_dir: Path):
         import matplotlib.pyplot as plt
         import numpy as np
     except ImportError:
-        print("  matplotlib not available — skipping plots", flush=True)
+        print("  matplotlib not available - skipping plots", flush=True)
         return
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -407,7 +407,7 @@ def main():
     parser.add_argument(
         "--ted_tsv",
         default=None,
-        help="(Deprecated — low coverage) Path to TED domain summary TSV",
+        help="(Deprecated - low coverage) Path to TED domain summary TSV",
     )
     parser.add_argument(
         "--interpro_tsv",
@@ -435,7 +435,7 @@ def main():
     if args.interpro_tsv:
         if not os.path.exists(args.interpro_tsv):
             print(
-                f"  WARNING: --interpro_tsv not found: {args.interpro_tsv} — skipping AFDB",
+                f"  WARNING: --interpro_tsv not found: {args.interpro_tsv} - skipping AFDB",
                 flush=True,
             )
         else:
@@ -447,7 +447,7 @@ def main():
     elif args.ted_tsv:
         if not os.path.exists(args.ted_tsv):
             print(
-                f"  WARNING: --ted_tsv not found: {args.ted_tsv} — skipping AFDB",
+                f"  WARNING: --ted_tsv not found: {args.ted_tsv} - skipping AFDB",
                 flush=True,
             )
         else:

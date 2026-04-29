@@ -6,7 +6,7 @@ Reads ``pretrained_sweep_results.csv`` and emits figures into
 Figures produced
 ----------------
 fig_layerwise_p_at_L.png
-    1 × 3 grid (n=128, 256, 512), y = P@L, x = transformer layer.
+    1 x 3 grid (n=128, 256, 512), y = P@L, x = transformer layer.
     One curve per run family + pretrained_dfs_60m reference.
 
 fig_layerwise_p_at_L_2.png
@@ -32,7 +32,7 @@ HERE = Path(__file__).resolve().parent
 CSV = HERE.parent / "results" / "pretrained_probe" / "pretrained_sweep_results.csv"
 FIG_DIR = HERE.parent / "figures" / "pretrained_probe"
 
-# ── colour scheme matches plot_per_n.py ───────────────────────────────────────
+# -- colour scheme matches plot_per_n.py ---------------------------------------
 FAMILY_COLORS = {
     "baseline": "#1f77b4",  # blue
     "repa_l0": "#ff7f0e",  # orange
@@ -41,17 +41,17 @@ FAMILY_COLORS = {
     "esm_repa_l0": "#ffbb78",  # light orange
     "esm_repa_l4": "#ff9896",  # light red
     "esm_repa_l9": "#98df8a",  # light green
-    "pretrained_dfs_60m": "#9467bd",  # purple — reference ceiling
+    "pretrained_dfs_60m": "#9467bd",  # purple - reference ceiling
 }
 
-# ── run-name → (n_bucket, family) ─────────────────────────────────────────────
+# -- run-name -> (n_bucket, family) ---------------------------------------------
 # "baseline" alone is the 400k n=512 checkpoint; "baseline_512_sm" is 500k.
 # We keep both in the CSV but only plot the later one for n=512.
 RUN_META: dict[str, tuple[str, str]] = {
     "baseline": ("n512", "baseline"),  # 400k; shadowed by baseline_512_sm below
     "baseline_128": ("n128", "baseline"),
     "baseline_256": ("n256", "baseline"),
-    "baseline_512_sm": ("n512", "baseline"),  # 500k — preferred n=512 baseline
+    "baseline_512_sm": ("n512", "baseline"),  # 500k - preferred n=512 baseline
     "repa_l0_128": ("n128", "repa_l0"),
     "repa_l4_128": ("n128", "repa_l4"),
     "repa_l9_128": ("n128", "repa_l9"),
@@ -68,7 +68,7 @@ RUN_META: dict[str, tuple[str, str]] = {
 PRETRAINED_RUN = "pretrained_dfs_60m"  # shown on every panel as reference
 
 # When two runs map to the same (n_bucket, family) prefer the later step.
-# "baseline" (400k) vs "baseline_512_sm" (500k) → keep 500k only for n512.
+# "baseline" (400k) vs "baseline_512_sm" (500k) -> keep 500k only for n512.
 PREFERRED_RUN: dict[tuple[str, str], str] = {
     ("n512", "baseline"): "baseline_512_sm",
 }
@@ -182,7 +182,7 @@ def _plot_grid(metric: str, out_path: Path) -> None:
         frameon=True,
     )
     fig.suptitle(
-        f"Contact probe {METRIC_LABELS[metric]} — layerwise by model size (t = 1.0)",
+        f"Contact probe {METRIC_LABELS[metric]} - layerwise by model size (t = 1.0)",
         fontsize=13,
         fontweight="bold",
     )

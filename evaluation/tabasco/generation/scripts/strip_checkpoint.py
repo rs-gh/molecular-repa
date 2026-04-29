@@ -34,9 +34,9 @@ def _extract_net_config(hyper_parameters, state_dict=None):
     """Extract minimal TransformerModule config from the checkpoint.
 
     Tries two sources:
-    1. hyper_parameters["model"] — the actual nn.Module (available when
+    1. hyper_parameters["model"] - the actual nn.Module (available when
        save_hyperparameters includes 'model', i.e. pre-MACE checkpoints).
-    2. state_dict weight shapes — always available, infers architecture
+    2. state_dict weight shapes - always available, infers architecture
        from tensor dimensions.
     """
     # --- Try from hyper_parameters first ---
@@ -127,11 +127,11 @@ def strip_checkpoint(input_path: str, output_path: str):
     )
     if has_ema:
         print(
-            "  EMA weights found in optimizer_states — checkpoint state_dict "
+            "  EMA weights found in optimizer_states - checkpoint state_dict "
             "already contains EMA weights (swapped before save)."
         )
     else:
-        print("  No EMA in optimizer_states — using state_dict weights as-is.")
+        print("  No EMA in optimizer_states - using state_dict weights as-is.")
 
     # --- Extract only model.net.* keys ---
     # Strip _orig_mod. prefix injected by torch.compile's OptimizedModule wrapper

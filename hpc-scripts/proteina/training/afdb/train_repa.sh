@@ -119,7 +119,7 @@ if [ -d "$LMDB_SRC" ]; then
         export LMDB_DIR="$LMDB_SRC"
     fi
 else
-    echo "WARNING: LMDB not found at $LMDB_SRC — LMDB must be built first."
+    echo "WARNING: LMDB not found at $LMDB_SRC - LMDB must be built first."
     echo "Run: sbatch hpc-scripts/proteina/data_prep/build_afdb_lmdb.sh"
     echo "=== LMDB_SOURCE: lustre (not found) ==="
     export LMDB_DIR="$LMDB_SRC"

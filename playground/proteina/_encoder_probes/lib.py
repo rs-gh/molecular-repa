@@ -1,11 +1,11 @@
 """Shared encoder characterization pipeline.
 
 Public surface:
-    - load_proteins(lmdb_path, n, seed)        — LMDB loader with train_keys.pkl fast path
-    - graph_to_inputs(graph)                   — graph -> (ca_nm, mask, residue_type) on CPU
-    - EncoderProbe                             — declares an encoder + its capabilities
-    - run_pipeline(probe, proteins, device)    — runs the standard battery
-    - analyze_*                                — individual analyses (callable directly)
+    - load_proteins(lmdb_path, n, seed)        - LMDB loader with train_keys.pkl fast path
+    - graph_to_inputs(graph)                   - graph -> (ca_nm, mask, residue_type) on CPU
+    - EncoderProbe                             - declares an encoder + its capabilities
+    - run_pipeline(probe, proteins, device)    - runs the standard battery
+    - analyze_*                                - individual analyses (callable directly)
 
 Each encoder driver supplies an `embed_fn(ca_nm, mask, residue_type=None) -> [B,n,D]`
 closure (typically `torch.no_grad()` + `.to(device)` + `.cpu()` wrapper around its
@@ -57,7 +57,7 @@ RESIDUE_NAMES = [
 ]
 
 
-# ── EncoderProbe ────────────────────────────────────────────────────────────
+# -- EncoderProbe ------------------------------------------------------------
 
 
 EmbedFn = Callable[..., torch.Tensor]
@@ -93,9 +93,9 @@ class EncoderProbe:
     All inputs/outputs on CPU; the closure handles device transfers internally.
 
     Capability flags drive analysis selection:
-        is_3d_aware           — runs perturbation + rotation tests when True
-        accepts_residue_type  — runs residue-type-shuffle test when True
-        context_mode          — "structural" (uses CA-CA-CA angles to bin SS),
+        is_3d_aware           - runs perturbation + rotation tests when True
+        accepts_residue_type  - runs residue-type-shuffle test when True
+        context_mode          - "structural" (uses CA-CA-CA angles to bin SS),
                                 "sequence" (perturb flanks, keep center fixed),
                                 or None (skip context test)
     """
@@ -110,13 +110,13 @@ class EncoderProbe:
     notes: list = field(default_factory=list)
 
 
-# ── Data loading ────────────────────────────────────────────────────────────
+# -- Data loading ------------------------------------------------------------
 
 
 def load_proteins(lmdb_path: str, n: int, seed: Optional[int] = None) -> list:
     """Load `n` proteins from a PDB LMDB.
 
-    Uses the pre-enumerated `train_keys.pkl` next to the LMDB when present —
+    Uses the pre-enumerated `train_keys.pkl` next to the LMDB when present -
     cursor walk over Lustre is pathologically slow.
     """
     keys_path = os.path.join(os.path.dirname(lmdb_path), "train_keys.pkl")
@@ -196,9 +196,9 @@ def load_proteins(lmdb_path: str, n: int, seed: Optional[int] = None) -> list:
 
 
 def graph_to_inputs(graph):
-    """Return (ca_nm[n,3], mask[n], residue_type[n]) — all CPU tensors.
+    """Return (ca_nm[n,3], mask[n], residue_type[n]) - all CPU tensors.
 
-    CA is at atom index 1 in OpenFold ordering. Coords stored in Å; converted
+    CA is at atom index 1 in OpenFold ordering. Coords stored in A; converted
     to nm here since all encoder forward passes expect nm.
     """
     ca_coords = graph.coords[:, 1, :].float()
@@ -236,7 +236,7 @@ def collect_all_embeddings(embed_fn: EmbedFn, proteins: list):
     return all_emb_cat, all_types_cat, per_protein
 
 
-# ── Analyses ───────────────────────────────────────────────────────────────
+# -- Analyses ---------------------------------------------------------------
 
 
 def _header(title: str):
@@ -288,7 +288,7 @@ def analyze_dimensionality(all_emb: torch.Tensor, max_residues: int = 30000):
 def analyze_perturbation(
     embed_fn: EmbedFn, proteins, n_test: int = 50, sigmas=(0.1, 0.5, 1.0, 2.0, 5.0)
 ):
-    _header("3D Sensitivity — Gaussian Coordinate Perturbation")
+    _header("3D Sensitivity - Gaussian Coordinate Perturbation")
     n_test = min(n_test, len(proteins))
     print("Cosine sim between original and perturbed embeddings:")
     for sigma in sigmas:
@@ -298,7 +298,7 @@ def analyze_perturbation(
             orig = embed_fn(
                 ca_nm.unsqueeze(0), mask.unsqueeze(0), rtype.unsqueeze(0)
             ).squeeze(0)[mask]
-            noise = torch.randn_like(ca_nm) * (sigma / 10.0)  # Å -> nm
+            noise = torch.randn_like(ca_nm) * (sigma / 10.0)  # A -> nm
             pert = embed_fn(
                 (ca_nm + noise).unsqueeze(0), mask.unsqueeze(0), rtype.unsqueeze(0)
             ).squeeze(0)[mask]
@@ -309,7 +309,7 @@ def analyze_perturbation(
 
 
 def analyze_rotation_invariance(embed_fn: EmbedFn, proteins, n_test: int = 50):
-    _header("3D Sensitivity — Rotation Invariance")
+    _header("3D Sensitivity - Rotation Invariance")
     n_test = min(n_test, len(proteins))
     sims = []
     for graph in proteins[:n_test]:
@@ -409,7 +409,7 @@ def analyze_structural_context(all_emb, all_types, proteins, test_aas=(0, 7, 10,
         if n_valid < 3:
             offset += n_valid
             continue
-        valid_coords = ca_nm[valid_idx] * 10.0  # back to Å for angle calc
+        valid_coords = ca_nm[valid_idx] * 10.0  # back to A for angle calc
         valid_types = rt[valid_idx].numpy()
         for k in range(1, n_valid - 1):
             v1 = valid_coords[k - 1] - valid_coords[k]
@@ -630,7 +630,7 @@ def analyze_protein_similarity(per_protein, n_proteins: int = 50):
     print(f"Delta: {np.mean(within) - np.mean(between):.4f}")
 
 
-# ── Pipeline ───────────────────────────────────────────────────────────────
+# -- Pipeline ---------------------------------------------------------------
 
 
 def run_pipeline(probe: EncoderProbe, proteins: list, device, *, skip: tuple = ()):
@@ -682,5 +682,5 @@ def run_pipeline(probe: EncoderProbe, proteins: list, device, *, skip: tuple = (
         probe.layerwise_fn(probe.encoder, proteins, device)
 
     print("\n" + "=" * 70)
-    print(f"DONE — {probe.name} characterization complete")
+    print(f"DONE - {probe.name} characterization complete")
     print("=" * 70)

@@ -1,6 +1,6 @@
 #!/bin/bash
 #!
-#! P1 — per-bucket batch-size calibration for length-bucketed sampling plan.
+#! P1 - per-bucket batch-size calibration for length-bucketed sampling plan.
 #!
 #! Measures max viable BS at 7 seq_len anchors (128, 192, 256, 320, 384,
 #! 448, 512), baseline only, compile=True, no gradient checkpointing.

@@ -1,5 +1,5 @@
 #!/bin/bash
-#! Smoke test — in_memory=True to measure GPU-only throughput with real data shapes
+#! Smoke test - in_memory=True to measure GPU-only throughput with real data shapes
 #SBATCH -J prot-inmem
 #SBATCH -A LIO-CHARM-SL2-GPU
 #SBATCH --nodes=1

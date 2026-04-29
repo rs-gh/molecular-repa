@@ -53,7 +53,7 @@ from lib.probes.cath_pretrained import (
 
 # Default GearNet checkpoint used by the FID / fS / fJSD metric factory. The
 # generation eval suite consumes the SAME checkpoint, so train and inference
-# embeddings live in the same space — that's the contract this script keeps.
+# embeddings live in the same space - that's the contract this script keeps.
 DEFAULT_GEARNET_CKPT = os.environ.get(
     "GEARNET_CA_CKPT",
     "/rds/user/sr2173/hpc-work/proteina/data/metric_factory/model_weights/gearnet_ca.pth",
@@ -73,7 +73,7 @@ def _lmdb_data_to_gearnet_data(g: Data) -> Data:
         batch.node_id     used by PyG to infer num_nodes when no other
                           *node-level* attribute is set explicitly
 
-    For CA-only GearNet only ``coord_mask[:, 1]`` matters — the model
+    For CA-only GearNet only ``coord_mask[:, 1]`` matters - the model
     explicitly zeros out indices 0, 2..36 inside ``forward``. So we set CA
     valid where the residue is real and leave the rest zero.
     """
@@ -254,15 +254,15 @@ def main() -> None:
     n_eval_lab = sum(1 for g in raw_eval if getattr(g, "cath_code", None))
     print(
         f"\n[cath] train labelled: {n_train_lab}/{len(raw_train)}; "
-        f"eval labelled: {n_eval_lab}/{len(raw_eval)} (expect 100% — labelled manifest)"
+        f"eval labelled: {n_eval_lab}/{len(raw_eval)} (expect 100% - labelled manifest)"
     )
     if n_train_lab != len(raw_train) or n_eval_lab != len(raw_eval):
         raise RuntimeError(
-            "Labelled-only manifest contains unlabelled records — possibly stale cache. "
+            "Labelled-only manifest contains unlabelled records - possibly stale cache. "
             "Delete the manifest JSON in --manifest_outdir and re-run."
         )
 
-    # Embed via GearNet — this is the dominant time cost (~30s / 1000 proteins on intr GPU).
+    # Embed via GearNet - this is the dominant time cost (~30s / 1000 proteins on intr GPU).
     gearnet = _load_gearnet(args.gearnet_ckpt, device=device)
 
     print("\n[embed] train...")
@@ -296,7 +296,7 @@ def main() -> None:
     )
     if head is None:
         raise RuntimeError(
-            f"train_cath_probe returned no head — too few classes survived "
+            f"train_cath_probe returned no head - too few classes survived "
             f"min_per_class={args.cath_min_per_class} at level={args.cath_level}. "
             f"Increase --n_train or lower --cath_min_per_class."
         )
@@ -345,7 +345,7 @@ def main() -> None:
     print(f"\n[out] wrote {out_path}")
 
     # Also dump a small JSON sidecar for at-a-glance inspection without
-    # unpickling — paths, sizes, and val metrics, no tensors.
+    # unpickling - paths, sizes, and val metrics, no tensors.
     sidecar = {
         k: v for k, v in bundle.items() if k not in ("head", "train_meta", "train_dist")
     }

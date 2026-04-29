@@ -2,7 +2,7 @@
 #! Download and process D_FS (Foldseek AFDB clusters) dataset.
 #! Two stages:
 #!   1. Download 588k PDB files from AlphaFold DB (~10-30 GB)
-#!   2. Process raw PDB → .pt files (datamodule.prepare_data)
+#!   2. Process raw PDB -> .pt files (datamodule.prepare_data)
 #!
 #! Usage:
 #!   sbatch hpc-scripts/proteina/data_prep/prepare_data_dfs.sh
@@ -66,7 +66,7 @@ fi
 echo ""
 
 ###############################################################
-### Stage 2: Process raw PDB → .pt files                    ###
+### Stage 2: Process raw PDB -> .pt files                    ###
 ###############################################################
 
 echo "=== Stage 2: Processing structures ==="

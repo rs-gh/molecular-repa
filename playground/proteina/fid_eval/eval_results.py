@@ -19,7 +19,7 @@ import os
 OUTDIR = "playground/proteina/fid_eval/figures"
 os.makedirs(OUTDIR, exist_ok=True)
 
-# ── All evaluation data points (step, PDB_FID, AFDB_FID, fJSD_C, fS_C, fS_A, fS_T) ──
+# -- All evaluation data points (step, PDB_FID, AFDB_FID, fJSD_C, fS_C, fS_A, fS_T) --
 
 data = {
     "Baseline": [
@@ -48,7 +48,7 @@ colors = {
     "REPA-L9": "#C44E52",
 }
 
-# ── Figure 1: FID vs Training Step (the key training efficiency plot) ──
+# -- Figure 1: FID vs Training Step (the key training efficiency plot) --
 
 fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
@@ -73,7 +73,7 @@ for ax, fid_idx, title in [(axes[0], 1, "PDB FID"), (axes[1], 2, "AFDB FID")]:
     ax.set_ylim(300, 950)
 
 fig.suptitle(
-    "FID vs Training Step — REPA improves, Baseline degrades",
+    "FID vs Training Step - REPA improves, Baseline degrades",
     fontsize=13,
     fontweight="bold",
 )
@@ -82,7 +82,7 @@ plt.savefig(f"{OUTDIR}/fid_vs_step.png", dpi=150, bbox_inches="tight")
 plt.close()
 print(f"Saved {OUTDIR}/fid_vs_step.png")
 
-# ── Figure 2: FID bar chart (latest checkpoint per model) ──
+# -- Figure 2: FID bar chart (latest checkpoint per model) --
 
 fig, axes = plt.subplots(1, 2, figsize=(10, 5))
 runs = list(data.keys())
@@ -116,7 +116,7 @@ plt.savefig(f"{OUTDIR}/fid_comparison.png", dpi=150, bbox_inches="tight")
 plt.close()
 print(f"Saved {OUTDIR}/fid_comparison.png")
 
-# ── Figure 3: fJSD_C vs step ──
+# -- Figure 3: fJSD_C vs step --
 
 fig, ax = plt.subplots(1, 1, figsize=(7, 5))
 for label, points in data.items():
@@ -135,7 +135,7 @@ plt.savefig(f"{OUTDIR}/fjsd_vs_step.png", dpi=150, bbox_inches="tight")
 plt.close()
 print(f"Saved {OUTDIR}/fjsd_vs_step.png")
 
-# ── Figure 4: Fold Scores at latest checkpoint ──
+# -- Figure 4: Fold Scores at latest checkpoint --
 
 fig, axes = plt.subplots(1, 3, figsize=(14, 5))
 for ax, fs_idx, level in [(axes[0], 4, "C"), (axes[1], 5, "A"), (axes[2], 6, "T")]:
@@ -166,7 +166,7 @@ plt.savefig(f"{OUTDIR}/fold_score_comparison.png", dpi=150, bbox_inches="tight")
 plt.close()
 print(f"Saved {OUTDIR}/fold_score_comparison.png")
 
-# ── Print summary table ──
+# -- Print summary table --
 
 print("\n" + "=" * 100)
 print(

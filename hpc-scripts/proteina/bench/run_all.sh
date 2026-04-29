@@ -4,10 +4,10 @@
 #! on a single A100 node. CSVs land in evaluation/proteina/bench/results/.
 #!
 #! Total wall time budget: ~90 min
-#!   - compile:  ~20 min (4 modes × 2 seq_lens × 100 steps + compile warmups)
-#!   - io:       ~15 min (2 sources × 3 worker counts × 2 pin × 300 batches)
-#!   - e2e:      ~35 min (4 compile-modes × 2 sources × 100 steps + copies)
-#!   - sdpa:     ~20 min (3 backends × 2 compile × 100 steps)
+#!   - compile:  ~20 min (4 modes x 2 seq_lens x 100 steps + compile warmups)
+#!   - io:       ~15 min (2 sources x 3 worker counts x 2 pin x 300 batches)
+#!   - e2e:      ~35 min (4 compile-modes x 2 sources x 100 steps + copies)
+#!   - sdpa:     ~20 min (3 backends x 2 compile x 100 steps)
 #!
 #! Usage:
 #!   sbatch hpc-scripts/proteina/bench/run_all.sh
@@ -96,7 +96,7 @@ if should_run io; then
         --output_csv "$RESULTS_DIR/io.csv"
 fi
 
-#! --- 3. End-to-end: compile × lmdb_source ---
+#! --- 3. End-to-end: compile x lmdb_source ---
 if should_run e2e; then
     echo ""
     echo "############################################################"

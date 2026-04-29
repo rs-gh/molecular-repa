@@ -5,8 +5,8 @@ each section: _local_idx, _build_edges, _build_line_graph, and the 6-layer
 GNN forward. Also compares against GearNet-CA at the same batch size.
 
 Usage (on a GPU node via profile_mc_gearnet.sh):
-    python -u playground/proteina/gearnet/profile_mc_gearnet.py
-    python -u playground/proteina/gearnet/profile_mc_gearnet.py --bs 40
+    python -u encoder_profiling/proteina/gearnet/profile_mc_gearnet.py
+    python -u encoder_profiling/proteina/gearnet/profile_mc_gearnet.py --bs 40
 """
 
 import argparse
@@ -56,7 +56,7 @@ class Timer:
 
 def make_flat_batch(bs, n, device):
     """Simulate a realistic training batch: bs proteins each of length n."""
-    # Vary lengths slightly as in real data (±10%)
+    # Vary lengths slightly as in real data (+/-10%)
     lengths = torch.randint(max(4, n - n // 10), n + 1, (bs,))
     coords_list, res_list, batch_list = [], [], []
     for i, seq_len in enumerate(lengths.tolist()):

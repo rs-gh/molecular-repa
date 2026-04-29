@@ -2,11 +2,11 @@
 #! Build the held-out val.lmdb for the Proteina probe suite.
 #!
 #! Usage:
-#!   # Tier 2 (intr) smoke — n=500, ~5 min:
+#!   # Tier 2 (intr) smoke - n=500, ~5 min:
 #!   sbatch --qos=intr --time=00:30:00 hpc-scripts/proteina/data_prep/build_val_lmdb.sh \
 #!       --n_val 500 --output_path /tmp/val_smoke500.lmdb --commit_every 50 --skip_train_check
 #!
-#!   # Full build — n=5000, ~30-60 min on 16 CPUs:
+#!   # Full build - n=5000, ~30-60 min on 16 CPUs:
 #!   sbatch --qos=intr --time=01:00:00 hpc-scripts/proteina/data_prep/build_val_lmdb.sh \
 #!       --n_val 5000 --commit_every 100 --skip_train_check --resume
 #!

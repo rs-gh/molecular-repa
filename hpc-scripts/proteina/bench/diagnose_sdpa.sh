@@ -1,6 +1,6 @@
 #!/bin/bash
 #!
-#! Quick SDPA backend diagnostic — prints raw errors per backend for
+#! Quick SDPA backend diagnostic - prints raw errors per backend for
 #! proteina's attention pattern. ~5 min GPU time.
 #!
 #! Usage:

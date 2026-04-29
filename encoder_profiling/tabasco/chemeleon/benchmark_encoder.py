@@ -17,7 +17,7 @@ Or as a quick CPU smoke-test locally (GPU timings will say N/A):
 Sections
 --------
 1. Per-molecule: from_tensor (bond inference) vs MolFromSmiles
-2. Full encoder forward – sub-stage wall-clock breakdown
+2. Full encoder forward - sub-stage wall-clock breakdown
 3. GPU idle fraction (CUDA events, GPU only)
 4. MolGraph cache memory estimate
 5. Projected epoch time under each scenario
@@ -33,7 +33,7 @@ from pathlib import Path
 import torch
 import lmdb
 
-# ── project paths ─────────────────────────────────────────────────────────────
+# -- project paths -------------------------------------------------------------
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SRC_PATH = REPO_ROOT / "src" / "tabasco" / "src"
 sys.path.insert(0, str(SRC_PATH))
@@ -42,7 +42,7 @@ LMDB_DIR = REPO_ROOT / "src" / "tabasco" / "data" / "lmdb_geom"
 CHEMELEON = Path.home() / ".chemprop" / "chemeleon_mp.pt"
 
 
-# ── CLI ───────────────────────────────────────────────────────────────────────
+# -- CLI -----------------------------------------------------------------------
 parser = argparse.ArgumentParser()
 parser.add_argument("--batch-size", type=int, default=256)
 parser.add_argument("--n-warmup", type=int, default=2)
@@ -61,7 +61,7 @@ DEVICE = torch.device(
 HAS_CUDA = DEVICE.type == "cuda"
 
 
-# ── helpers ───────────────────────────────────────────────────────────────────
+# -- helpers -------------------------------------------------------------------
 
 
 def banner(title: str):
@@ -92,7 +92,7 @@ def stopwatch(fn, n_warmup, n_rep):
     return times
 
 
-# ── load a real batch directly from GEOM LMDB (no YAML parse) ────────────────
+# -- load a real batch directly from GEOM LMDB (no YAML parse) ----------------
 
 
 def load_geom_batch_fast(batch_size: int):
@@ -105,7 +105,7 @@ def load_geom_batch_fast(batch_size: int):
     from tabasco.chem.convert import MoleculeConverter
     from tabasco.data.utils import TensorDictCollator
 
-    print(f"\nLoading {batch_size} molecules from GEOM LMDB (direct read) …")
+    print(f"\nLoading {batch_size} molecules from GEOM LMDB (direct read) ...")
     t0 = time.perf_counter()
 
     db = lmdb.open(
@@ -150,7 +150,7 @@ def load_geom_batch_fast(batch_size: int):
     return batch, smiles_list[:batch_size]
 
 
-# ── 1. per-molecule micro-benchmark ───────────────────────────────────────────
+# -- 1. per-molecule micro-benchmark -------------------------------------------
 
 
 def bench_per_molecule(batch, smiles_list):
@@ -169,7 +169,7 @@ def bench_per_molecule(batch, smiles_list):
     smi = smiles_list[i]
     n_real = (~batch["padding_mask"][i]).sum().item()
     print(f"\n  Probing molecule 0: {n_real} heavy atoms")
-    print(f"  SMILES: {smi[:80]}{'…' if len(smi)>80 else ''}")
+    print(f"  SMILES: {smi[:80]}{'...' if len(smi)>80 else ''}")
 
     mol_td_obj = TensorDict(
         {
@@ -179,7 +179,7 @@ def bench_per_molecule(batch, smiles_list):
         }
     )
 
-    # ── from_tensor ───────────────────────────────────────────────────────────
+    # -- from_tensor -----------------------------------------------------------
     times_infer = stopwatch(
         lambda: converter.from_tensor(
             mol_td_obj, rescale_coords=True, sanitize=False, use_openbabel=False
@@ -192,38 +192,38 @@ def bench_per_molecule(batch, smiles_list):
         mol_td_obj, rescale_coords=True, sanitize=False, use_openbabel=False
     )
     print("\n  from_tensor  (DetermineConnectivity + argmax + rescale):")
-    print(f"    {m_infer:.2f} ± {s_infer:.2f} ms  (n={N_MOL_REPS})")
+    print(f"    {m_infer:.2f} +/- {s_infer:.2f} ms  (n={N_MOL_REPS})")
     if mol_infer:
-        print(f"    → reconstructed {mol_infer.GetNumAtoms()} atoms")
+        print(f"    -> reconstructed {mol_infer.GetNumAtoms()} atoms")
 
-    # ── MolFromSmiles ─────────────────────────────────────────────────────────
+    # -- MolFromSmiles ---------------------------------------------------------
     times_smi = stopwatch(lambda: Chem.MolFromSmiles(smi), N_WARMUP, N_MOL_REPS)
     m_smi, s_smi = mean_std(times_smi)
     mol_smi = Chem.MolFromSmiles(smi)
-    print("\n  MolFromSmiles (canonical SMILES → RDKit mol):")
-    print(f"    {m_smi:.3f} ± {s_smi:.3f} ms  (n={N_MOL_REPS})")
+    print("\n  MolFromSmiles (canonical SMILES -> RDKit mol):")
+    print(f"    {m_smi:.3f} +/- {s_smi:.3f} ms  (n={N_MOL_REPS})")
     if mol_smi:
-        print(f"    → {mol_smi.GetNumAtoms()} atoms")
+        print(f"    -> {mol_smi.GetNumAtoms()} atoms")
 
     speedup_mol = m_infer / m_smi if m_smi > 0 else float("inf")
-    print(f"\n  >> Speedup from_tensor → MolFromSmiles:  {speedup_mol:.0f}×")
+    print(f"\n  >> Speedup from_tensor -> MolFromSmiles:  {speedup_mol:.0f}x")
 
-    # ── featurizer ────────────────────────────────────────────────────────────
+    # -- featurizer ------------------------------------------------------------
     times_feat = stopwatch(lambda: featurizer(mol_smi), N_WARMUP, N_MOL_REPS)
     m_feat, s_feat = mean_std(times_feat)
-    print("\n  SimpleMoleculeMolGraphFeaturizer (RDKit mol → MolGraph):")
-    print(f"    {m_feat:.2f} ± {s_feat:.2f} ms  (n={N_MOL_REPS})")
+    print("\n  SimpleMoleculeMolGraphFeaturizer (RDKit mol -> MolGraph):")
+    print(f"    {m_feat:.2f} +/- {s_feat:.2f} ms  (n={N_MOL_REPS})")
 
-    # ── cache dict lookup ─────────────────────────────────────────────────────
+    # -- cache dict lookup -----------------------------------------------------
     mg_cached = featurizer(mol_smi)
     cache = {smi: mg_cached}
     times_lookup = stopwatch(lambda: cache.get(smi), N_WARMUP, N_MOL_REPS)
     m_lookup, s_lookup = mean_std(times_lookup)
     print("\n  Dict cache lookup (already cached):")
-    print(f"    {m_lookup*1000:.1f} ± {s_lookup*1000:.1f} µs  (n={N_MOL_REPS})")
+    print(f"    {m_lookup*1000:.1f} +/- {s_lookup*1000:.1f} us  (n={N_MOL_REPS})")
 
-    # ── summary table ─────────────────────────────────────────────────────────
-    print(f"\n  {'Approach':<42}  {'per mol':>8}  {'×{} batch'.format(BATCH_SIZE):>12}")
+    # -- summary table ---------------------------------------------------------
+    print(f"\n  {'Approach':<42}  {'per mol':>8}  {'x{} batch'.format(BATCH_SIZE):>12}")
     print(f"  {'-'*42}  {'-'*8}  {'-'*12}")
     rows = [
         (
@@ -244,13 +244,13 @@ def bench_per_molecule(batch, smiles_list):
     return m_infer, m_smi, m_feat, m_lookup
 
 
-# ── 2. full encoder forward – sub-stage breakdown ─────────────────────────────
+# -- 2. full encoder forward - sub-stage breakdown -----------------------------
 
 _CACHE = {}  # global MolGraph cache for approach C
 
 
 def bench_encoder_forward(batch, smiles_list):
-    banner("2. ChemPropEncoder.forward() – sub-stage wall-clock breakdown")
+    banner("2. ChemPropEncoder.forward() - sub-stage wall-clock breakdown")
 
     from tensordict import TensorDict
     from tabasco.chem.convert import MoleculeConverter
@@ -267,7 +267,7 @@ def bench_encoder_forward(batch, smiles_list):
         encoder_dim = weights["hyper_parameters"]["d_h"]
         print(f"\n  CheMeleon loaded ({encoder_dim}-dim)")
     else:
-        print(f"\n  [WARN] CheMeleon not found at {CHEMELEON}  →  random weights")
+        print(f"\n  [WARN] CheMeleon not found at {CHEMELEON}  ->  random weights")
         mp = BondMessagePassing(d_h=2048, depth=3, dropout=0.0)
         encoder_dim = 2048
     mp = mp.to(DEVICE).eval()
@@ -285,7 +285,7 @@ def bench_encoder_forward(batch, smiles_list):
         """Run encoder forward once and return per-stage ms dict."""
         ms = {}
 
-        # ── Stage A: Python loop (mol construction + featurize) ───────────────
+        # -- Stage A: Python loop (mol construction + featurize) ---------------
         molgraphs, atom_counts = [], []
         sync()
         tA0 = time.perf_counter()
@@ -340,21 +340,21 @@ def bench_encoder_forward(batch, smiles_list):
         tA1 = time.perf_counter()
         ms["A_loop_ms"] = (tA1 - tA0) * 1000
 
-        # ── Stage B: BatchMolGraph ─────────────────────────────────────────────
+        # -- Stage B: BatchMolGraph ---------------------------------------------
         valid_mgs = [mg for mg in molgraphs if mg is not None]
         tB0 = time.perf_counter()
         bmg = BatchMolGraph(valid_mgs)
         tB1 = time.perf_counter()
         ms["B_batch_ms"] = (tB1 - tB0) * 1000
 
-        # ── Stage C: CPU → GPU transfer ───────────────────────────────────────
+        # -- Stage C: CPU -> GPU transfer ---------------------------------------
         tC0 = time.perf_counter()
         bmg.to(DEVICE)
         sync()
         tC1 = time.perf_counter()
         ms["C_transfer_ms"] = (tC1 - tC0) * 1000
 
-        # ── Stage D: GNN forward ──────────────────────────────────────────────
+        # -- Stage D: GNN forward ----------------------------------------------
         sync()
         tD0 = time.perf_counter()
         with torch.no_grad():
@@ -363,7 +363,7 @@ def bench_encoder_forward(batch, smiles_list):
         tD1 = time.perf_counter()
         ms["D_gnn_ms"] = (tD1 - tD0) * 1000
 
-        # ── Stage E: scatter to padded output ─────────────────────────────────
+        # -- Stage E: scatter to padded output ---------------------------------
         output = torch.zeros(B, N, encoder_dim, device=DEVICE)
         vi, off = 0, 0
         tE0 = time.perf_counter()
@@ -406,12 +406,12 @@ def bench_encoder_forward(batch, smiles_list):
             sys.stdout.flush()
         return accum
 
-    accum_ft = run_approach("Approach A – from_tensor (current)", "from_tensor")
+    accum_ft = run_approach("Approach A - from_tensor (current)", "from_tensor")
 
-    accum_smi = run_approach("Approach B – MolFromSmiles (proposed)", "mol_from_smiles")
+    accum_smi = run_approach("Approach B - MolFromSmiles (proposed)", "mol_from_smiles")
 
     # pre-warm the cache
-    print(f"\n  Pre-warming MolGraph cache for {B} molecules …")
+    print(f"\n  Pre-warming MolGraph cache for {B} molecules ...")
     featurizer2 = SimpleMoleculeMolGraphFeaturizer()
     global _CACHE
     _CACHE = {}
@@ -421,17 +421,17 @@ def bench_encoder_forward(batch, smiles_list):
             if mol:
                 _CACHE[smi] = featurizer2(mol)
 
-    accum_cache = run_approach("Approach C – full cache", "cached")
+    accum_cache = run_approach("Approach C - full cache", "cached")
 
-    # ── comparison table ──────────────────────────────────────────────────────
+    # -- comparison table ------------------------------------------------------
     def fmt(ts):
         m, s = mean_std(ts)
-        return f"{m:7.1f} ±{s:5.1f}"
+        return f"{m:7.1f} +/-{s:5.1f}"
 
     labels = {
         "A_loop_ms": "[A] mol construction + featurize (Python loop)",
         "B_batch_ms": "[B] BatchMolGraph()                            ",
-        "C_transfer_ms": "[C] .to(device) CPU→GPU                       ",
+        "C_transfer_ms": "[C] .to(device) CPU->GPU                       ",
         "D_gnn_ms": "[D] BondMessagePassing (GNN)                  ",
         "E_scatter_ms": "[E] scatter to padded output                  ",
         "total_ms": "[T] TOTAL                                     ",
@@ -439,7 +439,7 @@ def bench_encoder_forward(batch, smiles_list):
     print(f"\n  {'Stage':<52}  {'from_tensor':>14}  {'MolFromSMI':>14}  {'Cached':>14}")
     print(f"  {'-'*52}  {'-'*14}  {'-'*14}  {'-'*14}")
     for k, lbl in labels.items():
-        sep = "─" * 70 if k == "total_ms" else ""
+        sep = "-" * 70 if k == "total_ms" else ""
         if sep:
             print(f"  {sep}")
         print(
@@ -457,13 +457,13 @@ def bench_encoder_forward(batch, smiles_list):
         f"\n  GPU idle fraction (current): {gpu_idle_pct:.1f}%  "
         f"(total={m_ft_total:.0f}ms, GPU={m_gnn:.0f}ms)"
     )
-    print(f"  Speedup MolFromSmiles vs current:  {m_ft_total/m_smi_total:.1f}×")
-    print(f"  Speedup Full cache vs current:     {m_ft_total/m_cache_total:.1f}×")
+    print(f"  Speedup MolFromSmiles vs current:  {m_ft_total/m_smi_total:.1f}x")
+    print(f"  Speedup Full cache vs current:     {m_ft_total/m_cache_total:.1f}x")
 
     return m_ft_total, m_smi_total, m_cache_total, m_gnn
 
 
-# ── 2b. end-to-end test of the real ChemPropEncoder class ─────────────────────
+# -- 2b. end-to-end test of the real ChemPropEncoder class ---------------------
 
 
 def bench_real_encoder(batch, smiles_list):
@@ -472,7 +472,7 @@ def bench_real_encoder(batch, smiles_list):
     using the class as it now exists in the codebase (not the reimplemented loop
     above).  This confirms the fixes land correctly in the real code path.
     """
-    banner("2b. Real ChemPropEncoder class – before vs after fixes")
+    banner("2b. Real ChemPropEncoder class - before vs after fixes")
 
     from tabasco.models.components.encoders import ChemPropEncoder
 
@@ -483,20 +483,20 @@ def bench_real_encoder(batch, smiles_list):
     atomics = batch["atomics"]
     padding_mask = batch["padding_mask"]
 
-    # ── old path (no SMILES → from_tensor + bond inference) ───────────────────
-    print(f"\n  Old path – from_tensor, no cache  [{N_WARMUP}w + {N_REPEATS} timed]")
+    # -- old path (no SMILES -> from_tensor + bond inference) -------------------
+    print(f"\n  Old path - from_tensor, no cache  [{N_WARMUP}w + {N_REPEATS} timed]")
     times_old = stopwatch(
         lambda: enc(coords, atomics, padding_mask, smiles=None),
         N_WARMUP,
         N_REPEATS,
     )
     m_old, s_old = mean_std(times_old)
-    print(f"    {m_old:.0f} ± {s_old:.0f} ms")
+    print(f"    {m_old:.0f} +/- {s_old:.0f} ms")
 
-    # ── new path (SMILES provided, first call – cache miss → MolFromSmiles) ───
+    # -- new path (SMILES provided, first call - cache miss -> MolFromSmiles) ---
     enc._molgraph_cache.clear()
     print(
-        f"\n  New path – MolFromSmiles, cold cache  [{N_WARMUP}w + {N_REPEATS} timed]"
+        f"\n  New path - MolFromSmiles, cold cache  [{N_WARMUP}w + {N_REPEATS} timed]"
     )
     times_cold = stopwatch(
         lambda: enc(coords, atomics, padding_mask, smiles=smiles_list),
@@ -504,11 +504,11 @@ def bench_real_encoder(batch, smiles_list):
         N_REPEATS,
     )
     m_cold, s_cold = mean_std(times_cold)
-    print(f"    {m_cold:.0f} ± {s_cold:.0f} ms")
+    print(f"    {m_cold:.0f} +/- {s_cold:.0f} ms")
 
-    # ── new path – warm cache (all MolGraphs already built) ───────────────────
+    # -- new path - warm cache (all MolGraphs already built) -------------------
     print(
-        f"\n  New path – MolFromSmiles, warm cache (subsequent epochs)  "
+        f"\n  New path - MolFromSmiles, warm cache (subsequent epochs)  "
         f"[{N_WARMUP}w + {N_REPEATS} timed]"
     )
     times_warm = stopwatch(
@@ -517,24 +517,24 @@ def bench_real_encoder(batch, smiles_list):
         N_REPEATS,
     )
     m_warm, s_warm = mean_std(times_warm)
-    print(f"    {m_warm:.0f} ± {s_warm:.0f} ms")
+    print(f"    {m_warm:.0f} +/- {s_warm:.0f} ms")
     print(f"    cache size: {len(enc._molgraph_cache)} unique SMILES")
 
     print("\n  Summary:")
     print(f"    Old (from_tensor):            {m_old:.0f} ms")
     print(
         f"    New cold (MolFromSmiles):     {m_cold:.0f} ms  "
-        f"({m_old/m_cold:.1f}× vs old)"
+        f"({m_old/m_cold:.1f}x vs old)"
     )
     print(
         f"    New warm (cache hit):         {m_warm:.0f} ms  "
-        f"({m_old/m_warm:.1f}× vs old)"
+        f"({m_old/m_warm:.1f}x vs old)"
     )
 
     return m_old, m_cold, m_warm
 
 
-# ── 3. MolGraph cache memory estimate ─────────────────────────────────────────
+# -- 3. MolGraph cache memory estimate -----------------------------------------
 
 
 def bench_cache_memory(smiles_list):
@@ -569,18 +569,18 @@ def bench_cache_memory(smiles_list):
     n_train = 1_142_099
 
     print(f"\n  Sample: {len(sizes_bytes)} molecules")
-    print(f"  Mean MolGraph size: {m_bytes/1024:.1f} ± {std_bytes/1024:.1f} KB")
+    print(f"  Mean MolGraph size: {m_bytes/1024:.1f} +/- {std_bytes/1024:.1f} KB")
     print(f"\n  Projected RAM for full GEOM training set ({n_train:,} mols):")
     for frac, label in [
-        (1.00, "100% – full set      "),
-        (0.10, " 10% – LRU ~114K cap "),
-        (0.02, "  2% – LRU ~23K cap  "),
+        (1.00, "100% - full set      "),
+        (0.10, " 10% - LRU ~114K cap "),
+        (0.02, "  2% - LRU ~23K cap  "),
     ]:
         gb = m_bytes * n_train * frac / 1e9
         print(f"    {label}: {gb:.1f} GB")
 
 
-# ── 4. projected epoch time ───────────────────────────────────────────────────
+# -- 4. projected epoch time ---------------------------------------------------
 
 
 def project_epoch_times(m_ft_total, m_smi_total, m_cache_total, m_gnn_ms):
@@ -591,7 +591,7 @@ def project_epoch_times(m_ft_total, m_smi_total, m_cache_total, m_gnn_ms):
     def h(ms):
         total_ms = ms * N_STEPS
         hrs = total_ms / 3_600_000
-        return f"{ms:6.0f} ms/step → {hrs:.2f} h/epoch"
+        return f"{ms:6.0f} ms/step -> {hrs:.2f} h/epoch"
 
     print(f"""
   Encoder forward only (this benchmark):
@@ -605,11 +605,11 @@ def project_epoch_times(m_ft_total, m_smi_total, m_cache_total, m_gnn_ms):
     Chemprop currently reports:         ~7+ h/epoch observed
 
   The gap is entirely explained by encoder CPU overhead.
-  Once loop time < ~350 ms/step, total step ≈ mild step.
+  Once loop time < ~350 ms/step, total step ~= mild step.
 """)
 
 
-# ── 5. optional torch profiler ────────────────────────────────────────────────
+# -- 5. optional torch profiler ------------------------------------------------
 
 
 def run_torch_profiler(batch, smiles_list):
@@ -678,15 +678,15 @@ def run_torch_profiler(batch, smiles_list):
     print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=25))
 
 
-# ── main ──────────────────────────────────────────────────────────────────────
+# -- main ----------------------------------------------------------------------
 
 
 def main():
-    print("\n" + "━" * 70)
+    print("\n" + "-" * 70)
     print("  ChemPropEncoder Bottleneck Benchmark")
     print(f"  Device: {DEVICE}  |  Batch size: {BATCH_SIZE}")
     print(f"  N_warmup={N_WARMUP}  N_repeats={N_REPEATS}  N_mol_reps={N_MOL_REPS}")
-    print("━" * 70)
+    print("-" * 70)
 
     if not (LMDB_DIR / "train.lmdb").exists():
         print(f"\n[ERROR] GEOM LMDB not found at {LMDB_DIR}")

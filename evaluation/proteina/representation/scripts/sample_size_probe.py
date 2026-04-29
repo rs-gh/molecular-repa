@@ -1,5 +1,5 @@
 # ruff: noqa: E402
-"""Phase 1 — Sample-size learning curve for the pretrained contact probe.
+"""Phase 1 - Sample-size learning curve for the pretrained contact probe.
 
 Picks a single representative checkpoint + layer and runs the pretrained-split
 probe at several train-set sizes, evaluating each against the same fixed val
@@ -11,7 +11,7 @@ This is a one-off: run it once, decide N_train, commit it to
 ``pretrain_probe_sweep.py`` across all checkpoints with that value.
 
 Default target: baseline @ step=400000, layer=4, t=1.0. Layer-4 mid-trunk
-output is a reasonable compromise — not the L0 peak (where signal is already
+output is a reasonable compromise - not the L0 peak (where signal is already
 very strong and the curve might saturate faster) and not the deep layers
 (where numbers are low and noise dominates).
 
@@ -152,7 +152,7 @@ def main() -> None:
     )
     print(f"  Loaded {len(train_raw_full)} train proteins")
 
-    # --- Load checkpoint & extract features ONCE (expensive — backbone forward) ---
+    # --- Load checkpoint & extract features ONCE (expensive - backbone forward) ---
     run_dir, is_repa, _, _ = RUN_SCHEDULES[args.run]
     ckpt = find_checkpoint_path(run_dir, args.step, prefer_ema=True)
     if ckpt is None:
@@ -186,7 +186,7 @@ def main() -> None:
     # --- Sweep N_train: slice the features, retrain probe, reuse eval features ---
     rows = []
     for n in n_trains:
-        # Slice: same order as the full manifest, so N=500 ⊂ N=1000 ⊂ ....
+        # Slice: same order as the full manifest, so N=500 subset of N=1000 subset of ....
         reps_train = reps_train_full[:n]
         # Slice train_batch tensors correspondingly.
         train_batch_n = {
@@ -256,7 +256,7 @@ def main() -> None:
         ax.set_ylabel("P@L/5 on fixed val set")
         ax.set_title(
             f"{args.run} step={step} layer={args.layer}  |  "
-            f"n_eval={args.n_eval} ({result['n_proteins_test']} after L≥50 filter)"
+            f"n_eval={args.n_eval} ({result['n_proteins_test']} after L>=50 filter)"
         )
         ax.grid(alpha=0.3)
         ax.legend()

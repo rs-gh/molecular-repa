@@ -3,7 +3,7 @@
 #! Smoke test: REPA L4 n=128 at bs=80 with linear-scaled LR (3.33e-4).
 #!
 #! Existing bs=80 REPA config uses LR=1e-4 (the bs=24 LR). This run tests whether
-#! linear LR scaling (1e-4 × 80/24 ≈ 3.33e-4) is stable WITHOUT warmup — Adam
+#! linear LR scaling (1e-4 x 80/24 ~= 3.33e-4) is stable WITHOUT warmup - Adam
 #! adaptive moments are most fragile in the first few hundred steps, and the base
 #! training_ca.yaml has no scheduler. If grads/loss stay finite for 500 steps,
 #! the full run is safe to launch.
@@ -118,8 +118,8 @@ echo "=== SMOKE COMPLETE (exit code: $EXIT) ==="
 echo "=== Time: $(date) ==="
 echo ""
 echo "Decision criteria:"
-echo "  - exit 0 + finite trans_loss + finite repa_loss → safe to launch full run"
-echo "  - NaN spam in logs → fall back to sqrt-scaled LR (1.83e-4) instead"
-echo "  - loss climbing instead of dropping → LR too high; try sqrt scaling"
+echo "  - exit 0 + finite trans_loss + finite repa_loss -> safe to launch full run"
+echo "  - NaN spam in logs -> fall back to sqrt-scaled LR (1.83e-4) instead"
+echo "  - loss climbing instead of dropping -> LR too high; try sqrt scaling"
 echo ""
 exit $EXIT

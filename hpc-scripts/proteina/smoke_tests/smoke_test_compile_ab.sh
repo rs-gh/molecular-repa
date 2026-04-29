@@ -130,7 +130,7 @@ print(f'RESULT: ${MODE}, 512, 5 epochs in {elapsed:.1f}s ({elapsed/5:.1f}s/epoch
     echo ""
 
     if [ $EXIT_CODE -ne 0 ]; then
-        echo "!!! ${MODE} FAILED — skipping remaining tests"
+        echo "!!! ${MODE} FAILED - skipping remaining tests"
         break
     fi
 done

@@ -11,8 +11,8 @@ Sources:
     - repa_l9_per_residue   (REPA at layer 9)
 
 Probes per source:
-  P1 — contact prediction P@L/5 (long-range, 8 Å, |i-j|≥24)
-  P2 — CATH fold classification (T-level, fallback A/C if too sparse)
+  P1 - contact prediction P@L/5 (long-range, 8 A, |i-j|>=24)
+  P2 - CATH fold classification (T-level, fallback A/C if too sparse)
 
 Usage:
   source .venv/bin/activate
@@ -108,7 +108,7 @@ def _markdown_table(results: List[Dict]) -> str:
     lines.append(
         "Long-range contact prediction (P1) and CATH fold classification (P2).\n"
     )
-    lines.append("## P1 — Contact prediction (P@L/k)\n")
+    lines.append("## P1 - Contact prediction (P@L/k)\n")
     lines.append("| source | dim | P@L | P@L/2 | P@L/5 | n_test |")
     lines.append("|---|---:|---:|---:|---:|---:|")
     for r in results:
@@ -117,7 +117,7 @@ def _markdown_table(results: List[Dict]) -> str:
             f"| {r['source']} | {r['dim']} | {c['p_at_L']:.3f} | {c['p_at_L_2']:.3f} | "
             f"{c['p_at_L_5']:.3f} | {c['n_proteins_test']} |"
         )
-    lines.append("\n## P2 — CATH classification\n")
+    lines.append("\n## P2 - CATH classification\n")
     lines.append(
         "| source | level | classes | accuracy | macro-F1 | n_train | n_test |"
     )
@@ -153,7 +153,7 @@ def main():
     device = _default_device()
 
     # --- Load shared batch ---
-    print(f"Loading {args.n_proteins} proteins (≤ {args.max_size} residues)...")
+    print(f"Loading {args.n_proteins} proteins (<= {args.max_size} residues)...")
     batch, raw = load_proteina_batch(
         n=args.n_proteins, max_size=args.max_size, device=device
     )
@@ -192,7 +192,7 @@ def main():
             import traceback
 
             traceback.print_exc()
-            print(f"  ❌ {name} failed: {type(e).__name__}: {e}")
+            print(f"  [X] {name} failed: {type(e).__name__}: {e}")
             results.append({"source": name, "error": f"{type(e).__name__}: {e}"})
         finally:
             gc.collect()

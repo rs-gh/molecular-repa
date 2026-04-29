@@ -59,7 +59,7 @@ def main():
     print(f"\nSaving to {output_path}...")
     with open(output_path, "wb") as f:
         pickle.dump(generated_mols, f)
-    print("✓ Done!")
+    print("[OK] Done!")
 
 
 if __name__ == "__main__":

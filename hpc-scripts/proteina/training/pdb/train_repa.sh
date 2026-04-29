@@ -6,7 +6,7 @@
 #! Config tree: training/<seq_len>/[<encoder>/[<averaging>/]]<config_name>.yaml
 #!   - Baselines live at training/<seq_len>/ (no encoder subdir).
 #!   - REPA configs live at training/<seq_len>/<encoder>/[<averaging>/],
-#!     where <encoder> ∈ {gearnet, esm2, ...}.
+#!     where <encoder> in {gearnet, esm2, ...}.
 #!
 #! Usage (pass <config_name> and <config_subdir>):
 #!   sbatch .../train_repa.sh training_repa training/512/gearnet                                  # 512 REPA gearnet (implicit layer 4)
@@ -67,7 +67,7 @@ REPA_SUBDIR="${2:-}"
 #! Set descriptive SLURM job name from config (e.g. training_repa_l4_256_per_residue -> repa-l4-256-per-residue)
 #! Normalize: training_repa (layer 4 implicit) -> repa-l4, training_repa_layer0 -> repa-l0
 JOB_SHORT=$(echo "$REPA_CONFIG" | sed 's/^training_//' | sed 's/repa_layer/repa_l/' | sed 's/_/-/g')
-# training_repa with no layer suffix is layer 4 — make that explicit
+# training_repa with no layer suffix is layer 4 - make that explicit
 if [ "$JOB_SHORT" = "repa" ]; then JOB_SHORT="repa-l4"; fi
 if [ "$JOB_SHORT" = "repa-v2" ]; then JOB_SHORT="repa-l4"; fi
 scontrol update JobId="$SLURM_JOB_ID" JobName="$JOB_SHORT" 2>/dev/null

@@ -10,7 +10,7 @@ Key questions:
 Run:
   source .venv/bin/activate
   export PROJECT_ROOT=$(pwd)/src/tabasco
-  python playground/tabasco/mace/explore_mace.py
+  python encoder_profiling/tabasco/mace/explore_mace.py
 """
 
 import os
@@ -53,7 +53,7 @@ ATOM_NAME_TO_Z = {
 }
 
 
-# ── Data loading ─────────────────────────────────────────────────────────────
+# -- Data loading -------------------------------------------------------------
 
 
 def load_geom_molecules(n=100):
@@ -92,7 +92,7 @@ def rdkit_mol_to_ase_atoms(mol, remove_h=False):
     return ase.Atoms(numbers=atomic_numbers, positions=positions)
 
 
-# ── MACE helpers ─────────────────────────────────────────────────────────────
+# -- MACE helpers -------------------------------------------------------------
 
 
 def setup_mace(model_name="small", device=None):
@@ -187,7 +187,7 @@ def get_mace_embeddings(atoms_list, calc, model, config, batch_size=64):
     return per_mol
 
 
-# ── Analysis ─────────────────────────────────────────────────────────────────
+# -- Analysis -----------------------------------------------------------------
 
 
 def analyze_representation(embeddings, name=""):
@@ -197,9 +197,9 @@ def analyze_representation(embeddings, name=""):
     else:
         flat = embeddings.float()
 
-    print(f"\n{'─'*60}")
+    print(f"\n{'-'*60}")
     print(f"  {name}")
-    print(f"{'─'*60}")
+    print(f"{'-'*60}")
     print(f"  Shape: {flat.shape}")
     print(f"  Mean: {flat.mean():.4f}, Std: {flat.std():.4f}")
     print(f"  Min: {flat.min():.4f}, Max: {flat.max():.4f}")
@@ -467,7 +467,7 @@ def compare_with_chemeleon(mols, calc, model, config, n_mols=20):
         )
 
 
-# ── Main ─────────────────────────────────────────────────────────────────────
+# -- Main ---------------------------------------------------------------------
 
 
 def main():

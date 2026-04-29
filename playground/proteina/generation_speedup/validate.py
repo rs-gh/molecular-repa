@@ -130,11 +130,11 @@ def compute_cross_mode_rmsd(
 def plot_distributions(df: pd.DataFrame, out_dir: Path):
     out_dir.mkdir(parents=True, exist_ok=True)
     metrics = [
-        ("bond_mean", "mean CA-CA bond length (Å)"),
-        ("angle_mean", "mean CA-CA-CA virtual bond angle (°)"),
-        ("rg", "radius of gyration (Å)"),
-        ("end_to_end", "end-to-end distance (Å)"),
-        ("clash_rate", "CA-CA clash rate (frac. < 3.6 Å, non-adj)"),
+        ("bond_mean", "mean CA-CA bond length (A)"),
+        ("angle_mean", "mean CA-CA-CA virtual bond angle (deg)"),
+        ("rg", "radius of gyration (A)"),
+        ("end_to_end", "end-to-end distance (A)"),
+        ("clash_rate", "CA-CA clash rate (frac. < 3.6 A, non-adj)"),
     ]
     for key, label in metrics:
         fig, ax = plt.subplots(figsize=(6, 4))
@@ -156,7 +156,7 @@ def plot_rmsd(rmsd_df: pd.DataFrame, out_dir: Path):
     mode_order = sorted(rmsd_df["mode"].unique())
     data = [rmsd_df[rmsd_df["mode"] == m]["ca_rmsd_vs_ref"].values for m in mode_order]
     ax.boxplot(data, labels=mode_order)
-    ax.set_ylabel("CA RMSD vs eager_fp32 (Å)")
+    ax.set_ylabel("CA RMSD vs eager_fp32 (A)")
     ax.set_title("Per-sample best-aligned CA RMSD vs reference mode")
     fig.tight_layout()
     fig.savefig(out_dir / "cross_mode_rmsd.png", dpi=120)

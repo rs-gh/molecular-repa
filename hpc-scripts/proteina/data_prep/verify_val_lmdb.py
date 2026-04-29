@@ -72,7 +72,7 @@ def check_counts() -> dict:
     )
     assert (
         len(val_ids) >= MIN_VAL_ENTRIES
-    ), f"val has only {len(val_ids)} entries — want >= {MIN_VAL_ENTRIES}"
+    ), f"val has only {len(val_ids)} entries - want >= {MIN_VAL_ENTRIES}"
     assert lengths.max() <= 512, "val contains a protein > 512 residues"
     print(
         f"[1/5] OK  n_entries={len(val_ids)}  "
@@ -82,13 +82,15 @@ def check_counts() -> dict:
 
 
 def check_disjointness(val_ids: set) -> None:
-    """Check 2: val ∩ train == ∅."""
+    """Check 2: val intersect train == empty."""
     assert TRAIN_LMDB.exists(), f"train.lmdb missing at {TRAIN_LMDB}"
     print("[2/5] reading train.lmdb IDs (may take minutes if no __ids__ cache)...")
     train_ids = _lmdb_ids(TRAIN_LMDB)
     overlap = val_ids & train_ids
-    assert not overlap, f"val ∩ train = {len(overlap)}; sample: {list(overlap)[:5]}"
-    print(f"[2/5] OK  val ∩ train = 0 (|train|={len(train_ids)})")
+    assert (
+        not overlap
+    ), f"val intersect train = {len(overlap)}; sample: {list(overlap)[:5]}"
+    print(f"[2/5] OK  val intersect train = 0 (|train|={len(train_ids)})")
 
 
 def check_cath_rate() -> None:
@@ -143,7 +145,7 @@ def main():
     print(f"Verifying {VAL_LMDB}")
     ctx = check_counts()
     if args.skip_disjointness:
-        print("[2/5] SKIPPED (--skip_disjointness) — trusting splitter determinism")
+        print("[2/5] SKIPPED (--skip_disjointness) - trusting splitter determinism")
     else:
         check_disjointness(ctx["val_ids"])
     check_cath_rate()
@@ -153,7 +155,7 @@ def main():
         "run after verify via: PROBE_SPLIT=val sbatch hpc-scripts/proteina/evaluation/representation/run_probes.sh "
         "--n_proteins 200 --runs baseline_128 --timesteps 1.0"
     )
-    print("\nALL PASSED — safe to flip PROBE_SPLIT default to val")
+    print("\nALL PASSED - safe to flip PROBE_SPLIT default to val")
 
 
 if __name__ == "__main__":

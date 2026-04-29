@@ -160,7 +160,7 @@ def test_bucketed_dataloader_yields_fixed_shapes_per_bucket():
 
 
 def test_bucketed_dataloader_respects_drop_last_batch_sizes():
-    """drop_last=True means every yielded batch has exactly the bucket's BS —
+    """drop_last=True means every yielded batch has exactly the bucket's BS -
     required for torch.compile to see the same (B, N) per bucket."""
     lengths = np.concatenate(
         [np.full(10, 100), np.full(20, 300), np.full(30, 500)]

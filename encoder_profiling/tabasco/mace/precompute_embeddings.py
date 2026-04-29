@@ -11,7 +11,7 @@ pre-computed embeddings are valid for any rotation of the same conformer.
 
 Output LMDB schema
 ------------------
-Key:   source LMDB key string (e.g. b"0", b"1", b"10" — same byte keys)
+Key:   source LMDB key string (e.g. b"0", b"1", b"10" - same byte keys)
 Value: pickle of float16 numpy array, shape [n_heavy_atoms, encoder_dim]
 
 Typical run (HPC A100 node, GEOM train ~1.1M conformers)
@@ -19,13 +19,13 @@ Typical run (HPC A100 node, GEOM train ~1.1M conformers)
     srun --partition=ampere --gres=gpu:1 --cpus-per-task=8 --time=04:00:00 --pty bash
     source /home/sr2173/git/molecular-repa/.venv/bin/activate
     cd /home/sr2173/git/molecular-repa
-    python playground/tabasco/mace/precompute_embeddings.py \
+    python encoder_profiling/tabasco/mace/precompute_embeddings.py \
         --lmdb-in   src/tabasco/data/lmdb_geom/train.lmdb \
         --lmdb-out  /rds/user/sr2173/hpc-work/tabasco/data/mace_geom/train_embeddings.lmdb \
         --batch-size 256
 
 Run for val and test splits too (they're small, takes minutes):
-    python playground/tabasco/mace/precompute_embeddings.py \
+    python encoder_profiling/tabasco/mace/precompute_embeddings.py \
         --lmdb-in  src/tabasco/data/lmdb_geom/val.lmdb \
         --lmdb-out /rds/user/sr2173/hpc-work/tabasco/data/mace_geom/val_embeddings.lmdb
 
@@ -44,7 +44,7 @@ import torch
 from rdkit import Chem
 from tqdm import tqdm
 
-# ── project paths ─────────────────────────────────────────────────────────────
+# -- project paths -------------------------------------------------------------
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SRC_PATH = REPO_ROOT / "src" / "tabasco" / "src"
 sys.path.insert(0, str(SRC_PATH))
@@ -182,11 +182,11 @@ def main():
     encoder = MACEEncoder(model_name=args.model_name)
     encoder = encoder.to(args.device).eval()
     encoder_dim = encoder.encoder_dim
-    print(f"Loaded MACE-OFF {args.model_name} ({encoder_dim}-dim) → {args.device}")
+    print(f"Loaded MACE-OFF {args.model_name} ({encoder_dim}-dim) -> {args.device}")
 
     # Auto-detect max_atoms if not specified
     if args.max_atoms is None:
-        print(f"\nScanning {args.lmdb_in} for max atom count …")
+        print(f"\nScanning {args.lmdb_in} for max atom count ...")
         max_atoms = 0
         n_entries = 0
         total_atoms = 0

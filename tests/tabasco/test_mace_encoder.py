@@ -161,7 +161,7 @@ class TestMACEEncoder:
 
     def test_conformer_sensitivity(self, mace_encoder, converter):
         """MACE should give different embeddings for different 3D conformers."""
-        smiles = "CCCCCC"  # hexane — many rotamers
+        smiles = "CCCCCC"  # hexane - many rotamers
         mol = Chem.MolFromSmiles(smiles)
         mol = Chem.AddHs(mol)
 

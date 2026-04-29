@@ -2,13 +2,13 @@
 """End-to-end verification that the data pipeline delivers correct data to CheMeleon.
 
 Tests the full chain:
-    DataLoader → TensorDictCollator → apply_random_rotation → ChemPropEncoder
+    DataLoader -> TensorDictCollator -> apply_random_rotation -> ChemPropEncoder
 for both QM9 and GEOM, checking that no data is silently dropped or corrupted.
 
 Usage:
     source .venv/bin/activate
     export PROJECT_ROOT=$(pwd)/src/tabasco
-    python playground/tabasco/chemeleon/verify_pipeline.py
+    python encoder_profiling/tabasco/chemeleon/verify_pipeline.py
 """
 
 import sys
@@ -399,7 +399,7 @@ def test_smiles_atom_consistency(ds, ds_name: str, n_items: int = 500):
 def test_full_augmented_pipeline(
     ds, ds_name: str, encoder, batch_size: int = 32, n_aug: int = 10
 ):
-    print(f"\n  Test 6: Full augmented pipeline → encoder ({ds_name})")
+    print(f"\n  Test 6: Full augmented pipeline -> encoder ({ds_name})")
     loader = DataLoader(
         ds,
         batch_size=batch_size,
@@ -493,7 +493,7 @@ def test_full_augmented_pipeline(
 
 
 # ===================================================================
-# Test 7: No data loss — check dataset length vs DataLoader yield
+# Test 7: No data loss - check dataset length vs DataLoader yield
 # ===================================================================
 def test_no_data_loss(ds, ds_name: str, batch_size: int = 256):
     print(f"\n  Test 7: No data loss in DataLoader ({ds_name})")
@@ -527,7 +527,7 @@ def test_no_data_loss(ds, ds_name: str, batch_size: int = 256):
 # ===================================================================
 def main():
     print("=" * 70)
-    print("Pipeline Verification: DataLoader → Collation → Augmentation → Encoder")
+    print("Pipeline Verification: DataLoader -> Collation -> Augmentation -> Encoder")
     print("=" * 70)
 
     encoder = ChemPropEncoder(pretrained="chemeleon")
@@ -554,7 +554,7 @@ def main():
         results["atom_consistency"] = test_smiles_atom_consistency(ds, ds_name)
         results["full_pipeline"] = test_full_augmented_pipeline(ds, ds_name, encoder)
 
-        # Skip full data loss test for GEOM (too slow — 1.1M items)
+        # Skip full data loss test for GEOM (too slow - 1.1M items)
         if ds_name == "qm9":
             results["no_data_loss"] = test_no_data_loss(ds, ds_name)
         else:
@@ -576,7 +576,7 @@ def main():
         "augmentation": "Augmentation preserves SMILES",
         "encoder": "Encoder outputs valid (non-zero, finite)",
         "atom_consistency": "SMILES atom types match tensors",
-        "full_pipeline": "Full augmented pipeline → encoder",
+        "full_pipeline": "Full augmented pipeline -> encoder",
         "no_data_loss": "No data loss in DataLoader",
     }
 

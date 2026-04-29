@@ -1,5 +1,5 @@
 #!/bin/bash
-#! CATH distribution characterisation — AFDB Swiss-Prot only.
+#! CATH distribution characterisation - AFDB Swiss-Prot only.
 #! Requires interpro_gene3d_swissprot.tsv (run download_interpro_gene3d.sh first).
 #! Usage: sbatch hpc-scripts/proteina/data_prep/analyse_cath_afdb.sh
 

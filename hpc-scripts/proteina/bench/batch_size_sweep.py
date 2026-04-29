@@ -62,7 +62,7 @@ def parse_args():
         "--all_variants",
         action="store_true",
         default=False,
-        help="Test all combinations: compile × gc_layers variants",
+        help="Test all combinations: compile x gc_layers variants",
     )
     parser.add_argument(
         "--output_csv",
@@ -516,7 +516,7 @@ def main():
     print("=" * 100)
     header = (
         f"{'seq_len':>8} {'model':>10} {'compile':>8} {'gc_layers':>10} "
-        f"{'max_bs':>7} {'peak_GB':>8} {'steps/s':>8} {'s/step':>8} {'accum→256':>10}"
+        f"{'max_bs':>7} {'peak_GB':>8} {'steps/s':>8} {'s/step':>8} {'accum->256':>10}"
     )
     print(header)
     print("-" * 100)

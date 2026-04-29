@@ -7,7 +7,7 @@ These were done for CheMeleon and GearNet but missing for MACE.
 Run:
   source .venv/bin/activate
   export PROJECT_ROOT=$(pwd)/src/tabasco
-  python playground/tabasco/mace/probe_and_saturation.py
+  python encoder_profiling/tabasco/mace/probe_and_saturation.py
 """
 
 import os
@@ -41,7 +41,7 @@ ATOM_NAMES = ["C", "N", "O", "F", "S", "Cl", "Br", "I"]
 ATOM_Z = [6, 7, 8, 9, 16, 17, 35, 53]
 
 
-# ── Data Loading (reused from explore_mace.py) ─────────────────────────────
+# -- Data Loading (reused from explore_mace.py) -----------------------------
 
 
 def load_geom_molecules(n=200):
@@ -146,7 +146,7 @@ def get_mace_embeddings(atoms_list, calc, model, config, batch_size=64):
     return per_mol
 
 
-# ── Analysis 1: Linear Probe ───────────────────────────────────────────────
+# -- Analysis 1: Linear Probe -----------------------------------------------
 
 
 def test_linear_probe(mols, calc, model, config):
@@ -221,7 +221,7 @@ def test_linear_probe(mols, calc, model, config):
     return X, y
 
 
-# ── Analysis 2: Projector Saturation Test ──────────────────────────────────
+# -- Analysis 2: Projector Saturation Test ----------------------------------
 
 
 def test_projector_saturation(mols, calc, model, config):
@@ -290,7 +290,7 @@ def test_projector_saturation(mols, calc, model, config):
     print("    GearNet   random:  0.46, trained:  0.78 (not saturated)")
 
 
-# ── Main ────────────────────────────────────────────────────────────────────
+# -- Main --------------------------------------------------------------------
 
 
 def main():

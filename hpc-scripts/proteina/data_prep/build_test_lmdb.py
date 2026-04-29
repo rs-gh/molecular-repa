@@ -1,6 +1,6 @@
 """Build a proper held-out test.lmdb for the Proteina probe suite.
 
-Mirrors build_val_lmdb.py exactly — only difference is it draws from the
+Mirrors build_val_lmdb.py exactly - only difference is it draws from the
 "test" split (0.1% of PDB, ~500 proteins at max_length=512) instead of "val".
 
 Operating principles (see feedback_cache_intermediates.md):
@@ -37,7 +37,7 @@ import pandas as pd
 from loguru import logger
 from tqdm import tqdm
 
-# Script lives at hpc-scripts/proteina/data_prep/ — 3 levels up to repo root.
+# Script lives at hpc-scripts/proteina/data_prep/ - 3 levels up to repo root.
 _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
 sys.path.insert(0, os.path.join(_REPO_ROOT, "src/proteina/proteinfoundation"))
 sys.path.insert(0, os.path.join(_REPO_ROOT, "src/proteina"))
@@ -216,13 +216,13 @@ def main():
             overlap = test_ids_candidates & train_ids
             if overlap:
                 logger.warning(
-                    f"  test ∩ train = {len(overlap)}; removing these from test"
+                    f"  test intersect train = {len(overlap)}; removing these from test"
                 )
                 test_df = test_df[
                     ~test_df.apply(lambda r: f"{r.pdb}_{r.chain}" in overlap, axis=1)
                 ]
             else:
-                logger.info("  test ∩ train = 0 (splitter-disjoint)")
+                logger.info("  test intersect train = 0 (splitter-disjoint)")
 
     # --- Step 4: filter to on-disk raws
     logger.info(f"Listing {raw_dir}...")
@@ -246,7 +246,7 @@ def main():
                 out_lock.unlink()
         else:
             logger.error(
-                f"{out_path} exists — pass --resume to append or --force to replace."
+                f"{out_path} exists - pass --resume to append or --force to replace."
             )
             sys.exit(1)
 
@@ -309,7 +309,7 @@ def main():
         batch_ids = []
 
     def _handle_signal(signum, frame):
-        logger.warning(f"Signal {signum} received — flushing {len(batch)} buffered")
+        logger.warning(f"Signal {signum} received - flushing {len(batch)} buffered")
         try:
             _flush()
         finally:

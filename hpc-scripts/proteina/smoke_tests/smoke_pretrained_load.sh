@@ -45,7 +45,7 @@ python -u - <<'PY'
 import sys
 sys.path.insert(0, "src/proteina")
 import torch
-import proteinfoundation.repa.pyg_compat  # noqa: F401 — patch torch_scatter/cluster
+import proteinfoundation.repa.pyg_compat  # noqa: F401 - patch torch_scatter/cluster
 from proteinfoundation.proteinflow.proteina import Proteina
 
 # NGC ckpts contain omegaconf DictConfig in the pickle; PyTorch 2.6 weights_only

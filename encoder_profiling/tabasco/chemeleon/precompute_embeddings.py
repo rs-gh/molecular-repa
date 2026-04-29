@@ -16,17 +16,17 @@ Typical run (HPC A100 node, GEOM train ~1.1M conformers, ~450K unique SMILES)
     srun --partition=ampere --gres=gpu:1 --cpus-per-task=8 --time=04:00:00 --pty bash
     source /home/sr2173/git/molecular-repa/.venv/bin/activate
     cd /home/sr2173/git/molecular-repa
-    python playground/tabasco/chemeleon/precompute_embeddings.py \\
+    python encoder_profiling/tabasco/chemeleon/precompute_embeddings.py \\
         --lmdb-in   src/tabasco/data/lmdb_geom/train.lmdb \\
         --lmdb-out  src/tabasco/data/chemeleon_geom/train_embeddings.lmdb \\
         --batch-size 512
 
 Run for val and test splits too (they're small, takes minutes):
-    python playground/tabasco/chemeleon/precompute_embeddings.py \\
+    python encoder_profiling/tabasco/chemeleon/precompute_embeddings.py \\
         --lmdb-in  src/tabasco/data/lmdb_geom/val.lmdb \\
         --lmdb-out src/tabasco/data/chemeleon_geom/val_embeddings.lmdb
 
-Storage: ~100 KB per unique SMILES × ~450K unique → ~45 GB for the full
+Storage: ~100 KB per unique SMILES x ~450K unique -> ~45 GB for the full
 training set in float16.  The LMDB map_size is set conservatively at 200 GB
 (virtual, not RSS) so it never needs to be extended.
 """
@@ -43,7 +43,7 @@ import torch
 from rdkit import Chem
 from tqdm import tqdm
 
-# ── project paths ─────────────────────────────────────────────────────────────
+# -- project paths -------------------------------------------------------------
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SRC_PATH = REPO_ROOT / "src" / "tabasco" / "src"
 sys.path.insert(0, str(SRC_PATH))
@@ -91,7 +91,7 @@ def load_chemeleon(device: str):
     mp.load_state_dict(weights["state_dict"])
     mp = mp.to(device).eval()
     encoder_dim = weights["hyper_parameters"]["d_h"]
-    print(f"Loaded CheMeleon ({encoder_dim}-dim) → {device}")
+    print(f"Loaded CheMeleon ({encoder_dim}-dim) -> {device}")
     return mp, encoder_dim
 
 
@@ -198,7 +198,7 @@ def main():
                 existing.add(key.decode())
         print(f"  Skipping {len(existing):,} already-computed SMILES")
 
-    print(f"\nScanning {args.lmdb_in} for unique SMILES …")
+    print(f"\nScanning {args.lmdb_in} for unique SMILES ...")
     all_unique = [
         (smi, n) for smi, n in iter_unique_smiles(args.lmdb_in) if smi not in existing
     ]

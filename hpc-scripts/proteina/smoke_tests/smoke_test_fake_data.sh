@@ -1,5 +1,5 @@
 #!/bin/bash
-#! Smoke test — fake dataset to measure GPU-only throughput ceiling
+#! Smoke test - fake dataset to measure GPU-only throughput ceiling
 #SBATCH -J prot-fake
 #SBATCH -A LIO-CHARM-SL2-GPU
 #SBATCH --nodes=1
@@ -30,7 +30,7 @@ echo ""
 
 # This script measures the theoretical maximum training speed by replacing
 # the real PDB dataset with a fake one that returns pre-computed tensors
-# from RAM — zero disk I/O, zero CIF parsing.
+# from RAM - zero disk I/O, zero CIF parsing.
 #
 # Compare the output (seconds/epoch) against the diagnostic baseline to
 # quantify the cost of num_workers=0.
@@ -62,13 +62,13 @@ class FakePDBDataset(Dataset):
         self._template = Data(
             # coords: [n_residues, 37_atom_types, 3_xyz]
             coords=torch.randn(max_len, 37, 3),
-            # coord_mask: [n_residues, 37] — which atoms exist
+            # coord_mask: [n_residues, 37] - which atoms exist
             coord_mask=torch.ones(max_len, 37, dtype=torch.bool),
-            # seq: [n_residues] — amino acid indices (0-19)
+            # seq: [n_residues] - amino acid indices (0-19)
             seq=torch.randint(0, 20, (max_len,)),
-            # res_seq_pdb_idx: [n_residues] — residue indices
+            # res_seq_pdb_idx: [n_residues] - residue indices
             res_seq_pdb_idx=torch.arange(max_len, dtype=torch.long),
-            # chain_break_per_res: [n_residues] — binary chain break indicator
+            # chain_break_per_res: [n_residues] - binary chain break indicator
             chain_break_per_res=torch.zeros(max_len, dtype=torch.long),
             # Mark all residues as real (no padding)
             num_nodes=max_len,
@@ -153,7 +153,7 @@ elapsed = time.time() - start
 epochs = 5
 print(f'')
 print(f'RESULT: {epochs} epochs in {elapsed:.1f}s ({elapsed/epochs:.1f}s/epoch)')
-print(f'This is the GPU-compute ceiling — compare against baseline to measure data loading cost.')
+print(f'This is the GPU-compute ceiling - compare against baseline to measure data loading cost.')
 "
 
 echo ""

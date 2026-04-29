@@ -62,7 +62,7 @@ def synthetic_cath_batch():
     cath_codes = [classes[lab] for lab in labels]  # plain string shape
     raw = _make_data(cath_codes)
     reps = _make_separable_reps(labels, n_classes=len(classes), dim=24, seed=1)
-    # 2D reps (already pooled) — train_cath_probe accepts these directly.
+    # 2D reps (already pooled) - train_cath_probe accepts these directly.
     return reps, raw, labels, classes
 
 

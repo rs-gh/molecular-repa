@@ -1,5 +1,5 @@
 #!/bin/bash
-#! Smoke test — spawn start method + num_workers=1,2,4
+#! Smoke test - spawn start method + num_workers=1,2,4
 #SBATCH -J prot-spawn
 #SBATCH -A LIO-CHARM-SL2-GPU
 #SBATCH --nodes=1
@@ -117,7 +117,7 @@ print(f'RESULT: num_workers=${NW}, spawn, 3 epochs in {elapsed:.1f}s')
     echo ""
 
     if [ $EXIT_CODE -ne 0 ]; then
-        echo "!!! num_workers=${NW} FAILED (exit code ${EXIT_CODE}) — stopping escalation"
+        echo "!!! num_workers=${NW} FAILED (exit code ${EXIT_CODE}) - stopping escalation"
         break
     fi
 done

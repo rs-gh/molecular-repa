@@ -2,10 +2,10 @@
 #!
 #! MC-GearNet-Edge characterization on 200 PDB proteins.
 #! Mirrors the GearNet-CA and ESM2 analyses:
-#!   playground/proteina/gearnet/explore_gearnet.py
-#!   playground/proteina/esm/FINDINGS.md
+#!   encoder_profiling/proteina/gearnet/explore_gearnet.py
+#!   encoder_profiling/proteina/esm/FINDINGS.md
 #!
-#! Usage: sbatch playground/proteina/mc_gearnet/run_mc_gearnet.sh
+#! Usage: sbatch encoder_profiling/proteina/mc_gearnet/run_mc_gearnet.sh
 #!
 
 #SBATCH -J mc-gn-char
@@ -42,6 +42,6 @@ echo "=== Time: $(date) ==="
 echo "=== DATA_PATH: $DATA_PATH ==="
 
 cd "$REPO_DIR"
-python -u playground/proteina/mc_gearnet/explore_mc_gearnet.py --n-proteins 200
+python -u encoder_profiling/proteina/mc_gearnet/explore_mc_gearnet.py --n-proteins 200
 
 echo "=== DONE: $(date) ==="

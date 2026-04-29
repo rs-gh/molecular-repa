@@ -14,12 +14,12 @@ EXPECTED_MD5="c35402108f14e43f20feb475918f9c26"
 mkdir -p "$(dirname "$DEST")"
 
 if [[ -f "$DEST" ]]; then
-    echo "Already exists: $DEST — skipping download."
+    echo "Already exists: $DEST - skipping download."
 else
-    echo "Downloading mc_gearnet_edge.pth (~81 MB) …"
+    echo "Downloading mc_gearnet_edge.pth (~81 MB) ..."
     wget -q --show-progress -O "$DEST" "$URL"
 fi
 
-echo "Verifying MD5 …"
+echo "Verifying MD5 ..."
 echo "${EXPECTED_MD5}  ${DEST}" | md5sum -c -
 echo "Done: $DEST"

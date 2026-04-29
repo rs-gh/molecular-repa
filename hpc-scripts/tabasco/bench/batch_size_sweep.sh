@@ -6,7 +6,7 @@
 #!   sbatch hpc-scripts/tabasco/bench/batch_size_sweep.sh
 #!   sbatch hpc-scripts/tabasco/bench/batch_size_sweep.sh --experiments geom/mild --max_bs 1024
 #!
-#! Diagnostics are short (≤ 1h) — use --qos=intr per feedback_smoketest_qos_intr.md.
+#! Diagnostics are short (<= 1h) - use --qos=intr per feedback_smoketest_qos_intr.md.
 #!
 
 #SBATCH -J tabasco-bs-sweep

@@ -33,7 +33,7 @@ echo "Start: $(date)"
 
 echo ""
 echo "--- Train split ---"
-python playground/tabasco/mace/precompute_embeddings.py \
+python encoder_profiling/tabasco/mace/precompute_embeddings.py \
     --lmdb-in  "$DATA_DIR/lmdb_geom/train.lmdb" \
     --lmdb-out "$OUT_DIR/train_embeddings.lmdb" \
     --batch-size 256 \
@@ -42,7 +42,7 @@ python playground/tabasco/mace/precompute_embeddings.py \
 
 echo ""
 echo "--- Val split ---"
-python playground/tabasco/mace/precompute_embeddings.py \
+python encoder_profiling/tabasco/mace/precompute_embeddings.py \
     --lmdb-in  "$DATA_DIR/lmdb_geom/val.lmdb" \
     --lmdb-out "$OUT_DIR/val_embeddings.lmdb" \
     --batch-size 256 \
@@ -50,7 +50,7 @@ python playground/tabasco/mace/precompute_embeddings.py \
 
 echo ""
 echo "--- Test split ---"
-python playground/tabasco/mace/precompute_embeddings.py \
+python encoder_profiling/tabasco/mace/precompute_embeddings.py \
     --lmdb-in  "$DATA_DIR/lmdb_geom/test.lmdb" \
     --lmdb-out "$OUT_DIR/test_embeddings.lmdb" \
     --batch-size 256 \

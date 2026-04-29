@@ -347,9 +347,9 @@ All data referenced in this document is available in the repository:
 | Proteina FID results (REPA L4) | `evaluation/proteina/generation/results/pdb/fid/inference_fid_60m_repa.csv` |
 | Proteina FID results (REPA L9) | `evaluation/proteina/generation/results/pdb/fid/inference_fid_60m_repa_layer9.csv` |
 | Proteina baseline overfitting analysis | `playground/proteina/baseline_overfitting/baseline_training_analysis.md` |
-| CheMeleon encoder characterisation | `playground/tabasco/chemeleon/FINDINGS.md` |
-| MACE encoder characterisation | `playground/tabasco/mace/FINDINGS.md` |
-| GearNet encoder characterisation | `playground/proteina/gearnet/FINDINGS.md` |
+| CheMeleon encoder characterisation | `encoder_profiling/tabasco/chemeleon/FINDINGS.md` |
+| MACE encoder characterisation | `encoder_profiling/tabasco/mace/FINDINGS.md` |
+| GearNet encoder characterisation | `encoder_profiling/proteina/gearnet/FINDINGS.md` |
 | Projector saturation analysis | `playground/projector/FINDINGS.md` |
 | REPA paper notes | `docs/notes.md` |
 

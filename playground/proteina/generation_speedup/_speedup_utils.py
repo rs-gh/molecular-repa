@@ -38,7 +38,7 @@ def _patch_torch_load_once():
 
     Strips `_orig_mod.` prefixes (left over from torch.compile-trained ckpts) and
     filters out `repa_loss.*` keys so REPA checkpoints load as plain Proteina.
-    Idempotent — safe to call multiple times.
+    Idempotent - safe to call multiple times.
     """
     if getattr(torch.load, "_speedup_patched", False):
         return

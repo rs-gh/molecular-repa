@@ -261,7 +261,7 @@ def main():
             lmdb_sources = [s for s in lmdb_sources if s != "nvme"]
     args.lmdb_sources = lmdb_sources
     if not lmdb_sources:
-        print("No sources available — aborting.")
+        print("No sources available - aborting.")
         return
 
     rows = []

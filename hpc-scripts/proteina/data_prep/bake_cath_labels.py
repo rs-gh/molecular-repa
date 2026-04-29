@@ -167,7 +167,7 @@ def enrich_split(
         print(f"  Skipping (not found): {lmdb_path}", flush=True)
         return
 
-    map_size = 100 * (1024**3)  # 100 GB — generous headroom for pickle growth
+    map_size = 100 * (1024**3)  # 100 GB - generous headroom for pickle growth
 
     db = lmdb.open(
         lmdb_path,
@@ -183,7 +183,7 @@ def enrich_split(
     t0 = time.time()
     total = skipped_already = written = with_cath = no_cath = 0
 
-    # Pass 1: collect all keys (keys-only scan — does NOT page in values)
+    # Pass 1: collect all keys (keys-only scan - does NOT page in values)
     print("    Pass 1: collecting keys...", flush=True)
     with db.begin(write=False) as txn:
         cursor = txn.cursor()

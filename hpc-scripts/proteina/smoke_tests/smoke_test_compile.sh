@@ -1,5 +1,5 @@
 #!/bin/bash
-#! Proteina smoke test with torch.compile — verify compilation + measure speedup
+#! Proteina smoke test with torch.compile - verify compilation + measure speedup
 #SBATCH -J prot-compile
 #SBATCH -A LIO-CHARM-SL2-GPU
 #SBATCH --nodes=1

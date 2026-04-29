@@ -14,7 +14,7 @@ patching ``sys.argv``, which preserves the per-checkpoint tensor checkpoint
 resume and Hydra config loading logic unchanged.
 
 Usage:
-    # Dry run — print task index table and exit
+    # Dry run - print task index table and exit
     python run_sweep.py --config n128 --dry_run
 
     # SLURM array (one task per checkpoint)
@@ -62,7 +62,7 @@ from lib.checkpoints import (  # noqa: E402
 SWEEP_CONFIG_PATH = HERE.parent / "sweep_config.yaml"
 
 
-# ── Sweep config loading ──────────────────────────────────────────────────────
+# -- Sweep config loading ------------------------------------------------------
 
 
 def _load_sweep_config(profile: str) -> Dict:
@@ -80,7 +80,7 @@ def _load_sweep_config(profile: str) -> Dict:
     return merged
 
 
-# ── Task list construction ────────────────────────────────────────────────────
+# -- Task list construction ----------------------------------------------------
 
 
 def build_task_list(
@@ -111,7 +111,7 @@ def build_task_list(
     return tasks
 
 
-# ── JSONL resume helpers ──────────────────────────────────────────────────────
+# -- JSONL resume helpers ------------------------------------------------------
 
 
 def _load_done_set(jsonl_path: Path) -> Tuple[Set[Tuple[str, int]], List[Dict]]:
@@ -142,7 +142,7 @@ def _append_row(jsonl_path: Path, row: Dict) -> None:
         f.flush()
 
 
-# ── Result consolidation ──────────────────────────────────────────────────────
+# -- Result consolidation ------------------------------------------------------
 
 # Metric columns written by evaluate.py that we surface in the sweep CSV.
 _METRIC_COLS = [
@@ -252,7 +252,7 @@ def consolidate(jsonl_path: Path, output_dir: Path) -> None:
         for r in rows:
             writer.writerow(r)
 
-    # Write MD summary — one row per (run, step), key metrics only
+    # Write MD summary - one row per (run, step), key metrics only
     md_path = output_dir / "sweep_results.md"
     present_metrics = [c for c in _METRIC_COLS if any(c in r for r in rows)]
     header = ["run", "step"] + present_metrics
@@ -274,7 +274,7 @@ def consolidate(jsonl_path: Path, output_dir: Path) -> None:
     print(f"Consolidated {len(result_rows)} rows -> {csv_path}, {md_path}")
 
 
-# ── Single-task execution ─────────────────────────────────────────────────────
+# -- Single-task execution -----------------------------------------------------
 
 
 def run_one_task(
@@ -390,7 +390,7 @@ def run_one_task(
         os.environ.pop("_GEN_SWEEP_CKPT_DIR_OVERRIDE", None)
 
 
-# ── CLI ───────────────────────────────────────────────────────────────────────
+# -- CLI -----------------------------------------------------------------------
 
 
 def parse_args():
@@ -510,7 +510,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    # ── Load profile defaults, apply CLI overrides ────────────────────────── #
+    # -- Load profile defaults, apply CLI overrides -------------------------- #
     profile_cfg: Dict = {}
     if args.config:
         profile_cfg = _load_sweep_config(args.config)
@@ -540,7 +540,7 @@ def main():
     cath_head_path = args.cath_head_path or profile_cfg.get("cath_head_path")
     centroid_path = args.centroid_path or profile_cfg.get("centroid_path")
 
-    # ── Resolve output dir ────────────────────────────────────────────────── #
+    # -- Resolve output dir -------------------------------------------------- #
     if args.output_dir:
         output_dir = Path(args.output_dir)
     elif "output_dir" in profile_cfg:
@@ -550,12 +550,12 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
     jsonl_path = output_dir / "sweep_results.jsonl"
 
-    # ── Consolidate-only mode ─────────────────────────────────────────────── #
+    # -- Consolidate-only mode ----------------------------------------------- #
     if args.consolidate_only:
         consolidate(jsonl_path, output_dir)
         return
 
-    # ── Ad-hoc single checkpoint ──────────────────────────────────────────── #
+    # -- Ad-hoc single checkpoint -------------------------------------------- #
     if args.ckpt_path:
         if not args.ckpt_label or not args.config_name:
             raise ValueError("--ckpt_path requires --ckpt_label and --config_name")
@@ -584,14 +584,14 @@ def main():
         consolidate(jsonl_path, output_dir)
         return
 
-    # ── Build task list from RUN_SCHEDULES ───────────────────────────────── #
+    # -- Build task list from RUN_SCHEDULES --------------------------------- #
     runs_str = args.runs or profile_cfg.get("runs", "")
     if not runs_str:
         raise ValueError("Specify --runs or --config with a runs field.")
     runs = [r.strip() for r in runs_str.split(",") if r.strip()]
     tasks = build_task_list(runs)
 
-    # ── Dry run ───────────────────────────────────────────────────────────── #
+    # -- Dry run ------------------------------------------------------------- #
     if args.dry_run:
         print(f"Task list ({len(tasks)} tasks):")
         print(f"  {'idx':>4}  {'run':<20}  {'step':>8}  {'config_name'}")
@@ -605,7 +605,7 @@ def main():
         )
         return
 
-    # ── Select task(s) to run ─────────────────────────────────────────────── #
+    # -- Select task(s) to run ----------------------------------------------- #
     task_id = args.task_id
     if task_id is None:
         task_id = int(os.environ.get("SLURM_ARRAY_TASK_ID", -1))
@@ -616,13 +616,13 @@ def main():
             sys.exit(1)
         tasks_to_run = [tasks[task_id]]
     else:
-        # No task_id — run all tasks sequentially (useful for local testing)
+        # No task_id - run all tasks sequentially (useful for local testing)
         tasks_to_run = tasks
 
-    # ── Load done set ─────────────────────────────────────────────────────── #
+    # -- Load done set ------------------------------------------------------- #
     done, _ = _load_done_set(jsonl_path)
 
-    # ── Execute ───────────────────────────────────────────────────────────── #
+    # -- Execute ------------------------------------------------------------- #
     for run_name, step, config_name, ckpt_path in tasks_to_run:
         # Resolve actual step for done-set check (handles step=None)
         if ckpt_path and ckpt_path.exists():

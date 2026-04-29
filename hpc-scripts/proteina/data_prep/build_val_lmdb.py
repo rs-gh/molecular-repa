@@ -16,7 +16,7 @@ Usage:
     python hpc-scripts/proteina/data_prep/build_val_lmdb.py \
         --n_val 10 --output_path /tmp/val_smoke.lmdb --num_workers 2
 
-    # Full build on intr GPU node (doesn't need GPU — just fast local NVMe):
+    # Full build on intr GPU node (doesn't need GPU - just fast local NVMe):
     sbatch --qos=intr --time=00:30:00 ... build_val_lmdb.py \
         --n_val 5000 --num_workers 16 --commit_every 100 --force
 """
@@ -36,7 +36,7 @@ import pandas as pd
 from loguru import logger
 from tqdm import tqdm
 
-# Script lives at hpc-scripts/proteina/data_prep/ — 3 levels up to repo root.
+# Script lives at hpc-scripts/proteina/data_prep/ - 3 levels up to repo root.
 _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
 sys.path.insert(0, os.path.join(_REPO_ROOT, "src/proteina/proteinfoundation"))
 sys.path.insert(0, os.path.join(_REPO_ROOT, "src/proteina"))
@@ -169,7 +169,7 @@ def main():
         action="store_true",
         help="Skip scanning train.lmdb for the disjointness filter. "
         "Safe when the splitter config (ratios/seed/CSV) matches the historical "
-        "train build — the splitter's partition is disjoint by construction.",
+        "train build - the splitter's partition is disjoint by construction.",
     )
     args = ap.parse_args()
 
@@ -217,13 +217,13 @@ def main():
             overlap = val_ids_candidates & train_ids
             if overlap:
                 logger.warning(
-                    f"  val ∩ train = {len(overlap)}; removing these from val"
+                    f"  val intersect train = {len(overlap)}; removing these from val"
                 )
                 val_df = val_df[
                     ~val_df.apply(lambda r: f"{r.pdb}_{r.chain}" in overlap, axis=1)
                 ]
             else:
-                logger.info("  val ∩ train = 0 (splitter-disjoint)")
+                logger.info("  val intersect train = 0 (splitter-disjoint)")
 
     # --- Step 4: filter to on-disk raws
     logger.info(f"Listing {raw_dir}...")
@@ -247,7 +247,7 @@ def main():
                 out_lock.unlink()
         else:
             logger.error(
-                f"{out_path} exists — pass --resume to append or --force to replace."
+                f"{out_path} exists - pass --resume to append or --force to replace."
             )
             sys.exit(1)
 
@@ -310,7 +310,7 @@ def main():
         batch_ids = []
 
     def _handle_signal(signum, frame):
-        logger.warning(f"Signal {signum} received — flushing {len(batch)} buffered")
+        logger.warning(f"Signal {signum} received - flushing {len(batch)} buffered")
         try:
             _flush()
         finally:

@@ -177,7 +177,7 @@ def load_checkpoint(checkpoint_path: str, device: str = None):
         data_stats = ckpt["data_stats"]
         model = _build_model_from_config(model_config, data_stats)
 
-        # Load state dict — keys are "model.net.*", strip "model." prefix
+        # Load state dict - keys are "model.net.*", strip "model." prefix
         # Also strip _orig_mod. prefix from torch.compile (handles old checkpoints)
         net_state = {}
         for k, v in ckpt["state_dict"].items():
@@ -372,7 +372,7 @@ def compute_metrics(
     """Compute all metrics on a list of generated molecules.
 
     Args:
-        mol_list: list of (rdkit.Mol or None) — one per generated sample
+        mol_list: list of (rdkit.Mol or None) - one per generated sample
         data_stats: dict with dataset statistics
         train_smiles: list of training SMILES for novelty/FCD (optional)
         n_bootstrap: number of bootstrap samples for CIs (0 = skip)

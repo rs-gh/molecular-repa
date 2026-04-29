@@ -1,26 +1,26 @@
 # ruff: noqa: F841
-"""Joint probe × FID plots — Fig 3c analogue + probe-redundancy scatter.
+"""Joint probe x FID plots - Fig 3c analogue + probe-redundancy scatter.
 
 Merges:
   - `evaluation/proteina/representation/results/sweep_results.csv`        (probe quality metrics)
   - `evaluation/proteina/generation/results/pdb/fid/lite_convergence_all.csv`  (FID / fJSD / fS)
 
-on `(run, samples_seen)` (nsamples = step × batch_size; that's the fair x-axis
+on `(run, samples_seen)` (nsamples = step x batch_size; that's the fair x-axis
 given baseline bs=6 vs REPA bs=4 at 512 residues).
 
 Outputs to `evaluation/proteina/joint/figures/`:
 
-  fig_pareto_fid_vs_probe.png        — Fig 3c analogue
+  fig_pareto_fid_vs_probe.png        - Fig 3c analogue
     One point per (run, samples_seen). X = probe quality (P@L/5 at aligned
     layer), Y = PDB FID (lower = better). Colour by run, connected in
     training order. "Better FID and representation" = top-left.
 
-  fig_pareto_fjsd_vs_probe.png       — same for fJSD_T
-  fig_pareto_fS_vs_probe.png         — same for fS_T
+  fig_pareto_fjsd_vs_probe.png       - same for fJSD_T
+  fig_pareto_fS_vs_probe.png         - same for fS_T
 
-  fig_probe_redundancy.png           — P@L/5 vs CATH accuracy scatter
-    Are the two probes measuring the same thing? Strong diagonal → redundant;
-    scatter → orthogonal (keep both).
+  fig_probe_redundancy.png           - P@L/5 vs CATH accuracy scatter
+    Are the two probes measuring the same thing? Strong diagonal -> redundant;
+    scatter -> orthogonal (keep both).
 
 Usage:
   python evaluation/proteina/joint/scripts/pareto.py
@@ -48,7 +48,7 @@ FID_CSV = (
 )
 FIG_DIR = HERE.parent / "figures"  # .../proteina/joint/figures
 
-# Map FID CSV run names ↔ probe CSV run names (same underlying _v2 runs).
+# Map FID CSV run names <-> probe CSV run names (same underlying _v2 runs).
 PROBE_TO_FID = {
     "baseline": "Baseline (60M)",
     "repa_l0": "REPA (L0)",
@@ -108,7 +108,7 @@ def _aligned_layer_rows(probe: pd.DataFrame) -> pd.DataFrame:
 
 
 def _join(probe: pd.DataFrame, fid: pd.DataFrame) -> pd.DataFrame:
-    """Merge probe × FID on (run_probe/run, samples_seen).  Uses nearest-step
+    """Merge probe x FID on (run_probe/run, samples_seen).  Uses nearest-step
     matching in samples_seen within 10% tolerance since FID and probe schedules
     may not agree exactly (e.g. 740k vs 750k on baseline vs REPA)."""
     probe_al = _aligned_layer_rows(probe)
@@ -205,7 +205,7 @@ def _plot_redundancy(probe: pd.DataFrame, out_path: Path) -> None:
     fig, ax = plt.subplots(figsize=(5.5, 5.0))
     sub = probe.dropna(subset=["p_at_L_5", "cath_acc"])
     if sub.empty:
-        print(f"(no joint data for redundancy plot — skipping {out_path.name})")
+        print(f"(no joint data for redundancy plot - skipping {out_path.name})")
         return
     for run, grp in sub.groupby("run"):
         c = RUN_COLORS.get(run, "gray")
@@ -256,11 +256,11 @@ def main():
     _plot_redundancy(probe[probe["layer"] >= 0], FIG_DIR / "fig_probe_redundancy.png")
 
     if joined.empty:
-        print("No joined probe×FID rows — skip Pareto plots until sweep completes.")
+        print("No joined probexFID rows - skip Pareto plots until sweep completes.")
         return
 
     for y_col, y_label, fname in [
-        ("_res_PDB_FID", "PDB FID (↓)", "fig_pareto_fid_vs_probe.png"),
+        ("_res_PDB_FID", "PDB FID (v)", "fig_pareto_fid_vs_probe.png"),
         ("_res_PDB_fJSD_T", "PDB fJSD (Topology)", "fig_pareto_fjsd_vs_probe.png"),
         ("_res_fS_T", "Fold score (Topology)", "fig_pareto_fS_vs_probe.png"),
     ]:
@@ -269,8 +269,8 @@ def main():
             y_col=y_col,
             y_label=y_label,
             x_col="p_at_L_5",
-            x_label="Probe quality — contact P@L/5 (aligned layer)",
-            title=f"Pareto — {y_label} vs P@L/5",
+            x_label="Probe quality - contact P@L/5 (aligned layer)",
+            title=f"Pareto - {y_label} vs P@L/5",
             out_path=FIG_DIR / fname,
             y_lower_is_better=(fname != "fig_pareto_fS_vs_probe.png"),
         )

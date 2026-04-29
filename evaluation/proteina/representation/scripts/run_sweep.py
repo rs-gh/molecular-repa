@@ -2,15 +2,15 @@
 """Sweep representation-quality probes across the FID-style step schedule,
 at ALL transformer layers per checkpoint, with JSONL append-resume.
 
-What this produces (for each of ~48 checkpoints × ~10 layers, plus encoders):
-  P1 — long-range contact P@L/5 (headline)
-  P2 — CATH fold classification (accuracy + macro-F1)
+What this produces (for each of ~48 checkpoints x ~10 layers, plus encoders):
+  P1 - long-range contact P@L/5 (headline)
+  P2 - CATH fold classification (accuracy + macro-F1)
 
 Columns in the resulting CSV: `run, step, layer, dim, p_at_L, p_at_L_2, p_at_L_5, ...`
-— directly sliceable into:
+- directly sliceable into:
 
-  • Training-progression curve (y = metric, x = step, one curve per run/layer)
-  • Layer-wise curve (y = metric, x = layer, one curve per run × step) —
+  * Training-progression curve (y = metric, x = step, one curve per run/layer)
+  * Layer-wise curve (y = metric, x = layer, one curve per run x step) -
     the REPA-paper Fig. 3a/b analogue
 
 Resume behaviour:
@@ -24,7 +24,7 @@ Usage:
   python evaluation/proteina/representation/scripts/run_sweep.py --n_proteins 200
 
 Sample selection:
-  Default — first-N proteins ≤ max_size in LMDB cursor order. Deterministic
+  Default - first-N proteins <= max_size in LMDB cursor order. Deterministic
   but biased by insertion order. Every historical row in sweep_results.jsonl
   (the 231 present before 2026-04-19) was collected this way; they carry
   ``manifest: "v1"`` implicitly when re-consolidated.
@@ -122,7 +122,7 @@ def _load_done_set(
     """Read existing JSONL; return set of completed (run, step, layer, t_tag) keys + all rows.
 
     Historical rows written before the t-sweep change have no ``t`` field and
-    are treated as t=1.0 (clean) for resume purposes — matches the original
+    are treated as t=1.0 (clean) for resume purposes - matches the original
     clean-endpoint probing convention.
     """
     if not jsonl_path.exists():
@@ -174,9 +174,9 @@ def _probe_one(
 ) -> Dict:
     """Run P1 + P2 on the given reps.
 
-    heads=None, seeds=None (default) → legacy flat schema matching the 231
+    heads=None, seeds=None (default) -> legacy flat schema matching the 231
     historical rows: ``contact: {p_at_L, p_at_L_2, p_at_L_5, n_proteins_test}``.
-    heads/seeds set explicitly → rich schema with per-head / per-seed sub-dicts
+    heads/seeds set explicitly -> rich schema with per-head / per-seed sub-dicts
     plus back-compat flat fields (so consolidate() + historical readers still
     work).
     """
@@ -244,7 +244,7 @@ def _probe_analytic(
         "n_classes": 0,
     }
     return {
-        "dim": 0,  # no rep dim — analytic path
+        "dim": 0,  # no rep dim - analytic path
         "contact": contact,
         "cath": cath,
     }
@@ -260,7 +260,7 @@ def _load_ckpt_with_retry(
     """Load with retries AND a wall-clock timeout per attempt.
 
     SIGALRM-based timeout so one stuck checkpoint (network hang, corrupted
-    state, GearNet re-init deadlock…) doesn't kill the whole sweep.
+    state, GearNet re-init deadlock...) doesn't kill the whole sweep.
     """
     import signal
 
@@ -318,10 +318,10 @@ def consolidate(outdir: Path) -> None:
     def _primary_p_at_L_5(contact: Dict) -> float:
         """Linear-head P@L/5 if the row was written with `--heads both`, else NaN.
 
-        Matches the REPA paper convention — linear probe is the headline metric
+        Matches the REPA paper convention - linear probe is the headline metric
         for representation quality (isolates what's linearly decodable).
         Legacy rows written with `--heads mlp` only had an MLP head trained, so
-        there's no linear number to report — we return NaN rather than the MLP
+        there's no linear number to report - we return NaN rather than the MLP
         value to avoid silently misrepresenting the probe type.
         """
         if (
@@ -427,7 +427,7 @@ def consolidate(outdir: Path) -> None:
     # MD summary: one table grouped by (run, step, t), showing the best-layer peak.
     # Linear-head P@L/5 is the primary metric (matches REPA paper).
     lines = [
-        "# Proteina Probe Sweep — peak-layer summary\n",
+        "# Proteina Probe Sweep - peak-layer summary\n",
         "Primary metric: linear-head P@L/5 at the best layer for each (run, step, t).\n",
         "`P@L/5-mlp` column shows the MLP-head number at the same best-layer choice,",
         "to flag cases where nonlinear decodability is inflating estimates.\n",
@@ -457,8 +457,8 @@ def consolidate(outdir: Path) -> None:
         best = max(group, key=_rank_key)
         lin = _primary_p_at_L_5(best["contact"])
         mlp = _mlp_p_at_L_5(best["contact"])
-        lin_str = f"{lin:.3f}" if not math.isnan(lin) else "—"
-        mlp_str = f"{mlp:.3f}" if not math.isnan(mlp) else "—"
+        lin_str = f"{lin:.3f}" if not math.isnan(lin) else "-"
+        mlp_str = f"{mlp:.3f}" if not math.isnan(mlp) else "-"
         lines.append(
             f"| {run} | {step} | {t_tag} | {best['layer']} | "
             f"{lin_str} | {mlp_str} | "
@@ -543,7 +543,7 @@ def main():
         "--rep_dim_random",
         type=int,
         default=512,
-        help="D for random_gauss reps (match the backbone's hidden dim — default 512).",
+        help="D for random_gauss reps (match the backbone's hidden dim - default 512).",
     )
     ap.add_argument(
         "--runs",
@@ -558,7 +558,7 @@ def main():
         help=(
             "Comma-separated flow-matching timesteps at which to probe trunk "
             "hidden states. Proteina convention: t=1.0 is clean, t=0.0 is pure "
-            "noise — so '1.0,0.75,0.5' is clean + two noisy points, matching "
+            "noise - so '1.0,0.75,0.5' is clean + two noisy points, matching "
             "REPA paper Fig 7. Each (run, step, layer, t) tuple is an independent "
             "JSONL row. Pass '1.0' to restore legacy single-t behavior."
         ),
@@ -574,7 +574,7 @@ def main():
 
     # Load --config profile AFTER all add_argument calls so set_defaults wins over
     # add_argument defaults (argparse applies add_argument defaults last if called
-    # after set_defaults, overwriting them — so we must set_defaults last).
+    # after set_defaults, overwriting them - so we must set_defaults last).
     pre, _ = ap.parse_known_args()
     if pre.config is not None:
         import yaml
@@ -634,15 +634,15 @@ def main():
 
     # --- Shared batch: loaded once, reused everywhere ---
     # Two paths:
-    #   1. --manifest_version v2+  → uniform-random sample, cached to JSON, tagged
+    #   1. --manifest_version v2+  -> uniform-random sample, cached to JSON, tagged
     #                                 in each record as ``manifest=v2``.
-    #   2. legacy (no flag)        → cursor-first, implicit ``manifest=v1``, matches
+    #   2. legacy (no flag)        -> cursor-first, implicit ``manifest=v1``, matches
     #                                 the 231 historical rows in sweep_results.jsonl.
     manifest_tag = "v1"
     if args.manifest_version:
         print(
             f"Building/loading manifest '{args.manifest_version}' "
-            f"({args.n_proteins} proteins, ≤ {args.max_size} residues, seed={args.manifest_seed})..."
+            f"({args.n_proteins} proteins, <= {args.max_size} residues, seed={args.manifest_seed})..."
         )
         manifest = build_or_load_manifest(
             outdir=outdir,
@@ -656,7 +656,7 @@ def main():
         manifest_tag = args.manifest_version
     else:
         print(
-            f"Loading {args.n_proteins} proteins (≤ {args.max_size} residues) via cursor-first..."
+            f"Loading {args.n_proteins} proteins (<= {args.max_size} residues) via cursor-first..."
         )
         batch, raw = load_proteina_batch(
             n=args.n_proteins, max_size=args.max_size, device=device
@@ -664,7 +664,7 @@ def main():
     print(f"  Loaded {len(raw)} proteins, mask sum = {int(batch['mask'].sum().item())}")
     print(f"  Manifest tag for new rows: '{manifest_tag}'")
 
-    # One-shot diagnostic: what does cath_code look like? CATH probe needs ≥2 classes.
+    # One-shot diagnostic: what does cath_code look like? CATH probe needs >=2 classes.
     from collections import Counter
 
     cath_types: Counter = Counter()
@@ -717,7 +717,7 @@ def main():
             import traceback
 
             traceback.print_exc()
-            print(f"  ❌ gearnet failed: {e}")
+            print(f"  [X] gearnet failed: {e}")
             _append_row(
                 jsonl_path,
                 {
@@ -735,7 +735,7 @@ def main():
     elif gearnet_key in done:
         print("gearnet already cached, skip")
 
-    # --- Iterate (run, step, t) grid — probe all layers per (checkpoint, t) ---
+    # --- Iterate (run, step, t) grid - probe all layers per (checkpoint, t) ---
     chosen_runs = set(args.runs.split(",")) if args.runs else set(RUN_SCHEDULES)
     for run_name in RUN_SCHEDULES:
         if run_name not in chosen_runs:
@@ -760,14 +760,14 @@ def main():
             )
             if all_cached:
                 print(
-                    f"  step {step}: all {EXPECTED_NLAYERS} layers × {len(timesteps)} "
+                    f"  step {step}: all {EXPECTED_NLAYERS} layers x {len(timesteps)} "
                     f"timesteps cached, skip (no load)"
                 )
                 continue
 
             ckpt = find_checkpoint_path(run_dir, step, prefer_ema=True)
             if ckpt is None:
-                print(f"  step {step}: NO EMA CKPT — skip")
+                print(f"  step {step}: NO EMA CKPT - skip")
                 continue
 
             step = resolve_step(ckpt, step)
@@ -855,7 +855,7 @@ def main():
                 import traceback
 
                 traceback.print_exc()
-                print(f"    ❌ {run_name}@{step} failed at ckpt load / extract: {e}")
+                print(f"    [X] {run_name}@{step} failed at ckpt load / extract: {e}")
                 # Record a single failure row so we don't retry this checkpoint forever.
                 _append_row(
                     jsonl_path,
@@ -891,14 +891,14 @@ def main():
             print(f"\n=== {pre_name} ({ckpt_path}) ===")
 
             # Pre-load skip: all expected layers already probed?
-            # Pretrained refs are anchors — always probed at t=1.0 (clean) only.
+            # Pretrained refs are anchors - always probed at t=1.0 (clean) only.
             _pre_t_tag = _t_tag(1.0)
             if all((pre_name, 0, L, _pre_t_tag) in done for L in range(exp_nlayers)):
                 print(f"  all {exp_nlayers} layers cached, skip (no load)")
                 continue
 
             if not Path(ckpt_path).exists():
-                print(f"  ❌ ckpt not found: {ckpt_path}")
+                print(f"  [X] ckpt not found: {ckpt_path}")
                 _append_row(
                     jsonl_path,
                     {
@@ -917,7 +917,7 @@ def main():
                 n_layers = model_num_layers(model)
                 if n_layers != exp_nlayers:
                     print(
-                        f"  note: expected {exp_nlayers} layers, got {n_layers} — using actual"
+                        f"  note: expected {exp_nlayers} layers, got {n_layers} - using actual"
                     )
                 all_layers = list(range(n_layers))
                 todo_layers = [
@@ -987,7 +987,7 @@ def main():
                 import traceback
 
                 traceback.print_exc()
-                print(f"  ❌ {pre_name} failed at ckpt load / extract: {e}")
+                print(f"  [X] {pre_name} failed at ckpt load / extract: {e}")
                 _append_row(
                     jsonl_path,
                     {
@@ -1085,7 +1085,7 @@ def main():
                             f"  {name}: all {len(src.emits_layers)} layers cached, skip"
                         )
                         continue
-                    # Architectural-prior baseline — single t=1.0 is sufficient
+                    # Architectural-prior baseline - single t=1.0 is sufficient
                     # (we're asking "what does the arch give you before training").
                     reps_by_layer = src.get_reps(batch, todo)
                     for L, reps in reps_by_layer.items():
@@ -1176,7 +1176,7 @@ def main():
                 import traceback
 
                 traceback.print_exc()
-                print(f"  ❌ baseline {name} failed: {e}")
+                print(f"  [X] baseline {name} failed: {e}")
                 _append_row(
                     jsonl_path,
                     {

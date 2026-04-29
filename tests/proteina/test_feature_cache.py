@@ -1,4 +1,4 @@
-"""Smoke tests for feature_cache.py — import, path helpers, round-trip."""
+"""Smoke tests for feature_cache.py - import, path helpers, round-trip."""
 
 import os
 import sys

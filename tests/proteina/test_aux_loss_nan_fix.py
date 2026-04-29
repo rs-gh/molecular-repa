@@ -5,7 +5,7 @@ pathological ones.
 
 Context: with length-bucketed training, N is padded to the bucket upper edge
 (up to 512), and the pre-fix code computed CE over all bs*n*n pair positions
-— including padded ones — then masked the result. Under bf16 a single
+- including padded ones - then masked the result. Under bf16 a single
 extreme logit at a padded position could NaN log_softmax; autograd's
 `0 * NaN = NaN` then corrupted the gradient. See chat thread 2026-04-21.
 
@@ -33,7 +33,7 @@ def _aux_reference(
     num_dist_buckets,
     max_dist_boundary,
 ):
-    """Pre-fix code path — verbatim from proteina.py before the NaN fix."""
+    """Pre-fix code path - verbatim from proteina.py before the NaN fix."""
     bs, n, _ = x_1.shape
     nres = mask.sum(-1)
 
@@ -77,7 +77,7 @@ def _aux_fixed(
     num_dist_buckets,
     max_dist_boundary,
 ):
-    """Post-fix code path — mirror of the current proteina.py.
+    """Post-fix code path - mirror of the current proteina.py.
 
     Changes vs reference:
       - den.clamp(min=1.0) to avoid 0/0 in dist_mat
@@ -144,7 +144,7 @@ def _make_batch(
         pad_pair = ~(
             mask[:, None, :] & mask[:, :, None]
         )  # [bs, n, n], True where padded
-        # Inject NaN directly at padded positions — this models what bf16
+        # Inject NaN directly at padded positions - this models what bf16
         # overflow can produce inside log_softmax's max-stabilization when
         # inputs contain values near the exponent limit.
         pair_pred[pad_pair] = float("nan")
@@ -168,7 +168,7 @@ def test_equivalence_no_padding_well_behaved(thres):
 
 
 def test_reference_produces_nan_on_padded_nan_logits():
-    """Sanity: inject NaN at padded positions → reference propagates NaN via
+    """Sanity: inject NaN at padded positions -> reference propagates NaN via
     `pair_mask * NaN = NaN`. Confirms the failure mode the fix addresses."""
     bs, n = 2, 64
     x_1, x_1_pred, mask, pair_pred = _make_batch(
@@ -179,11 +179,11 @@ def test_reference_produces_nan_on_padded_nan_logits():
 
 
 def test_fix_survives_padded_nan_logits_forward():
-    """With fix, NaN at padded positions never enters CE → finite output.
+    """With fix, NaN at padded positions never enters CE -> finite output.
     Compares against the clean-logits result: should be identical because
     padded positions contribute nothing either way."""
     bs, n = 2, 64
-    # Build once with clean logits, once with NaN padded logits — same seed
+    # Build once with clean logits, once with NaN padded logits - same seed
     x_1_c, x_1p_c, mask_c, pp_clean = _make_batch(
         bs, n, [30, 50], seed=11, extreme_pad_logits=False
     )

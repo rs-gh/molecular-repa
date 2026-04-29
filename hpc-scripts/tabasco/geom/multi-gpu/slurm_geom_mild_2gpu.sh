@@ -20,7 +20,7 @@
 #SBATCH --ntasks=1
 #! Specify the number of GPUs per node (between 1 and 4; must be 4 if nodes>1).
 #SBATCH --gres=gpu:2
-#! Number of CPUs per task (16 per GPU × 2):
+#! Number of CPUs per task (16 per GPU x 2):
 #SBATCH --cpus-per-task=32
 #! How much wallclock time will be required?
 #SBATCH --time=10:00:00

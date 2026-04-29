@@ -4,7 +4,7 @@ Usage:
     # From raw CIF/PDB files (no intermediate .pt needed):
     python hpc-scripts/proteina/data_prep/convert_to_lmdb.py --config_name pdb_train_compile --config_subdir pdb/original
 
-    # Incremental — re-run to add newly downloaded structures:
+    # Incremental - re-run to add newly downloaded structures:
     python hpc-scripts/proteina/data_prep/convert_to_lmdb.py --config_name pdb_train_compile --config_subdir pdb/original
 
 Reads the dataset config to find the data directory, loads the CSV and
@@ -36,7 +36,7 @@ from proteinfoundation.datasets.lmdb_utils import process_raw_to_lmdb
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Process raw structures → LMDB")
+    parser = argparse.ArgumentParser(description="Process raw structures -> LMDB")
     parser.add_argument(
         "--config_name",
         type=str,
@@ -123,7 +123,7 @@ def main():
         chains = df_split["chain"].tolist() if "chain" in df_split.columns else None
 
         lmdb_path = os.path.join(lmdb_dir, f"{split_name}.lmdb")
-        logger.info(f"Processing {split_name}: {len(pdb_codes)} entries → {lmdb_path}")
+        logger.info(f"Processing {split_name}: {len(pdb_codes)} entries -> {lmdb_path}")
 
         logger.info(f"Using {args.num_workers} workers for CIF parsing")
         n_written = process_raw_to_lmdb(

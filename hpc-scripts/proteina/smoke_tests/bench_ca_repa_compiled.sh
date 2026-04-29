@@ -135,5 +135,5 @@ else:
 " 2>/dev/null || true
 
 echo ""
-echo "=== BENCH COMPLETE (exit $EXIT) — $(date) ==="
+echo "=== BENCH COMPLETE (exit $EXIT) - $(date) ==="
 exit $EXIT

@@ -1,9 +1,14 @@
-"""Characterize MC-GearNet-Edge.
+"""Characterize ProteinWorkshop GearNet-Edge.
 
-MC-GearNet-Edge differences vs CA-GearNet:
- - Output 3072-dim (concat of 6 hidden layers, each 512)
- - 6 layers (not 8)
- - Takes residue_type as a required input — node features are residue one-hot
+PW GearNet-Edge is the 6-layer relational GNN variant pretrained by the
+ProteinWorkshop benchmark (Zenodo 8287754). Architecture vs MC-GearNet-Edge:
+  - Node input is 43-dim: AA one-hot (23) + seq pos enc (16) + alpha (2) + kappa (2).
+    Alpha/kappa are CA-only dihedral and bend angles.
+  - Edge input is 89-dim.
+  - 6 layers x 512 -> concat 3072 output. Different graph construction.
+
+Usage:
+  python explore_pw_gearnet.py --ckpt path/to/pw_gearnet_*.ckpt --variant torsional
 """
 
 import argparse
@@ -27,17 +32,16 @@ from _encoder_probes import (  # noqa: E402
     make_embed_fn,
     run_pipeline,
 )
-from proteinfoundation.repa.gearnet_encoder import MCGearNetEdgePerResidueEncoder  # noqa: E402
+from proteinfoundation.repa.gearnet_encoder import PWGearNetEdgePerResidueEncoder  # noqa: E402
 
 
 DATA_PATH = os.environ.get("DATA_PATH", "/rds/user/sr2173/hpc-work/proteina/data")
 LMDB_PATH = os.path.join(DATA_PATH, "pdb_train/lmdb/train.lmdb")
-MC_CKPT = os.path.join(DATA_PATH, "metric_factory/model_weights/mc_gearnet_edge.pth")
 
 
-def setup_encoder(device):
-    print(f"Loading MC-GearNet-Edge from {MC_CKPT}")
-    encoder = MCGearNetEdgePerResidueEncoder(ckpt_path=MC_CKPT)
+def setup_encoder(ckpt_path, device):
+    print(f"Loading PW GearNet-Edge from {ckpt_path}")
+    encoder = PWGearNetEdgePerResidueEncoder(ckpt_path=ckpt_path)
     encoder.eval().to(device)
     print(f"Encoder dim: {encoder.encoder_dim}")
     return encoder
@@ -45,50 +49,57 @@ def setup_encoder(device):
 
 @torch.no_grad()
 def layerwise_fn(encoder, proteins, device):
-    """The 3072-dim output is a concat of 6×512-dim layer outputs — these are
-    the slabs that feed into the projector, so per-slab rank/norm tells us
-    which slabs carry signal."""
+    """6 hidden layer outputs that concatenate into the 3072-dim final embedding."""
     print("\n" + "=" * 70)
-    print("MC-GearNet-Edge Layer-wise Representation")
+    print("PW GearNet-Edge Layer-wise Representation")
     print("=" * 70)
+    from torch_scatter import scatter_sum
 
     gn = encoder.gearnet
     n_layers = len(gn.layers)
-    print(f"MC-GearNet-Edge has {n_layers} layers, output_dim={gn.output_dim}")
+    print(f"PW GearNet-Edge has {n_layers} layers, output_dim={gn.output_dim}")
 
     n_test = min(30, len(proteins))
     layer_embs = [[] for _ in range(n_layers)]
 
     for graph in proteins[:n_test]:
-        ca_ang = graph.coords[:, 1, :].float()
+        ca_coords = graph.coords[:, 1, :].float()
         mask = graph.coord_mask[:, 1].bool()
         if mask.sum() < 4:
             continue
-        ca_ang_v = ca_ang[mask].to(device)
+        ca_ang = ca_coords[mask].to(device)
         rt_flat = graph.residue_type.long()[mask].clamp(0, 20).to(device)
-        atom2batch = torch.zeros(ca_ang_v.shape[0], dtype=torch.long, device=device)
+        atom2batch = torch.zeros(ca_ang.shape[0], dtype=torch.long, device=device)
 
-        n_nodes = ca_ang_v.shape[0]
+        n_nodes = ca_ang.shape[0]
         local_idx = gn._local_idx(atom2batch)
-        h_v = F.one_hot(rt_flat, 21).float()
-        edge_index, edge_feat59 = gn._build_edges(
-            ca_ang_v, rt_flat, atom2batch, local_idx
-        )
-        ni, no, rel = edge_index[:, 0], edge_index[:, 1], edge_index[:, 2]
-        lg_ei, n_lg_nodes = gn._build_line_graph(ca_ang_v, edge_index)
-        lg_ni, lg_no, lg_rel = lg_ei[:, 0], lg_ei[:, 1], lg_ei[:, 2]
+        h_v = gn._node_features(ca_ang, rt_flat, local_idx, atom2batch)
+        ni, no, rel = gn._build_knn_graph(ca_ang, atom2batch)
+        edge_feat = gn._edge_features(h_v, ca_ang, local_idx, ni, no, rel)
+        lg_src, lg_dst, lg_rel, n_lg = gn._build_line_graph(ca_ang, ni, no)
 
-        edge_hidden = edge_feat59
+        edge_input = edge_feat
         for i, (layer, edge_layer, bn) in enumerate(
             zip(gn.layers, gn.edge_layers, gn.batch_norms)
         ):
-            edge_hidden = edge_layer(edge_hidden, lg_ni, lg_no, lg_rel, n_lg_nodes)
-            h_new = layer(h_v, ni, no, rel, n_nodes, edge_input=edge_hidden)
+            h_new = layer(h_v, ni, no, rel, n_nodes, edge_feat=edge_feat)
             if h_new.shape == h_v.shape:
                 h_new = h_new + h_v
+            edge_hidden = edge_layer(edge_input, lg_src, lg_dst, lg_rel, n_lg)
+            node_out_idx = no * gn._NUM_RELATION + rel
+            update = scatter_sum(
+                edge_hidden,
+                node_out_idx,
+                dim=0,
+                dim_size=n_nodes * gn._NUM_RELATION,
+            )
+            update = update.view(n_nodes, gn._NUM_RELATION * edge_hidden.shape[1])
+            update = F.relu(layer.linear(update))
+            h_new = h_new + update
             h_new = bn(h_new)
             layer_embs[i].append(h_new.float().cpu())
             h_v = h_new
+            edge_input = edge_hidden
 
     print(
         f"\n{'Layer':>5} | {'Dim':>4} | {'Eff Rank':>9} | {'Mean Norm':>10} | {'Sparsity':>9}"
@@ -113,6 +124,15 @@ def layerwise_fn(encoder, proteins, device):
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "--ckpt", type=str, required=True, help="Path to PW GearNet-Edge .ckpt"
+    )
+    ap.add_argument(
+        "--variant",
+        type=str,
+        required=True,
+        help="Short label (e.g. 'torsional' or 'structure') for log header",
+    )
     ap.add_argument("--n-proteins", type=int, default=200)
     ap.add_argument("--random-seed", type=int, default=None)
     ap.add_argument("--device", type=str, default=None)
@@ -124,16 +144,17 @@ def main():
     print(f"Device: {device}")
 
     proteins = load_proteins(LMDB_PATH, args.n_proteins, seed=args.random_seed)
-    encoder = setup_encoder(device)
+    encoder = setup_encoder(args.ckpt, device)
 
     probe = EncoderProbe(
-        name="mc-gearnet-edge",
+        name=f"pw-gearnet-edge:{args.variant}",
         encoder=encoder,
         embed_fn=make_embed_fn(encoder, device),
         is_3d_aware=True,
         accepts_residue_type=True,
         context_mode="structural",
         layerwise_fn=layerwise_fn,
+        notes=[f"ckpt: {args.ckpt}"],
     )
     run_pipeline(probe, proteins, device)
 

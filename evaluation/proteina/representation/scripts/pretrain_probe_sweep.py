@@ -1,5 +1,5 @@
 # ruff: noqa: E402
-"""Phase 2 — Pretrained-probe sweep across the full checkpoint schedule.
+"""Phase 2 - Pretrained-probe sweep across the full checkpoint schedule.
 
 For every (run, step, layer, t) in ``RUN_SCHEDULES`` + ``PRETRAINED_CHECKPOINTS``
 this script trains probes on hidden states extracted from a fixed train.lmdb
@@ -16,7 +16,7 @@ pass ``--probes contact`` or ``--probes cath``. The CATH path takes an
 additional ``--cath_levels`` selector for which level(s) to probe.
 
 Conventions match ``run_sweep.py``:
-  - JSONL append-resume — re-running skips rows already present
+  - JSONL append-resume - re-running skips rows already present
   - ``--config`` loads a profile from ``sweep_config.yaml`` (CLI flags override)
   - ``--runs`` filters to a subset of run names
   - ``consolidate()`` rebuilds the CSV/JSON from the JSONL on every run
@@ -81,7 +81,7 @@ class SweepConfig:
 
     # Probe selection
     run_contact: bool
-    cath_levels: Tuple[str, ...]  # empty tuple ⇒ no CATH
+    cath_levels: Tuple[str, ...]  # empty tuple => no CATH
 
     # Manifest / batch sizes (logged into rows for downstream filtering)
     n_train: int
@@ -106,7 +106,7 @@ class Batches:
     """Train + eval batch tensors plus the raw Data lists CATH needs.
 
     Cached derived tensors (``ca_*``, ``mask_*``, ``lengths_*``) live on CPU
-    and are reused across every (checkpoint, layer) — building them once
+    and are reused across every (checkpoint, layer) - building them once
     instead of per-call avoids a tiny but real bookkeeping cost.
     """
 
@@ -160,7 +160,7 @@ class CheckpointJob:
 
 @dataclass
 class DoneSet:
-    """JSONL-derived resume state — two sets, intent-revealing accessors.
+    """JSONL-derived resume state - two sets, intent-revealing accessors.
 
     ``contact`` keys: (run, step, layer, t_tag).
     ``cath``    keys: (run, step, layer, t_tag, level).
@@ -332,7 +332,7 @@ def consolidate(outdir: Path) -> None:
 def _todo_for_job(
     job: CheckpointJob, cfg: SweepConfig, done: DoneSet
 ) -> Tuple[List[int], Dict[int, List[str]]]:
-    """Subtract ``done`` from this job's (layers × probes). Pure function."""
+    """Subtract ``done`` from this job's (layers x probes). Pure function."""
     contact_todo = (
         [L for L in job.layers if not done.has_contact(job, L)]
         if cfg.run_contact
@@ -621,7 +621,7 @@ def run_one_checkpoint(
     jsonl_path: Path,
     device: str,
 ) -> None:
-    """Top-level per-checkpoint flow: extract → per-layer probes → maybe purge."""
+    """Top-level per-checkpoint flow: extract -> per-layer probes -> maybe purge."""
     contact_todo, cath_todo = _todo_for_job(job, cfg, done)
     if not contact_todo and not any(cath_todo.values()):
         print(f"    t={job.t_tag}: all layers cached, skip")
@@ -668,7 +668,7 @@ def _peek_pretrained_n_layers(
             torch.cuda.empty_cache()
         return n
     except Exception as e:
-        print(f"  ❌ could not determine n_layers for {ckpt_path}: {e}")
+        print(f"  [X] could not determine n_layers for {ckpt_path}: {e}")
         return None
 
 
@@ -695,7 +695,7 @@ def iter_jobs(
         for step_spec in steps_here:
             ckpt = find_checkpoint_path(run_dir, step_spec, prefer_ema=True)
             if ckpt is None:
-                print(f"  step {step_spec}: NO EMA CKPT — skip")
+                print(f"  step {step_spec}: NO EMA CKPT - skip")
                 continue
             step_int = resolve_step(ckpt, step_spec)
             print(f"\n  --- step {step_int} @ {ckpt.name} ---")
@@ -717,7 +717,7 @@ def iter_jobs(
         if pre_name not in chosen_pre:
             continue
         if not Path(ckpt_path).exists():
-            print(f"  ❌ {pre_name}: ckpt not found: {ckpt_path}")
+            print(f"  [X] {pre_name}: ckpt not found: {ckpt_path}")
             continue
         print(f"\n=== {pre_name} ({ckpt_path}) ===")
         n = _peek_pretrained_n_layers(ckpt_path, is_repa, device)
@@ -1041,7 +1041,7 @@ def main() -> None:
             run_one_checkpoint(job, batches, cfg, done, cache_dir, jsonl_path, device)
         except Exception as e:
             traceback.print_exc()
-            print(f"    ❌ {job.run}@{job.step} t={job.t_tag} failed: {e}")
+            print(f"    [X] {job.run}@{job.step} t={job.t_tag} failed: {e}")
             _append_error_row(jsonl_path, job, e, batches)
 
     consolidate(outdir)

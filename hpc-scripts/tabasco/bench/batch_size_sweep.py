@@ -289,7 +289,7 @@ def main():
     print("=" * 100)
     print(
         f"{'experiment':>28} {'compile':>16} {'gc':>4} {'max_bs':>7} "
-        f"{'peak_GB':>8} {'steps/s':>8} {'s/step':>8} {'accum→256':>10}"
+        f"{'peak_GB':>8} {'steps/s':>8} {'s/step':>8} {'accum->256':>10}"
     )
     print("-" * 100)
     for r in rows:

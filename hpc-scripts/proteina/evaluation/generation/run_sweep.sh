@@ -8,7 +8,7 @@
 #! task index table and confirm the --array range before submitting.
 #!
 #! Usage:
-#!   # n=512 convergence curve — 11 tasks for baseline, 12 for repa variants.
+#!   # n=512 convergence curve - 11 tasks for baseline, 12 for repa variants.
 #!   # Use --dry_run to get the exact count first.
 #!   python evaluation/proteina/generation/scripts/run_sweep.py --config n512_convergence --dry_run
 #!   sbatch --array=0-10 hpc-scripts/proteina/evaluation/generation/run_sweep.sh --config n512_convergence

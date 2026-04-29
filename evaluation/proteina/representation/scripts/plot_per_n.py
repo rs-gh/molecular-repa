@@ -1,4 +1,4 @@
-"""Per-n layerwise plots for the proteina probe sweep — single 3x3 grid.
+"""Per-n layerwise plots for the proteina probe sweep - single 3x3 grid.
 
 Emits two figures (P@L/5 linear, CATH-acc). Each figure is a 3x3 grid:
     rows = model size (n=128, 256, 512_sm)
@@ -7,7 +7,7 @@ Each panel shows probe score vs transformer layer, one curve per run family.
 Frozen-encoder baselines (gearnet, seq_onehot, random_gauss, distance_only)
 are drawn as horizontal reference lines.
 
-Row titles include "samples seen" per run (step × batch_size), analogous to
+Row titles include "samples seen" per run (step x batch_size), analogous to
 `fig_grid_sample_matched.png` on the generation side.
 
 Usage:
@@ -144,7 +144,7 @@ def _samples_note(df: pd.DataFrame, size_dir: str) -> str:
         lo, hi = min(ns_vals), max(ns_vals)
         if lo == hi:
             return _fmt_samples(hi)
-        return f"{_fmt_samples(lo)}–{_fmt_samples(hi)}"
+        return f"{_fmt_samples(lo)}-{_fmt_samples(hi)}"
 
     parts = []
     b = _summary("baseline")
@@ -249,7 +249,7 @@ def _plot_grid(metric: str, ylabel: str, out_path: Path) -> None:
     )
 
     fig.suptitle(
-        f"{ylabel} — layerwise per timestep, per model size",
+        f"{ylabel} - layerwise per timestep, per model size",
         fontsize=13,
         fontweight="bold",
         y=1.0,

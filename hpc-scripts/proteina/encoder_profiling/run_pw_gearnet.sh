@@ -1,10 +1,10 @@
 #!/bin/bash
 #!
 #! PW GearNet-Edge characterization on 200 PDB proteins.
-#! Mirrors playground/proteina/mc_gearnet/run_mc_gearnet.sh.
+#! Mirrors encoder_profiling/proteina/mc_gearnet/run_mc_gearnet.sh.
 #! Runs both the torsional_denoising and structure_denoising checkpoints.
 #!
-#! Usage: sbatch playground/proteina/pw_gearnet/run_pw_gearnet.sh
+#! Usage: sbatch encoder_profiling/proteina/pw_gearnet/run_pw_gearnet.sh
 #!
 
 #SBATCH -J pw-gn-char
@@ -51,14 +51,14 @@ CKPT_DIR="$DATA_PATH/metric_factory/model_weights"
 for variant in torsional structure; do
     CKPT="$CKPT_DIR/pw_gearnet_${variant}_denoising_ca_angles.ckpt"
     if [[ ! -f "$CKPT" ]]; then
-        echo "MISSING: $CKPT — skipping $variant"
+        echo "MISSING: $CKPT - skipping $variant"
         continue
     fi
     echo ""
     echo "########################################################################"
     echo "# Variant: $variant  ($(date))"
     echo "########################################################################"
-    python -u playground/proteina/pw_gearnet/explore_pw_gearnet.py \
+    python -u encoder_profiling/proteina/pw_gearnet/explore_pw_gearnet.py \
         --ckpt "$CKPT" --variant "$variant" --n-proteins 200
 done
 

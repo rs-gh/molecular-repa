@@ -16,7 +16,7 @@ so `g.cath_code` was empty/None on every protein and CATH probes yielded
      Contact probe data is preserved unchanged.
   5. Writes the consolidated CSV/MD fresh from the updated JSONL.
 
-Expected wall-clock: 1 checkpoint-load per (run, step) × ~47 → ~25 min.
+Expected wall-clock: 1 checkpoint-load per (run, step) x ~47 -> ~25 min.
 
 Usage:
   sbatch hpc-scripts/proteina/evaluation/run_probes.sh --cath_patch
@@ -112,7 +112,7 @@ def main():
     device = _default_device()
 
     # --- Reload shared batch with same parameters as the sweep ---
-    print(f"Reloading {args.n_proteins} proteins (≤ {args.max_size} residues)...")
+    print(f"Reloading {args.n_proteins} proteins (<= {args.max_size} residues)...")
     batch, raw = load_proteina_batch(
         n=args.n_proteins, max_size=args.max_size, device=device
     )
@@ -122,15 +122,15 @@ def main():
     data_path = os.environ.get("DATA_PATH", "/rds/user/sr2173/hpc-work/proteina/data")
     n_lab, n_tot, sample_ids = _apply_cath_labels(raw, data_path)
     print(f"  CATH labels populated on {n_lab}/{n_tot} proteins")
-    print(f"  Sample graph.id → cath_code: {sample_ids}")
+    print(f"  Sample graph.id -> cath_code: {sample_ids}")
     if n_lab < max(10, int(0.05 * n_tot)):
         sys.exit(
-            f"FATAL: only {n_lab}/{n_tot} proteins got CATH labels — "
+            f"FATAL: only {n_lab}/{n_tot} proteins got CATH labels - "
             f"graph.id format likely doesn't match pdb_chain_cath_uniprot.tsv. "
             f"See sample IDs above and adjust CATHLabelTransform or lookup key."
         )
 
-    # --- Group rows by (run, step) → list of layer-rows to update ---
+    # --- Group rows by (run, step) -> list of layer-rows to update ---
     groups: Dict[Tuple[str, int], List[Dict]] = defaultdict(list)
     for r in rows:
         if "error" in r:
@@ -162,7 +162,7 @@ def main():
                 import traceback
 
                 traceback.print_exc()
-                print(f"  ❌ {e}")
+                print(f"  [X] {e}")
             finally:
                 gc.collect()
                 if torch.cuda.is_available():
@@ -203,13 +203,13 @@ def main():
             import traceback
 
             traceback.print_exc()
-            print(f"  ❌ {e}")
+            print(f"  [X] {e}")
         finally:
             gc.collect()
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
 
-    # --- Rewrite JSONL atomically (temp → rename) ---
+    # --- Rewrite JSONL atomically (temp -> rename) ---
     tmp_path = jsonl_path.with_suffix(".jsonl.tmp")
     with open(tmp_path, "w") as f:
         for r in rows:

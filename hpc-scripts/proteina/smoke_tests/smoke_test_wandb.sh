@@ -1,5 +1,5 @@
 #!/bin/bash
-#! Proteina smoke test with WandB logging — verify logging pipeline
+#! Proteina smoke test with WandB logging - verify logging pipeline
 #SBATCH -J prot-wandb
 #SBATCH -A LIO-CHARM-SL2-GPU
 #SBATCH --nodes=1

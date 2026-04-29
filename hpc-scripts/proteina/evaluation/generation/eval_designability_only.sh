@@ -31,9 +31,9 @@
 #! drop to 1h for better queue priority.
 #!
 #! FairShare: LIO-CHARM-SL2-GPU has been heavily oversubscribed by the group
-#! (fairshare factor ≈ 0.0 as of 2026-04-24). Submitting with
+#! (fairshare factor ~= 0.0 as of 2026-04-24). Submitting with
 #!   -A computerlab-sl2-gpu
-#! uses a less-loaded account (fairshare ≈ 0.07) and starts sooner.
+#! uses a less-loaded account (fairshare ~= 0.07) and starts sooner.
 #! Check with: `sshare -U -u $USER -o account,fairshare,rawusage`
 #!
 #SBATCH -J desig-only

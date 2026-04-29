@@ -5,8 +5,8 @@
 #! Also compares full encoder wrapper vs GearNet-CA at same batch size.
 #!
 #! Usage:
-#!   sbatch hpc-scripts/proteina/smoke_tests/profile_mc_gearnet.sh
-#!   sbatch hpc-scripts/proteina/smoke_tests/profile_mc_gearnet.sh --bs 40
+#!   sbatch hpc-scripts/proteina/encoder_profiling/profile_mc_gearnet.sh
+#!   sbatch hpc-scripts/proteina/encoder_profiling/profile_mc_gearnet.sh --bs 40
 
 #SBATCH -J profile-mc-gearnet
 #SBATCH -A LIO-CHARM-SL2-GPU
@@ -43,7 +43,7 @@ echo ""
 
 cd "$REPO_DIR"
 # Default to bs=40 (bs=80 OOMs in eager mode without torch.compile)
-python -u playground/proteina/gearnet/profile_mc_gearnet.py --bs 40 "$@"
+python -u encoder_profiling/proteina/gearnet/profile_mc_gearnet.py --bs 40 "$@"
 
 echo ""
 echo "=== Done: $(date) ==="

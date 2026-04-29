@@ -1,6 +1,6 @@
 #!/bin/bash
 #! Download raw PDB structure files (CIF format) for proteina training.
-#! Download only — processing to LMDB is done separately by convert_to_lmdb.sh.
+#! Download only - processing to LMDB is done separately by convert_to_lmdb.sh.
 #!
 #! Resumable: skips files already in raw/. Retries on connection errors.
 #! Requires GPU partition (ampere) because icelake nodes can't resolve PDB servers.

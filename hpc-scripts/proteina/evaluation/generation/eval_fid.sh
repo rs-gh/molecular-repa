@@ -91,7 +91,7 @@ export PROTEINMPNN_WEIGHTS_DIR="$CA_WEIGHTS_ROOT"
 
 #! load_esmfold() at designability.py:149-166 reads CACHE_DIR. Compute-node /tmp
 #! is too small for ESMFold's staged download; xet_get writes to TMPDIR and
-#! fails with ENOSPC even with HF_HOME set — disable xet and route TMPDIR to RDS.
+#! fails with ENOSPC even with HF_HOME set - disable xet and route TMPDIR to RDS.
 export CACHE_DIR="/rds/user/sr2173/hpc-work/proteina/hf_cache"
 export HF_HOME="$CACHE_DIR"
 export HF_HUB_CACHE="$CACHE_DIR/hub"

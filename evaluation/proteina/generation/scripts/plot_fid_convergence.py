@@ -20,7 +20,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # All metric columns from the result CSVs.
 # Designability/pLDDT/diversity columns populate only on full evals that ran
 # after the designability wiring landed; lite-sweep rows and pre-wiring full
-# evals will have NaN for these — plot code must handle that gracefully.
+# evals will have NaN for these - plot code must handle that gracefully.
 METRICS = [
     "_res_PDB_FID",
     "_res_PDB_fJSD_C",
@@ -55,9 +55,9 @@ METRIC_LABELS = {
     "_res_fS_C": "Fold Score (Class)",
     "_res_fS_A": "Fold Score (Architecture)",
     "_res_fS_T": "Fold Score (Topology)",
-    "_res_designability_rate": "Designability rate (scRMSD < 2Å)",
-    "_res_scRMSD_mean": "scRMSD mean (Å)",
-    "_res_scRMSD_median": "scRMSD median (Å)",
+    "_res_designability_rate": "Designability rate (scRMSD < 2A)",
+    "_res_scRMSD_mean": "scRMSD mean (A)",
+    "_res_scRMSD_median": "scRMSD median (A)",
     "_res_tm_score_self_mean": "Self-TM mean",
     "_res_plddt_mean": "ESMFold pLDDT mean",
     "_res_plddt_median": "ESMFold pLDDT median",
@@ -77,7 +77,7 @@ STYLES = {
 # NOTE (2026-04-19): when adding 128-residue runs, bs is NOT uniform.
 #   baseline-128 (job 27971089, current) trained at bs=24 throughout.
 #   All REPA-128 variants (gearnet + esm, per_residue + per_sample) train at bs=80.
-#   Future baseline-128 runs / restarts will most likely adopt bs=80 — CONFIRM per run
+#   Future baseline-128 runs / restarts will most likely adopt bs=80 - CONFIRM per run
 #   before appending an entry (a mid-run bs switch means one run has two regimes, and
 #   nsamples = step * bs is no longer a single scalar multiply).
 BATCH_SIZES = {

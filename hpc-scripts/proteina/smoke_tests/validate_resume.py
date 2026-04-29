@@ -5,7 +5,7 @@ Given a checkpoint path, confirm that:
      mismatches (catches silent parameter additions/removals).
   2. A forward pass produces a finite loss close to the checkpoint's recorded
      val/train loss (catches catastrophic numerical drift from optimization
-     changes — e.g., a SDPA backend swap that produces NaNs).
+     changes - e.g., a SDPA backend swap that produces NaNs).
   3. A backward pass populates gradients without NaN/Inf.
   4. An optimizer step updates parameters without NaN/Inf.
 
@@ -78,7 +78,7 @@ def parse_args():
         default=5.0,
         help=(
             "Max acceptable multiplicative deviation vs checkpoint's recorded "
-            "loss (default 5x — wide because synthetic data is OOD)."
+            "loss (default 5x - wide because synthetic data is OOD)."
         ),
     )
     return p.parse_args()
@@ -90,7 +90,7 @@ def log(msg: str):
 
 def step(name: str):
     """Context manager-ish for step-by-step reporting."""
-    log(f"  → {name}")
+    log(f"  -> {name}")
 
 
 def build_model(cfg, is_repa: bool, store_dir: str):
@@ -263,7 +263,7 @@ def main():
     if unexpected:
         log(f"    UNEXPECTED ({len(unexpected)}): first 5 = {unexpected[:5]}")
     if missing or unexpected:
-        log("VERDICT: FAIL — state_dict mismatch, resume would corrupt training")
+        log("VERDICT: FAIL - state_dict mismatch, resume would corrupt training")
         sys.exit(1)
 
     # Record prior loss if available
@@ -310,27 +310,27 @@ def main():
             log(f"    forward OK, loss={loss.item():.6f}")
         except Exception as e:
             log(f"    forward FAILED: {type(e).__name__}: {e}")
-            log("VERDICT: FAIL — forward incompatible with this optimization")
+            log("VERDICT: FAIL - forward incompatible with this optimization")
             sys.exit(1)
 
     if not torch.isfinite(loss).all():
         log(f"    loss is non-finite: {loss.item()}")
-        log("VERDICT: FAIL — non-finite loss (numerical blowup)")
+        log("VERDICT: FAIL - non-finite loss (numerical blowup)")
         sys.exit(1)
 
     if prior_loss is not None:
         ratio = loss.item() / max(prior_loss, 1e-6)
-        log(f"    loss ratio vs checkpoint = {ratio:.2f}× (tol {args.loss_tolerance}×)")
+        log(f"    loss ratio vs checkpoint = {ratio:.2f}x (tol {args.loss_tolerance}x)")
         if abs(ratio) > args.loss_tolerance and loss.item() > prior_loss * 2:
             log("    WARN: loss drifted beyond tolerance on synthetic data")
-            # don't fail — synthetic data is OOD; just warn
+            # don't fail - synthetic data is OOD; just warn
 
     step("backward pass")
     try:
         loss.backward()
     except Exception as e:
         log(f"    backward FAILED: {type(e).__name__}: {e}")
-        log("VERDICT: FAIL — backward incompatible with this optimization")
+        log("VERDICT: FAIL - backward incompatible with this optimization")
         sys.exit(1)
 
     # Check grads
@@ -343,7 +343,7 @@ def main():
                 n_nan += 1
     log(f"    {n_grad} params got grads, {n_nan} had NaN/Inf")
     if n_nan > 0:
-        log("VERDICT: FAIL — NaN/Inf gradients")
+        log("VERDICT: FAIL - NaN/Inf gradients")
         sys.exit(1)
 
     step("optimizer step")
@@ -359,7 +359,7 @@ def main():
         optimizer.step()
     except Exception as e:
         log(f"    optimizer step FAILED: {type(e).__name__}: {e}")
-        log("VERDICT: FAIL — optimizer incompatible")
+        log("VERDICT: FAIL - optimizer incompatible")
         sys.exit(1)
     post_step_norm = (
         sum(
@@ -371,7 +371,7 @@ def main():
     )
     log(
         f"    param norm pre={pre_step_norm:.4f} post={post_step_norm:.4f} "
-        f"Δ={post_step_norm - pre_step_norm:+.6f}"
+        f"Delta={post_step_norm - pre_step_norm:+.6f}"
     )
 
     # Check any params have NaN after step
@@ -381,11 +381,11 @@ def main():
             nan_params += 1
     if nan_params > 0:
         log(f"    {nan_params} params contain NaN/Inf after step")
-        log("VERDICT: FAIL — post-step NaN")
+        log("VERDICT: FAIL - post-step NaN")
         sys.exit(1)
 
     log("")
-    log(f"VERDICT: PASS — optimization '{args.optimization}' is resume-safe")
+    log(f"VERDICT: PASS - optimization '{args.optimization}' is resume-safe")
     log(f"         ckpt loads ({loaded} tensors), forward+backward+step all finite")
     sys.exit(0)
 

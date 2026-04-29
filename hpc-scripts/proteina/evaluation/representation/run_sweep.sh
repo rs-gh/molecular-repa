@@ -4,8 +4,8 @@
 #! Wilkes3 (AMD EPYC 7763, ConnectX-6, A100 80GB)
 #!
 #! Modes:
-#!   (default)   run_all.py    → one probe per run (last.ckpt), fast sanity
-#!   --sweep     run_sweep.py  → FID-style log-spaced step schedule (11-12 points × 4 runs + gearnet)
+#!   (default)   run_all.py    -> one probe per run (last.ckpt), fast sanity
+#!   --sweep     run_sweep.py  -> FID-style log-spaced step schedule (11-12 points x 4 runs + gearnet)
 #!
 #! ALWAYS pass --config <name> for production sweeps. This loads the canonical
 #! parameter set (max_size, output_dir, etc.) for that regime from
@@ -57,17 +57,17 @@ REPO_DIR="/home/sr2173/git/molecular-repa"
 conda deactivate 2>/dev/null || true
 source "$REPO_DIR/.venv/bin/activate"
 
-#! Lustre mmap is flaky on login nodes and thrashes on compute nodes — always
+#! Lustre mmap is flaky on login nodes and thrashes on compute nodes - always
 #! copy the LMDB and length index to the compute node's local NVMe before running.
 #! (Matches the pattern in feedback_lmdb_local_nvme.md.)
 LUSTRE_LMDB="/rds/user/sr2173/hpc-work/proteina/data/pdb_train/lmdb"
-#! Use /dev/shm (tmpfs backed by RAM, ~125 GB on ampere nodes) — train.lmdb
+#! Use /dev/shm (tmpfs backed by RAM, ~125 GB on ampere nodes) - train.lmdb
 #! may be large and /tmp on some nodes is only 16 GB.
 LOCAL_LMDB="/dev/shm/proteina_probe_lmdb_${SLURM_JOB_ID:-local}"
 mkdir -p "$LOCAL_LMDB"
 
 echo "=== Copying LMDB to local NVMe at $LOCAL_LMDB ==="
-#! Default to val.lmdb — proper ~5K held-out split disjoint from train by PDB ID
+#! Default to val.lmdb - proper ~5K held-out split disjoint from train by PDB ID
 #! (rebuilt 2026-04-21; see hpc-scripts/proteina/data_prep/build_val_lmdb.py).
 #! Override via PROBE_SPLIT=train for train-leak numbers or ad-hoc diagnostics.
 SPLIT="${PROBE_SPLIT:-val}"

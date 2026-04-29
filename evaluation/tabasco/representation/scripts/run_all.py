@@ -16,12 +16,12 @@ Sources (13 total):
     - mace_tradeoff
 
 For each source we compute:
-  P3 — atom-type classification (per-atom linear probe)
-  P4 — RDKit-descriptor regression (per-molecule ridge probe, 4 targets)
+  P3 - atom-type classification (per-atom linear probe)
+  P4 - RDKit-descriptor regression (per-molecule ridge probe, 4 targets)
 
 Writes:
-  evaluation/tabasco/representation/results/results.json     — full results
-  evaluation/tabasco/representation/results/results.md       — pretty markdown table
+  evaluation/tabasco/representation/results/results.json     - full results
+  evaluation/tabasco/representation/results/results.md       - pretty markdown table
 
 Usage:
   source .venv/bin/activate
@@ -96,8 +96,8 @@ def _build_dummy_encoder():
 
 def _load_tabasco_checkpoint(path: str):
     # Reuse the evaluation loader so we match production inference exactly.
-    # parents[4] = repo root (scripts → representation → tabasco → evaluation
-    #              → molecular-repa).
+    # parents[4] = repo root (scripts -> representation -> tabasco -> evaluation
+    #              -> molecular-repa).
     eval_scripts = (
         Path(__file__).resolve().parents[4]
         / "evaluation"
@@ -164,7 +164,7 @@ def probe_source(
 
     desc = run_descriptor_probe(reps, mols, padding_mask)
     for r in desc:
-        print(f"  {r.target:20s}: r={r.pearson:+.3f}  R²={r.r2:+.3f}")
+        print(f"  {r.target:20s}: r={r.pearson:+.3f}  R^2={r.r2:+.3f}")
     t_probe = time.time() - t0
     print(f"  probes: {t_probe:.1f}s")
 
@@ -189,7 +189,7 @@ def _markdown_table(results: List[Dict]) -> str:
     lines.append(
         "Per-atom atom-type classification (P3) and per-molecule descriptor regression (P4).\n"
     )
-    lines.append("## P3 — Atom-type classification\n")
+    lines.append("## P3 - Atom-type classification\n")
     lines.append("| source | dim | accuracy | macro-F1 | n_train | n_test | classes |")
     lines.append("|---|---:|---:|---:|---:|---:|---:|")
     for r in results:
@@ -199,7 +199,7 @@ def _markdown_table(results: List[Dict]) -> str:
             f"{a['n_train']} | {a['n_test']} | {a['n_classes']} |"
         )
 
-    lines.append("\n## P4 — RDKit descriptor regression (Pearson r / R²)\n")
+    lines.append("\n## P4 - RDKit descriptor regression (Pearson r / R^2)\n")
     header_cols = "| source |" + " |".join(f" {d} " for d in DESCRIPTOR_NAMES) + " |"
     sep_cols = "|---|" + "|".join(["---:"] * len(DESCRIPTOR_NAMES)) + "|"
     lines.append(header_cols)
@@ -284,7 +284,7 @@ def main():
             else:
                 ckpt_path = payload
                 if not ckpt_path.exists():
-                    print(f"  ⚠ skip {name}: {ckpt_path} not found")
+                    print(f"  [!] skip {name}: {ckpt_path} not found")
                     continue
                 model, meta = _load_tabasco_checkpoint(str(ckpt_path))
 
@@ -296,7 +296,7 @@ def main():
                 del model
             results.append(out)
         except Exception as e:
-            print(f"  ❌ {name} failed: {type(e).__name__}: {e}")
+            print(f"  [X] {name} failed: {type(e).__name__}: {e}")
             results.append({"source": name, "error": f"{type(e).__name__}: {e}"})
         finally:
             gc.collect()

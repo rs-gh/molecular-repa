@@ -5,7 +5,7 @@ keeps only the encoder-specific bits here (checkpoint loading, layerwise hook).
 
 Run:
   source .venv/bin/activate
-  python playground/proteina/gearnet/explore_gearnet.py [--random-init]
+  python encoder_profiling/proteina/gearnet/explore_gearnet.py [--random-init]
 """
 
 import argparse
@@ -63,7 +63,7 @@ def layerwise_fn(encoder, proteins, device):
     layer_embs = [[] for _ in range(n_layers)]
 
     for graph in proteins[:n_test]:
-        ca_ang = graph.coords[:, 1, :].float()  # Å
+        ca_ang = graph.coords[:, 1, :].float()  # A
         mask = graph.coord_mask[:, 1].bool()
         coords, atom_type, atom_seq_pos, atom2batch = encoder._dense_to_gearnet_inputs(
             ca_ang.unsqueeze(0).to(device),

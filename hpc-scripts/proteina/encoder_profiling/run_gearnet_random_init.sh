@@ -2,9 +2,9 @@
 #!
 #! CA-GearNet characterization with RANDOM-INIT weights (no pretrained ckpt).
 #! Isolates what the architecture alone contributes vs. what the pretrained
-#! weights add. Compare against the pretrained run in playground/proteina/gearnet/FINDINGS.md.
+#! weights add. Compare against the pretrained run in encoder_profiling/proteina/gearnet/FINDINGS.md.
 #!
-#! Usage: sbatch playground/proteina/gearnet/run_gearnet_random_init.sh
+#! Usage: sbatch encoder_profiling/proteina/gearnet/run_gearnet_random_init.sh
 #!
 
 #SBATCH -J gn-rand
@@ -41,7 +41,7 @@ echo "=== Time: $(date) ==="
 echo "=== MODE: CA-GearNet random-init ==="
 
 cd "$REPO_DIR"
-python -u playground/proteina/gearnet/explore_gearnet.py \
+python -u encoder_profiling/proteina/gearnet/explore_gearnet.py \
     --n-proteins 200 \
     --random-init \
     --init-seed 0

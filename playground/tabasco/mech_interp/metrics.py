@@ -127,7 +127,7 @@ def distance_correlation(
         attn_weights: [B, H, N, N] post-softmax attention.
         dist_matrix: [B, N, N] pairwise distance matrix.
         mask: Optional [B, N, N] pair mask (True=valid).
-        invert: If True, negate so positive = good (high attn ↔ low distance).
+        invert: If True, negate so positive = good (high attn <-> low distance).
 
     Returns:
         Correlation per batch and head [B, H].

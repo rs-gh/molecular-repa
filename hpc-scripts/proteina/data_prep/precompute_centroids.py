@@ -303,7 +303,7 @@ def main():
         bin_summary.append((bin_key, len(group_coords), len(center_indices)))
 
         # Free non-centroid coords for this bin to keep RSS bounded.
-        # torch.save serializes the full list at end — peak mem ~= centroid
+        # torch.save serializes the full list at end - peak mem ~= centroid
         # set + serialization buffer; without this, peak ~= all fetched coords.
         coords_per_bin[bin_key] = None
         del entries, group_coords

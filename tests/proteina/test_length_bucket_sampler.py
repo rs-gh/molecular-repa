@@ -1,7 +1,7 @@
 """Unit tests for LengthBucketedBatchSampler.
 
 Isolated: the sampler module is not imported by any existing training code.
-These tests only exercise index logic with synthetic length arrays — no
+These tests only exercise index logic with synthetic length arrays - no
 model, no LMDB, no GPU.
 """
 
@@ -171,7 +171,7 @@ def test_drop_last_true_drops_trailing():
         drop_last=True,
     )
     batches = list(s)
-    # 10//4=2 full, 5//3=1 full → 3 total
+    # 10//4=2 full, 5//3=1 full -> 3 total
     assert len(batches) == 3
     for b in batches:
         assert len(b) in (3, 4)

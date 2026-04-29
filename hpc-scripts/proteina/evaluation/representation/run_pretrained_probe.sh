@@ -7,7 +7,7 @@
 #! (pretrain_probe_sweep.py). Key differences:
 #!   - Stages BOTH train.lmdb (~51 GB) and val.lmdb (~1.1 GB) to /dev/shm
 #!   - Writes to results/pretrained_probe/ (not overwriting the in-place sweep)
-#!   - No gearnet/encoder baselines — probe-relevant sources only
+#!   - No gearnet/encoder baselines - probe-relevant sources only
 #!
 #! ALWAYS pass --config pretrained_probe so the canonical N_train / N_eval /
 #! probe hyperparams are loaded from sweep_config.yaml. Override individual
@@ -59,7 +59,7 @@ REPO_DIR="/home/sr2173/git/molecular-repa"
 conda deactivate 2>/dev/null || true
 source "$REPO_DIR/.venv/bin/activate"
 
-#! Stage both LMDBs to local tmpfs. /dev/shm is 126 GB on ampere nodes —
+#! Stage both LMDBs to local tmpfs. /dev/shm is 126 GB on ampere nodes -
 #! train.lmdb is ~51 GB so it fits with headroom. Lustre mmap thrashes on
 #! compute nodes (feedback_lmdb_local_nvme.md).
 LUSTRE_LMDB="/rds/user/sr2173/hpc-work/proteina/data/pdb_train/lmdb"
@@ -103,7 +103,7 @@ else
     PROBE_SCRIPT="evaluation/proteina/representation/scripts/pretrain_probe_sweep.py"
     echo "=== Mode: pretrained-probe sweep (Phase 2) ==="
     # Per-checkpoint feature cache lives on /dev/shm (tmpfs, 126 GB, job-local)
-    # NOT on /home (50 GB quota — blew through it on 2026-04-24). Cache is
+    # NOT on /home (50 GB quota - blew through it on 2026-04-24). Cache is
     # ephemeral (purged after each checkpoint in-script; dir nuked on job exit
     # below), so tmpfs is ideal. Users can still override with --cache_dir.
     PROBE_CACHE_DIR="/dev/shm/proteina_pretrained_cache_${SLURM_JOB_ID:-local}"
@@ -142,7 +142,7 @@ runpy.run_path('$PROBE_SCRIPT', run_name='__main__')
 EXIT=$?
 
 rm -rf "$LOCAL_LMDB"
-# Nuke the probe feature cache too (defensive — the sweep script purges after
+# Nuke the probe feature cache too (defensive - the sweep script purges after
 # each checkpoint, but an OOM or preempt can leave stragglers on tmpfs).
 if [ -n "${PROBE_CACHE_DIR:-}" ]; then
     rm -rf "$PROBE_CACHE_DIR"

@@ -1,4 +1,4 @@
-"""P2 — verify torch.compile handles 4 distinct (B, N) shapes cleanly.
+"""P2 - verify torch.compile handles 4 distinct (B, N) shapes cleanly.
 
 The length-bucketing plan relies on torch.compile caching one graph per
 bucket and hitting cached graphs in steady state. If the compiler instead
@@ -175,7 +175,7 @@ def run():
             delta = counter_delta(before, after)
 
             step_ms = (t1 - t0) * 1000.0
-            # "frames": {"total": N, "ok": M} — a compile event shows up here
+            # "frames": {"total": N, "ok": M} - a compile event shows up here
             compile_delta = sum(
                 v for k, sub in delta.items() if k == "frames" for v in sub.values()
             )
@@ -204,7 +204,7 @@ def run():
     log("")
     log(f"TOTAL compile_events across all steps: {total_compiles}")
     log(f"TOTAL frames.ok across all steps: {total_ok_frames}")
-    log(f"Expected ≤ ~{len(SHAPES) * 2}-ish (multiple graphs per shape is normal)")
+    log(f"Expected <= ~{len(SHAPES) * 2}-ish (multiple graphs per shape is normal)")
 
     # First-visit vs revisit timing per shape
     log("")
@@ -220,7 +220,7 @@ def run():
         rest_avg = sum(rest) / len(rest) if rest else float("nan")
         ratio = first / rest_avg if rest_avg else float("nan")
         log(
-            f"  {shape}: first={first:.1f} ms, revisit avg={rest_avg:.1f} ms, ratio={ratio:.2f}×"
+            f"  {shape}: first={first:.1f} ms, revisit avg={rest_avg:.1f} ms, ratio={ratio:.2f}x"
         )
 
     # Verdict
@@ -240,11 +240,11 @@ def run():
     if total_compiles > len(SHAPES) * 10:
         # Heuristic: more than 10 compile events per shape suggests pathological recompiling
         verdict_lines.append(
-            f"WARN: {total_compiles} compile events for {len(SHAPES)} shapes — unusually high."
+            f"WARN: {total_compiles} compile events for {len(SHAPES)} shapes - unusually high."
         )
 
     if not verdict_lines:
-        log("VERDICT: PASS — torch.compile caches per shape, revisit is fast.")
+        log("VERDICT: PASS - torch.compile caches per shape, revisit is fast.")
     else:
         for line in verdict_lines:
             log(f"VERDICT: {line}")

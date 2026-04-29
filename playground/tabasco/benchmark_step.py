@@ -25,14 +25,14 @@ from pathlib import Path
 import torch
 import lmdb
 
-# ── project paths ─────────────────────────────────────────────────────────────
+# -- project paths -------------------------------------------------------------
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SRC_PATH = REPO_ROOT / "src" / "tabasco" / "src"
 sys.path.insert(0, str(SRC_PATH))
 
 LMDB_DIR = REPO_ROOT / "src" / "tabasco" / "data" / "lmdb_geom"
 
-# ── CLI ───────────────────────────────────────────────────────────────────────
+# -- CLI -----------------------------------------------------------------------
 parser = argparse.ArgumentParser(
     description="Benchmark training step: MACEEncoder vs ChemPropEncoder"
 )
@@ -56,7 +56,7 @@ DEVICE = torch.device(
 HAS_CUDA = DEVICE.type == "cuda"
 
 
-# ── helpers ───────────────────────────────────────────────────────────────────
+# -- helpers -------------------------------------------------------------------
 
 
 def banner(title: str):
@@ -79,7 +79,7 @@ def fmt(ms_list):
     return f"{m:8.1f} +/- {s:5.1f} ms"
 
 
-# ── load batch from GEOM LMDB ────────────────────────────────────────────────
+# -- load batch from GEOM LMDB ------------------------------------------------
 
 
 def load_geom_batch(batch_size: int):
@@ -139,7 +139,7 @@ def load_geom_batch(batch_size: int):
     return batch, smiles_list[:batch_size]
 
 
-# ── build FlowMatchingModel ──────────────────────────────────────────────────
+# -- build FlowMatchingModel --------------------------------------------------
 
 
 def build_flow_model(encoder_name: str):
@@ -264,7 +264,7 @@ def build_flow_model(encoder_name: str):
     return model
 
 
-# ── benchmarking ──────────────────────────────────────────────────────────────
+# -- benchmarking --------------------------------------------------------------
 
 
 def benchmark_encoder_only(model, batch, smiles_list, n_warmup, n_rep):
@@ -354,7 +354,7 @@ def benchmark_full_step(model, batch, n_warmup, n_rep):
     return times_total, times_forward, times_backward
 
 
-# ── main ──────────────────────────────────────────────────────────────────────
+# -- main ----------------------------------------------------------------------
 
 
 def main():
@@ -420,7 +420,7 @@ def main():
         if HAS_CUDA:
             torch.cuda.empty_cache()
 
-    # ── comparison table ──────────────────────────────────────────────────────
+    # -- comparison table ------------------------------------------------------
     banner("Comparison Table")
 
     rows = [
@@ -450,7 +450,7 @@ def main():
             f"  {label:<30}  {fmt(mace_times):>22}  {fmt(cp_times):>22}  {ratio:>7.2f}x"
         )
 
-    # ── derived metrics ───────────────────────────────────────────────────────
+    # -- derived metrics -------------------------------------------------------
     print()
     for enc_name in ["mace", "chemprop"]:
         r = results[enc_name]
@@ -464,7 +464,7 @@ def main():
             f"model_minus_encoder={model_minus_enc:.1f} ms"
         )
 
-    # ── projected epoch time ──────────────────────────────────────────────────
+    # -- projected epoch time --------------------------------------------------
     if not args.no_backward:
         N_STEPS_EPOCH = 4579  # GEOM, B=256
         print(f"\n  Projected epoch time (GEOM, B=256, ~{N_STEPS_EPOCH} steps/epoch):")

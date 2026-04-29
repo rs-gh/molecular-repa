@@ -1,11 +1,11 @@
 """Benchmark tabasco LMDB dataloader throughput.
 
-Pure I/O — no model, no GPU compute. Builds a real `LmdbDataModule` over
+Pure I/O - no model, no GPU compute. Builds a real `LmdbDataModule` over
 the tabasco LMDB and times successive `next()` calls on the train loader.
 
 Tabasco's feedback memory says num_workers > 0 causes segfaults on this
 cluster (see feedback_num_workers.md). This script **probes** that
-assumption inside a subprocess: a crash is a valid, logged datapoint — not
+assumption inside a subprocess: a crash is a valid, logged datapoint - not
 a script-level failure.
 
 Usage:

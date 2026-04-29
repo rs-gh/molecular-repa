@@ -45,11 +45,11 @@ _REAL_CKPT = os.environ.get(
 _RUN_REAL = os.environ.get("MC_GEARNET_TEST", "0") == "1" and os.path.exists(_REAL_CKPT)
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
+# -- Helpers ------------------------------------------------------------------
 
 
 def _random_batch(b=2, n=16, device="cpu"):
-    coords = torch.randn(b, n, 3, device=device) * 5.0  # ~Ångström scale
+    coords = torch.randn(b, n, 3, device=device) * 5.0  # ~Angstrom scale
     mask = torch.ones(b, n, dtype=torch.bool, device=device)
     mask[0, 12:] = False  # first protein is shorter
     residue_type = torch.randint(0, 20, (b, n), device=device)
@@ -71,7 +71,7 @@ def _flat_batch(b=2, n=16, device="cpu"):
     )
 
 
-# ── GearNetEdge (raw model) ───────────────────────────────────────────────────
+# -- GearNetEdge (raw model) ---------------------------------------------------
 
 
 @needs_deps
@@ -138,21 +138,21 @@ class TestGearNetEdgeArchitecture:
     def test_linear_shapes(self):
         m = GearNetEdge()
         sd = m.state_dict()
-        # layers.0: node_in=21, num_relation=7 → linear input=7*21=147
+        # layers.0: node_in=21, num_relation=7 -> linear input=7*21=147
         assert sd["layers.0.linear.weight"].shape == (512, 7 * 21)
         assert sd["layers.0.self_loop.weight"].shape == (512, 21)
-        # layers.1+: node_in=512 → linear input=7*512=3584
+        # layers.1+: node_in=512 -> linear input=7*512=3584
         assert sd["layers.1.linear.weight"].shape == (512, 7 * 512)
-        # edge_layers.0: edge_in=59, num_angle_bin=8 → linear input=8*59=472, output=21
+        # edge_layers.0: edge_in=59, num_angle_bin=8 -> linear input=8*59=472, output=21
         assert sd["edge_layers.0.linear.weight"].shape == (21, 8 * 59)
         assert sd["edge_layers.0.self_loop.weight"].shape == (21, 59)
-        # edge_layers.1: edge_in=21 → linear input=8*21=168, output=512
+        # edge_layers.1: edge_in=21 -> linear input=8*21=168, output=512
         assert sd["edge_layers.1.linear.weight"].shape == (512, 8 * 21)
-        # edge_layers.2+: 8*512=4096 → 512
+        # edge_layers.2+: 8*512=4096 -> 512
         assert sd["edge_layers.2.linear.weight"].shape == (512, 8 * 512)
 
 
-# ── MCGearNetEdgePerResidueEncoder ───────────────────────────────────────────
+# -- MCGearNetEdgePerResidueEncoder -------------------------------------------
 
 
 def _make_encoder_no_ckpt():
@@ -180,7 +180,7 @@ class TestMCGearNetEdgeEncoder:
         enc = _make_encoder_no_ckpt()
         coords, mask, res = _random_batch(b=2, n=16)
         out = enc(coords, mask, residue_type=res)
-        # mask[0, 12:] = False  → those positions must be exactly zero
+        # mask[0, 12:] = False  -> those positions must be exactly zero
         assert out[0, 12:].abs().sum() == 0
         assert out[0, :12].abs().sum() > 0
 
@@ -214,12 +214,12 @@ class TestMCGearNetEdgeEncoder:
         enc = _make_encoder_no_ckpt()
         coords, mask, res = _random_batch(b=2, n=8)
         enc(coords, mask, residue_type=res)
-        # Encoder is frozen — no grad should reach its params
+        # Encoder is frozen - no grad should reach its params
         for p in enc.parameters():
             assert p.grad is None
 
 
-# ── REPA loss integration ────────────────────────────────────────────────────
+# -- REPA loss integration ----------------------------------------------------
 
 
 @needs_deps
@@ -256,11 +256,11 @@ class TestMCGearNetEdgeLossIntegration:
             assert p.grad is None
 
 
-# ── Parity tests: refactored _build_edges vs reference loop ─────────────────
+# -- Parity tests: refactored _build_edges vs reference loop -----------------
 #
 # The reference implementation below is the *original* loop-based _build_edges
 # before the radius_graph refactor. It serves as ground truth for the new
-# vectorised version. Tests run on CPU — no checkpoint needed.
+# vectorised version. Tests run on CPU - no checkpoint needed.
 
 
 def _reference_build_edges(model, coords, residue_types, atom2batch, local_idx):
@@ -428,7 +428,7 @@ class TestBuildEdgesParity:
             assert torch.equal(local[sel], expected), f"local_idx wrong for batch {b}"
 
 
-# ── Real checkpoint (gated) ──────────────────────────────────────────────────
+# -- Real checkpoint (gated) --------------------------------------------------
 
 
 @pytest.mark.skipif(

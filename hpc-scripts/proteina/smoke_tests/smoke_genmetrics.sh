@@ -49,7 +49,7 @@ rm -rf /tmp/torchinductor_${USER} 2>/dev/null
 
 cd "$PROTEINA_DIR"
 
-# Run training for ~150 steps — callback should fire at step 100
+# Run training for ~150 steps - callback should fire at step 100
 # Then kill after the callback completes (or after 200 steps max)
 python -u -c "
 import torch.multiprocessing as mp

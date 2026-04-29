@@ -10,8 +10,8 @@ Usage:
     python evaluation/tabasco/generation/scripts/compile_results.py evaluation/tabasco/generation/results/geom
 
 Outputs (written to the results directory):
-    evaluation_summary.csv       — All evaluation metrics in one table
-    evaluation_comparison.png    — Bar charts of key evaluation metrics across models
+    evaluation_summary.csv       - All evaluation metrics in one table
+    evaluation_comparison.png    - Bar charts of key evaluation metrics across models
 """
 
 import argparse
@@ -159,7 +159,7 @@ def plot_comparison(df: pd.DataFrame, output_path: Path):
         axes[j].set_visible(False)
 
     fig.suptitle(
-        "GEOM Evaluation Comparison — Final Checkpoints (1000 mols)",
+        "GEOM Evaluation Comparison - Final Checkpoints (1000 mols)",
         fontsize=14,
         fontweight="bold",
         y=1.01,

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Download a ProteinWorkshop GearNet-Edge checkpoint from Zenodo 8287754.
-# (Jamasb et al., ICLR 2024 — MIT license)
+# (Jamasb et al., ICLR 2024 - MIT license)
 #
 # Uses streaming tar extraction to avoid materialising the full 5+ GB tarball.
 # Only the ca_angles variant is supported (input_dim=43, CA-only features).
@@ -34,7 +34,7 @@ TAR_PATH="${TASK}/gear_net_edge/ca_angles/last.ckpt"
 mkdir -p "$(dirname "$DEST")"
 
 if [[ -f "$DEST" ]]; then
-    echo "Already exists: $DEST — skipping download."
+    echo "Already exists: $DEST - skipping download."
     exit 0
 fi
 

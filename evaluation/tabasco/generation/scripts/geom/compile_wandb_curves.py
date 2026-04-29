@@ -10,9 +10,9 @@ Usage:
     python evaluation/tabasco/generation/scripts/tabasco/geom/compile_wandb_curves.py
 
 Outputs (in evaluation/tabasco/generation/results/geom/validation/):
-    validation_curves.csv              — All per-epoch validation metrics for every model
-    figures/validation_curves.png      — Line plots of validation metrics over training
-    figures/validation_epoch_matched.png — Bar chart at epoch 15 (apples-to-apples)
+    validation_curves.csv              - All per-epoch validation metrics for every model
+    figures/validation_curves.png      - Line plots of validation metrics over training
+    figures/validation_epoch_matched.png - Bar chart at epoch 15 (apples-to-apples)
 """
 
 import argparse
@@ -62,7 +62,7 @@ COLORS = {
     "mace_tradeoff": "#B8A9D4",
 }
 
-# Metrics to pull (wandb key → display name, higher_is_better)
+# Metrics to pull (wandb key -> display name, higher_is_better)
 METRICS = {
     "val/validity": ("Validity", True),
     "val/loss": ("Val Loss", False),
@@ -199,7 +199,7 @@ def plot_training_curves(df: pd.DataFrame, output_path: Path):
     )
 
     fig.suptitle(
-        "GEOM Validation Curves — Per-Epoch (100 mols, from WandB callbacks)",
+        "GEOM Validation Curves - Per-Epoch (100 mols, from WandB callbacks)",
         fontsize=14,
         fontweight="bold",
         y=1.01,
@@ -275,7 +275,7 @@ def plot_epoch_matched(df: pd.DataFrame, match_epoch: int, output_path: Path):
         axes[j].set_visible(False)
 
     fig.suptitle(
-        f"GEOM Validation Comparison — Epoch {match_epoch} (100 mols, from WandB callbacks)",
+        f"GEOM Validation Comparison - Epoch {match_epoch} (100 mols, from WandB callbacks)",
         fontsize=14,
         fontweight="bold",
         y=1.01,

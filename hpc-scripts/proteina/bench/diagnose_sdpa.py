@@ -1,6 +1,6 @@
 """Diagnose why SDPA's FLASH / EFFICIENT backends reject proteina's bias.
 
-Standalone — reproduces the attention call with realistic shapes
+Standalone - reproduces the attention call with realistic shapes
 (B=6, H=8, N=512, D=64, bf16) and additive float bias, tries each backend,
 prints the raw exception. Then tests whether .contiguous() / .detach()
 unlocks EFFICIENT.
@@ -104,7 +104,7 @@ def try_backend(label: str, backend, q, k, v, bias, do_backward: bool):
 
 def scenario(name, **kwargs):
     do_backward = kwargs.pop("do_backward", True)
-    print(f"\n─── {name} ───")
+    print(f"\n--- {name} ---")
     q, k, v, bias = make_inputs(**kwargs)
     print(
         f"  bias: shape={tuple(bias.shape)} dtype={bias.dtype} "
@@ -168,8 +168,8 @@ def main():
         do_backward=False,
     )
 
-    # E: no bias at all — baseline for what kernels *can* handle
-    print("\n─── E: baseline — no bias ───")
+    # E: no bias at all - baseline for what kernels *can* handle
+    print("\n--- E: baseline - no bias ---")
     q = torch.randn(B, H, N, D, device=DEVICE, dtype=DTYPE, requires_grad=True)
     k = torch.randn(B, H, N, D, device=DEVICE, dtype=DTYPE, requires_grad=True)
     v = torch.randn(B, H, N, D, device=DEVICE, dtype=DTYPE, requires_grad=True)
@@ -201,12 +201,12 @@ def main():
 def scenario_numerical_equivalence():
     """F: Compare MATH(strided bias) vs EFFICIENT(contiguous bias) on IDENTICAL inputs.
 
-    This is the safety check before swapping prod's attention path from MATH → EFFICIENT
+    This is the safety check before swapping prod's attention path from MATH -> EFFICIENT
     via `.contiguous()` on the bias. Returns max/mean abs and relative diff for forward
     and all four backward grads.
     """
     print(
-        "\n─── F: numerical equivalence (MATH strided vs EFFICIENT contiguous, same inputs) ───"
+        "\n--- F: numerical equivalence (MATH strided vs EFFICIENT contiguous, same inputs) ---"
     )
     torch.manual_seed(42)
     torch.cuda.manual_seed_all(42)
@@ -260,7 +260,7 @@ def scenario_numerical_equivalence():
     bf16_eps = 2.0**-7  # ~7.8e-3
     verdict = "OK" if worst < 5e-2 else ("MARGINAL" if worst < 1e-1 else "FAIL")
     print(
-        f"\n  worst_rel_max={worst:.3e}  bf16_eps≈{bf16_eps:.1e}  "
+        f"\n  worst_rel_max={worst:.3e}  bf16_eps~={bf16_eps:.1e}  "
         f"VERDICT: {verdict} (threshold: OK<5e-2, MARGINAL<1e-1, else FAIL)"
     )
 

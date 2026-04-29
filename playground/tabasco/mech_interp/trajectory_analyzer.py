@@ -252,7 +252,7 @@ class TrajectoryAnalyzer:
             intermediates = analysis.get("intermediates", [])
 
             for li, h_layer in enumerate(intermediates):
-                # h_layer: [B, N, D] — hidden state after transformer layer li
+                # h_layer: [B, N, D] - hidden state after transformer layer li
                 h = h_layer.to(self.device)
 
                 # Structure lens: apply decoders to intermediate hidden states

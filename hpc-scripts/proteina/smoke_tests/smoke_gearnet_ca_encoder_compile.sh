@@ -101,5 +101,5 @@ runpy.run_path('train_repa.py', run_name='__main__')
 EXIT=$?
 
 echo ""
-echo "=== SMOKE COMPLETE (exit $EXIT) — $(date) ==="
+echo "=== SMOKE COMPLETE (exit $EXIT) - $(date) ==="
 exit $EXIT

@@ -1,6 +1,6 @@
 #!/bin/bash
 #!
-#! P2 — verify torch.compile handles 4 distinct (B, N) shapes cleanly.
+#! P2 - verify torch.compile handles 4 distinct (B, N) shapes cleanly.
 #!
 #! Round-robin through the 4 planned bucket shapes for 3 passes (12 total
 #! steps). First pass is expected to hit compile cost (30-60 s per shape);

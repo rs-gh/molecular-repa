@@ -5,8 +5,8 @@ Covers:
   - eval_contact_probe produces P@L/k values in [0, 1] on held-out features
   - the head's output depends on the input reps (no leakage)
   - run_pretrained_contact_probe emits the JSONL-compatible schema
-  - save_heads round-trip: torch.save → torch.load → re-instantiate via
-    _build_head → re-evaluate → identical metric
+  - save_heads round-trip: torch.save -> torch.load -> re-instantiate via
+    _build_head -> re-evaluate -> identical metric
 
 Uses synthetic random-rep features + synthetic CA coordinates (geometric
 labels) so the tests run without a checkpoint or real LMDB.
@@ -35,7 +35,7 @@ def synthetic_batch():
     """
     torch.manual_seed(0)
     B, N, D = 8, 80, 32
-    coords = torch.cumsum(torch.randn(B, N, 3) * 1.5, dim=1)  # [B, N, 3] Å
+    coords = torch.cumsum(torch.randn(B, N, 3) * 1.5, dim=1)  # [B, N, 3] A
     full_coords = torch.zeros(B, N, 37, 3)
     full_coords[:, :, 1, :] = coords
     mask = torch.ones(B, N, dtype=torch.bool)
@@ -153,7 +153,7 @@ def test_run_pretrained_contact_probe_schema(synthetic_batch):
 
 
 def test_saved_head_roundtrip(synthetic_batch):
-    """Save head state_dict → reload via _build_head → metrics match exactly.
+    """Save head state_dict -> reload via _build_head -> metrics match exactly.
 
     This is the contract the --save_heads sweep flag relies on: stored heads
     must be re-loadable for downstream re-scoring on test.lmdb / weight
@@ -203,7 +203,7 @@ def test_saved_head_roundtrip(synthetic_batch):
     r_reload = eval_contact_probe(
         head2, reps, ca, batch["mask"], batch["lengths"], device="cpu"
     )
-    # Floats are deterministic for this BCE+MLP path → metrics should match exactly.
+    # Floats are deterministic for this BCE+MLP path -> metrics should match exactly.
     assert r_orig.p_at_L_5 == pytest.approx(r_reload.p_at_L_5)
     assert r_orig.p_at_L_2 == pytest.approx(r_reload.p_at_L_2)
     assert r_orig.p_at_L == pytest.approx(r_reload.p_at_L)

@@ -1,6 +1,6 @@
 """Benchmark LMDB DataLoader throughput: Lustre vs local NVMe.
 
-Pure I/O — no model, no GPU compute. Builds the real
+Pure I/O - no model, no GPU compute. Builds the real
 PDBLightningDataModule against a given LMDB directory, iterates
 train_dataloader() for N batches, and reports per-batch latency.
 
@@ -137,7 +137,7 @@ def _run_one(
         times_s = []
         t_prev = time.perf_counter()
         it = iter(loader)
-        # First __next__() spins up workers — count it in times but drop in warmup.
+        # First __next__() spins up workers - count it in times but drop in warmup.
         for i in range(num_batches):
             try:
                 _ = next(it)
@@ -202,7 +202,7 @@ def main():
             sources = [s for s in sources if s != "nvme"]
     args.sources = sources
     if not sources:
-        print("No sources available — aborting.")
+        print("No sources available - aborting.")
         return
 
     rows = []

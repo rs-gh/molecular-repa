@@ -1,5 +1,5 @@
 # ruff: noqa: F401
-"""Compatibility shim — forwards to ``lib``.
+"""Compatibility shim - forwards to ``lib``.
 
 Historical entry point. New code should import from ``lib`` directly:
 
@@ -51,7 +51,7 @@ from lib import (  # noqa: E402
     run_cath_probe,
     run_contact_probe,
 )
-from lib.data import _default_device  # noqa: E402, F401 — private but used by run_sweep
+from lib.data import _default_device  # noqa: E402, F401 - private but used by run_sweep
 
 __all__ = [
     # constants

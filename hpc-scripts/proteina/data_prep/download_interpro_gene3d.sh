@@ -56,7 +56,7 @@ if [ ! -f "$GZ_FILE" ]; then
     wget --continue --progress=dot:giga -O "$GZ_FILE" "$URL"
     echo "Download complete: $(du -sh "$GZ_FILE" | cut -f1)"
 else
-    echo "Already present: $GZ_FILE ($(du -sh "$GZ_FILE" | cut -f1)) — skipping download"
+    echo "Already present: $GZ_FILE ($(du -sh "$GZ_FILE" | cut -f1)) - skipping download"
 fi
 
 echo ""

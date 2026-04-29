@@ -33,9 +33,9 @@ from checkpoints import resolve_active, CHECKPOINTS  # noqa: E402
 sys.path.insert(0, str(HERE.parent.parent.parent / "src" / "proteina"))
 from proteinfoundation.utils.ff_utils.pdb_utils import write_prot_to_pdb  # noqa: E402
 
-# ═══════════════════════════════════════════════════════════════════════════
-# Config — edit these
-# ═══════════════════════════════════════════════════════════════════════════
+# ===========================================================================
+# Config - edit these
+# ===========================================================================
 
 CKPT_KEY = "baseline_512_sm"  # must be uncommented in checkpoints.py:CHECKPOINTS
 MODE = "compile_bf16"  # one of MODES
@@ -43,7 +43,7 @@ LENGTH = 256
 N_SAMPLES = 4
 SEED = 0
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ===========================================================================
 
 GENERATE_KWARGS = dict(
     dt=0.0025,
@@ -127,8 +127,8 @@ def plot_trace_2d(coords_atom37: np.ndarray, out_path: Path, title: str):
         sc = ax.scatter(
             ca[:, i_ax], ca[:, j_ax], c=colors, cmap="viridis", s=6, zorder=2
         )
-        ax.set_xlabel(f"{label_i} (Å)")
-        ax.set_ylabel(f"{label_j} (Å)")
+        ax.set_xlabel(f"{label_i} (A)")
+        ax.set_ylabel(f"{label_j} (A)")
         ax.set_aspect("equal")
     fig.colorbar(sc, ax=ax2, label="residue idx", fraction=0.046, pad=0.04)
     fig.suptitle(title, fontsize=10)
@@ -185,7 +185,7 @@ def main():
         )
         summary = per_sample_summary(coords[i])
         print(
-            f"  sample {i}: Rg={summary['rg']:.2f}Å  bond_mean={summary['bond_mean']:.3f}Å "
+            f"  sample {i}: Rg={summary['rg']:.2f}A  bond_mean={summary['bond_mean']:.3f}A "
             f"clash={summary['clash_rate']:.3%}"
         )
 

@@ -304,7 +304,7 @@ class TestContiguousBiasFix:
         ), "attn_mask was dropped before SDPA"
         assert captured["attn_mask"].is_contiguous(), (
             "attn_mask reaching F.sdpa is NOT contiguous. The .contiguous() fix "
-            "in _attn_sdpa is missing — training will fall back to the slow MATH kernel."
+            "in _attn_sdpa is missing - training will fall back to the slow MATH kernel."
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA required")
@@ -338,7 +338,7 @@ class TestContiguousBiasFix:
                 out.sum().backward()
             except RuntimeError as e:
                 pytest.fail(
-                    "prod _attn_sdpa failed when MATH is disabled — no fused "
+                    "prod _attn_sdpa failed when MATH is disabled - no fused "
                     "kernel accepted the inputs. Inner error: " + str(e).splitlines()[0]
                 )
 
@@ -397,7 +397,7 @@ class TestSDPACUDA:
     def test_cuda_bf16_with_mask(self, attn):
         """Full scenario: CUDA + bf16 + pair bias + mask.
 
-        Only compare unmasked positions — padded positions may differ between
+        Only compare unmasked positions - padded positions may differ between
         backends but don't affect training since they're masked downstream.
         """
         torch.manual_seed(42)
@@ -473,11 +473,11 @@ class TestSDPABackendRouting:
 
     def test_flash_backend_currently_rejects_proteina_bias(self):
         """FA2 only supports per-head ALiBi slopes, not arbitrary dense bias.
-        If this flips, re-benchmark — a torch upgrade may have enabled it."""
+        If this flips, re-benchmark - a torch upgrade may have enabled it."""
         from torch.nn.attention import SDPBackend
 
         assert not self._try_backend(SDPBackend.FLASH_ATTENTION), (
-            "FLASH_ATTENTION unexpectedly accepted proteina's dense bias — "
+            "FLASH_ATTENTION unexpectedly accepted proteina's dense bias - "
             "re-run hpc-scripts/proteina/bench/benchmark_sdpa.py."
         )
 
@@ -488,7 +488,7 @@ class TestSDPABackendRouting:
 
         assert not self._try_backend(
             SDPBackend.EFFICIENT_ATTENTION
-        ), "EFFICIENT_ATTENTION accepted proteina's bias — re-benchmark."
+        ), "EFFICIENT_ATTENTION accepted proteina's bias - re-benchmark."
 
     def test_default_dispatch_falls_to_math(self):
         """Without MATH, FLASH+EFFICIENT both reject our inputs, so the call fails."""
@@ -536,5 +536,5 @@ class TestSDPAMemory:
         )
         assert peak_sdpa < peak_manual, (
             f"SDPA used MORE memory than manual at N={n}: "
-            f"{peak_sdpa/1e6:.0f}MB vs {peak_manual/1e6:.0f}MB — likely MATH fallback."
+            f"{peak_sdpa/1e6:.0f}MB vs {peak_manual/1e6:.0f}MB - likely MATH fallback."
         )

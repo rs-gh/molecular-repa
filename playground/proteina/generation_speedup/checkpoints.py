@@ -22,26 +22,26 @@ STORE_ROOT = Path("/rds/user/sr2173/hpc-work/proteina/store")
 # Un-comment an entry to include it in `resolve_active()`.
 CHECKPOINTS: dict[str, tuple[str, bool, int, int]] = {
     # --------------------------------------------------------------------- #
-    # n=128 — sample-matched @ ~19.5M samples
-    # (baseline bs=24 throughout; REPA bs=24→80 switch at step 220K,
-    #  so step 400K = 220K × 24 + 180K × 80 = 19.68M)
+    # n=128 - sample-matched @ ~19.5M samples
+    # (baseline bs=24 throughout; REPA bs=24->80 switch at step 220K,
+    #  so step 400K = 220K x 24 + 180K x 80 = 19.68M)
     # --------------------------------------------------------------------- #
     # "baseline_128": ("proteina_60m_baseline_128", False, 4, 800000),
     # "repa_l0_128":  ("proteina_60m_repa_l0_128_per_residue", True, 0, 400000),
     # "repa_l4_128":  ("proteina_60m_repa_l4_128_per_residue", True, 4, 400000),
     # "repa_l9_128":  ("proteina_60m_repa_l9_128_per_residue", True, 9, 400000),
     # --------------------------------------------------------------------- #
-    # n=256 — sample-matched @ ~7M samples
-    # (all runs bs=12→24 switch at step 220K,
-    #  so step 400K = 220K × 12 + 180K × 24 = 6.96M)
+    # n=256 - sample-matched @ ~7M samples
+    # (all runs bs=12->24 switch at step 220K,
+    #  so step 400K = 220K x 12 + 180K x 24 = 6.96M)
     # --------------------------------------------------------------------- #
     # "baseline_256": ("proteina_60m_baseline_256", False, 4, 400000),
     # "repa_l0_256":  ("proteina_60m_repa_l0_256_per_residue", True, 0, 400000),
     # "repa_l4_256":  ("proteina_60m_repa_l4_256_per_residue", True, 4, 400000),
     # "repa_l9_256":  ("proteina_60m_repa_l9_256_per_residue", True, 9, 400000),
     # --------------------------------------------------------------------- #
-    # n=512 — sample-matched @ exactly 3.0M samples
-    # (baseline bs=6 × 500K = REPA bs=4 × 750K)
+    # n=512 - sample-matched @ exactly 3.0M samples
+    # (baseline bs=6 x 500K = REPA bs=4 x 750K)
     # --------------------------------------------------------------------- #
     "baseline_512_sm": ("proteina_60m_baseline_v2", False, 4, 500000),
     # "repa_l0_512_sm": ("proteina_60m_repa_layer0_v2", True,  0, 750000),

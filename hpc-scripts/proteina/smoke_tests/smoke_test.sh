@@ -1,5 +1,5 @@
 #!/bin/bash
-#! Proteina smoke test — tiny PDB subset, no WandB, verify pipeline works
+#! Proteina smoke test - tiny PDB subset, no WandB, verify pipeline works
 #SBATCH -J prot-smoke
 #SBATCH -A LIO-CHARM-SL2-GPU
 #SBATCH --nodes=1

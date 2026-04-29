@@ -339,9 +339,9 @@ class TestREPAIntegration:
     def test_tradeoff_lambda_weighting(
         self, transformer, dummy_encoder, hidden_dim, molecular_batch
     ):
-        """Verify tradeoff formula: total = (1-λ)·D + λ·R, for λ=0.8 and λ=0.2.
+        """Verify tradeoff formula: total = (1-lambda)*D + lambda*R, for lambda=0.8 and lambda=0.2.
 
-        Higher λ shifts weight from diffusion to REPA. The direction of the difference
+        Higher lambda shifts weight from diffusion to REPA. The direction of the difference
         in total loss depends on sign(R - D), so we assert the formula directly.
         Note: R (repa_loss) may be negative when representations are positively aligned
         (cosine similarity), so directional assertions on the totals are not meaningful.
@@ -384,10 +384,10 @@ class TestREPAIntegration:
     def test_additive_lambda_weighting(
         self, transformer, dummy_encoder, hidden_dim, molecular_batch
     ):
-        """Verify additive formula: total = D + λ·R, for λ=0.8 and λ=0.2.
+        """Verify additive formula: total = D + lambda*R, for lambda=0.8 and lambda=0.2.
 
         REPA loss (R) may be negative (negative cosine similarity), so the total is not
-        guaranteed to increase with λ. The difference total_08 - total_02 = 0.6·R exactly,
+        guaranteed to increase with lambda. The difference total_08 - total_02 = 0.6*R exactly,
         regardless of sign.
         """
         projector = Projector(
@@ -422,7 +422,7 @@ class TestREPAIntegration:
 
         assert abs(total_08.item() - (D + 0.8 * R)) < 1e-5
         assert abs(total_02.item() - (D + 0.2 * R)) < 1e-5
-        # Difference is exactly 0.6·R, regardless of sign
+        # Difference is exactly 0.6*R, regardless of sign
         assert abs((total_08.item() - total_02.item()) - 0.6 * R) < 1e-5
 
 
@@ -505,13 +505,13 @@ class TestCrossAttentionFusion:
         padding_mask[:, 8:] = True
         t = torch.rand(batch_size)
 
-        # Without hidden states — still 2 outputs
+        # Without hidden states - still 2 outputs
         output = transformer_cross_attn(
             coords, atomics, padding_mask, t, return_hidden_states=False
         )
         assert len(output) == 2
 
-        # With hidden states — 4 outputs (coords, atom_logits, h_coord, h_atom)
+        # With hidden states - 4 outputs (coords, atom_logits, h_coord, h_atom)
         output = transformer_cross_attn(
             coords, atomics, padding_mask, t, return_hidden_states=True
         )
@@ -660,7 +660,7 @@ class TestCrossAttentionFusion:
 
     def test_single_head_no_fusion(self, dummy_encoder, hidden_dim, molecular_batch):
         """With only hidden_states_coord (no cross_attention), no fusion occurs."""
-        # Projector with hidden_dim (not 2*hidden_dim) — single head
+        # Projector with hidden_dim (not 2*hidden_dim) - single head
         projector = Projector(
             hidden_dim=hidden_dim, encoder_dim=dummy_encoder.encoder_dim
         )
@@ -679,7 +679,7 @@ class TestCrossAttentionFusion:
         t = torch.rand(batch_size)
         path = FlowPath(x_0=x_1, x_t=x_1, dx_t=x_1, x_1=x_1, t=t)
 
-        # Only hidden_states_coord — same as cross_attention=False
+        # Only hidden_states_coord - same as cross_attention=False
         pred = TensorDict(
             {
                 "coords": coords,
@@ -695,11 +695,11 @@ class TestCrossAttentionFusion:
         assert "repa_loss" in stats
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ===========================================================================
 # REPA Pipeline Audit Tests
 # Verify correctness against the original REPA paper (arXiv 2410.06940)
 # Reference code: https://github.com/sihyun-yu/REPA
-# ═══════════════════════════════════════════════════════════════════════════
+# ===========================================================================
 
 
 def _reference_repa_loss(projected, target, mask):
@@ -917,7 +917,7 @@ class TestTabascoPerSampleVsPerAtomAveraging:
         coords = torch.randn(b, n, 3)
         atomics = torch.zeros(b, n, 9)
         atomics[:, :, 0] = 1.0
-        # Lengths 3 vs 20 — very different
+        # Lengths 3 vs 20 - very different
         padding_mask = torch.zeros(b, n, dtype=torch.bool)
         padding_mask[0, 3:] = True
 

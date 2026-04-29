@@ -4,9 +4,9 @@ These tests verify that:
   A. MoleculeConverter produces correctly shaped and encoded tensors
   B. QM9 LMDB items have correct shapes and valid one-hot encodings
   C. SMILES in QM9 items match the underlying molecule (regression for the
-     all_smiles[index] alignment bug — indices ≥10 are the critical cases)
+     all_smiles[index] alignment bug - indices >=10 are the critical cases)
   D. Batch collation preserves SMILES in the correct order
-  E. GEOM LMDB (conditional — skipped when not available on this machine)
+  E. GEOM LMDB (conditional - skipped when not available on this machine)
 
 Key regression:
     The old code used `self.all_smiles[index]` in __getitem__.  Because
@@ -55,7 +55,7 @@ class TestMoleculeConverter:
 
     @pytest.fixture(scope="class")
     def ethanol_tensor(self, converter):
-        """Ethanol (CCO) — 3 heavy atoms, padded to 10."""
+        """Ethanol (CCO) - 3 heavy atoms, padded to 10."""
         mol = Chem.MolFromSmiles("CCO")
         mol = Chem.AddHs(mol)
         AllChem.EmbedMolecule(mol, randomSeed=42)
@@ -136,7 +136,7 @@ def qm9_dataset():
 
 
 # =============================================================================
-#  B. QM9 LMDB — shapes and tensor validity
+#  B. QM9 LMDB - shapes and tensor validity
 # =============================================================================
 
 
@@ -189,7 +189,7 @@ class TestQM9ItemShapes:
 
 
 # =============================================================================
-#  C. QM9 LMDB — SMILES correctness
+#  C. QM9 LMDB - SMILES correctness
 #     (regression for the all_smiles[index] alignment bug)
 # =============================================================================
 
@@ -214,9 +214,9 @@ class TestQM9SMILESCorrectness:
 
     @pytest.mark.parametrize("idx", [10, 11, 99, 100, 101, 999, 1000])
     def test_smiles_matches_molecule_large_indices(self, qm9_dataset, idx):
-        """Indices ≥ 10: byte-sorted LMDB keys diverge from numeric insertion order.
+        """Indices >= 10: byte-sorted LMDB keys diverge from numeric insertion order.
 
-        This is the key regression test — the old `all_smiles[index]` code
+        This is the key regression test - the old `all_smiles[index]` code
         would silently return the SMILES for a different molecule at these
         indices (b"10" sorts before b"2", so keys[2] != molecule 2).
         """
@@ -232,7 +232,7 @@ class TestQM9SMILESCorrectness:
 
 
 # =============================================================================
-#  D. QM9 LMDB — batch collation
+#  D. QM9 LMDB - batch collation
 # =============================================================================
 
 
@@ -283,7 +283,7 @@ class TestQM9BatchCollation:
 
 
 # =============================================================================
-#  E. GEOM LMDB — conditional (skipped if not available locally)
+#  E. GEOM LMDB - conditional (skipped if not available locally)
 # =============================================================================
 
 

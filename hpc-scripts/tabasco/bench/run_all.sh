@@ -4,10 +4,10 @@
 #! CSVs land in evaluation/tabasco/bench/results/.
 #!
 #! Approximate wall time:
-#!   - compile:   ~15 min (3 modes × 2 precisions × 100 steps, fake data)
-#!   - sdpa:      ~10 min (4 backends × 2 compile, fake data)
-#!   - bs_sweep:  ~30 min (3 experiments × 2 compile × binary-search, fake data)
-#!   - io:        ~5 min  (1 workers × 2 pin × 300 batches, real LMDB)
+#!   - compile:   ~15 min (3 modes x 2 precisions x 100 steps, fake data)
+#!   - sdpa:      ~10 min (4 backends x 2 compile, fake data)
+#!   - bs_sweep:  ~30 min (3 experiments x 2 compile x binary-search, fake data)
+#!   - io:        ~5 min  (1 workers x 2 pin x 300 batches, real LMDB)
 #!
 #! Total ~60 min with --qos=intr (fast-start) per feedback_smoketest_qos_intr.md.
 #!

@@ -1,9 +1,9 @@
 #!/bin/bash
-#! A/B test: SDPA vs manual attention × compile vs no-compile, at max_size=512
+#! A/B test: SDPA vs manual attention x compile vs no-compile, at max_size=512
 #! Full 2x2 matrix measuring throughput and peak memory.
 #!
 #! Time budget (~90 min):
-#!   - 4 configs × ~6-12 min each + compile warmup + data loading
+#!   - 4 configs x ~6-12 min each + compile warmup + data loading
 #SBATCH -J prot-sdpa-ab
 #SBATCH -A LIO-CHARM-SL2-GPU
 #SBATCH --nodes=1
@@ -34,7 +34,7 @@ echo "=== GPU: $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader)
 echo "=== Time: $(date) ==="
 echo ""
 
-# 2x2 matrix: (manual, sdpa) × (no-compile, compile)
+# 2x2 matrix: (manual, sdpa) x (no-compile, compile)
 for ATTN in "manual" "sdpa"; do
     for COMPILE in "no-compile" "compile"; do
         echo "========================================"
@@ -136,7 +136,7 @@ print(f'MEMORY: peak={peak_mem:.2f} GB')
         echo ""
 
         if [ $EXIT_CODE -ne 0 ]; then
-            echo "!!! ${ATTN}+${COMPILE} FAILED — skipping remaining tests"
+            echo "!!! ${ATTN}+${COMPILE} FAILED - skipping remaining tests"
             break 2
         fi
     done

@@ -98,7 +98,7 @@ def create_tiny_dataset(output_path: str = "tiny_dataset.pt", num_molecules: int
 
     # Save dataset
     torch.save(batches, output_path)
-    print(f"\n✓ Saved dataset to {output_path}")
+    print(f"\n[OK] Saved dataset to {output_path}")
     print(f"  Total molecules: {len(batches)}")
 
     # Print statistics
@@ -112,4 +112,4 @@ def create_tiny_dataset(output_path: str = "tiny_dataset.pt", num_molecules: int
 
 if __name__ == "__main__":
     batches = create_tiny_dataset("tiny_dataset.pt", num_molecules=20)
-    print("\n✓ Dataset ready for training!")
+    print("\n[OK] Dataset ready for training!")

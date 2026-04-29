@@ -31,7 +31,7 @@ except (ImportError, OSError):
     HAS_PROTEINA_DEPS = False
 
 
-# ─── Test ProteinTransformerAF3WithHiddenStates ─────────────────────────────
+# --- Test ProteinTransformerAF3WithHiddenStates -----------------------------
 
 
 needs_proteina_deps = pytest.mark.skipif(
@@ -160,7 +160,7 @@ class TestTransformerHiddenStates:
         torch.testing.assert_close(out_no_hs["coors_pred"], out_with_hs["coors_pred"])
 
 
-# ─── Test Projector ─────────────────────────────────────────────────────────
+# --- Test Projector ---------------------------------------------------------
 
 
 class TestProjector:
@@ -183,7 +183,7 @@ class TestProjector:
         assert x.grad.abs().sum() > 0
 
 
-# ─── Test REPA Loss (with mock encoder) ─────────────────────────────────────
+# --- Test REPA Loss (with mock encoder) -------------------------------------
 
 
 class MockEncoder(nn.Module):
@@ -304,7 +304,7 @@ class TestREPALoss:
         assert torch.isfinite(repa_loss)
 
 
-# ─── Test GearNetPerResidueEncoder (format conversion only, no checkpoint) ──
+# --- Test GearNetPerResidueEncoder (format conversion only, no checkpoint) --
 
 
 class TestGearNetEncoderFormatConversion:
@@ -376,7 +376,7 @@ class TestGearNetEncoderFormatConversion:
         assert (output[1, :18] == h_v[15:]).all()
 
 
-# ─── Test random-init GearNet encoder (no ckpt required) ──────────────────
+# --- Test random-init GearNet encoder (no ckpt required) ------------------
 
 
 class TestRandomInitGearNet:
@@ -430,11 +430,11 @@ class TestRandomInitGearNet:
         assert all(not p.requires_grad for p in enc.parameters())
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ===========================================================================
 # REPA Pipeline Audit Tests
 # Verify correctness against the original REPA paper (arXiv 2410.06940)
 # Reference code: https://github.com/sihyun-yu/REPA
-# ═══════════════════════════════════════════════════════════════════════════
+# ===========================================================================
 
 
 @needs_proteina_deps
@@ -512,7 +512,7 @@ class TestParentSubclassForwardEquivalence:
             child_out["coors_pred"],
             atol=0,
             rtol=0,
-            msg="REPA subclass forward() has drifted from parent — outputs differ",
+            msg="REPA subclass forward() has drifted from parent - outputs differ",
         )
 
 
@@ -625,7 +625,7 @@ class TestTradeoffCombinationMode:
     """Test F: Verify the tradeoff combination formula."""
 
     def test_tradeoff_formula(self):
-        """With known inputs, verify (1-λ)*fm + λ*repa."""
+        """With known inputs, verify (1-lambda)*fm + lambda*repa."""
         from proteinfoundation.repa.repa_loss import Projector, ProteinaREPALoss
 
         encoder_dim = 32
@@ -662,7 +662,7 @@ class TestTradeoffCombinationMode:
         )
 
     def test_additive_formula(self):
-        """With known inputs, verify fm + λ*repa."""
+        """With known inputs, verify fm + lambda*repa."""
         from proteinfoundation.repa.repa_loss import Projector, ProteinaREPALoss
 
         encoder_dim = 32

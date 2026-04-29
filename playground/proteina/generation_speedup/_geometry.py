@@ -10,8 +10,8 @@ import numpy as np
 import torch
 
 CA_IDX = 1  # atom37 index for CA
-EXPECTED_CA_CA_BOND = 3.80  # Å, idealized virtual bond
-CLASH_THRESHOLD = 3.6  # Å, non-adjacent CA pair below this counts as clash
+EXPECTED_CA_CA_BOND = 3.80  # A, idealized virtual bond
+CLASH_THRESHOLD = 3.6  # A, non-adjacent CA pair below this counts as clash
 
 
 def _to_np_ca(atom37: torch.Tensor | np.ndarray) -> np.ndarray:
@@ -52,7 +52,7 @@ def ca_ca_ca_angles(atom37: torch.Tensor | np.ndarray) -> np.ndarray:
 def ca_clash_rate(
     atom37: torch.Tensor | np.ndarray, threshold: float = CLASH_THRESHOLD
 ) -> float:
-    """Fraction of non-adjacent (|i-j|>=2) CA pairs within `threshold` Å."""
+    """Fraction of non-adjacent (|i-j|>=2) CA pairs within `threshold` A."""
     ca = _to_np_ca(atom37)
     n = ca.shape[0]
     if n < 3:

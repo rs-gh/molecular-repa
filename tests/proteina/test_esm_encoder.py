@@ -30,14 +30,14 @@ needs_deps = pytest.mark.skipif(
 _RUN_REAL_ESM = os.environ.get("ESM_TEST", "0") == "1"
 
 
-# ─── Stub ESM so we can unit-test the wrapper without the 650M download ─────
+# --- Stub ESM so we can unit-test the wrapper without the 650M download -----
 
 
 class _StubTokenizer:
     """Minimal stand-in for HF AutoTokenizer covering what the wrapper uses."""
 
     def __init__(self):
-        # ESM-2's actual vocab ordering — doesn't need to be exact, just
+        # ESM-2's actual vocab ordering - doesn't need to be exact, just
         # self-consistent: every AA letter must round-trip to a unique id.
         specials = ["<cls>", "<pad>", "<eos>", "<unk>"]
         aa_letters = [
@@ -85,7 +85,7 @@ class _StubESMOutput:
 
 
 class _StubESMModel(nn.Module):
-    """Replaces AutoModel.from_pretrained — deterministic, tiny, same API."""
+    """Replaces AutoModel.from_pretrained - deterministic, tiny, same API."""
 
     def __init__(self, hidden_size=32, vocab_size=64, num_layers=3):
         super().__init__()
@@ -122,7 +122,7 @@ def stubbed_esm(monkeypatch):
     )
 
 
-# ─── Shape / masking / alphabet tests (stubbed ESM) ─────────────────────────
+# --- Shape / masking / alphabet tests (stubbed ESM) -------------------------
 
 
 @needs_deps
@@ -174,7 +174,7 @@ class TestESMEncoderWithStub:
         assert not torch.allclose(out_a, out_g)
 
     def test_identical_sequences_identical_output(self, stubbed_esm):
-        """Determinism: same residue_type tensor → same output (no noise)."""
+        """Determinism: same residue_type tensor -> same output (no noise)."""
         enc = ESMPerResidueEncoder(model_id="stub")
         b, n = 2, 6
         coords = torch.randn(b, n, 3)
@@ -182,7 +182,7 @@ class TestESMEncoderWithStub:
         residue_type = torch.randint(0, 20, (1, n)).expand(b, n).contiguous()
 
         out = enc(coords, mask, residue_type=residue_type)
-        # Both batch elements see the same tokens + mask → identical rows.
+        # Both batch elements see the same tokens + mask -> identical rows.
         torch.testing.assert_close(out[0], out[1])
 
     def test_padding_index_handled(self, stubbed_esm):
@@ -227,7 +227,7 @@ class TestESMEncoderWithStub:
         assert not enc.training
 
 
-# ─── Integration test: loss + residue_type plumbing (no real ESM) ───────────
+# --- Integration test: loss + residue_type plumbing (no real ESM) -----------
 
 
 @needs_deps
@@ -268,7 +268,7 @@ class TestESMEncoderLossIntegration:
             assert p.grad is not None
 
 
-# ─── Real ESM integration (gated on env var) ────────────────────────────────
+# --- Real ESM integration (gated on env var) --------------------------------
 
 
 @pytest.mark.skipif(

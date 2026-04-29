@@ -4,7 +4,7 @@ Generate figures for MACE investigation findings.
 Run:
   source .venv/bin/activate
   export PROJECT_ROOT=$(pwd)/src/tabasco
-  python playground/tabasco/mace/generate_figures.py
+  python encoder_profiling/tabasco/mace/generate_figures.py
 """
 
 import os
@@ -40,7 +40,7 @@ FIGURES_DIR = os.path.join(os.path.dirname(__file__), "figures")
 os.makedirs(FIGURES_DIR, exist_ok=True)
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
+# -- Helpers ------------------------------------------------------------------
 
 
 def load_geom_molecules(n=200):
@@ -124,7 +124,7 @@ def get_chemeleon_embedding(mol_noh, smi):
     return emb.squeeze(0).cpu()
 
 
-# ── Figure generation ────────────────────────────────────────────────────────
+# -- Figure generation --------------------------------------------------------
 
 
 def fig_01_value_distribution(mace_embs, chem_embs):
@@ -457,7 +457,7 @@ def fig_06_heavy_vs_all_atom(mols, calc, model, config):
     print("  Saved fig_06_heavy_vs_all_atom.png")
 
 
-# ── Main ─────────────────────────────────────────────────────────────────────
+# -- Main ---------------------------------------------------------------------
 
 
 def main():

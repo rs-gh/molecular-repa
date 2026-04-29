@@ -52,7 +52,7 @@ from proteinfoundation.datasets.lmdb_utils import process_tar_to_lmdb
 def _scan_tar_members(tar_path: str) -> list[str]:
     """Pass 1: read tar headers only to collect all protein ID stems.
 
-    Uses streaming mode so we never load data blocks — just headers.
+    Uses streaming mode so we never load data blocks - just headers.
     For a 27 GB tar this takes ~30-60 seconds.
     """
     logger.info(f"Scanning tar headers: {tar_path}")
@@ -64,7 +64,7 @@ def _scan_tar_members(tar_path: str) -> list[str]:
             stem = os.path.splitext(os.path.basename(member.name))[0]
             if stem:
                 stems.append(stem)
-            # extractfile() NOT called — we skip the data block automatically
+            # extractfile() NOT called - we skip the data block automatically
     logger.info(f"Found {len(stems)} PDB members in tar")
     return stems
 
@@ -189,7 +189,7 @@ def main():
 
     os.makedirs(lmdb_dir, exist_ok=True)
 
-    # Pass 1: assign splits (fast — headers only)
+    # Pass 1: assign splits (fast - headers only)
     splits = load_or_create_splits(tar_path, splits_path)
 
     # Pass 2: stream tar for each split
@@ -199,7 +199,7 @@ def main():
 
         lmdb_path = os.path.join(lmdb_dir, f"{split_name}.lmdb")
         logger.info(
-            f"\n=== {split_name}: {len(protein_ids)} proteins → {lmdb_path} ==="
+            f"\n=== {split_name}: {len(protein_ids)} proteins -> {lmdb_path} ==="
             + (f" [max_residues={args.max_residues}]" if args.max_residues else "")
         )
 

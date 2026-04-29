@@ -87,7 +87,7 @@ def save_molecules_as_sdf(mols, output_path):
         writer.write(mol)
     writer.close()
 
-    print(f"✓ Saved {len(valid_mols)} molecules to {output_path}")
+    print(f"[OK] Saved {len(valid_mols)} molecules to {output_path}")
 
 
 def print_molecule_info(mols):
@@ -147,7 +147,7 @@ def main():
     print("Creating 2D visualization...")
     img = visualize_2d_grid(mols, mols_per_row=3, img_size=(400, 400))
     img.save("molecules_2d.png")
-    print("✓ Saved 2D grid to molecules_2d.png")
+    print("[OK] Saved 2D grid to molecules_2d.png")
 
     # Save to SDF for external viewers (like ChimeraX, PyMOL, VMD)
     print("\nSaving SDF file...")
@@ -157,8 +157,8 @@ def main():
     print("Visualization complete!")
     print("=" * 70)
     print("\nFiles created:")
-    print("  • molecules_2d.png - 2D grid view (open with any image viewer)")
-    print("  • molecules_3d.sdf - 3D structures (open with ChimeraX, PyMOL, etc.)")
+    print("  * molecules_2d.png - 2D grid view (open with any image viewer)")
+    print("  * molecules_3d.sdf - 3D structures (open with ChimeraX, PyMOL, etc.)")
     print("\nFor interactive 3D visualization in Jupyter:")
     print("  from visualize_molecules import visualize_3d_inline")
     print("  viewer = visualize_3d_inline(mols[0])")

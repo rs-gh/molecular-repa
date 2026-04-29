@@ -5,7 +5,7 @@ passes a boolean `key_padding_mask`. Internally, MHA converts that to an
 additive float `attn_mask`, which typically excludes FLASH_ATTENTION on
 most PyTorch builds. This script reproduces tabasco's realistic call
 shape at production dims (B=256, H=8, N=71, D=16 per head for hidden=128;
-D=32 per head for hidden=256 — both exercised here) and reports which
+D=32 per head for hidden=256 - both exercised here) and reports which
 backend each forced selection resolves to.
 
 It also tests a "bare SDPA" variant: querying `F.scaled_dot_product_attention`
@@ -125,8 +125,8 @@ def try_backend(label, backend, fn, do_backward=True):
 def scenario_mha(name, batch, num_atoms, hidden, heads, dtype, real_atoms, padded):
     mask_label = "with padding_mask" if padded else "no mask"
     print(
-        f"\n─── {name}  B={batch} N={num_atoms} hidden={hidden} H={heads} "
-        f"D={hidden//heads} dtype={dtype} {mask_label} ───"
+        f"\n--- {name}  B={batch} N={num_atoms} hidden={hidden} H={heads} "
+        f"D={hidden//heads} dtype={dtype} {mask_label} ---"
     )
     for label, backend in [
         ("FLASH_ATTENTION", SDPBackend.FLASH_ATTENTION),
@@ -146,8 +146,8 @@ def scenario_mha(name, batch, num_atoms, hidden, heads, dtype, real_atoms, padde
 def scenario_bare(name, batch, num_atoms, hidden, heads, dtype, real_atoms, padded):
     mask_label = "additive -inf mask" if padded else "no mask"
     print(
-        f"\n─── {name}  B={batch} N={num_atoms} hidden={hidden} H={heads} "
-        f"D={hidden//heads} dtype={dtype} {mask_label} (bare SDPA) ───"
+        f"\n--- {name}  B={batch} N={num_atoms} hidden={hidden} H={heads} "
+        f"D={hidden//heads} dtype={dtype} {mask_label} (bare SDPA) ---"
     )
     for label, backend in [
         ("FLASH_ATTENTION", SDPBackend.FLASH_ATTENTION),
@@ -175,8 +175,8 @@ def main():
         f"math_enabled={torch.backends.cuda.math_sdp_enabled()}"
     )
 
-    # Tabasco GEOM mild: hidden=128, heads=8, head_dim=16. N≈71 (max).
-    # Production workload expands BS×8 via augmentation → effective BS=2048.
+    # Tabasco GEOM mild: hidden=128, heads=8, head_dim=16. N~=71 (max).
+    # Production workload expands BSx8 via augmentation -> effective BS=2048.
     # Use 256 here so diagnose runs fast while still exercising the kernels.
     scenario_mha(
         "A: MHA w/ padding_mask (prod path)",

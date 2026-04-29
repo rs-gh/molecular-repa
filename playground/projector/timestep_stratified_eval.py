@@ -113,7 +113,7 @@ def load_model(checkpoint_path, device="cuda"):
 
         model = lightning_module.model
     else:
-        print("  No Hydra config found — attempting direct state_dict load")
+        print("  No Hydra config found - attempting direct state_dict load")
         print("  This requires the model architecture to match the checkpoint.")
         raise FileNotFoundError(
             f"Could not find .hydra/config.yaml near {checkpoint_path}. "

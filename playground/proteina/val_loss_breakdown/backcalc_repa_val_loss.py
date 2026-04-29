@@ -100,7 +100,7 @@ def main():
         print("No data fetched. Check WandB connectivity.")
         return
 
-    # ── Plot 1: Total validation loss (all models) ──
+    # -- Plot 1: Total validation loss (all models) --
     colors = {
         "Baseline": "#4C72B0",
         "REPA L4": "#DD8452",
@@ -189,7 +189,7 @@ def main():
     plt.close()
     print(f"\nSaved {OUTDIR}/val_loss_breakdown.png")
 
-    # ── Print summary table ──
+    # -- Print summary table --
     print("\n" + "=" * 80)
     print(
         f"{'Model':<12} {'Steps':>10} {'Val Loss':>10} {'FM Loss':>10} {'Aux Loss':>10} {'REPA Loss':>11}"

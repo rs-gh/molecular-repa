@@ -6,8 +6,8 @@ or require genuine structural information from the transformer.
 
 Three tests per encoder (all with proper 80/20 train/test splits):
   1. Mean-direction baseline: cosine sim between mean embedding and all targets
-  2. Identity-input generalization: one-hot type → MLP → targets (test set)
-  3. Random-input generalization: random vectors → MLP → targets (test set)
+  2. Identity-input generalization: one-hot type -> MLP -> targets (test set)
+  3. Random-input generalization: random vectors -> MLP -> targets (test set)
 
 Run (recommended via srun to avoid login node kill):
   srun --partition=ampere --gres=gpu:1 --cpus-per-task=4 --time=00:30:00 --pty bash
@@ -36,7 +36,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 CACHE_DIR = Path(__file__).parent / "cached_embeddings"
 FIGURES_DIR = Path(__file__).parent / "figures"
 
-# ── Embedding computation (Phase 1) ────────────────────────────────────────
+# -- Embedding computation (Phase 1) ----------------------------------------
 
 
 def compute_chemeleon_embeddings(n_mols=200):
@@ -301,7 +301,7 @@ def compute_gearnet_embeddings(n_proteins=200):
     return result
 
 
-# ── Analysis (Phase 2) ─────────────────────────────────────────────────────
+# -- Analysis (Phase 2) -----------------------------------------------------
 
 
 def test_mean_direction(embeddings):
@@ -380,7 +380,7 @@ def run_analysis(data):
 
     # --- Test 1: Mean direction ---
     mean_result = test_mean_direction(embeddings)
-    print("\n  Test 1 — Mean-direction baseline:")
+    print("\n  Test 1 - Mean-direction baseline:")
     print(f"    cos_sim = {mean_result['mean']:.4f} +/- {mean_result['std']:.4f}")
     print(f"    range: [{mean_result['min']:.4f}, {mean_result['max']:.4f}]")
 
@@ -409,7 +409,7 @@ def run_analysis(data):
     onehot_train = F.one_hot(types_train.long(), n_classes).float()
     onehot_test = F.one_hot(types_test.long(), n_classes).float()
 
-    print(f"\n  Test 2 — Identity-input (one-hot, {n_classes} classes):")
+    print(f"\n  Test 2 - Identity-input (one-hot, {n_classes} classes):")
     id_train_curve, id_test_curve = train_and_evaluate_mlp(
         onehot_train, onehot_test, target_train, target_test
     )
@@ -422,7 +422,7 @@ def run_analysis(data):
     random_train = torch.randn(len(train_idx), 128)
     random_test = torch.randn(len(test_idx), 128)
 
-    print("\n  Test 3 — Random-input (128-d Gaussian):")
+    print("\n  Test 3 - Random-input (128-d Gaussian):")
     rand_train_curve, rand_test_curve = train_and_evaluate_mlp(
         random_train, random_test, target_train, target_test
     )
@@ -450,7 +450,7 @@ def run_analysis(data):
     }
 
 
-# ── Figures (Phase 3) ──────────────────────────────────────────────────────
+# -- Figures (Phase 3) ------------------------------------------------------
 
 
 def generate_figures(results_list):
@@ -610,7 +610,7 @@ def generate_figures(results_list):
     print(f"  Saved {FIGURES_DIR / 'fig_03_learning_curves.png'}")
 
 
-# ── Main ────────────────────────────────────────────────────────────────────
+# -- Main --------------------------------------------------------------------
 
 
 def main():

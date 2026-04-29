@@ -1,6 +1,6 @@
 """Verify the new held-out test.lmdb passes the blocking checks.
 
-Mirrors verify_val_lmdb.py — only differences:
+Mirrors verify_val_lmdb.py - only differences:
   - Operates on test.lmdb / test_keys.pkl / test_lengths.npy
   - MIN_TEST_ENTRIES is 200 (test split is ~0.1% of PDB vs val's ~1.9%)
   - Sidecar sampling check requests 200 proteins (not 500)
@@ -76,7 +76,7 @@ def check_counts() -> dict:
     )
     assert (
         len(test_ids) >= MIN_TEST_ENTRIES
-    ), f"test has only {len(test_ids)} entries — want >= {MIN_TEST_ENTRIES}"
+    ), f"test has only {len(test_ids)} entries - want >= {MIN_TEST_ENTRIES}"
     assert lengths.max() <= 512, "test contains a protein > 512 residues"
     print(
         f"[1/4] OK  n_entries={len(test_ids)}  "
@@ -86,13 +86,15 @@ def check_counts() -> dict:
 
 
 def check_disjointness(test_ids: set) -> None:
-    """Check 2: test ∩ train == ∅."""
+    """Check 2: test intersect train == empty."""
     assert TRAIN_LMDB.exists(), f"train.lmdb missing at {TRAIN_LMDB}"
     print("[2/4] reading train.lmdb IDs (may take minutes if no __ids__ cache)...")
     train_ids = _lmdb_ids(TRAIN_LMDB)
     overlap = test_ids & train_ids
-    assert not overlap, f"test ∩ train = {len(overlap)}; sample: {list(overlap)[:5]}"
-    print(f"[2/4] OK  test ∩ train = 0 (|train|={len(train_ids)})")
+    assert (
+        not overlap
+    ), f"test intersect train = {len(overlap)}; sample: {list(overlap)[:5]}"
+    print(f"[2/4] OK  test intersect train = 0 (|train|={len(train_ids)})")
 
 
 def check_cath_rate() -> None:
@@ -147,13 +149,13 @@ def main():
     print(f"Verifying {TEST_LMDB}")
     ctx = check_counts()
     if args.skip_disjointness:
-        print("[2/4] SKIPPED (--skip_disjointness) — trusting splitter determinism")
+        print("[2/4] SKIPPED (--skip_disjointness) - trusting splitter determinism")
     else:
         check_disjointness(ctx["test_ids"])
     check_cath_rate()
     check_sidecar_sampling()
     print(
-        "\nALL PASSED — test.lmdb is ready. "
+        "\nALL PASSED - test.lmdb is ready. "
         "To run probes against it: PROBE_SPLIT=test sbatch hpc-scripts/proteina/evaluation/representation/run_probes.sh "
         "--n_proteins 200 --runs baseline_128 --timesteps 1.0"
     )

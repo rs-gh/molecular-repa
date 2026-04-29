@@ -20,7 +20,7 @@ HERE = Path(__file__).resolve().parent
 RESULTS_ROOT = HERE.parent / "results"
 FIGURES_DIR = HERE.parent / "figures"
 
-# ── Data ──────────────────────────────────────────────────────────────────────
+# -- Data ----------------------------------------------------------------------
 
 SIZES = {
     "n128": {"label": "n=128", "samples": "19.5M samples", "dir": "n128"},
@@ -62,7 +62,7 @@ METRICS = {
     "_res_PDB_fJSD_A": ("fJSD (AA)", True, "N=200"),
     "_res_PDB_fJSD_T": ("fJSD (Topology)", True, "N=200"),
     "_res_designability_rate": ("Designability", False, "N=100"),
-    "_res_scRMSD_mean": ("scRMSD (Å)", True, "N=100"),
+    "_res_scRMSD_mean": ("scRMSD (A)", True, "N=100"),
 }
 
 #! eval_output is two levels above HERE (scripts -> generation -> proteina -> evaluation -> repo-root)
@@ -229,7 +229,7 @@ def plot(data: dict) -> None:
             ax.set_axisbelow(True)
 
             if row == 0:
-                direction = "↓ better" if lower_better else "↑ better"
+                direction = "v better" if lower_better else "^ better"
                 ax.set_title(
                     f"{metric_label} ({n_note}, {direction})",
                     fontsize=11,
@@ -255,7 +255,7 @@ def plot(data: dict) -> None:
     )
 
     fig.suptitle(
-        "Generation quality — sample-matched comparison\n(single training-cap length per size)",
+        "Generation quality - sample-matched comparison\n(single training-cap length per size)",
         fontsize=13,
         fontweight="bold",
         y=1.01,

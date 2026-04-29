@@ -7,7 +7,7 @@
 #!
 #! Usage:
 #!   sbatch hpc-scripts/proteina/data_prep/download_ted_afdb.sh
-#!   # or on login node (long download — use screen/tmux):
+#!   # or on login node (long download - use screen/tmux):
 #!   bash hpc-scripts/proteina/data_prep/download_ted_afdb.sh
 #!
 #! After completion, run:
@@ -44,7 +44,7 @@ echo "    Size: ~19.9 GB compressed"
 echo ""
 
 if [ -f "$TSV_FILE" ]; then
-    echo "TSV already exists at $TSV_FILE — skipping download and decompression."
+    echo "TSV already exists at $TSV_FILE - skipping download and decompression."
     echo "Delete it to re-download."
     exit 0
 fi
@@ -57,7 +57,7 @@ if [ ! -f "$GZ_FILE" ]; then
         "$URL"
     echo "Download complete: $(du -sh "$GZ_FILE" | cut -f1)"
 else
-    echo "GZ file already present ($GZ_FILE) — skipping download, proceeding to decompress."
+    echo "GZ file already present ($GZ_FILE) - skipping download, proceeding to decompress."
 fi
 
 echo ""

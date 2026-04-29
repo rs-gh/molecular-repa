@@ -34,9 +34,9 @@ METRIC_INFO = {
     "_res_fS_C": ("Fold Score (Class, max 5)", False),
     "_res_fS_A": ("Fold Score (Architecture, max 43)", False),
     "_res_fS_T": ("Fold Score (Topology, max 1336)", False),
-    "_res_designability_rate": ("Designability rate (scRMSD < 2Å)", False),
-    "_res_scRMSD_mean": ("scRMSD mean (Å)", True),
-    "_res_scRMSD_median": ("scRMSD median (Å)", True),
+    "_res_designability_rate": ("Designability rate (scRMSD < 2A)", False),
+    "_res_scRMSD_mean": ("scRMSD mean (A)", True),
+    "_res_scRMSD_median": ("scRMSD median (A)", True),
     "_res_tm_score_self_mean": ("Self-TM mean", False),
     "_res_plddt_mean": ("ESMFold pLDDT mean", False),
     "_res_plddt_median": ("ESMFold pLDDT median", False),
@@ -73,7 +73,7 @@ DEFAULT_STEPS = {
 # NOTE (2026-04-19): when adding 128-residue runs, bs is NOT uniform.
 #   baseline-128 (job 27971089, current) trained at bs=24 throughout.
 #   All REPA-128 variants (gearnet + esm, per_residue + per_sample) train at bs=80.
-#   Future baseline-128 runs / restarts will most likely adopt bs=80 — CONFIRM per run
+#   Future baseline-128 runs / restarts will most likely adopt bs=80 - CONFIRM per run
 #   before appending an entry (a mid-run bs switch means one run has two regimes, and
 #   nsamples = step * bs is no longer a single scalar multiply).
 BATCH_SIZES = {
@@ -127,7 +127,7 @@ def _step_labels(results):
 
 
 def _build_grouped_data(results_late, results_early):
-    """Build a dict mapping run label → {step, color, metrics} for early+late."""
+    """Build a dict mapping run label -> {step, color, metrics} for early+late."""
     by_label = {}
     for label, color, step, metrics in results_late:
         by_label.setdefault(label, {"color": color})
@@ -319,7 +319,7 @@ def plot_fjsd_bars(results_late, results_early):
         bars_afdb[best_afdb].set_linewidth(2.5)
 
         ax.set_ylabel("Fold JSD (lower = better)")
-        ax.set_title(f"Fold JSD — {level_name}")
+        ax.set_title(f"Fold JSD - {level_name}")
         ax.set_xticks(x)
         ax.set_xticklabels(tick_labels, rotation=20, ha="right")
         ax.legend(fontsize=8)
@@ -406,7 +406,7 @@ def plot_fold_score_bars(results_late, results_early):
 
     axes[0].legend(fontsize=9)
     fig.suptitle(
-        "Fold Score — Inception Score variant",
+        "Fold Score - Inception Score variant",
         fontsize=13,
         fontweight="bold",
     )
@@ -443,7 +443,7 @@ def print_summary_table(results):
         row = f"{display_name:<30}"
         for v in vals:
             if pd.isna(v):
-                row += f"{'—':>11}  "
+                row += f"{'-':>11}  "
             else:
                 marker = " *" if v == best else "  "
                 row += f"{v:>11.3f}{marker}"

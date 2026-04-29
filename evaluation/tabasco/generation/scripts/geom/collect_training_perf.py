@@ -1,8 +1,8 @@
 """Collect training performance statistics across all GEOM runs and generate plots.
 
 Outputs:
-    evaluation/tabasco/generation/results/geom/training_performance/training_performance.csv  — raw data
-    evaluation/tabasco/generation/results/geom/training_performance/figures/training_perf_*.png — plots
+    evaluation/tabasco/generation/results/geom/training_performance/training_performance.csv  - raw data
+    evaluation/tabasco/generation/results/geom/training_performance/figures/training_perf_*.png - plots
 
 Usage:
     python evaluation/tabasco/generation/scripts/tabasco/geom/collect_training_perf.py
@@ -56,7 +56,7 @@ RUNS = [
     ("final-tabasco-mild-geom-part2", "Baseline (no REPA)", "geom", "baseline"),
 ]
 
-# Cached MACE runs — matched by regex since name includes timestamp
+# Cached MACE runs - matched by regex since name includes timestamp
 CACHED_RUNS_REGEX = [
     ("mace-cached-additive", "MACE cached add", "geom", "mace-cached"),
     ("mace-cached-tradeoff", "MACE cached trade", "geom", "mace-cached"),

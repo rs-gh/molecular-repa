@@ -61,7 +61,7 @@ def pt_dir_with_samples(sample_graph, tmp_path):
 
 
 class TestConvertPtToLmdb:
-    """Test the .pt → LMDB conversion utility."""
+    """Test the .pt -> LMDB conversion utility."""
 
     def test_basic_conversion(self, pt_dir_with_samples, tmp_path):
         """Convert .pt files to LMDB and verify entry count."""

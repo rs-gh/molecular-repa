@@ -110,7 +110,7 @@ r = batch_designability(pdbs, tmp_root='/tmp/smoke_desig_${SLURM_JOB_ID}')
 
 print('RESULT:', {k: v for k, v in r.items() if not isinstance(v, list)})
 
-# Hard assertions — batch_designability silently swallows per-PDB exceptions,
+# Hard assertions - batch_designability silently swallows per-PDB exceptions,
 # so NaN / empty lists indicate a broken ProteinMPNN or ESMFold setup.
 assert len(r['scRMSD_list']) == 2, \
     f'Expected 2 scRMSDs, got {len(r[\"scRMSD_list\"])}: {r[\"scRMSD_list\"]}'

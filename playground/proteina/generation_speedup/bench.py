@@ -156,7 +156,7 @@ def bench(
 ) -> pd.DataFrame:
     records = []
     active = resolve_active()
-    assert len(active) >= 1, "No active checkpoints — uncomment one in checkpoints.py"
+    assert len(active) >= 1, "No active checkpoints - uncomment one in checkpoints.py"
     ckpt = active[0]
     print(f"Using checkpoint: {ckpt.name} -> {ckpt.ckpt_path}")
 
@@ -166,7 +166,7 @@ def bench(
         model, autocast_ctx = prepare_model(ckpt.ckpt_path, ckpt.is_repa, mode)
         for nres in lengths:
             print(
-                f"  length={nres}: warmup×{n_warmup} steady×{n_steady} bs={BATCH_SIZE}"
+                f"  length={nres}: warmupx{n_warmup} steadyx{n_steady} bs={BATCH_SIZE}"
             )
             sys.stdout.flush()
             warmup_times = run_cell(model, autocast_ctx, nres, BATCH_SIZE, n_warmup)
@@ -187,7 +187,7 @@ def bench(
             )
             print(
                 f"    warmup[0]={rec['warmup_seconds_first']:.2f}s  "
-                f"steady={rec['steady_seconds_mean']:.2f}±{rec['steady_seconds_std']:.2f}s "
+                f"steady={rec['steady_seconds_mean']:.2f}+/-{rec['steady_seconds_std']:.2f}s "
                 f"({rec['s_per_sample']:.3f}s/sample)"
             )
             sys.stdout.flush()

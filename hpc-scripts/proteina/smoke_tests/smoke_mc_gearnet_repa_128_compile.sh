@@ -3,7 +3,7 @@
 #! Smoke test: MC-GearNet-Edge REPA n=128, torch.compile ON.
 #! Companion to smoke_mc_gearnet_repa_128.sh (compile=off).
 #! Purpose: verify compile works and measure steady-state step time vs no-compile.
-#! Needs 2h wall — GearNet graph construction takes ~30 min to trace through compile.
+#! Needs 2h wall - GearNet graph construction takes ~30 min to trace through compile.
 #!
 #! Usage: sbatch hpc-scripts/proteina/smoke_tests/smoke_mc_gearnet_repa_128_compile.sh
 

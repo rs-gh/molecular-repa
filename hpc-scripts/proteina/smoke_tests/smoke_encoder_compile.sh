@@ -4,7 +4,7 @@
 #! MC-GearNet-Edge. Runs 50 steps each (enough to get past Dynamo tracing and
 #! measure steady-state step time).
 #!
-#! Needs 2h wall — encoder compile warmup is ~20-40 min per run.
+#! Needs 2h wall - encoder compile warmup is ~20-40 min per run.
 #!
 #! Usage: sbatch hpc-scripts/proteina/smoke_tests/smoke_encoder_compile.sh
 

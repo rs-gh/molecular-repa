@@ -1,6 +1,6 @@
 """Characterize ESM-2 (650M) per-residue encoder.
 
-Sequence-only model — coords are ignored by the encoder, so 3D-sensitivity and
+Sequence-only model - coords are ignored by the encoder, so 3D-sensitivity and
 rotation tests are skipped (set is_3d_aware=False). The standard `context` test
 is replaced with the sequence-context variant (mutate flanks, keep center).
 
@@ -8,7 +8,7 @@ The layerwise pass pulls all 33 hidden states in one forward (output_hidden_stat
 so it diverges from the per-layer-iteration pattern used by the GearNet drivers.
 
 Run:
-  python playground/proteina/esm/explore_esm.py [--quick] [--n-proteins 200] [--layer 33]
+  python encoder_profiling/proteina/esm/explore_esm.py [--quick] [--n-proteins 200] [--layer 33]
 """
 
 import argparse

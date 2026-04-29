@@ -3,7 +3,7 @@ Unified REPA projector analysis across all three encoders: CheMeleon, MACE, Gear
 
 Canonical source of truth for projector saturation tests, effective rank,
 sparsity, and atom/residue discrimination metrics. Replaces the scattered
-analysis scripts in playground/tabasco/{chemeleon,mace}/ and playground/proteina/gearnet/.
+analysis scripts in playground/tabasco/{chemeleon,mace}/ and encoder_profiling/proteina/gearnet/.
 
 Projector hidden_dim matches the ACTUAL training configs:
   - CheMeleon/MACE: hidden_dim=128 (tabasco model.net.hidden_dim)
@@ -45,7 +45,7 @@ PROJECTOR_HIDDEN_DIM = {
 }
 
 
-# ── Embedding computation (Phase 1) ──────────────────────────────────────────
+# -- Embedding computation (Phase 1) ------------------------------------------
 
 
 def compute_chemeleon_embeddings(n_mols=200):
@@ -308,7 +308,7 @@ def compute_gearnet_embeddings(n_proteins=200):
     return result
 
 
-# ── Standardized metrics (Phase 2) ───────────────────────────────────────────
+# -- Standardized metrics (Phase 2) -------------------------------------------
 
 
 def compute_distribution_stats(embeddings):
@@ -579,10 +579,10 @@ def run_analysis(data):
     print("\n  Projector saturation:")
     sat = compute_projector_saturation(embeddings, types, data["type_names"], name)
     print(
-        f"    Identity — train: {sat['identity']['train']:.4f}, test: {sat['identity']['test']:.4f}"
+        f"    Identity - train: {sat['identity']['train']:.4f}, test: {sat['identity']['test']:.4f}"
     )
     print(
-        f"    Random   — train: {sat['random']['train']:.4f}, test: {sat['random']['test']:.4f}"
+        f"    Random   - train: {sat['random']['train']:.4f}, test: {sat['random']['test']:.4f}"
     )
 
     return {
@@ -597,7 +597,7 @@ def run_analysis(data):
     }
 
 
-# ── Figures (Phase 3) ────────────────────────────────────────────────────────
+# -- Figures (Phase 3) --------------------------------------------------------
 
 
 def generate_figures(results_list):
@@ -804,7 +804,7 @@ def generate_figures(results_list):
     print(f"  Saved {FIGURES_DIR / 'fig_04_distribution.png'}")
 
 
-# ── Main ─────────────────────────────────────────────────────────────────────
+# -- Main ---------------------------------------------------------------------
 
 
 def main():

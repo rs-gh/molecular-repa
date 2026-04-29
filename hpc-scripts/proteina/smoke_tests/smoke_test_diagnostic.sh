@@ -1,5 +1,5 @@
 #!/bin/bash
-#! Diagnostic smoke test — baseline timing + GPU util + /dev/shm check
+#! Diagnostic smoke test - baseline timing + GPU util + /dev/shm check
 #SBATCH -J prot-diag
 #SBATCH -A LIO-CHARM-SL2-GPU
 #SBATCH --nodes=1

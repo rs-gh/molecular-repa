@@ -1,4 +1,4 @@
-"""Tests for pyg_compat shim — scatter ops, radius_graph, and fake module behavior."""
+"""Tests for pyg_compat shim - scatter ops, radius_graph, and fake module behavior."""
 
 import torch
 
@@ -53,7 +53,7 @@ class TestScatterOps:
 
 class TestRadiusGraph:
     def test_basic_cluster(self):
-        """Two pairs of close points — should get edges within each pair."""
+        """Two pairs of close points - should get edges within each pair."""
         x = torch.tensor(
             [[0.0, 0.0, 0.0], [0.1, 0.0, 0.0], [10.0, 0.0, 0.0], [10.1, 0.0, 0.0]]
         )
@@ -97,7 +97,7 @@ class TestRadiusGraph:
         edges = set(zip(row.tolist(), col.tolist()))
         assert (0, 1) in edges
         assert (1, 0) in edges
-        # Node 2 is in batch 1 alone — no edges
+        # Node 2 is in batch 1 alone - no edges
         assert (0, 2) not in edges
         assert (2, 0) not in edges
 
@@ -113,14 +113,14 @@ class TestRadiusGraph:
         batch = torch.tensor([0, 1, 1])
         row, col = _radius_graph_native(x, r=0.5, batch=batch)
         edges = set(zip(row.tolist(), col.tolist()))
-        # Batch 0 has one atom — no edges
+        # Batch 0 has one atom - no edges
         assert all(r_i != 0 and c_i != 0 for r_i, c_i in edges)
         # Batch 1 should have edges
         assert (1, 2) in edges
         assert (2, 1) in edges
 
     def test_all_single_atom_batches(self):
-        """All batch elements have 1 atom — should return empty edge index."""
+        """All batch elements have 1 atom - should return empty edge index."""
         x = torch.tensor([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [2.0, 0.0, 0.0]])
         batch = torch.tensor([0, 1, 2])
         row, col = _radius_graph_native(x, r=0.5, batch=batch)
@@ -186,7 +186,7 @@ class TestRadiusGraph:
             assert (c_i, r_i) in edges_ts
 
     def test_large_radius_no_edges(self):
-        """Points far apart with small radius — no edges."""
+        """Points far apart with small radius - no edges."""
         x = torch.tensor([[0.0, 0.0, 0.0], [100.0, 0.0, 0.0]])
         row, col = _radius_graph_native(x, r=1.0)
         assert row.shape[0] == 0
@@ -201,7 +201,7 @@ class TestRadiusGraph:
         assert row.device == x.device
 
     def test_1d_input(self):
-        """1D position input (not 2D coords) should work — GearNet uses this."""
+        """1D position input (not 2D coords) should work - GearNet uses this."""
         x = torch.tensor([0.0, 1.0, 2.0, 10.0, 11.0])
         batch = torch.tensor([0, 0, 0, 1, 1])
         row, col = _radius_graph_native(x, r=1.5, batch=batch)

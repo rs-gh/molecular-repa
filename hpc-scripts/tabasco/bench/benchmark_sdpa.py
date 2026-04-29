@@ -3,7 +3,7 @@
 Tabasco's `Attention` module wraps `nn.MultiheadAttention` which dispatches
 internally to `F.scaled_dot_product_attention`. The wrapper passes
 `batch_first=True`, `need_weights=False` (default forward call path via
-`TransformerBlock`), and a boolean `key_padding_mask` — conditions that
+`TransformerBlock`), and a boolean `key_padding_mask` - conditions that
 *should* allow FLASH or EFFICIENT backends. This script verifies which
 backend is actually picked and measures the throughput/memory delta of
 forcing each one.

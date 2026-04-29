@@ -3,7 +3,7 @@ Generate figures for GearNet CA-only encoder characterization.
 
 Run:
   source .venv/bin/activate
-  python playground/proteina/gearnet/generate_figures.py
+  python encoder_profiling/proteina/gearnet/generate_figures.py
 """
 
 import os
@@ -61,7 +61,7 @@ RESIDUE_NAMES = [
 N_PROTEINS = 200
 
 
-# ── Helpers (same as explore_gearnet.py) ────────────────────────────────────
+# -- Helpers (same as explore_gearnet.py) ------------------------------------
 
 
 def load_proteins(n=N_PROTEINS):
@@ -132,7 +132,7 @@ def savefig(name):
     print(f"  Saved {path}")
 
 
-# ── Figure 1: Value Distribution & Sparsity ────────────────────────────────
+# -- Figure 1: Value Distribution & Sparsity --------------------------------
 
 
 def fig_01_value_distribution(all_emb):
@@ -167,7 +167,7 @@ def fig_01_value_distribution(all_emb):
     savefig("fig_01_value_distribution.png")
 
 
-# ── Figure 2: Singular Values & Dimensionality ─────────────────────────────
+# -- Figure 2: Singular Values & Dimensionality -----------------------------
 
 
 def fig_02_singular_values(all_emb):
@@ -197,17 +197,17 @@ def fig_02_singular_values(all_emb):
         color="orange",
         linestyle="--",
         linewidth=0.8,
-        label=f"90% → {dims_90} dims",
+        label=f"90% -> {dims_90} dims",
     )
     ax2.axhline(
-        0.95, color="red", linestyle="--", linewidth=0.8, label=f"95% → {dims_95} dims"
+        0.95, color="red", linestyle="--", linewidth=0.8, label=f"95% -> {dims_95} dims"
     )
     ax2.axhline(
         0.99,
         color="darkred",
         linestyle="--",
         linewidth=0.8,
-        label=f"99% → {dims_99} dims",
+        label=f"99% -> {dims_99} dims",
     )
     ax2.set_xlabel("Component index")
     ax2.set_ylabel("Cumulative variance explained")
@@ -218,7 +218,7 @@ def fig_02_singular_values(all_emb):
     savefig("fig_02_singular_values.png")
 
 
-# ── Figure 3: 3D Sensitivity ───────────────────────────────────────────────
+# -- Figure 3: 3D Sensitivity -----------------------------------------------
 
 
 def fig_03_3d_sensitivity(encoder, proteins):
@@ -295,7 +295,7 @@ def fig_03_3d_sensitivity(encoder, proteins):
     savefig("fig_03_3d_sensitivity.png")
 
 
-# ── Figure 4: Residue-Type Discrimination ───────────────────────────────────
+# -- Figure 4: Residue-Type Discrimination -----------------------------------
 
 
 def fig_04_residue_discrimination(all_emb, all_types):
@@ -367,7 +367,7 @@ def fig_04_residue_discrimination(all_emb, all_types):
     savefig("fig_04_residue_discrimination.png")
 
 
-# ── Figure 5: Structural Context ───────────────────────────────────────────
+# -- Figure 5: Structural Context -------------------------------------------
 
 
 def fig_05_structural_context(all_emb, all_types, proteins):
@@ -457,7 +457,7 @@ def fig_05_structural_context(all_emb, all_types, proteins):
     savefig("fig_05_structural_context.png")
 
 
-# ── Figure 6: Embedding Norms ──────────────────────────────────────────────
+# -- Figure 6: Embedding Norms ----------------------------------------------
 
 
 def fig_06_norms(all_emb, all_types):
@@ -499,7 +499,7 @@ def fig_06_norms(all_emb, all_types):
     savefig("fig_06_norms.png")
 
 
-# ── Figure 7: Projector Saturation ─────────────────────────────────────────
+# -- Figure 7: Projector Saturation -----------------------------------------
 
 
 def fig_07_projector_saturation(all_emb, all_types):
@@ -559,7 +559,7 @@ def fig_07_projector_saturation(all_emb, all_types):
     savefig("fig_07_projector_saturation.png")
 
 
-# ── Figure 8: Within vs Between Protein ────────────────────────────────────
+# -- Figure 8: Within vs Between Protein ------------------------------------
 
 
 def fig_08_protein_similarity(per_protein):
@@ -606,7 +606,7 @@ def fig_08_protein_similarity(per_protein):
     savefig("fig_08_protein_similarity.png")
 
 
-# ── Figure 9: Layer-wise Analysis ──────────────────────────────────────────
+# -- Figure 9: Layer-wise Analysis ------------------------------------------
 
 
 def fig_09_layerwise(encoder, proteins):
@@ -712,7 +712,7 @@ def fig_09_layerwise(encoder, proteins):
     savefig("fig_09_layerwise.png")
 
 
-# ── Main ────────────────────────────────────────────────────────────────────
+# -- Main --------------------------------------------------------------------
 
 
 def main():
