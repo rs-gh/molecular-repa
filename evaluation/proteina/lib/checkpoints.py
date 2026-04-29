@@ -154,6 +154,29 @@ RUN_SCHEDULES = {
     "esm_repa_l0_128": ("proteina_60m_repa_esm_l0_128_per_residue", True, 0, [None]),
     "esm_repa_l4_128": ("proteina_60m_repa_esm_l4_128_per_residue", True, 4, [None]),
     "esm_repa_l9_128": ("proteina_60m_repa_esm_l9_128_per_residue", True, 9, [None]),
+    # ── n=128 bs=80 sweep (mid + end at sample-matched ~8M / ~16M) ───────── #
+    # All bs=80 throughout; step 100K = 8M samples, step 200K = 16M samples.
+    # bs80_lr3x has no step=200K yet (training stopped at ~165K) -> last-EMA
+    # falls back to ~13M samples. All REPA students use repa_layer=4.
+    "baseline_128_bs80": ("proteina_60m_baseline_128_bs80", False, 4, [100000, 200000]),
+    "repa_l4_128_bs80": (
+        "proteina_60m_repa_l4_128_per_residue_bs80",
+        True,
+        4,
+        [100000, 200000],
+    ),
+    "repa_l4_128_bs80_lr3x": (
+        "proteina_60m_repa_l4_128_per_residue_bs80_lr3x",
+        True,
+        4,
+        [100000, None],
+    ),
+    "repa_l4_128_random": (
+        "proteina_60m_repa_l4_128_per_residue_random",
+        True,
+        4,
+        [100000, 200000],
+    ),
     # ── n=256 sample-matched @ ~7M samples ───────────────────────────────── #
     # all runs bs=12->24 at step 220K -> step 400K = 6.96M samples
     "baseline_256": ("proteina_60m_baseline_256", False, 4, [400000]),
@@ -194,6 +217,10 @@ GEN_RUN_CONFIGS = {
     "repa_l0_512_sm": "inference/inference_fid_60m_repa_l0_512_sm_lite",
     "repa_l4_512_sm": "inference/inference_fid_60m_repa_l4_512_sm_lite",
     "repa_l9_512_sm": "inference/inference_fid_60m_repa_l9_512_sm_lite",
+    "baseline_128_bs80": "inference/inference_fid_60m_baseline_128_bs80_lite",
+    "repa_l4_128_bs80": "inference/inference_fid_60m_repa_l4_128_bs80_lite",
+    "repa_l4_128_bs80_lr3x": "inference/inference_fid_60m_repa_l4_128_bs80_lr3x_lite",
+    "repa_l4_128_random": "inference/inference_fid_60m_repa_l4_128_random_lite",
 }
 
 

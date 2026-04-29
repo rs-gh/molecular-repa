@@ -77,6 +77,25 @@ export MKL_NUM_THREADS=1
 mkdir -p /rds/user/sr2173/hpc-work/proteina/logs
 
 ###############################################################
+### ProteinMPNN CA weights (designability)                  ###
+###############################################################
+#! Without these, every designability sample silently fails (ProteinMPNN can't
+#! find weights at its default path -> .fa file never written -> rate=nan).
+#! Same setup as eval_designability_only.sh.
+
+CA_WEIGHTS_ROOT="/rds/user/sr2173/hpc-work/proteina/ProteinMPNN"
+mkdir -p "$CA_WEIGHTS_ROOT/ca_model_weights"
+for v in v_48_002 v_48_010 v_48_020; do
+    f="$CA_WEIGHTS_ROOT/ca_model_weights/${v}.pt"
+    if [ ! -f "$f" ]; then
+        echo "Downloading ProteinMPNN CA weights: ${v}.pt"
+        wget -q -O "$f" "https://github.com/dauparas/ProteinMPNN/raw/main/ca_model_weights/${v}.pt"
+    fi
+done
+export PROTEINMPNN_DIR="$REPO_DIR/src/proteina/ProteinMPNN"
+export PROTEINMPNN_WEIGHTS_DIR="$CA_WEIGHTS_ROOT"
+
+###############################################################
 ### HF cache + TMPDIR on RDS (ESMFold ~3GB)                 ###
 ###############################################################
 

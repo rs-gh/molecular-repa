@@ -78,3 +78,12 @@ n512_sm:
   <<: *defaults
   runs: "baseline_512_sm,repa_l0_512_sm,repa_l4_512_sm,repa_l9_512_sm"
   output_dir: results/n512_sm
+
+# n=128 bs=80 sweep: 1 baseline + 3 REPA (l4) variants, each at mid (8M) + end (~16M)
+# samples. All bs=80 throughout, so steps == samples / 80. lr3x has no step=200K
+# checkpoint yet (training stopped at ~165K) so the registry uses None there,
+# which find_checkpoint_path resolves to last-EMA.ckpt (~13M samples).
+n128_bs80_sweep:
+  <<: *defaults
+  runs: "baseline_128_bs80,repa_l4_128_bs80,repa_l4_128_bs80_lr3x,repa_l4_128_random"
+  output_dir: results/n128_bs80_sweep
