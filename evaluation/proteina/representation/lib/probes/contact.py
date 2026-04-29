@@ -127,6 +127,18 @@ def linear_probe_contacts(
 ) -> ContactResult:
     """Train a small MLP on pair features, evaluate top-L/k precision.
 
+    Data funnel (with default test_frac=0.2):
+        B proteins in                          e.g. B=200
+          └─ 80% train split  (B * 0.8)            160 proteins  → probe head trains here
+          └─ 20% test split   (B * 0.2)             40 proteins  → metrics reported here
+               └─ filter: length ≥ 50              ~35–40 proteins  → n_proteins_test
+
+    The reported P@L/5 is computed only on the test split. The 80% training
+    proteins are used solely to fit the probe head and are discarded after.
+    This is standard practice for probing studies: the held-out set prevents
+    the probe from memorising the training proteins, keeping the metric an
+    honest measure of what the frozen backbone encodes.
+
     Inputs:
         reps:           [B, N, D] frozen-backbone hidden states
         ca_coords_ang:  [B, N, 3] CA coords in Å (used only for label construction)

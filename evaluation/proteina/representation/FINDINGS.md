@@ -91,6 +91,43 @@ python evaluation/proteina/representation/scripts/run_all.py --n_proteins 50 --o
   at the top-L/5 threshold. Depth is 1 hidden layer (SiLU) — still in the
   "shallow probe" regime.
 
+## Data funnel — what n_proteins actually means
+
+Passing `--n_proteins 200` loads 200 proteins from the LMDB, but the
+reported metrics come from a **held-out subset**, not all 200. The funnel
+differs per probe:
+
+```
+                       n_proteins=200 loaded from LMDB
+                                |
+              ┌─────────────────┴─────────────────┐
+              │ Contact probe (P1)                 │ CATH probe (P2)
+              │ 80/20 train/test split             │ drop unlabelled + rare classes
+              │   160 train  →  probe head fits    │ then 75/25 stratified split
+              │    40 test   →  P@L/5 reported     │   ~120 train  →  LR fits
+              │    (filter: length ≥ 50)           │    ~40 test   →  acc/F1 reported
+              │    → n_proteins_test ~35–40        │    → n_test in CATHResult
+              └────────────────────────────────────┘
+```
+
+**Why hold out at all?** The probe head must not train on the proteins it
+is evaluated on. Without a held-out split, a sufficiently expressive head
+could memorise training pairs and report inflated metrics regardless of
+representation quality.
+
+**Is this standard?** Yes. Probing studies (Tenney et al. 2019, the REPA
+paper, ProteinWorkshop) all use exactly this pattern — small pools, in-place
+random splits, report on the held-out fraction. The comparison is relative
+(REPA vs baseline), so the absolute numbers are secondary to consistency
+across runs.
+
+**The 80/20 vs 75/25 discrepancy** between the two probes is historical and
+not intentional. Neither choice materially changes the interpretation.
+
+**Implications for n_proteins choice:**
+- At n=200: ~35–40 test proteins for contacts, ~40 for CATH → noisy but fine for relative comparisons during experimentation.
+- For final reported numbers: use n≥1000 and multi-seed (`--seeds 42 43 44`) to get stable estimates with error bars.
+
 ## Expected shape of the headline result
 
 Based on the plan's hypotheses:
@@ -215,3 +252,67 @@ from the width-depth trade, and training differences all mean a
 different-depth model can legitimately behave differently. Since we
 have the direct measurement on our architecture, we don't need the
 heuristic and shouldn't rely on it.
+
+## Pretrained-probe pipeline (2026-04-23)
+
+In-place-split probe has two structural weaknesses: (1) only ~40 eval
+proteins per row after the 80/20 split of 200 val.lmdb proteins,
+(2) train and test both sampled from val.lmdb so the evaluation is
+informally "seen" by the probe itself. The REPA paper's probe (DAE
+protocol) trains on the full ImageNet training set and evaluates on
+ImageNet val — structurally disjoint pools, much larger probe-training
+set.
+
+New pipeline mirrors that protocol for proteins:
+
+- Probe head trains on features extracted from a sample of `train.lmdb`
+  (the 425K-protein PDB training split).
+- Probe head evaluates on features extracted from a fixed manifest drawn
+  from `val.lmdb`. Same manifest used across every (run, step, layer) row.
+- Probe is retrained per `(run, step, layer)` — feature distributions
+  differ per backbone state, so one global head would not generalise.
+- Per-checkpoint feature cache: features for all layers extracted in one
+  backbone forward pass, saved as fp16, then deleted after all layer
+  probes complete. Bounded at ~5 GB per checkpoint.
+
+Code layout:
+
+| File | Purpose |
+|---|---|
+| [lib/probes/contact_pretrained.py](lib/probes/contact_pretrained.py) | `train_contact_probe`, `eval_contact_probe`, `run_pretrained_contact_probe` |
+| [lib/feature_cache.py](lib/feature_cache.py) | Extract+cache+purge helpers, per-checkpoint tmp layout |
+| [scripts/sample_size_probe.py](scripts/sample_size_probe.py) | Phase 1 — learning curve at N_train ∈ {500, 1K, 2K, 5K, 10K} |
+| [scripts/pretrain_probe_sweep.py](scripts/pretrain_probe_sweep.py) | Phase 2 — full RUN_SCHEDULES × layers sweep |
+| [sweep_config.yaml](sweep_config.yaml) `pretrained_probe` | Canonical N_train, N_eval, probe hyperparams |
+| [../../../hpc-scripts/proteina/evaluation/representation/run_pretrained_probe.sh](../../../hpc-scripts/proteina/evaluation/representation/run_pretrained_probe.sh) | SLURM wrapper; stages train.lmdb (51 GB) + val.lmdb to /dev/shm |
+
+Results live in `results/pretrained_probe/` — separate from the in-place
+sweep so both regimes remain queryable. Rows carry `train_manifest` and
+`eval_manifest` tags for reproducibility.
+
+**Scope of this change**: contact probe only, PDB train only, val.lmdb
+evaluation only. CATH probe keeps its in-place split. AFDB pretraining is
+a separate phase (different pool, different homology considerations).
+
+**How to run**:
+
+1. **Phase 1** (once): pick N_train by running the sample-size learning curve.
+   ```
+   sbatch hpc-scripts/proteina/evaluation/representation/run_pretrained_probe.sh --sample_size
+   ```
+   Inspect `results/pretrained_probe/sample_size_curve.png`, pick the elbow,
+   update `sweep_config.yaml` `pretrained_probe.n_train`.
+
+2. **Phase 2** (per reporting cycle): full sweep.
+   ```
+   sbatch hpc-scripts/proteina/evaluation/representation/run_pretrained_probe.sh \
+       --config pretrained_probe
+   ```
+   Resumes JSONL on preempt. Writes `pretrained_sweep_results.{jsonl,csv,json}`.
+
+**Cross-checking against the in-place sweep**: pretrained-probe P@L/5
+should be higher than in-place (more train data → stronger probe →
+tighter upper bound on what's decodable). The *ordering* of REPA vs
+baseline should be preserved; any reordering means the in-place split
+was introducing sample variance rather than measuring representation
+quality.

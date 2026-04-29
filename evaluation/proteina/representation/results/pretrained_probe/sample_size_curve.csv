@@ -1,0 +1,6 @@
+n_train,n_eval,n_proteins_test,head_type,p_at_L_5,p_at_L_2,p_at_L,probe_train_s,run,step,layer,ckpt_path
+500,200,196,mlp,0.8681823882932189,0.7829150634418772,0.6336105885591417,23.471949815750122,baseline,400000,4,/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000005_step=000000400000-EMA.ckpt
+1000,200,196,mlp,0.891271740720288,0.8103844448089133,0.6644676048972049,31.14917230606079,baseline,400000,4,/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000005_step=000000400000-EMA.ckpt
+2000,200,196,mlp,0.8993106067355888,0.8220265293069482,0.6799104970675699,56.923344373703,baseline,400000,4,/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000005_step=000000400000-EMA.ckpt
+5000,200,196,mlp,0.9028758499648398,0.8293908587947386,0.6882492426614804,135.73897051811218,baseline,400000,4,/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000005_step=000000400000-EMA.ckpt
+10000,200,196,mlp,0.9040171149896238,0.8308521881891968,0.6914515646143493,269.04292392730713,baseline,400000,4,/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_v2/checkpoints/chk_epoch=00000005_step=000000400000-EMA.ckpt

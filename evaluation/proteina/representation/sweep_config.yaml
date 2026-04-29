@@ -36,3 +36,45 @@ n512:
   <<: *defaults
   max_size: 512
   output_dir: results/n512_val
+
+# ─── Pretrained-probe pipeline (pretrain_probe_sweep.py) ─────────────────────
+#
+# REPA-paper-style probing: contact probe trains on a large train.lmdb sample,
+# evaluates on a fixed val.lmdb manifest. Writes to a separate output dir and
+# does not overwrite the in-place-split sweep results.
+#
+# N_train is the output of the Phase 1 sample-size curve (sample_size_probe.py).
+# Revisit when AFDB pretraining is added.
+
+pretrained_probe:
+  n_train: 1000              # elbow from sample_size_probe.py on 2026-04-24
+                             # (500→0.868, 1K→0.891, 2K→0.899, 5K→0.903, 10K→0.904;
+                             # 1K is sufficient for run-ranking; saves 4× compute vs 5K)
+  n_eval: 500                # val.lmdb has 4,999 proteins total; bump to 4999 for
+                             # paper-quality eval (~40 min extra per 162-probe sweep)
+  max_size: 256
+                             # TODO(2026-04-24): max_size=256 truncates inputs for
+                             # the *_512_sm runs (trained at n=512). Probe results
+                             # are still structurally valid but do not match the
+                             # training-time receptive field. For paper-quality
+                             # 512-context numbers on those 4 runs, run a separate
+                             # sweep with --runs baseline_512_sm,repa_l{0,4,9}_512_sm
+                             # --max_size 512.
+  head_type: mlp             # match legacy default; swap to linear for paper table
+  probe_epochs: 15
+  probe_lr: 0.001
+  probe_seed: 42
+  manifest_seed: 42
+  train_manifest_version: train_v1
+  eval_manifest_version: eval_v1
+  timesteps: "1.0,0.75,0.5,0.0"  # 2026-04-26: extended to cover full t range;
+                                   # t=1.0 is clean input (easy), t=0.0 is pure noise
+                                   # (tests learned structural priors)
+  probes: "contact,cath"     # 2026-04-28: which probes to run per (run,step,
+                             # layer,t). Any subset of {contact, cath}. CATH
+                             # probe rows tagged probe_kind=cath in JSONL/CSV.
+  cath_levels: "T"           # CATH levels to probe (only used if 'cath' is in
+                             # probes). "C,A,T,H" for the full per-depth
+                             # breakdown.
+  cath_min_per_class: 3
+  output_dir: results/pretrained_probe

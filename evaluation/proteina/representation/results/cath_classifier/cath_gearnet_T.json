@@ -1,0 +1,36 @@
+{
+  "level": "T",
+  "encoder": "gearnet_ca",
+  "gearnet_ckpt": "/rds/user/sr2173/hpc-work/proteina/data/metric_factory/model_weights/gearnet_ca.pth",
+  "train_lmdb": "/dev/shm/proteina_cath_clf_lmdb_28519735/train.lmdb",
+  "eval_lmdb": "/dev/shm/proteina_cath_clf_lmdb_28519735/val.lmdb",
+  "train_manifest": "cath_train_labelled_v1",
+  "eval_manifest": "cath_eval_labelled_v1",
+  "n_train_proteins": 200,
+  "n_eval_proteins": 100,
+  "embed_dim": 512,
+  "min_per_class": 3,
+  "seed": 42,
+  "val_metrics": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "top1_conf_mean": 0.7415462568589475,
+    "n_classes": 17,
+    "n_eval": 100,
+    "n_eval_in_vocab": 44,
+    "n_eval_oov": 56
+  },
+  "vocab_preview": [
+    "1.10.490",
+    "1.10.600",
+    "2.40.128",
+    "2.40.50",
+    "2.40.70",
+    "2.60.120",
+    "2.60.40",
+    "3.10.20",
+    "3.20.20",
+    "3.30.1360"
+  ],
+  "vocab_size": 17
+}
