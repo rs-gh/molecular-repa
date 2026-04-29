@@ -1,0 +1,300 @@
+{
+  "name": "pw-gearnet-edge:torsional",
+  "capabilities": {
+    "is_3d_aware": true,
+    "accepts_residue_type": true,
+    "context_mode": "structural"
+  },
+  "n_proteins": 200,
+  "notes": [
+    "ckpt: /local/sr2173/28596016/data/metric_factory/model_weights/pw_gearnet_torsional_denoising_ca_angles.ckpt"
+  ],
+  "timestamp": "2026-04-29T14:02:13",
+  "n_residues": 42034,
+  "embed_dim": 3072,
+  "distribution": {
+    "shape": [
+      42034,
+      3072
+    ],
+    "mean": 0.09222086519002914,
+    "std": 0.7024696469306946,
+    "min": -5.834911823272705,
+    "max": 26.98698616027832,
+    "exact_zero_frac": 0.0,
+    "near_zero_frac": 4.607815002934133e-06,
+    "negative_frac": 0.49715179725539643
+  },
+  "dimensionality": {
+    "effective_rank": 12.1536283493042,
+    "participation_ratio": 5.519412672349055,
+    "dim_total": 3072,
+    "dims_for_90pct_var": 16,
+    "dims_for_95pct_var": 36,
+    "dims_for_99pct_var": 125,
+    "top_singular_value": 2862.532958984375,
+    "condition_number": 22596824.0
+  },
+  "perturbation": {
+    "sigma_0.1A": {
+      "mean": 0.9889883041381836,
+      "std": 0.0030927078041598035
+    },
+    "sigma_0.5A": {
+      "mean": 0.9217257130146027,
+      "std": 0.017047094353667105
+    },
+    "sigma_1.0A": {
+      "mean": 0.8460952603816986,
+      "std": 0.03042810757753072
+    },
+    "sigma_2.0A": {
+      "mean": 0.7387382912635804,
+      "std": 0.04063102685901805
+    },
+    "sigma_5.0A": {
+      "mean": 0.4891291755437851,
+      "std": 0.057994587995022016
+    }
+  },
+  "rotation": {
+    "rotation_cos_mean": 0.9999991607666016,
+    "rotation_cos_std": 5.4441048819071176e-06
+  },
+  "residue_shuffle": {
+    "shuffle_cos_mean": 0.994739624261856,
+    "shuffle_cos_std": 0.0012241521560268928
+  },
+  "residue_probe": {
+    "linear_probe_acc": 0.927,
+    "centroid_cos_mean": 0.9768720269203186,
+    "centroid_cos_min": 0.9172806739807129,
+    "centroid_cos_max": 0.997079610824585,
+    "within_type_cos_mean": 0.5174090786813161,
+    "within_type_cos_std": 0.2269422397065753,
+    "between_type_cos_mean": 0.5069731086719508,
+    "between_type_cos_std": 0.23302568113631228
+  },
+  "structural_context": {
+    "ALA": {
+      "within_ss_cos_mean": 0.568248253093722,
+      "between_ss_cos_mean": 0.4889667677336062,
+      "delta": 0.07928148536011576,
+      "context_counts": {
+        "helix": 2197,
+        "sheet": 781,
+        "loop": 480
+      }
+    },
+    "GLY": {
+      "within_ss_cos_mean": 0.5555395616257253,
+      "between_ss_cos_mean": 0.5191863540668661,
+      "delta": 0.03635320755885918,
+      "context_counts": {
+        "helix": 1496,
+        "sheet": 740,
+        "loop": 832
+      }
+    },
+    "LEU": {
+      "within_ss_cos_mean": 0.5649967457206609,
+      "between_ss_cos_mean": 0.4630461943917908,
+      "delta": 0.10195055132887015,
+      "context_counts": {
+        "helix": 2264,
+        "sheet": 1166,
+        "loop": 490
+      }
+    },
+    "VAL": {
+      "within_ss_cos_mean": 0.625132921313246,
+      "between_ss_cos_mean": 0.5256793637853115,
+      "delta": 0.0994535575279345,
+      "context_counts": {
+        "helix": 1122,
+        "sheet": 1335,
+        "loop": 540
+      }
+    }
+  },
+  "norms": {
+    "norm_mean": 37.16023254394531,
+    "norm_std": 12.695060729980469,
+    "norm_min": 19.86786460876465,
+    "norm_max": 508.9469299316406,
+    "dead_dims": 0,
+    "dim_total": 3072,
+    "dim_std_min": 4.8884812713367864e-06,
+    "dim_std_max": 2.951737642288208,
+    "per_aa_norm": {
+      "ALA": {
+        "mean": 39.680198669433594,
+        "std": 13.26453685760498,
+        "n": 3489
+      },
+      "ARG": {
+        "mean": 36.82787322998047,
+        "std": 15.349961280822754,
+        "n": 2080
+      },
+      "ASN": {
+        "mean": 35.235897064208984,
+        "std": 15.876919746398926,
+        "n": 1829
+      },
+      "ASP": {
+        "mean": 34.24691390991211,
+        "std": 9.971905708312988,
+        "n": 2279
+      },
+      "CYS": {
+        "mean": 40.49472427368164,
+        "std": 12.112678527832031,
+        "n": 638
+      },
+      "GLN": {
+        "mean": 35.28004837036133,
+        "std": 10.030348777770996,
+        "n": 1595
+      },
+      "GLU": {
+        "mean": 34.48015213012695,
+        "std": 9.809699058532715,
+        "n": 2612
+      },
+      "GLY": {
+        "mean": 35.99237060546875,
+        "std": 12.52415943145752,
+        "n": 3084
+      },
+      "HIS": {
+        "mean": 37.00801086425781,
+        "std": 12.590466499328613,
+        "n": 971
+      },
+      "ILE": {
+        "mean": 39.054134368896484,
+        "std": 11.716076850891113,
+        "n": 2376
+      },
+      "LEU": {
+        "mean": 39.588924407958984,
+        "std": 14.290237426757812,
+        "n": 3937
+      },
+      "LYS": {
+        "mean": 34.80778884887695,
+        "std": 11.377442359924316,
+        "n": 2363
+      },
+      "MET": {
+        "mean": 39.36916732788086,
+        "std": 12.60969066619873,
+        "n": 932
+      },
+      "PHE": {
+        "mean": 38.56405258178711,
+        "std": 12.064456939697266,
+        "n": 1739
+      },
+      "PRO": {
+        "mean": 34.437767028808594,
+        "std": 11.341432571411133,
+        "n": 1906
+      },
+      "SER": {
+        "mean": 35.59944152832031,
+        "std": 10.997736930847168,
+        "n": 2676
+      },
+      "THR": {
+        "mean": 35.917564392089844,
+        "std": 12.257147789001465,
+        "n": 2425
+      },
+      "TRP": {
+        "mean": 38.67029571533203,
+        "std": 13.478813171386719,
+        "n": 579
+      },
+      "TYR": {
+        "mean": 38.74538803100586,
+        "std": 13.89939022064209,
+        "n": 1506
+      },
+      "VAL": {
+        "mean": 40.40557861328125,
+        "std": 12.542179107666016,
+        "n": 3018
+      }
+    }
+  },
+  "projector": {
+    "mean_direction_cos": 0.709739625453949,
+    "conditions": {
+      "random": {
+        "train_cos": 0.7780853509902954,
+        "test_cos": 0.6383998394012451
+      },
+      "onehot": {
+        "train_cos": 0.722858726978302,
+        "test_cos": 0.7184933423995972
+      },
+      "onehot+pos": {
+        "train_cos": 0.7229840159416199,
+        "test_cos": 0.7185391783714294
+      }
+    }
+  },
+  "protein_similarity": {
+    "within_protein_cos_mean": 0.6346151974428446,
+    "within_protein_cos_std": 0.2481980818337796,
+    "between_protein_cos_mean": 0.5328949499984272,
+    "between_protein_cos_std": 0.22852910424897327,
+    "delta": 0.10172024744441732
+  },
+  "layerwise": [
+    {
+      "layer": 0,
+      "dim": 512,
+      "eff_rank": 5.814256191253662,
+      "mean_norm": 19.336135864257812,
+      "sparsity": 0.0
+    },
+    {
+      "layer": 1,
+      "dim": 512,
+      "eff_rank": 6.771777629852295,
+      "mean_norm": 19.09990692138672,
+      "sparsity": 0.0
+    },
+    {
+      "layer": 2,
+      "dim": 512,
+      "eff_rank": 10.479488372802734,
+      "mean_norm": 16.486530303955078,
+      "sparsity": 0.0
+    },
+    {
+      "layer": 3,
+      "dim": 512,
+      "eff_rank": 14.558666229248047,
+      "mean_norm": 11.20189380645752,
+      "sparsity": 0.0
+    },
+    {
+      "layer": 4,
+      "dim": 512,
+      "eff_rank": 11.500898361206055,
+      "mean_norm": 9.033736228942871,
+      "sparsity": 0.0
+    },
+    {
+      "layer": 5,
+      "dim": 512,
+      "eff_rank": 9.495003700256348,
+      "mean_norm": 11.172619819641113,
+      "sparsity": 0.0
+    }
+  ]
+}

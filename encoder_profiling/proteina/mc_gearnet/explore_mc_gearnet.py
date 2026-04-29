@@ -94,6 +94,7 @@ def layerwise_fn(encoder, proteins, device):
         f"\n{'Layer':>5} | {'Dim':>4} | {'Eff Rank':>9} | {'Mean Norm':>10} | {'Sparsity':>9}"
     )
     print("-" * 58)
+    rows = []
     for i in range(n_layers):
         if not layer_embs[i]:
             continue
@@ -104,11 +105,21 @@ def layerwise_fn(encoder, proteins, device):
         p = (S**2) / (S**2).sum()
         p = p[p > 0]
         eff_rank = float(np.exp(-np.sum(p * np.log(p))))
-        norm_mean = H.norm(dim=-1).mean().item()
-        sparsity = (H == 0).float().mean().item()
+        norm_mean = float(H.norm(dim=-1).mean())
+        sparsity = float((H == 0).float().mean())
         print(
             f"  {i:>3d} | {H.shape[1]:>4d} | {eff_rank:>9.1f} | {norm_mean:>10.4f} | {sparsity:>8.4f}"
         )
+        rows.append(
+            {
+                "layer": i,
+                "dim": int(H.shape[1]),
+                "eff_rank": eff_rank,
+                "mean_norm": norm_mean,
+                "sparsity": sparsity,
+            }
+        )
+    return rows
 
 
 def main():
@@ -116,6 +127,7 @@ def main():
     ap.add_argument("--n-proteins", type=int, default=200)
     ap.add_argument("--random-seed", type=int, default=None)
     ap.add_argument("--device", type=str, default=None)
+    ap.add_argument("--output-dir", type=str, default=None)
     args = ap.parse_args()
 
     device = torch.device(
@@ -126,6 +138,11 @@ def main():
     proteins = load_proteins(LMDB_PATH, args.n_proteins, seed=args.random_seed)
     encoder = setup_encoder(device)
 
+    import time as _time
+
+    output_dir = args.output_dir or os.path.join(
+        os.path.dirname(__file__), "results", _time.strftime("%Y%m%d_%H%M%S")
+    )
     probe = EncoderProbe(
         name="mc-gearnet-edge",
         encoder=encoder,
@@ -134,6 +151,7 @@ def main():
         accepts_residue_type=True,
         context_mode="structural",
         layerwise_fn=layerwise_fn,
+        output_dir=output_dir,
     )
     run_pipeline(probe, proteins, device)
 

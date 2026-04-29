@@ -18,6 +18,8 @@ device transfers are the driver's responsibility.
 
 from __future__ import annotations
 
+import csv
+import json
 import os
 import pickle
 import random
@@ -108,6 +110,7 @@ class EncoderProbe:
     context_mode: Optional[str] = "structural"  # "structural" | "sequence" | None
     layerwise_fn: Optional[LayerwiseFn] = None
     notes: list = field(default_factory=list)
+    output_dir: Optional[str] = None  # if set, run_pipeline writes results.json here
 
 
 # -- Data loading ------------------------------------------------------------
@@ -258,6 +261,16 @@ def analyze_distribution(all_emb: torch.Tensor):
     print(f"Exact zeros: {exact_zero}/{n} ({100*exact_zero/n:.4f}%)")
     print(f"Near-zero (<1e-6): {near_zero}/{n} ({100*near_zero/n:.4f}%)")
     print(f"Negative values: {negative}/{n} ({100*negative/n:.2f}%)")
+    return {
+        "shape": list(all_emb.shape),
+        "mean": float(vals.mean()),
+        "std": float(vals.std()),
+        "min": float(vals.min()),
+        "max": float(vals.max()),
+        "exact_zero_frac": exact_zero / n,
+        "near_zero_frac": near_zero / n,
+        "negative_frac": negative / n,
+    }
 
 
 def analyze_dimensionality(all_emb: torch.Tensor, max_residues: int = 30000):
@@ -282,7 +295,18 @@ def analyze_dimensionality(all_emb: torch.Tensor, max_residues: int = 30000):
     print(f"Dims for 99% variance: {int(np.searchsorted(cum_var, 0.99)) + 1}")
     print(f"Top singular value: {S[0]:.2f}")
     print(f"S[0]/S[-1] ratio: {S[0] / max(S[-1], 1e-12):.2e}")
-    return S, cum_var
+    return {
+        "effective_rank": eff_rank,
+        "participation_ratio": part_ratio,
+        "dim_total": int(all_emb.shape[1]),
+        "dims_for_90pct_var": int(np.searchsorted(cum_var, 0.90)) + 1,
+        "dims_for_95pct_var": int(np.searchsorted(cum_var, 0.95)) + 1,
+        "dims_for_99pct_var": int(np.searchsorted(cum_var, 0.99)) + 1,
+        "top_singular_value": float(S[0]),
+        "condition_number": float(S[0] / max(S[-1], 1e-12)),
+        "singular_values": S.tolist(),
+        "cumulative_variance": cum_var.tolist(),
+    }
 
 
 def analyze_perturbation(
@@ -291,6 +315,7 @@ def analyze_perturbation(
     _header("3D Sensitivity - Gaussian Coordinate Perturbation")
     n_test = min(n_test, len(proteins))
     print("Cosine sim between original and perturbed embeddings:")
+    out = {}
     for sigma in sigmas:
         sims = []
         for graph in proteins[:n_test]:
@@ -306,6 +331,11 @@ def analyze_perturbation(
         print(
             f"  sigma={sigma:.1f}A: cos_sim={np.mean(sims):.4f} +/- {np.std(sims):.4f}"
         )
+        out[f"sigma_{sigma}A"] = {
+            "mean": float(np.mean(sims)),
+            "std": float(np.std(sims)),
+        }
+    return out
 
 
 def analyze_rotation_invariance(embed_fn: EmbedFn, proteins, n_test: int = 50):
@@ -327,6 +357,10 @@ def analyze_rotation_invariance(embed_fn: EmbedFn, proteins, n_test: int = 50):
         sims.append(F.cosine_similarity(orig, rot, dim=-1).mean().item())
     print(f"Random rotation: cos_sim={np.mean(sims):.6f} +/- {np.std(sims):.6f}")
     print("  (1.0 = perfectly invariant)")
+    return {
+        "rotation_cos_mean": float(np.mean(sims)),
+        "rotation_cos_std": float(np.std(sims)),
+    }
 
 
 def analyze_residue_shuffle(embed_fn: EmbedFn, proteins, n_test: int = 50):
@@ -346,6 +380,10 @@ def analyze_residue_shuffle(embed_fn: EmbedFn, proteins, n_test: int = 50):
         sims.append(F.cosine_similarity(orig, shuf, dim=-1).mean().item())
     print(f"Shuffle residue types: cos_sim={np.mean(sims):.4f} +/- {np.std(sims):.4f}")
     print("  (low = identity-driven, high = geometry-driven)")
+    return {
+        "shuffle_cos_mean": float(np.mean(sims)),
+        "shuffle_cos_std": float(np.std(sims)),
+    }
 
 
 def analyze_residue_discrimination(all_emb, all_types, max_residues: int = 30000):
@@ -395,9 +433,20 @@ def analyze_residue_discrimination(all_emb, all_types, max_residues: int = 30000
     print(
         f"Between-type: {np.mean(between):.4f} +/- {np.std(between):.4f} (n={len(between)})"
     )
+    return {
+        "linear_probe_acc": float(acc),
+        "centroid_cos_mean": float(upper.mean()),
+        "centroid_cos_min": float(upper.min()),
+        "centroid_cos_max": float(upper.max()),
+        "within_type_cos_mean": float(np.mean(within)),
+        "within_type_cos_std": float(np.std(within)),
+        "between_type_cos_mean": float(np.mean(between)),
+        "between_type_cos_std": float(np.std(between)),
+    }
 
 
 def analyze_structural_context(all_emb, all_types, proteins, test_aas=(0, 7, 10, 19)):
+    out = {}
     _header("Structural Context Sensitivity (helix/sheet/loop via CA-CA-CA angle)")
     # Bin (aa, ss) -> list of embeddings
     embs_by_context: dict = {}
@@ -437,6 +486,7 @@ def analyze_structural_context(all_emb, all_types, proteins, test_aas=(0, 7, 10,
                 contexts[ss] = torch.stack(embs_by_context[key])
         if len(contexts) < 2:
             print(f"  {RESIDUE_NAMES[aa]:3s}: insufficient data for context comparison")
+            out[RESIDUE_NAMES[aa]] = {"insufficient_data": True}
             continue
         within, between = [], []
         for ss, embs in contexts.items():
@@ -462,6 +512,13 @@ def analyze_structural_context(all_emb, all_types, proteins, test_aas=(0, 7, 10,
             f"delta={np.mean(within)-np.mean(between):.4f} "
             f"(contexts: {', '.join(f'{k}={len(v)}' for k, v in contexts.items())})"
         )
+        out[RESIDUE_NAMES[aa]] = {
+            "within_ss_cos_mean": float(np.mean(within)),
+            "between_ss_cos_mean": float(np.mean(between)),
+            "delta": float(np.mean(within) - np.mean(between)),
+            "context_counts": {k: len(v) for k, v in contexts.items()},
+        }
+    return out
 
 
 def analyze_sequence_context(embed_fn: EmbedFn, proteins, n_test: int = 30):
@@ -513,7 +570,7 @@ def analyze_sequence_context(embed_fn: EmbedFn, proteins, n_test: int = 30):
 
     if not shuf_sims:
         print("  Not enough valid residues for context test.")
-        return
+        return {"insufficient_data": True}
     print(
         f"Original vs shuffled-flanks: {np.mean(shuf_sims):.4f} +/- {np.std(shuf_sims):.4f}"
     )
@@ -523,6 +580,12 @@ def analyze_sequence_context(embed_fn: EmbedFn, proteins, n_test: int = 30):
     print(
         "  (1.0 = context doesn't matter; lower = context strongly modulates the center)"
     )
+    return {
+        "shuffled_flanks_cos_mean": float(np.mean(shuf_sims)),
+        "shuffled_flanks_cos_std": float(np.std(shuf_sims)),
+        "random_flanks_cos_mean": float(np.mean(rand_sims)),
+        "random_flanks_cos_std": float(np.std(rand_sims)),
+    }
 
 
 def analyze_norms(all_emb, all_types):
@@ -537,6 +600,7 @@ def analyze_norms(all_emb, all_types):
     print(f"Dead dimensions (std < 1e-6): {dead_dims} / {all_emb.shape[1]}")
     print(f"Dimension std range: [{dim_stds.min():.6f}, {dim_stds.max():.6f}]")
     y = all_types.numpy()
+    per_aa = {}
     print("\nPer-AA L2 norms:")
     for aa in range(20):
         m = y == aa
@@ -546,6 +610,22 @@ def analyze_norms(all_emb, all_types):
                 f"  {RESIDUE_NAMES[aa]:3s}: mean={an.mean():.4f} "
                 f"+/- {an.std():.4f} (n={int(m.sum())})"
             )
+            per_aa[RESIDUE_NAMES[aa]] = {
+                "mean": float(an.mean()),
+                "std": float(an.std()),
+                "n": int(m.sum()),
+            }
+    return {
+        "norm_mean": float(norms.mean()),
+        "norm_std": float(norms.std()),
+        "norm_min": float(norms.min()),
+        "norm_max": float(norms.max()),
+        "dead_dims": dead_dims,
+        "dim_total": int(all_emb.shape[1]),
+        "dim_std_min": float(dim_stds.min()),
+        "dim_std_max": float(dim_stds.max()),
+        "per_aa_norm": per_aa,
+    }
 
 
 def analyze_projector_saturation(
@@ -564,6 +644,7 @@ def analyze_projector_saturation(
         F.cosine_similarity(mean_vec.expand_as(target), target, dim=-1).mean().item()
     )
     print(f"  mean-direction baseline (test cos): {mean_cos:.4f}")
+    out = {"mean_direction_cos": float(mean_cos), "conditions": {}}
 
     onehot = F.one_hot(all_types.clamp(min=0, max=20).long(), 21).float().to(device)
     pos = torch.arange(n, device=device).float().unsqueeze(1) / n
@@ -604,6 +685,11 @@ def analyze_projector_saturation(
                 .item()
             )
         print(f"  {name:12s}: train={train_cos:.4f}  test={test_cos:.4f}")
+        out["conditions"][name] = {
+            "train_cos": float(train_cos),
+            "test_cos": float(test_cos),
+        }
+    return out
 
 
 def analyze_protein_similarity(per_protein, n_proteins: int = 50):
@@ -628,6 +714,13 @@ def analyze_protein_similarity(per_protein, n_proteins: int = 50):
     print(f"Within-protein:  mean={np.mean(within):.4f} +/- {np.std(within):.4f}")
     print(f"Between-protein: mean={np.mean(between):.4f} +/- {np.std(between):.4f}")
     print(f"Delta: {np.mean(within) - np.mean(between):.4f}")
+    return {
+        "within_protein_cos_mean": float(np.mean(within)),
+        "within_protein_cos_std": float(np.std(within)),
+        "between_protein_cos_mean": float(np.mean(between)),
+        "between_protein_cos_std": float(np.std(between)),
+        "delta": float(np.mean(within) - np.mean(between)),
+    }
 
 
 # -- Pipeline ---------------------------------------------------------------
@@ -639,6 +732,13 @@ def run_pipeline(probe: EncoderProbe, proteins: list, device, *, skip: tuple = (
     `skip` is a tuple of analysis names to omit. Names:
         distribution, dimensionality, perturbation, rotation, residue_shuffle,
         residue_probe, context, norms, projector, protein_sim, layerwise.
+
+    If `probe.output_dir` is set, writes results.json and (when layerwise_fn
+    returns a list of dicts) layerwise.csv.
+
+    `layerwise_fn` may now optionally return a list[dict] with per-layer rows
+    (e.g. {"layer": 0, "eff_rank": ..., "mean_norm": ..., "sparsity": ...}).
+    Backwards-compatible: a None return is fine and just skips the CSV.
     """
     skip_set = set(skip)
     print("\n" + "#" * 70)
@@ -652,35 +752,96 @@ def run_pipeline(probe: EncoderProbe, proteins: list, device, *, skip: tuple = (
         print(f"#   note: {note}")
     print("#" * 70)
 
+    results: dict = {
+        "name": probe.name,
+        "capabilities": {
+            "is_3d_aware": probe.is_3d_aware,
+            "accepts_residue_type": probe.accepts_residue_type,
+            "context_mode": probe.context_mode,
+        },
+        "n_proteins": len(proteins),
+        "notes": list(probe.notes),
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+    }
+
     all_emb, all_types, per_protein = collect_all_embeddings(probe.embed_fn, proteins)
+    results["n_residues"] = int(all_emb.shape[0])
+    results["embed_dim"] = int(all_emb.shape[1])
 
     if "distribution" not in skip_set:
-        analyze_distribution(all_emb)
+        results["distribution"] = analyze_distribution(all_emb)
     if "dimensionality" not in skip_set:
-        analyze_dimensionality(all_emb)
+        results["dimensionality"] = analyze_dimensionality(all_emb)
     if probe.is_3d_aware:
         if "perturbation" not in skip_set:
-            analyze_perturbation(probe.embed_fn, proteins)
+            results["perturbation"] = analyze_perturbation(probe.embed_fn, proteins)
         if "rotation" not in skip_set:
-            analyze_rotation_invariance(probe.embed_fn, proteins)
+            results["rotation"] = analyze_rotation_invariance(probe.embed_fn, proteins)
     if probe.accepts_residue_type and "residue_shuffle" not in skip_set:
-        analyze_residue_shuffle(probe.embed_fn, proteins)
+        results["residue_shuffle"] = analyze_residue_shuffle(probe.embed_fn, proteins)
     if "residue_probe" not in skip_set:
-        analyze_residue_discrimination(all_emb, all_types)
+        results["residue_probe"] = analyze_residue_discrimination(all_emb, all_types)
     if "context" not in skip_set:
         if probe.context_mode == "structural":
-            analyze_structural_context(all_emb, all_types, proteins)
+            results["structural_context"] = analyze_structural_context(
+                all_emb, all_types, proteins
+            )
         elif probe.context_mode == "sequence":
-            analyze_sequence_context(probe.embed_fn, proteins)
+            results["sequence_context"] = analyze_sequence_context(
+                probe.embed_fn, proteins
+            )
     if "norms" not in skip_set:
-        analyze_norms(all_emb, all_types)
+        results["norms"] = analyze_norms(all_emb, all_types)
     if "projector" not in skip_set:
-        analyze_projector_saturation(all_emb, all_types, device)
+        results["projector"] = analyze_projector_saturation(all_emb, all_types, device)
     if "protein_sim" not in skip_set:
-        analyze_protein_similarity(per_protein)
+        results["protein_similarity"] = analyze_protein_similarity(per_protein)
+
+    layerwise_rows = None
     if probe.layerwise_fn is not None and "layerwise" not in skip_set:
-        probe.layerwise_fn(probe.encoder, proteins, device)
+        layerwise_rows = probe.layerwise_fn(probe.encoder, proteins, device)
+        if isinstance(layerwise_rows, list) and layerwise_rows:
+            results["layerwise"] = layerwise_rows
+
+    if probe.output_dir:
+        os.makedirs(probe.output_dir, exist_ok=True)
+        json_path = os.path.join(probe.output_dir, "results.json")
+        # Drop large arrays from JSON (keep summary scalars only)
+        slim = {k: v for k, v in results.items()}
+        if "dimensionality" in slim and isinstance(slim["dimensionality"], dict):
+            slim["dimensionality"] = {
+                k: v
+                for k, v in slim["dimensionality"].items()
+                if k not in ("singular_values", "cumulative_variance")
+            }
+        with open(json_path, "w") as f:
+            json.dump(slim, f, indent=2)
+        print(f"\nWrote {json_path}")
+        # Full SVD spectra to a sidecar file
+        if (
+            "dimensionality" in results
+            and "singular_values" in results["dimensionality"]
+        ):
+            spec_path = os.path.join(probe.output_dir, "spectrum.json")
+            with open(spec_path, "w") as f:
+                json.dump(
+                    {
+                        "singular_values": results["dimensionality"]["singular_values"],
+                        "cumulative_variance": results["dimensionality"][
+                            "cumulative_variance"
+                        ],
+                    },
+                    f,
+                )
+        if isinstance(layerwise_rows, list) and layerwise_rows:
+            csv_path = os.path.join(probe.output_dir, "layerwise.csv")
+            with open(csv_path, "w", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=list(layerwise_rows[0].keys()))
+                w.writeheader()
+                w.writerows(layerwise_rows)
+            print(f"Wrote {csv_path}")
 
     print("\n" + "=" * 70)
     print(f"DONE - {probe.name} characterization complete")
     print("=" * 70)
+    return results

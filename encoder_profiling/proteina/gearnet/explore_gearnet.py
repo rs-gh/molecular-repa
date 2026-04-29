@@ -52,7 +52,10 @@ def setup_encoder(device, *, random_init=False, random_seed=0):
 
 @torch.no_grad()
 def layerwise_fn(encoder, proteins, device):
-    """Walk CA-GearNet's 8 layers and report per-layer rank/norm/sparsity."""
+    """Walk CA-GearNet's 8 layers and report per-layer rank/norm/sparsity.
+
+    Returns a list[dict] with one row per layer (consumed by run_pipeline).
+    """
     print("\n" + "=" * 70)
     print("CA-GearNet Layer-wise Representation")
     print("=" * 70)
@@ -77,6 +80,7 @@ def layerwise_fn(encoder, proteins, device):
             h_v = layer(h_v, edge_list, h_e)
             layer_embs[i].append(h_v.float().cpu())
 
+    rows = []
     print(f"\n{'Layer':>5} | {'Eff Rank':>9} | {'Mean Norm':>10} | {'Sparsity':>9}")
     print("-" * 50)
     for i in range(n_layers):
@@ -86,9 +90,18 @@ def layerwise_fn(encoder, proteins, device):
         p = (S**2) / (S**2).sum()
         p = p[p > 0]
         eff_rank = float(np.exp(-np.sum(p * np.log(p))))
-        mean_norm = H.norm(dim=-1).mean().item()
-        sparsity = (H == 0).float().mean().item()
+        mean_norm = float(H.norm(dim=-1).mean())
+        sparsity = float((H == 0).float().mean())
         print(f"  {i:>3d} | {eff_rank:>9.1f} | {mean_norm:>10.4f} | {sparsity:>8.4f}")
+        rows.append(
+            {
+                "layer": i,
+                "eff_rank": eff_rank,
+                "mean_norm": mean_norm,
+                "sparsity": sparsity,
+            }
+        )
+    return rows
 
 
 def main():
@@ -104,6 +117,12 @@ def main():
     )
     ap.add_argument("--init-seed", type=int, default=0)
     ap.add_argument("--device", type=str, default=None)
+    ap.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Where to write results.json + layerwise.csv (default: ./results/<timestamp>).",
+    )
     args = ap.parse_args()
 
     device = torch.device(
@@ -116,14 +135,21 @@ def main():
         device, random_init=args.random_init, random_seed=args.init_seed
     )
 
+    import time as _time
+
+    name = f"ca-gearnet{'-random' if args.random_init else ''}"
+    output_dir = args.output_dir or os.path.join(
+        os.path.dirname(__file__), "results", _time.strftime("%Y%m%d_%H%M%S")
+    )
     probe = EncoderProbe(
-        name=f"ca-gearnet{'-random' if args.random_init else ''}",
+        name=name,
         encoder=encoder,
         embed_fn=make_embed_fn(encoder, device),
         is_3d_aware=True,
         accepts_residue_type=False,  # CA-GearNet ignores residue_type
         context_mode="structural",
         layerwise_fn=layerwise_fn,
+        output_dir=output_dir,
     )
     run_pipeline(probe, proteins, device)
 

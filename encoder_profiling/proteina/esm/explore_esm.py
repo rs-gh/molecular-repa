@@ -126,6 +126,7 @@ def layerwise_fn(encoder, proteins, device, n_test=30, max_residues=10000):
     )
     print("-" * 60)
 
+    rows = []
     for li in range(n_layers + 1):
         feats = torch.cat(per_layer_feats[li], dim=0)[keep]
         centered = feats - feats.mean(dim=0)
@@ -150,6 +151,16 @@ def layerwise_fn(encoder, proteins, device, n_test=30, max_residues=10000):
             f"  {li:>3d} | {eff_rank:>9.1f} | {mean_norm:>10.4f} | "
             f"{sparsity:>8.4f} | {probe_acc:>8.4f}"
         )
+        rows.append(
+            {
+                "layer": li,
+                "eff_rank": eff_rank,
+                "mean_norm": mean_norm,
+                "sparsity": sparsity,
+                "aa_probe_acc": float(probe_acc),
+            }
+        )
+    return rows
 
 
 def main():
@@ -169,6 +180,7 @@ def main():
     ap.add_argument("--skip-layerwise", action="store_true")
     ap.add_argument("--random-seed", type=int, default=None)
     ap.add_argument("--device", type=str, default=None)
+    ap.add_argument("--output-dir", type=str, default=None)
     args = ap.parse_args()
 
     if args.quick:
@@ -192,6 +204,9 @@ def main():
     if args.quick:
         skip.append("context")
 
+    output_dir = args.output_dir or os.path.join(
+        os.path.dirname(__file__), "results", time.strftime("%Y%m%d_%H%M%S")
+    )
     probe = EncoderProbe(
         name=f"esm2-650M{f'-L{args.layer}' if args.layer is not None else ''}",
         encoder=encoder,
@@ -200,6 +215,7 @@ def main():
         accepts_residue_type=True,
         context_mode="sequence",  # flanks-mutated context test
         layerwise_fn=layerwise_fn if not (args.quick or args.skip_layerwise) else None,
+        output_dir=output_dir,
     )
     run_pipeline(probe, proteins, device, skip=tuple(skip))
 
