@@ -1,209 +1,154 @@
 # ESM2-650M Per-Residue Encoder Characterization
 
-**Date**: 2026-04-20
-**Encoder**: ESM2 650M (`facebook/esm2_t33_650M_UR50D`), last_hidden_state (layer 33), 1280-dim
-**Data**: 200 proteins from PDB train LMDB (45,503 residues total)
-**Context**: REPA alignment target for Proteina 60M; our `l0…l9` configs all use `repa.encoder.layer: null` → last_hidden_state
-**Job**: SLURM 28080381, A100-80GB, 19:02 wall
+**Date**: 2026-04-29
+**Encoder**: ESM2 650M (`facebook/esm2_t33_650M_UR50D`), `last_hidden_state` (layer 33), 1280-dim
+**Data**: 200 PDB train proteins (42,034 residues)
+**SLURM**: 28596016 (full sweep). Latest results: [results/20260429_135732/results.json](results/20260429_135732/results.json), [layerwise.csv](results/20260429_135732/layerwise.csv).
+**Cross-encoder context**: [../FINDINGS.md](../FINDINGS.md).
 
 ## Summary
 
-ESM2-650M produces a dense, non-sparse, well-conditioned representation with near-perfect amino-acid-identity signal (99.7% linear probe). **But it is a problematic REPA target** — the mean embedding direction alone reaches 0.66 test cos-sim, and AA identity adds only 0.06 on top, leaving very little headroom for the transformer to teach anything beyond "same AA". **The last layer (33) collapses via a final LayerNorm** (norm 546 → 9.8, eff rank 639 → 282) — we are aligning against a specialized output compression, not the informative middle layers. Layers 24–30 carry 2–3× the effective rank with preserved identity signal and are plausibly stronger REPA targets.
+ESM2-650M produces a dense, well-conditioned representation with near-perfect amino-acid-identity signal (99.8% linear probe). It also has the **largest projector saturation gap** of any encoder we've profiled (+0.053) — but that gap is misleading. The mean embedding direction alone reaches 0.67 test cos-sim; AA identity adds another 0.05; what's left for the transformer to teach is mostly *sequence context*, not *3D structure* (ESM ignores coordinates by construction). The last layer (33) collapses via a final LayerNorm — norms drop 56× (555 → 9.8), eff rank halves (583 → 322) — so we are aligning the student against ESM's most compressed output. Layers 24–30 carry ~2× the effective rank with preserved identity and are the more informative REPA targets.
 
-## 1. Value Distribution & Sparsity
+## 1. Value distribution & sparsity
 
-| Metric | ESM (L33) | GearNet | MACE | CheMeleon |
-|--------|-----------|---------|------|-----------|
-| Exact zeros | **0.00%** | 0.00% | 0.0% | 93.8% |
-| Near-zero (<1e-6) | 0.0005% | 0.00% | 0.0% | ~94% |
-| Negative values | 49.0% | 62.5% | — | 0% (ReLU) |
-| Mean | -0.00070 | -1.07 | — | — |
-| Std | 0.274 | 3.48 | — | — |
-| Range | [-9.06, 4.36] | — | — | — |
+| Metric | Value |
+|--------|-------|
+| Exact zeros | 0.00% |
+| Near-zero (<1e-6) | 4.8 × 10⁻⁴% |
+| Negative values | 49.0% |
+| Mean | −0.00070 |
+| Std | 0.274 |
+| Min / Max | −9.14 / 4.29 |
 
-Fully dense representation with near-symmetric sign distribution. Standard Transformer+GELU output — no gradient-sparsity concern.
+Fully dense, near-symmetric sign distribution. Standard Transformer + GELU output — no gradient sparsity.
 
-## 2. Dimensionality & Singular Values
+## 2. Dimensionality & singular values
 
-| Metric | ESM (L33) | GearNet | MACE | CheMeleon |
-|--------|-----------|---------|------|-----------|
-| Output dim | 1280 | 512 | 192 | 2048 |
-| Effective rank | **353.6** | 82.6 | 40.6 | 500 |
-| Participation ratio | 42.4 | 40.8 | — | 58.5 |
-| Dims for 90% var | 785 | 82 | 7 | ~100 |
-| Dims for 95% var | 985 | 125 | — | — |
-| Dims for 99% var | 1206 | 283 | ~30 | ~300 |
-| S[0]/S[-1] | 2.5e7 | — | — | — |
+| Metric | Value |
+|--------|-------|
+| Output dim | 1280 |
+| Effective rank | **360.6** |
+| Participation ratio | 43.7 |
+| Dims for 90% variance | 794 |
+| Dims for 95% variance | 993 |
+| Dims for 99% variance | 1 209 |
+| Top singular value | 454.6 |
+| S[0] / S[−1] | 2.0 × 10⁷ |
 
-Effective rank 354 / 1280 — ESM uses ~28% of capacity (vs 16% for GearNet, 21% for MACE). The projector (token_dim → 1280) has to hit a high-dimensional target but will not be bottlenecked.
+361 / 1280 = ~28% of capacity. Plenty of headroom; not bottlenecked.
 
-## 3. Residue-Type Discrimination
+## 3. Residue-type discrimination
 
-| Metric | ESM (L33) | GearNet | MACE |
-|--------|-----------|---------|------|
-| Linear probe accuracy | **99.7%** | 15.4% | 100% |
-| Mean cos-sim between AA centroids | 0.847 | 0.975 | — |
-| Within-type | 0.486 ± 0.18 | 0.189 ± 0.14 | — |
-| Between-type | 0.434 ± 0.19 | 0.176 ± 0.13 | — |
-| Delta (within − between) | **0.051** | 0.013 | — |
+| Metric | Value |
+|--------|-------|
+| Linear probe accuracy | **99.8%** (chance ~5%) |
+| Mean cos between AA centroids | 0.853 |
+| Within-type cos | 0.537 ± 0.157 |
+| Between-type cos | 0.448 ± 0.186 |
+| Δ (within − between) | **0.089** |
 
-ESM's last layer effectively *is* an amino-acid classifier — 99.7% probe accuracy without training. But the within-vs-between delta is small (0.051), meaning the embeddings for different AAs live in overlapping regions that happen to be linearly separable.
+ESM's last layer effectively *is* an amino-acid classifier. The within-vs-between Δ (0.089) is real but modest — embeddings of different AAs are linearly separable but not far apart.
 
-## 4. Sequence Context Sensitivity (ESM-specific)
+## 4. Sequence context sensitivity (ESM-specific)
 
-Fix the center residue's identity; scramble or randomize the flanking residues; measure center-embedding change.
+Fix the center residue's identity; scramble or randomize the flanks; measure how much the center embedding changes.
 
-| Perturbation | Cosine similarity |
-|--------------|-------------------|
-| Shuffled flanks (same residue multiset) | 0.563 ± 0.26 |
-| Random flanks (uniform 20-AA) | 0.562 ± 0.24 |
+| Perturbation                          | Cosine similarity |
+|---------------------------------------|-------------------|
+| Shuffled flanks (same residue multiset) | 0.581 ± 0.189   |
+| Random flanks (uniform 20-AA)         | 0.566 ± 0.191     |
 
-Context strongly modulates the center embedding — ESM is **not** a lookup table. A cos-sim of ~0.56 between "same AA, different context" means neighborhood information contributes a substantial fraction of the embedding. Perhaps surprisingly, shuffled-same-residues and randomized-residues give indistinguishable results — the specific multiset of nearby AAs matters less than the fact that *something* changed.
+Cos ~0.57 between "same AA, different context" means ESM is **not** a lookup table — neighborhood information contributes a substantial fraction of the embedding. Shuffled and randomized flanks give indistinguishable results: the *fact* that flanks changed matters more than the specific multiset.
 
-## 5. Embedding Norms & Conditioning
+## 5. Embedding norms & conditioning
 
 | Metric | Value |
 |--------|-------|
 | Mean L2 norm | **9.81** |
-| Std L2 norm | **0.30** |
-| Min / max | 9.08 / 10.90 |
+| Std L2 norm | 0.30 |
+| Min / Max | 9.12 / 10.85 |
 | Dead dimensions | 0 / 1280 |
-| Dimension std range | [0.147, 1.930] |
+| Dim std range | [0.148, 1.904] |
 
-**Strikingly uniform norms** (CV ~3%). Per-AA means fall in a 9.69–9.88 band — barely separated. This uniformity is what fuels the projector-saturation problem: cosine similarity is normalization-invariant, and the embeddings additionally share direction structure, so just emitting the mean direction gets you most of the way there.
+**Strikingly uniform norms** (CV ~3%). Per-AA means fall in a narrow ~0.2-unit band. This uniformity is what fuels the projector saturation: cosine is normalization-invariant, and the embeddings additionally share direction structure, so emitting the mean direction already gets you 0.67.
 
-## 6. Projector Saturation Test (KEY RESULT)
+## 6. Projector saturation (key result)
 
-3-layer MLP (input → 512 → 512 → 1280), cosine-similarity loss, 300 epochs Adam, 80/20 split.
+3-layer MLP, 80/20 train/test, 300 epochs.
 
-| Input condition | Train | **Test** |
-|-----------------|-------|----------|
-| mean-direction (no MLP) | — | **0.664** |
-| random 128-d | 0.673 | 0.653 |
-| AA one-hot (21-d) | 0.717 | **0.719** |
-| AA one-hot + position | 0.717 | 0.719 |
+| Input condition          | Train cos | Test cos |
+|--------------------------|----------:|---------:|
+| Mean direction (no MLP)  |        —  | **0.671** |
+| Random 128-d             |    0.681  |    0.661  |
+| AA one-hot (21-d)        |    0.724  |    0.724  |
+| AA one-hot + position    |    0.724  | **0.724** |
 
-Compare to GearNet (test set):
-- Mean direction: 0.419
-- Random 128-d: 0.416
-- AA one-hot: 0.426
-- **REPA training (transformer): 0.78**
+**Saturation gap = +0.053** — the largest in the field (CA-GearNet +0.006, PW-GearNet:torsional +0.009, MC-GearNet-Edge −0.002). This is consistent with ESM2-REPA showing the cleanest val-loss improvement empirically. But the gap should be read carefully: ~0.05 of "headroom" is what a cosine-loss projector cannot already extract from `(AA-onehot, position)`, and most of that is plausibly *sequence* context (which the student transformer already partially has via its own residue-type input) rather than *3D* context (which is what we'd most want).
 
-**This is the most important finding.** For GearNet, identity alone reaches 0.43 and training to 0.78 represents ~0.35 of genuine structural learning. For ESM2, identity alone reaches 0.72 — a plausible REPA training ceiling is ~0.80, leaving only **~0.08 of headroom for the transformer to contribute structural signal beyond amino-acid identity**.
+## 7. Within-protein vs between-protein similarity
 
-The mean-direction baseline at 0.664 (with zero learning) is notable: all ESM embeddings point in roughly the same direction, so cosine similarity starts near 2/3 for free.
+| Metric                | Value          |
+|-----------------------|----------------|
+| Within-protein cos    | 0.562 ± 0.180  |
+| Between-protein cos   | 0.464 ± 0.179  |
+| **Δ**                 | **0.098**      |
 
-## 7. Within-Protein vs Between-Protein Similarity
+Embeddings cluster by protein, but less dramatically than CA-GearNet (Δ 0.222). The high between-protein baseline (0.46) is again the "shared direction" artefact.
 
-| Metric | ESM (L33) | GearNet | CheMeleon |
-|--------|-----------|---------|-----------|
-| Within-protein | 0.577 ± 0.20 | 0.420 ± 0.27 | 0.25 |
-| Between-protein | 0.436 ± 0.20 | 0.176 ± 0.13 | 0.15 |
-| Delta | **0.141** | 0.244 | 0.10 |
+## 8. Layer-wise analysis (33 transformer layers + token embedding)
 
-ESM embeddings cluster by protein, but less dramatically than GearNet (delta 0.14 vs 0.24). Between-protein baseline (0.44) is high — again, the "shared direction" artefact.
+From [layerwise.csv](results/20260429_135732/layerwise.csv) (30 proteins, 7k residues):
 
-## 8. Layer-wise Analysis (ESM has 33 transformer layers + embeddings)
-
-| Layer | Eff Rank | Mean Norm | AA Probe |
-|-------|---------:|----------:|---------:|
-| 0 (token embeddings) | 16.3 | 2.80 | 1.0000 |
-| 1 | 15.0 | 94.04 | 1.0000 |
-| 2 | 73.9 | 112.88 | 1.0000 |
-| 3 | 177.3 | 118.96 | 1.0000 |
-| 4 | 312.3 | 111.36 | 1.0000 |
-| 5 | **429.0** | 102.90 | 1.0000 |
-| 6 | 427.2 | 94.16 | 1.0000 |
-| 7 | 384.7 | 93.77 | 1.0000 |
-| 8 | 341.1 | 92.02 | 1.0000 |
-| 9 | 298.0 | 96.93 | 1.0000 |
-| 10 | 263.3 | 112.96 | 1.0000 |
-| 11 | 217.3 | 127.88 | 1.0000 |
-| 12 | 205.6 | 161.89 | 1.0000 |
-| 13 | 233.2 | 187.79 | 1.0000 |
-| 14 | 286.4 | 218.40 | 1.0000 |
-| 15 | 308.8 | 249.00 | 0.9986 |
-| 16 | 339.8 | 261.84 | 0.9986 |
-| 17 | 314.3 | 285.72 | 0.9979 |
-| 18 | 325.5 | 303.96 | 0.9959 |
-| 19 | 334.5 | 319.32 | 0.9952 |
-| 20 | 334.8 | 336.57 | 0.9945 |
-| 21 | 362.8 | 346.87 | 0.9924 |
-| 22 | 386.6 | 358.06 | 0.9876 |
-| 23 | 411.5 | 366.87 | 0.9904 |
-| 24 | 441.1 | 374.11 | 0.9897 |
-| 25 | 476.2 | 380.76 | 0.9945 |
-| 26 | 514.2 | 390.95 | 0.9904 |
-| 27 | 559.0 | 397.46 | 0.9945 |
-| 28 | 604.8 | 403.51 | 0.9959 |
-| 29 | **638.7** | 414.99 | 0.9945 |
-| 30 | 627.1 | 446.57 | 0.9966 |
-| 31 | 618.7 | 487.80 | 0.9972 |
-| 32 | 561.8 | 546.35 | 0.9979 |
-| **33** (our REPA target) | **281.9** | **9.76** | 0.9972 |
+| Layer | Eff rank | Mean norm | AA probe |
+|------:|---------:|----------:|---------:|
+|     0 |     16.0 |      2.79 |    1.000 |
+|     1 |     45.1 |     94.27 |    1.000 |
+|     2 |    151.7 |    112.53 |    1.000 |
+|     3 |    289.1 |    118.59 |    1.000 |
+|     4 |    407.0 |    111.82 |    1.000 |
+|     5 |    502.6 |    103.87 |    1.000 |
+|     6 | **520.8** |     93.64 |    1.000 |
+|     7 |    457.6 |     91.59 |    1.000 |
+|    12 |    212.3 |    160.82 |    0.998 |
+|    16 |    332.8 |    262.57 |    0.998 |
+|    20 |    349.2 |    333.40 |    0.990 |
+|    24 |    465.9 |    368.43 |    0.981 |
+|    25 |    505.7 |    374.20 |    0.983 |
+|    26 |    545.6 |    384.16 |    0.985 |
+|    27 |    592.6 |    391.76 |    0.985 |
+|    28 |    637.9 |    399.61 |    0.990 |
+|    29 |    659.6 |    414.96 |    0.993 |
+|    30 |  **661.9** |    445.77 |    0.991 |
+|    31 |    651.9 |    488.48 |    0.995 |
+|    32 |    582.7 |    554.66 |    0.995 |
+| **33** (REPA target) | **321.7** | **9.79** | 0.998 |
 
 Three distinct phases:
 
-**Early (0–5)**: Effective rank climbs from 16 (pure token lookup) to 429 at layer 5 as each transformer block mixes in context. Norm saturates at ~100. **Layer 5 is a local peak**.
+**Early (0–6)**: rank climbs from 16 (pure token lookup) to 521 at layer 6 as each block mixes in context. Norms saturate near 100. **Layer 6 is a local peak**.
 
-**Middle (6–14)**: Norms grow steadily (~100 → 218) while eff rank *decreases* (429 → 206 at layer 12). Compression phase.
+**Middle (7–14)**: rank dips and norms grow — a compression/refinement phase.
 
-**Late (15–32)**: Eff rank recovers and climbs steadily from 309 → 639 at layer 29. Norms also grow (249 → 546). **These are the richest representations** — high-dim, high-magnitude, near-perfect AA identity preserved.
+**Late (15–32)**: rank recovers and climbs to **662 at layer 30**. Norms grow with depth. These are the richest representations: high-dim, high-magnitude, near-perfect AA identity preserved.
 
-**Final collapse (33)**: A final LayerNorm-like operation drops norms by 56× (546 → 9.76) and halves effective rank (562 → 282). Inter-layer cos-sim 32→33 = 0.893 (vs 0.95+ elsewhere late). This is the layer our REPA aligns against.
+**Final collapse (33)**: a LayerNorm-like operation drops norms by 56× (555 → 9.79) and effective rank by ~45% (583 → 322). This is the layer we currently align REPA against.
 
-### Inter-layer cosine similarity
-| Transition | cos-sim |
-|-----------|--------|
-| 0 → 1 | **0.022** |
-| 5 → 6 | 0.968 |
-| 10 → 11 | 0.935 |
-| 15 → 16 | 0.972 |
-| 20 → 21 | 0.970 |
-| 25 → 26 | 0.971 |
-| 30 → 31 | 0.947 |
-| 32 → 33 | **0.893** |
+## 9. Why ESM is a problematic 3D-REPA target
 
-Layer 0 → 1 is essentially orthogonal — the first transformer block transforms token embeddings completely. Layer 32 → 33 is the other large step — the final projection/LN.
+1. **Coordinates are ignored.** ESM has no view of the 3D structure being generated. Any cosine signal it provides is a function of `(sequence, position)` only — REPA cannot teach the student transformer about *geometry*.
+2. **The gap is mostly sequence-context.** Of the +0.053 projector gap, the headroom over `(AA-onehot, position)` is what we're really chasing. The student already has residue-type input; what's left is contextual sequence information ESM has internalised — useful but conformation-invariant.
+3. **The last layer is the worst layer.** Layer 33 has roughly half the effective rank of layers 24–30 with norms compressed to ~10. We're aligning against a specialised output projection rather than the rich middle representations.
 
-## Head-to-Head: ESM2-650M vs GearNet vs MACE
+## Recommendations
 
-| Property | ESM2 (L33) | GearNet (CA) | MACE |
-|----------|------------|--------------|------|
-| Domain | Proteins (sequence-only) | Proteins (3D) | Small molecules (3D) |
-| Output dim | 1280 | 512 | 192 |
-| Eff rank | 354 | 82.6 | 40.6 |
-| 3D-aware | **No** | Yes (strong) | Yes (weak) |
-| 3D sensitivity (0.5 Å) | N/A (ignores coords) | cos = 0.36 | 0.998 |
-| Rotation invariant | Trivially (coords ignored) | Yes (0.9997) | Yes |
-| AA/atom probe | 99.7% | 15.4% | 100% |
-| Projector: mean-dir baseline | **0.664** | 0.419 | — |
-| Projector: identity | 0.72 | 0.43 | 0.86 |
-| Genuine REPA headroom | **~0.08** | ~0.35 | ~0.14 |
-| Within-vs-between delta | 0.14 | 0.24 | — |
-
-## Implications for REPA Training
-
-### Why our `training_repa_esm_l0_128_per_residue` run may not beat baseline
-
-1. **Projector saturation dominates**. Mean direction alone is 0.66, identity is 0.72. The ceiling for "genuine structural learning beyond identity" is about 0.08 of cos-sim — tiny compared to GearNet's 0.35.
-
-2. **ESM is 3D-blind.** CA coordinates are ignored. Any cos-sim the transformer earns beyond the identity baseline comes from learning *sequence* context, not *structural* context — but we already have the residue types in the input embedding. There is nothing geometric for REPA to teach.
-
-3. **The last layer is a bad target.** Layer 33 has half the effective rank of layers 24–30, with norms collapsed to ~10. We are asking the student transformer to mimic a heavily compressed output representation — projected through a 3-layer MLP into 1280-d — and that target retains the least amount of information from ESM's inner pathway.
-
-### Recommended experiments
-
-1. **Switch `encoder.layer` from null to layer 24 or 29.** 2–3× the effective rank, same identity preservation, richer structural context (if present).
-
-2. **Revisit whether ESM is worth using at all.** For a 3D generative model, a sequence-only target forces REPA to learn conformation-invariant features — which is exactly the problem we diagnosed with CheMeleon. The transformer already has residue types in its input; REPA with ESM may primarily be a regularizer on "don't forget the residue identity," which the flow-matching objective already enforces implicitly.
-
-3. **Sanity check**: what test cos-sim does our wandb run reach? If it plateaus near 0.72, the saturation hypothesis is confirmed and REPA is doing nothing. If it reaches 0.80+, the transformer is finding *some* additional signal worth chasing.
-
-4. **Multi-layer alignment**. Target layers [5, 15, 29] simultaneously — each captures different representation depths. With ESM's redundancy across layers, this is probably cheap in additional loss noise.
+1. **Switch `repa.encoder.layer` from `null` to layer 24, 28, or 30.** ~2× effective rank, identity preserved, richer representation. Cheapest experiment with a high prior on improvement.
+2. **Multi-layer alignment** (`layers: [6, 24, 30]`): different depths capture different scales. ESM has high inter-layer redundancy, so the additional loss noise should be small.
+3. **Sanity check the running val-cos.** If our ESM-REPA wandb runs plateau near 0.72, the saturation hypothesis is confirmed and REPA is doing nothing beyond AA recall. If they reach 0.78+, the transformer is finding usable additional signal.
+4. **Compare empirically against CA-GearNet REPA.** Despite ESM's larger projector gap, CA-GearNet may train better because the headroom there is *geometric*, not sequence-redundant — exactly what a 3D generative model needs.
 
 ## Caveats
 
-- **200 proteins, first-in-LMDB-order**. PDB IDs starting with `1a…` dominate. Not a random sample of fold space. A follow-up run with randomized 500-1000 proteins will check whether these numbers hold.
-- **Layer-wise analysis capped at 30 proteins / 7k residues** for memory — per-layer eff-rank is a noisy estimator at that sample count, though the qualitative pattern (monotonic growth to L29, collapse at L33) is robust to sample size.
-- **Context sensitivity test fixes only the center residue** — this conflates "neighbors provide context" with "neighbors break the local MLM prediction." A cleaner test: mutate *far* neighbors and see how the center changes.
+- 200 proteins, randomized seed 0. Single sample; PR-quality but not finely averaged.
+- Layer-wise analysis sub-samples 30 proteins / ~7k residues for memory — per-layer eff-rank is a noisy estimator at that count, though the qualitative pattern (monotonic rise to L30, collapse at L33) is robust.
+- Sequence-context test fixes only the center residue; it conflates "neighbors provide context" with "neighbors break the local MLM prediction". Cleaner test: mutate *far* neighbors only.
