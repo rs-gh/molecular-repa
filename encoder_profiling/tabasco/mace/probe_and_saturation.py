@@ -1,8 +1,32 @@
-"""
-Additional MACE analyses: linear probe for atom-type discrimination
-and projector saturation test.
+"""MACE Q1.1 (atom identity) and Q2 (projector saturation) probes.
 
-These were done for CheMeleon and GearNet but missing for MACE.
+Companion to ``explore_mace.py``; together they produce every
+Q1/Q2/Q3 number in ``encoder_profiling/tabasco/mace/FINDINGS.md``.
+This file owns the two probes that need a train/test split + MLP
+training loop:
+
+Q1.1 — ATOM IDENTITY
+    Linear probe (logistic regression) from MACE embedding to atom
+    type. Reports accuracy + within-type / between-type cosine
+    distributions and their delta. Cross-checked against CheMeleon
+    and GearNet (proteins) in the FINDINGS table.
+
+Q2 — PROJECTOR SATURATION
+    Train a small MLP from each cheap input condition to the MACE
+    embedding (cosine loss). Conditions:
+      - random 128-d  (mean-direction floor: what the projector
+                       reaches with no input information)
+      - atom-type one-hot (cheap-input ceiling)
+
+    Saturation gap = best - random_floor. For MACE this is the
+    headline finding: ~+0.005 vs CheMeleon ~+0.04 vs GearNet +0.32
+    (proteins). A small gap on a high floor (~0.86) is what makes
+    MACE "saturated" — it is the structural reason any MACE-REPA
+    training reporting cos > 0.86 should be cross-checked against
+    this floor before claiming alignment progress.
+
+The pre-existing CheMeleon / GearNet numbers used in the comparison
+tables come from each encoder's own probe scripts, not this file.
 
 Run:
   source .venv/bin/activate

@@ -1,19 +1,48 @@
 #!/usr/bin/env python
-"""Investigate whether CheMeleon embeddings are useful for REPA alignment.
+"""CheMeleon characterisation for REPA target selection.
 
-Analyses:
-  1. Known molecule probe (sanity check)
-  2. Sparsity & dimensionality (PCA, dead dims, effective rank)
-  3. Discriminativeness (cosine sim distributions, linear probe, t-SNE)
-  4. Pipeline integrity (fast vs slow path, atom order, padding)
-  5. Projection feasibility (can a 2-layer MLP learn the mapping?)
-  6. 2D vs 3D mismatch (GEOM conformer analysis)
-  7. Summary table
+This script is the source of every Q1/Q2/Q3 number in
+``encoder_profiling/tabasco/chemeleon/FINDINGS.md``. The framing
+(Q1 information / Q2 saturation / Q3 conditioning) mirrors
+``encoder_profiling/proteina/_probes/lib.py`` — see the cross-encoder
+summary at ``encoder_profiling/tabasco/FINDINGS.md`` for the full
+selection rubric.
+
+Q1 — WHAT INFORMATION DOES THE ENCODER ENCODE?
+    1.1 Atom identity     -> Section 3 (linear probe; per-atom-type cosine
+                             distributions; t-SNE)
+    1.2 3D sensitivity    -> Section 6 (GEOM conformer L2 distances —
+                             the section where CheMeleon fails: L2 = 0.000
+                             across all conformer pairs, by construction)
+    1.3 Chemical context  -> Section 1 (known-molecule probe: benzene
+                             symmetry, aromatic vs aliphatic clustering)
+                             plus within-mol vs between-mol cosine
+    1.4 Molecule identity -> Section 3 (mol-level cosine distributions)
+
+Q2 — HOW MUCH IS REACHABLE FROM CHEAP INPUTS?
+    -> Section 5 (projection feasibility: 2-layer MLP from
+       random / atom-type / atom-type+context to encoder embedding).
+       Saturation gap = best - random_floor. Random-input cos (~0.43)
+       is the mean-direction floor; the +0.04 lift to atom-type+context
+       (~0.47) is the structural headroom for any input to extract more.
+
+Q3 — IS THE ENCODER A TRACTABLE OPTIMISATION TARGET?
+    -> Section 2 (sparsity, dead dims, effective rank, participation
+       ratio, dims-for-90/99-variance). The headline Q3 failures are
+       93.8% sparsity (ReLU) and 500 dims-for-90%-variance vs a
+       128-d projector input.
+
+Pipeline-integrity checks (Section 4 — atom-order match, padding
+all-zero, fast/slow path divergence) are operational sanity rather
+than Q1/Q2/Q3 diagnostics; they live here because they share the same
+data-loading code. The fast/slow path divergence (mean cos 0.23) is
+documented in FINDINGS.md as an inference-path caveat, not a verdict
+input.
 
 Usage:
     source .venv/bin/activate
     export PROJECT_ROOT=$(pwd)/src/tabasco
-    python playground/analysis/investigate_chemeleon.py
+    python encoder_profiling/tabasco/chemeleon/investigate.py
 """
 
 import sys

@@ -1,11 +1,32 @@
-"""
-Explore MACE embeddings on real GEOM molecules from the training set.
+"""MACE-OFF small characterisation for REPA target selection.
 
-Key questions:
-1. Does MACE give different embeddings for different conformers? (CheMeleon: identical)
-2. What does the representation look like? (sparsity, effective rank, distribution)
-3. How does it handle the heavy-atom-only vs all-atom mismatch?
-4. Is the embedding space better conditioned than CheMeleon for REPA?
+Companion to ``encoder_profiling/tabasco/mace/probe_and_saturation.py``;
+together they produce every Q1/Q2/Q3 number in
+``encoder_profiling/tabasco/mace/FINDINGS.md``. Framing
+(Q1 information / Q2 saturation / Q3 conditioning) mirrors
+``encoder_profiling/proteina/_probes/lib.py`` and the cross-encoder
+selection rubric at ``encoder_profiling/tabasco/FINDINGS.md``.
+
+This file covers the parts of the rubric that are *encoder-structural*
+(no labelled split / no MLP training):
+
+Q1 — WHAT INFORMATION DOES THE ENCODER ENCODE?
+    1.2 3D sensitivity     -> conformer L2 / cosine across GEOM pairs
+                              (the metric where MACE differs sharply
+                              from CheMeleon; cos 0.998 vs 1.000)
+    1.4 H-atom invariance  -> all-atom vs heavy-only embeddings on
+                              GEOM (heavy-only path is what tabasco
+                              actually feeds; verify equivalence)
+
+Q3 — IS THE ENCODER A TRACTABLE OPTIMISATION TARGET?
+    3.1 Sparsity / value distribution
+    3.2 Effective rank, dims-for-variance breakdown
+    3.3 Norm distributions
+
+Q1.1 (atom identity probe) and Q2 (projector saturation) live in the
+companion ``probe_and_saturation.py`` because they require labelled
+splits + an MLP training loop, which is cleaner separated from the
+exploratory dumps here.
 
 Run:
   source .venv/bin/activate

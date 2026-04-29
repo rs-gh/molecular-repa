@@ -1,194 +1,159 @@
-# MACE Encoder Investigation: Findings
+# MACE-OFF Encoder Characterization
 
-**Date**: 2026-03-19
-**Scripts**: `encoder_profiling/tabasco/mace/explore_mace.py`, `encoder_profiling/tabasco/mace/generate_figures.py`
-**Figures**: `encoder_profiling/tabasco/mace/figures/`
-**Related**: `encoder_profiling/tabasco/chemeleon/FINDINGS.md` (CheMeleon investigation)
+**Date**: 2026-03-19 (initial), 2026-04-02 (additional probes)
+**Encoder**: MACE-OFF23 small (`mace_off("small")`, frozen), 2 interaction layers, l_max=0 (all features rotation-invariant scalars), 192-dim output (96 invariant features × 2 layers concatenated)
+**Data**: GEOM train molecules; per-section sample sizes vary
+**Scripts**: [explore_mace.py](explore_mace.py), [probe_and_saturation.py](probe_and_saturation.py), [generate_figures.py](generate_figures.py), [precompute_embeddings.py](precompute_embeddings.py), [extract_descriptors.py](extract_descriptors.py)
+**Figures**: [figures/](figures/)
+**Cross-encoder context**: [../FINDINGS.md](../FINDINGS.md) — for the three-question framing (Q1 information, Q2 saturation, Q3 conditioning) used throughout.
 
-## Background
+## Summary
 
-Following the CheMeleon investigation (2026-03-18) which identified fundamental limitations of a 2D encoder for REPA alignment in 3D molecular generation, we evaluated MACE-OFF as a 3D-aware alternative encoder. MACE is an equivariant neural network pretrained on molecular energies and forces.
+MACE-OFF small is the cleanest *3D-aware* REPA target available off-the-shelf in our shortlist, and it fixes every Q3 conditioning problem CheMeleon has: **0% sparsity** (vs CheMeleon 93.8%), eff rank 40.6 fits the projector with room to spare, no dead dims, no norm explosion. Q1.1 and Q1.3 are strong (probe 1.000, atom-type Δ = 0.260 — 3× CheMeleon).
 
-### Motivation (from CheMeleon findings)
-1. CheMeleon produces **identical** embeddings for all conformers (L2 = 0.0)
-2. 93.8% sparsity from ReLU — noisy cosine similarity gradients
-3. Projector bottleneck: 128-dim input for 500 effective rank target
-4. 2D encoder cannot provide 3D geometric guidance
+The catch is at Q2. The mean-direction floor is ~0.86 — *random inputs alone reach this number* — and the projector gap above the floor is only ~+0.005. The Q1.2 conformer signal is real but small (cos 0.998 between conformers): MACE-OFF was trained on energies, and local chemistry dominates the energy, so global conformation has weak influence on embeddings. Net: **borderline; saturated**. REPA against MACE has very little operating budget — any cosine ≥ 0.86 reported during training is likely the projector floor, not learning.
 
-### Model used
-- **MACE-OFF23 small** (`mace_off("small")`)
-- 2 interaction layers, l_max=0 (all features are rotation-invariant scalars)
-- 96 invariant features per layer, **192 total** output dimensions
-- Pretrained on molecular energies/forces (organic molecules)
+## Q1. What information does the encoder encode?
 
----
+### 1.1 Atom identity
 
-## Key Results
+Linear probe (logistic regression) from MACE embedding to atom type (`probe_and_saturation.py`):
 
-### 1. Zero sparsity — dense gradients (fig_01)
+| Metric | MACE | CheMeleon | GearNet (proteins, for context) |
+|--------|------|-----------|----------------------------------|
+| Linear probe accuracy | **1.000** | 1.000 | 0.154 |
+| Within-type cos | 0.706 ± 0.202 | 0.245 | 0.189 ± 0.139 |
+| Between-type cos | 0.447 ± 0.148 | 0.152 | 0.176 ± 0.133 |
+| **Δ (within − between)** | **0.260** | 0.093 | 0.013 |
 
-|                        | MACE   | CheMeleon |
-|------------------------|--------|-----------|
-| Exact zero fraction    | 0.0%   | 93.2%     |
-| Near-zero (<1e-6)      | 0.0%   | 93.2%     |
+Atom type is perfectly recoverable. The within-type std (0.202) shows MACE also encodes *environment* variation within a single element — same-element atoms in different chemical contexts get different embeddings, not just different types. This is the strongest atom-type discrimination of any encoder we've profiled.
 
-MACE uses no ReLU in its output, producing dense feature vectors with a roughly Gaussian value distribution centered near 0. This eliminates the sparse gradient problem that plagued CheMeleon alignment.
+### 1.2 3D geometric sensitivity — weak but nonzero
 
-### 2. Compact representation with low effective rank (fig_02, fig_05)
+Conformer pair comparison on GEOM:
 
-> **Definition note**: "Effective rank" below uses entropy on normalized singular values: exp(-sum(p log p)) where p = S_i / sum(S). This differs from the threshold-based definition used in CheMeleon's FINDINGS (which reports 500). See `playground/projector/encoder_analysis.py` for all four definitions computed consistently.
+| Metric | MACE | CheMeleon |
+|--------|------|-----------|
+| Mean cos between conformers | **0.998** | 1.000 |
+| L2 between conformers | 0.08 – 0.29 | 0.000 |
+| Coordinate RMSD range | 1.4 – 3.7 Å | (same) |
 
-|                          | MACE   | CheMeleon |
-|--------------------------|--------|-----------|
-| Output dimension         | 192    | 2048      |
-| Effective rank           | 40.6   | 138.1     |
-| Dims for 90% variance   | 7      | ~100      |
-| Dims for 99% variance   | ~30    | ~300      |
+MACE *does* distinguish conformers (cos < 1.0), confirming 3D awareness — but the signal is small. Conformer pairs with up to 3.7 Å RMSD still have cos > 0.995. **Why**: MACE-OFF was trained on energies and forces, where local chemical environment (bond lengths, angles, immediate neighbours) dominates. Global conformational degrees of freedom (torsion angles, extended structure) have weaker influence on the energy and therefore weaker influence on embeddings.
 
-MACE's representation is much more compact: 94% of variance in just 10 dimensions. While the effective rank (40.6) is lower than CheMeleon's (138.1), this is actually advantageous:
-- The projector (192-dim target) easily covers the full feature space
-- No bottleneck problem: projector dim > effective rank
-- Denser information per dimension = stronger gradient signal
+**Implication**: MACE provides genuine 3D headroom for REPA, but it's local (bond geometry) rather than global (conformation). That's the *right kind* of headroom for a 3D generative model in principle, but the magnitude is limited.
 
-### 3. Conformer sensitivity — geometry-aware but subtle (fig_03)
+Rotation invariance is exact by construction (`l_max=0`, all output features are SO(3)-invariant scalars).
 
-| Metric                              | MACE          | CheMeleon |
-|-------------------------------------|---------------|-----------|
-| Mean cosine sim between conformers  | 0.998         | 1.000     |
-| L2 distance between conformers      | 0.08 - 0.29   | 0.000     |
-| Coordinate RMSD range               | 1.4 - 3.7 A   | N/A       |
+### 1.3 Chemical / topological context
 
-MACE does distinguish conformers (cos < 1.0), confirming it encodes 3D geometry. However, the sensitivity is subtle — conformer pairs with RMSD up to 3.7A still have cos > 0.995. This is expected: MACE-OFF was trained on energies, and local chemical environments (which dominate the energy) are similar across conformers. The global conformation (torsion angles, extended structure) has less impact.
+Same-element-different-environment cosine (`probe_and_saturation.py`):
 
-**Implication**: MACE provides a **weak but nonzero** 3D signal for REPA alignment. It can guide the model toward correct local geometry (bond lengths, angles) but may not strongly distinguish global conformations.
+| Same-element comparison | Mean cos sim | Range |
+|------------------------|--------------|-------|
+| C-C (different envs) | 0.747 | 0.327 – 1.000 |
+| N-N (different envs) | 0.709 | 0.528 – 1.000 |
+| Symmetry-equiv (benzene ring C) | ~0.98 | (tight) |
+| Different elements (Br vs C) | 0.19 | (clean separation) |
 
-### 4. Hydrogen atoms are invisible to heavy-atom embeddings (fig_06)
+MACE cleanly separates: different elements; same element in different environments (aromatic vs aliphatic C: cos 0.63–0.91); symmetry-equivalent atoms (benzene ring carbons: cos ~ 0.98). This is what enables the strong Q1.1 atom-type Δ — the within-type structure isn't noise; it's chemistry.
 
-| Metric                                      | Value   |
-|----------------------------------------------|---------|
-| Cosine sim (all-atom vs heavy-only embedding) | 1.0000  |
-| Min cosine sim across all atoms tested        | 1.0000  |
+### 1.4 Hydrogen-atom invariance
 
-Removing hydrogen atoms has **zero effect** on heavy atom MACE embeddings for GEOM molecules. This is a critical finding:
-- Our model uses heavy atoms only (9 types: C, N, O, F, S, Cl, Br, I, *)
-- MACE can be run on heavy atoms only with no information loss
-- No need to handle H-atom padding or filtering in the encoder
+Heavy-atom-only vs all-atom embedding comparison (relevant because the tabasco data pipeline pre-removes hydrogens):
 
-**Why**: GEOM molecules are pre-processed with `RemoveAllHs`, so the LMDB stores no H atoms. MACE's neighbor graph only includes the atoms present, so heavy-atom-only input produces the same embeddings as if we had removed H from an all-atom structure.
+| Metric | Value |
+|--------|-------|
+| Cos sim (all-atom vs heavy-only embedding) | **1.0000** |
+| Min cos sim across atoms tested | 1.0000 |
 
-### 5. Strong atom-type discrimination (fig_04)
+**Removing hydrogens has zero effect on heavy-atom embeddings.** GEOM molecules are pre-processed with `RemoveAllHs`, so the LMDB stores no H atoms; MACE's neighbour graph only includes the atoms present, and heavy-atom-only input produces the same embeddings as if H atoms had been silently removed. **No padding/filtering logic needed in the encoder for H atoms.**
 
-| Same-element comparison | Mean cosine sim | Range |
-|------------------------|-----------------|-------|
-| C-C (different envs)   | 0.747           | 0.327 - 1.000 |
-| N-N (different envs)   | 0.709           | 0.528 - 1.000 |
-| O-O (different envs)   | 1.000           | (only 2 O, same env) |
+## Q2. How much is reachable from cheap inputs?
 
-MACE clearly distinguishes:
-- Different elements (Br vs C: cos = 0.19)
-- Same element in different chemical environments (aromatic C vs aliphatic C: cos = 0.63-0.91)
-- Symmetry-equivalent atoms (benzene ring carbons: cos ~ 0.98)
+MLP from each input condition to the MACE embedding, cosine loss (`probe_and_saturation.py`):
 
-### 6. Representation comparison summary (fig_05)
+| Input condition | MACE | CheMeleon | GearNet (proteins, for context) |
+|-----------------|------|-----------|----------------------------------|
+| Random 128-d (mean-direction proxy) | **0.858** | ~0.43 | 0.461 |
+| Atom-type one-hot (8-d) | **0.863** | ~0.46 | 0.430 |
 
-| Property               | MACE (small) | CheMeleon | Winner for REPA |
-|------------------------|-------------|-----------|-----------------|
-| Dimension              | 192         | 2048      | MACE (smaller projector) |
-| Sparsity               | 0.0%        | 93.2%     | MACE (dense gradients) |
-| Effective rank         | 40.6        | 138.1     | MACE (fits in projector) |
-| 3D sensitivity         | Yes (weak)  | None      | MACE |
-| Atom discrimination    | Strong      | Strong    | Tie |
-| Projector feasibility  | Excellent   | Poor      | MACE |
+**Saturation gap = atom-onehot − random ≈ +0.005.** Two facts to read together:
 
----
+1. **The floor is enormous.** Random inputs reach 0.858 — i.e., the projector emits something close to the mean direction of the embedding distribution and gets free 0.86 cosine. This is consistent with Q3.2: eff rank 40.6 means the embedding manifold is low-dim, the mean direction captures most of it.
+2. **Atom identity barely moves the needle.** From 0.858 → 0.863 with atom-type input. The encoder's variance off the mean direction is so tight that even informative input can't extract much more.
 
-## Diagnosis
+**Implication for REPA training**: any reported `cos_sim > 0.86` is achievable without input information. Genuine learning requires `cos > 0.86 + ε`. The theoretical ceiling (1.0) leaves ~0.14 of room; most of that is local geometry from Q1.2; the headroom for the transformer to do useful work is tiny.
 
-MACE-OFF addresses all four structural problems identified in the CheMeleon investigation:
+For comparison, GearNet for proteins has random-input floor 0.461 and trained REPA reaches 0.78 — a 0.32 gap that genuinely represents structural learning. MACE's gap is bounded above by ~0.14, much less room for the student to contribute.
 
-### Problem 1: Sparsity kills cosine similarity -> SOLVED
-MACE has 0% sparsity. Every dimension contributes to cosine similarity, providing clean, dense gradient signals.
+## Q3. Is the encoder a tractable optimisation target?
 
-### Problem 2: Projection bottleneck -> SOLVED
-MACE's 192-dim output with effective rank 40.6 is easily captured by even a small projector. No information is lost in the projection step.
+### 3.1 Sparsity & value distribution
 
-### Problem 3: 2D-only = no geometry guidance -> PARTIALLY SOLVED
-MACE does encode 3D geometry, but the conformer sensitivity is subtle (cos ~ 0.998 between conformers). Local geometry (bond lengths/angles) is captured well; global conformation is captured weakly.
+| Metric | MACE | CheMeleon |
+|--------|------|-----------|
+| Exact-zero fraction | **0.0%** | 93.2% |
+| Near-zero (<1e-6) | 0.0% | 93.2% |
 
-### Problem 4: Fast/slow path divergence -> NOT APPLICABLE
-MACE takes coordinates directly — no SMILES-dependent code path. The same input always produces the same output.
+MACE has **no sparsity** — output values follow a roughly Gaussian distribution centered near 0. Every dimension contributes to every cosine computation. **This eliminates the gradient-noise problem that dominated CheMeleon alignment.**
 
----
+### 3.2 Effective dimensionality & singular values
+
+> **Definition note**: Eff rank below uses entropy on normalised squared singular values (`exp(−Σ p log p)` where `p = Sᵢ² / Σ S²`). Same definition used everywhere in the proteina probes and the [cross-encoder summary](../FINDINGS.md). CheMeleon's "500" eff rank in its own FINDINGS uses the threshold-based variant.
+
+| Metric | MACE | CheMeleon |
+|--------|------|-----------|
+| Output dim | 192 | 2048 |
+| Effective rank (entropy) | **40.6** | ~138 |
+| Dims for 90% variance | 7 | ~100 |
+| Dims for 99% variance | ~30 | ~300 |
+
+40.6 / 192 ≈ 21% of capacity. **The projector input dim (128 or 256) is larger than the eff rank** — no bottleneck, every direction in the target manifold is recoverable in principle. This is the structural opposite of CheMeleon, where 500 dims for 90% variance vs 128-d input was a hard bottleneck.
+
+The flip side: 94% of variance lives in just 10 dimensions. That's why Q2 saturates so hard — capturing those 10 dims is easy, and there's not much else.
+
+### 3.3 Norms
+
+Per-atom L2 norms vary modestly with atom type and chemical environment, no dead dims, no norm explosion. Well-conditioned across the board.
+
+## Why MACE addresses CheMeleon's structural problems (and where it doesn't)
+
+CheMeleon failure mode → MACE status:
+
+| CheMeleon problem (Q-tag) | MACE status |
+|---------------------------|-------------|
+| Q3.1 sparsity 93.8% | ✅ solved (0%) |
+| Q3.2 projector bottleneck (500 dims for 90%, 128-d input) | ✅ solved (eff rank 40.6, fits) |
+| Q1.2 zero 3D sensitivity (L2 = 0 across conformers) | ◐ partially solved (cos 0.998 between conformers — small but nonzero) |
+| Q2 fast/slow path divergence (cos 0.23) | ✅ N/A (MACE takes coords directly, no SMILES path) |
+
+MACE does *not* solve the saturation problem at Q2 — it trades the high-dim sparse-target mode for a low-rank dense-target mode. Both modes are bad for the projector, just differently:
+
+- **CheMeleon**: lots of structure (high eff rank) but trapped behind sparse activation patterns and a too-narrow projector input. Floor 0.43, modest +0.04 gap.
+- **MACE**: clean dense gradients but the structure itself is so low-dim that the mean direction already explains most of it. Floor 0.86, tiny +0.005 gap.
 
 ## Caveats
 
-### Performance concern
-The current MACEEncoder creates a MACE DataLoader in every `forward()` call. This involves:
-1. Converting coords/atomics to ASE Atoms (CPU, per-molecule loop)
-2. Building MACE's graph structure (neighbor lists, edge features)
-3. Running the MACE model (2 interaction layers)
+### Performance / runtime
 
-This is slower than ChemPropEncoder's SMILES-cached path. Profiling needed to quantify the cost per training step.
+The naive `MACEEncoder` builds a MACE DataLoader per `forward()` call: ASE Atoms conversion (CPU loop), neighbour-list construction, 2 interaction layers. Slower than `ChemPropEncoder`'s SMILES-cached path. Profiling needed; precomputed embeddings (per-conformer LMDB, see [precompute_embeddings.py](precompute_embeddings.py)) sidestep this entirely since MACE is rotation-invariant and the conformer→embedding map is fixed.
 
-### Weak conformer signal
-cos = 0.998 between conformers means the alignment gradient for 3D structure is very small compared to the atom-identity signal. REPA may still primarily teach atom types rather than geometry, similar to CheMeleon but with cleaner gradients.
+### Global float64 side-effect
 
-### MACE sets global dtype to float64
-`mace_off()` changes `torch.default_dtype` to float64 as a side effect. The MACEEncoder handles this by explicitly casting output to float32, but care is needed if combining with other components in the same process.
+`mace_off()` mutates `torch.default_dtype` to float64. `MACEEncoder` casts its output back to float32; care needed if combining with other float32-only components in the same process.
 
----
+### Weak conformer signal at Q1.2
 
-## Recommendations
+cos = 0.998 between conformers means even a perfect transformer would only see a small gradient pulling toward correct global conformation. Local geometry (bond lengths/angles) is captured well; torsion angles less so. If the goal is sharp conformational accuracy, MACE-REPA alone won't deliver it — see "auxiliary geometry loss" below.
 
-### 1. Try MACE for REPA training
-The MACEEncoder is implemented and tested ([encoders.py](../../../src/tabasco/src/tabasco/models/components/encoders.py), config: [mace.yaml](../../../src/tabasco/configs/experiment/qm9/mace.yaml)). Run a training comparison:
-- MACE-REPA vs CheMeleon-REPA vs no-REPA baseline
-- Monitor cosine similarity convergence speed (expect faster with dense MACE gradients)
+## Implications for REPA training
 
-### 2. Profile encoder speed
-Measure wall-clock time per training step with MACE vs CheMeleon encoder. If MACE is too slow, consider:
-- Pre-computing MACE embeddings (like `CachedChemPropEncoder`)
-- Caching MACE's graph construction (neighbor lists don't change for fixed coords)
+1. **Q2 saturation is the dominant concern.** Any MACE-REPA training run reporting `cos > 0.86` should be cross-checked against the random-input floor (0.858) before claiming alignment progress. Aim for `> 0.90` to demonstrate genuine learning.
+2. **MACE small may be too compressed.** 94% variance in 10 dims is extreme. MACE *medium* has more interaction layers and a larger feature dim — likely higher eff rank, possibly stronger conformer sensitivity. Worth profiling with the same probes if MACE-REPA results are mixed.
+3. **Auxiliary geometry loss.** Given the weak conformer signal, an explicit pairwise-distance / RMSD loss alongside MACE-REPA likely beats either alone for 3D accuracy.
+4. **Atom-type CE baseline.** Both MACE and CheMeleon hit Q1.1 probe = 1.000. If REPA's main contribution is teaching atom identity, a direct atom-type CE loss is much cheaper and likely matches the effect.
+5. **Cache aggressively.** MACE is rotation-invariant, so per-conformer embeddings precompute once; `CachedMACEEncoder` mirrors `CachedChemPropEncoder` and avoids the per-step encoder cost entirely.
 
-### 3. Consider MACE medium model
-The small model (192-dim) has very concentrated variance (94% in 10 dims). The medium model has more interaction layers and may provide richer representations with better conformer sensitivity. Worth testing if the small model's conformer signal is too weak.
+## Why CheMeleon was investigated first
 
-### 4. Auxiliary geometry loss
-Given the weak conformer signal, consider supplementing MACE-REPA with an explicit geometric loss (e.g., pairwise distance matching) for stronger 3D guidance.
-
-### 5. Atom-type classification baseline
-As recommended in the CheMeleon findings, compare MACE-REPA against a simple atom-type classification auxiliary loss. If REPA is primarily teaching atom identity (which both MACE and CheMeleon do well), the simpler approach may achieve similar benefits.
-
----
-
-## Additional Analyses (2026-04-02)
-
-**Script**: `encoder_profiling/tabasco/mace/probe_and_saturation.py`
-
-### Linear Probe: Atom-Type Discrimination
-
-| Metric | MACE | CheMeleon | GearNet (proteins) |
-|--------|------|-----------|-------------------|
-| Linear probe accuracy | **1.000** | 1.000 | 0.154 |
-| Within-type cosine sim | 0.706 +/- 0.202 | 0.245 | 0.189 +/- 0.139 |
-| Between-type cosine sim | 0.447 +/- 0.148 | 0.152 | 0.176 +/- 0.133 |
-| Delta (within - between) | **0.260** | 0.093 | 0.013 |
-
-MACE achieves 100% linear probe accuracy — atom type is perfectly recoverable from the embedding. The within-type vs between-type gap (0.260) is larger than CheMeleon's (0.093), meaning MACE discriminates atom types more strongly while also encoding chemical environment variation (within-type std of 0.202 shows atoms of the same element in different contexts get distinct embeddings).
-
-### Projector Saturation Test
-
-| Input condition | MACE | CheMeleon | GearNet |
-|----------------|------|-----------|---------|
-| Random (128-d) | **0.858** | ~0.43 | 0.461 |
-| Identity (one-hot) | **0.863** | — | 0.430 |
-
-**MACE has severe projector saturation.** A random MLP reaches 0.86 cosine similarity with MACE targets — even higher than CheMeleon's saturation (0.43). This is because MACE's 192-dim output with effective rank ~40 is extremely low-rank; a simple MLP can approximate the mean embedding structure with very little information.
-
-The atom-type one-hot input (0.863) performs nearly identically to random (0.858), confirming that the saturation is due to the low-rank target space, not the input information.
-
-**Implication for REPA**: Any MACE-REPA training that reports high cosine similarity should be interpreted with extreme caution. A cos_sim of 0.86 is achievable without any meaningful input — the transformer would need to exceed ~0.90 to demonstrate genuine structural alignment beyond what the projector provides for free.
-
-### Comparison with GearNet
-
-GearNet's projector saturation baseline is much lower (0.46 random) yet REPA training reaches 0.78 — a 0.32 gap that represents genuine structural learning. MACE's gap would be at most ~0.14 (from 0.86 to theoretical max ~1.0), leaving much less room for the transformer to contribute meaningful signal. This analysis retroactively validates the choice of GearNet over MACE for the protein REPA pipeline.
+CheMeleon was the original encoder; the 2026-03-18 investigation ([../chemeleon/FINDINGS.md](../chemeleon/FINDINGS.md)) identified Q1.2 (no 3D signal), Q3.1 (sparsity), and Q3.2 (projector bottleneck) as fundamental blockers. MACE-OFF was selected as the natural 3D-aware alternative; the head-to-head verdict and operational guidance live in [../FINDINGS.md](../FINDINGS.md).
