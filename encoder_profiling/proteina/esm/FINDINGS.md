@@ -1,14 +1,14 @@
 # ESM2-650M Per-Residue Encoder Characterization
 
-**Date**: 2026-04-29
+**Date**: 2026-05-04 (re-run with RankMe metric).
 **Encoder**: ESM2 650M (`facebook/esm2_t33_650M_UR50D`), `last_hidden_state` (layer 33), 1280-dim
 **Data**: 200 PDB train proteins (42,034 residues)
-**SLURM**: 28596016 (full sweep). Latest results: [results/20260429_135732/results.json](results/20260429_135732/results.json), [layerwise.csv](results/20260429_135732/layerwise.csv).
+**SLURM**: 28852949 (full sweep). Latest results: [results/20260504_182607/results.json](results/20260504_182607/results.json), [layerwise.csv](results/20260504_182607/layerwise.csv).
 **Cross-encoder context**: [../FINDINGS.md](../FINDINGS.md) — for the three-question framing (Q1 information, Q2 saturation, Q3 conditioning) used throughout.
 
 ## Summary
 
-ESM2-650M produces a dense, well-conditioned representation with near-perfect amino-acid-identity signal (Q1.1: 99.8% linear probe). It also has the **largest projector saturation gap** of any encoder we've profiled (Q2: +0.053) — but that gap is misleading. The mean embedding direction alone reaches 0.67 test cos-sim; AA identity adds another 0.05; what's left for the transformer to teach is mostly *sequence context*, not *3D structure* (ESM ignores coordinates by construction, so Q1.2 is N/A). The last layer (33) collapses via a final LayerNorm — norms drop 56× (555 → 9.8), eff rank halves (583 → 322) — so we are aligning the student against ESM's most compressed output. Layers 24–30 carry ~2× the effective rank with preserved identity and are the more informative REPA targets.
+ESM2-650M produces a dense, well-conditioned representation with near-perfect amino-acid-identity signal (Q1.1: 99.8% linear probe). It also has the **largest projector saturation gap** of any encoder we've profiled (Q2: +0.053) — but that gap is misleading. The mean embedding direction alone reaches 0.67 test cos-sim; AA identity adds another 0.05; what's left for the transformer to teach is mostly *sequence context*, not *3D structure* (ESM ignores coordinates by construction, so Q1.2 is N/A). The last layer (33) collapses via a final LayerNorm — norms drop 56× (555 → 9.8), RankMe by ~5% (1023 → 977 at L33; PR drops by similar margin) — but mid-network layers 24–30 carry ~50% larger participation ratios at much higher norms, and are the more informative REPA targets.
 
 ## Q1. What information does the encoder encode?
 
@@ -87,15 +87,15 @@ Fully dense, near-symmetric sign distribution. Standard Transformer + GELU outpu
 | Metric | Value |
 |--------|-------|
 | Output dim | 1280 |
-| Effective rank | **360.6** |
-| Participation ratio | 43.7 |
+| **RankMe** | **1030.5** |
+| Participation ratio | 43.3 |
 | Dims for 90% variance | 794 |
 | Dims for 95% variance | 993 |
 | Dims for 99% variance | 1 209 |
-| Top singular value | 454.6 |
-| S[0] / S[−1] | 2.0 × 10⁷ |
+| Top singular value (centered) | 456.1 |
+| S[0] / S[−1] (centered) | 2.1 × 10⁷ |
 
-361 / 1280 = ~28% of capacity. Plenty of headroom; not bottlenecked. Yet the layer-wise table below shows layers 24–30 reach ~660 — the last-layer LayerNorm halves the rank as well as collapsing norms.
+RankMe 1030 / 1280 = ~80% of capacity. Plenty of headroom; not bottlenecked. The layer-wise table below shows the L33 LayerNorm dips RankMe only ~5% below the L31 peak (1023 → 977) — under the old σ²-weighted metric this looked like a 45% drop, but it was an artefact of σ² weighting; the rank itself is mostly preserved. **The dramatic L33 effect is on norms, not rank.**
 
 ### 3.3 Norms & dead dimensions
 
@@ -111,51 +111,51 @@ Fully dense, near-symmetric sign distribution. Standard Transformer + GELU outpu
 
 ## Layer-wise analysis (33 transformer layers + token embedding)
 
-From [layerwise.csv](results/20260429_135732/layerwise.csv) (30 proteins, 7k residues):
+From [layerwise.csv](results/20260504_182607/layerwise.csv) (30 proteins, 7k residues):
 
-| Layer | Eff rank | Mean norm | AA probe |
-|------:|---------:|----------:|---------:|
-|     0 |     16.0 |      2.79 |    1.000 |
-|     1 |     45.1 |     94.27 |    1.000 |
-|     2 |    151.7 |    112.53 |    1.000 |
-|     3 |    289.1 |    118.59 |    1.000 |
-|     4 |    407.0 |    111.82 |    1.000 |
-|     5 |    502.6 |    103.87 |    1.000 |
-|     6 | **520.8** |     93.64 |    1.000 |
-|     7 |    457.6 |     91.59 |    1.000 |
-|    12 |    212.3 |    160.82 |    0.998 |
-|    16 |    332.8 |    262.57 |    0.998 |
-|    20 |    349.2 |    333.40 |    0.990 |
-|    24 |    465.9 |    368.43 |    0.981 |
-|    25 |    505.7 |    374.20 |    0.983 |
-|    26 |    545.6 |    384.16 |    0.985 |
-|    27 |    592.6 |    391.76 |    0.985 |
-|    28 |    637.9 |    399.61 |    0.990 |
-|    29 |    659.6 |    414.96 |    0.993 |
-|    30 |  **661.9** |    445.77 |    0.991 |
-|    31 |    651.9 |    488.48 |    0.995 |
-|    32 |    582.7 |    554.66 |    0.995 |
-| **33** (REPA target) | **321.7** | **9.79** | 0.998 |
+| Layer | RankMe | Mean norm | AA probe |
+|------:|-------:|----------:|---------:|
+|     0 |   19.1 |      2.79 |    1.000 |
+|     1 |   57.1 |     94.27 |    1.000 |
+|     2 |  255.8 |    112.53 |    1.000 |
+|     3 |  487.8 |    118.59 |    1.000 |
+|     4 |  658.5 |    111.82 |    1.000 |
+|     5 |  772.9 |    103.87 |    1.000 |
+|     6 |  836.0 |     93.64 |    1.000 |
+|     7 |**852.0**|    91.59 |    1.000 |
+|    12 |  562.2 |    160.82 |    0.998 |
+|    16 |  739.6 |    262.57 |    0.998 |
+|    20 |  803.2 |    333.40 |    0.990 |
+|    24 |  903.4 |    368.43 |    0.981 |
+|    25 |  926.2 |    374.20 |    0.983 |
+|    26 |  945.3 |    384.16 |    0.985 |
+|    27 |  969.9 |    391.76 |    0.985 |
+|    28 |  992.4 |    399.61 |    0.990 |
+|    29 | 1008.0 |    414.96 |    0.993 |
+|    30 | 1018.0 |    445.77 |    0.991 |
+|    31 |**1023.0**|  488.48 |    0.995 |
+|    32 | 1022.4 |    554.66 |    0.995 |
+| **33** (REPA target) | **976.6** | **9.79** | 0.998 |
 
 Three distinct phases:
 
-**Early (0–6)**: rank climbs from 16 (pure token lookup) to 521 at layer 6 as each block mixes in context. Norms saturate near 100. **Layer 6 is a local peak**.
+**Early (0–7)**: RankMe climbs from 19 (pure token lookup) to 852 at layer 7 as each block mixes in context. Norms saturate near 100.
 
-**Middle (7–14)**: rank dips and norms grow — a compression/refinement phase.
+**Middle (8–16)**: RankMe dips locally to ~562 at L12 and norms grow — a compression/refinement phase.
 
-**Late (15–32)**: rank recovers and climbs to **662 at layer 30**. Norms grow with depth. These are the richest representations: high-dim, high-magnitude, near-perfect AA identity preserved.
+**Late (17–32)**: RankMe climbs monotonically to **1023 at layer 31**, with norms growing to ~555. These layers carry the richest representations: high-dim, high-magnitude, near-perfect AA identity preserved.
 
-**Final collapse (33)**: a LayerNorm-like operation drops norms by 56× (555 → 9.79) and effective rank by ~45% (583 → 322). This is the layer we currently align REPA against.
+**Final compression (33)**: a LayerNorm-like operation drops norms by 56× (555 → 9.79). Under RankMe the dimensionality drop is modest (~5%, 1023 → 977) — the *direction structure* is largely preserved, but the *norm scale* is squeezed dramatically. This is the layer we currently align REPA against. Aligning against L24–L30 picks up similar RankMe with much richer norm structure.
 
 ## Why ESM is a problematic 3D-REPA target (synthesis across Q1/Q2/Q3)
 
 1. **Q1.2 is N/A by construction.** ESM has no view of the 3D structure being generated. Any cosine signal it provides is a function of `(sequence, position)` only — REPA cannot teach the student transformer about *geometry*.
 2. **The Q2 gap is mostly sequence-context.** Of the +0.053 projector gap, the headroom over `(AA-onehot, position)` is what we're really chasing. The student already has residue-type input; what's left is contextual sequence information ESM has internalised — useful but conformation-invariant.
-3. **The last layer is the worst layer (Q3 conditioning).** Layer 33 has roughly half the effective rank of layers 24–30 with norms compressed to ~10. We're aligning against a specialised output projection rather than the rich middle representations.
+3. **The last layer is a compressed projection (Q3 conditioning).** Layer 33's norms are 56× smaller than L32's, although under RankMe the rank itself only drops ~5% from peak. We're still aligning against a specialised output projection rather than the rich middle representations — the case is just that the compression is in *norm scale*, not in *direction count*.
 
 ## Recommendations
 
-1. **Switch `repa.encoder.layer` from `null` to layer 24, 28, or 30.** ~2× effective rank, identity preserved, richer representation. Cheapest experiment with a high prior on improvement.
+1. **Switch `repa.encoder.layer` from `null` to layer 24, 28, or 30.** Comparable RankMe (903–1018 vs L33's 977), AA identity preserved, much larger norms (370–446 vs L33's 9.8) — richer cosine signal per dimension. Cheapest experiment with a high prior on improvement.
 2. **Multi-layer alignment** (`layers: [6, 24, 30]`): different depths capture different scales. ESM has high inter-layer redundancy, so the additional loss noise should be small.
 3. **Sanity check the running val-cos.** If our ESM-REPA wandb runs plateau near 0.72, the saturation hypothesis is confirmed and REPA is doing nothing beyond AA recall. If they reach 0.78+, the transformer is finding usable additional signal.
 4. **Compare empirically against CA-GearNet REPA.** Despite ESM's larger projector gap, CA-GearNet may train better because the headroom there is *geometric*, not sequence-redundant — exactly what a 3D generative model needs.

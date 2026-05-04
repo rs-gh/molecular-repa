@@ -1,14 +1,14 @@
 # GearNet CA-only Encoder Characterization
 
-**Date**: 2026-04-29
+**Date**: 2026-05-04 (re-run with RankMe metric; Q1/Q2 numbers refreshed against same 200-protein sample)
 **Encoder**: CA-GearNet (`GearNetPerResidueEncoder`, 8 layers, 512-dim)
 **Data**: 200 PDB train proteins (42,034 residues)
-**SLURM**: 28596016 (A100, full sweep). Latest results: [results/20260429_135327/results.json](results/20260429_135327/results.json), [layerwise.csv](results/20260429_135327/layerwise.csv).
+**SLURM**: 28852949 (A100, full sweep). Latest results: [results/20260504_182028/results.json](results/20260504_182028/results.json), [layerwise.csv](results/20260504_182028/layerwise.csv).
 **Cross-encoder context**: [../FINDINGS.md](../FINDINGS.md) — for the three-question framing (Q1 information, Q2 saturation, Q3 conditioning) used throughout.
 
 ## Summary
 
-CA-GearNet is the strongest *3D-aware* REPA target in our shortlist. The representation is dense (Q3.1 OK), genuinely sensitive to sub-Angstrom geometry (Q1.2 strong), and protein-specific (Q1.4 Δ = 0.222). Eff rank 77.5/512 vs the random-init floor of 3.3 confirms pretraining adds substantial structure (Q3.2). The catch is at Q2: `mean_direction_cos = 0.425` and the best (`onehot+pos`) projector input only reaches 0.432 — a gap of just **+0.006**, much smaller than ESM2's +0.053. CA-GearNet is "usable" but the empirical REPA headroom may be narrow, and any wins should be expected in geometric realism (within-protein structure) rather than identity-conditioned generation.
+CA-GearNet is the strongest *3D-aware* REPA target in our shortlist. The representation is dense (Q3.1 OK), genuinely sensitive to sub-Angstrom geometry (Q1.2 strong), and protein-specific (Q1.4 Δ = 0.222). RankMe 256/512 (PR 38, 95% variance in 119 dims) vs the random-init floor (RankMe 100, PR 1.5, 95% in ~39 dims) confirms pretraining concentrates variance into a moderate number of equally-weighted directions (Q3.2). The catch is at Q2: `mean_direction_cos = 0.425` and the best (`onehot+pos`) projector input only reaches 0.434 — a gap of just **+0.009**, much smaller than ESM2's +0.053. CA-GearNet is "usable" but the empirical REPA headroom may be narrow, and any wins should be expected in geometric realism (within-protein structure) rather than identity-conditioned generation.
 
 ## Q1. What information does the encoder encode?
 
@@ -68,13 +68,12 @@ Strong protein specificity: residues in the same protein are 2.1× more similar 
 | Input condition          | Train cos | Test cos |
 |--------------------------|----------:|---------:|
 | Mean direction (no MLP)  |        —  | **0.425** |
-| Random 128-d             |    0.488  |    0.369  |
-| AA one-hot (21-d)        |    0.433  |    0.431  |
-| AA one-hot + position    |    0.433  | **0.432** |
+| Random 128-d             |    0.487  |    0.373  |
+| AA one-hot (21-d)        |    0.434  | **0.434** |
 
-**Saturation gap = best − mean-dir = +0.006.** This is the single most important number for REPA viability and is much smaller than ESM2's +0.053 (see [../FINDINGS.md](../FINDINGS.md)). Interpretation: identity + position alone reach almost everything the embedding offers; the encoder's *coordinate-derived* signal contributes little additional cosine alignment. Random init's gap is +0.003, so ≈ half of the trained encoder's "extra signal" is still being absorbed by the projector.
+**Saturation gap = best − mean-dir = +0.009.** This is the single most important number for REPA viability and is much smaller than ESM2's +0.053 (see [../FINDINGS.md](../FINDINGS.md)). Interpretation: identity alone reaches almost everything the embedding offers; the encoder's *coordinate-derived* signal contributes little additional cosine alignment. Random init's gap is +0.003, so ≈ a third of the trained encoder's "extra signal" is still being absorbed by the projector.
 
-The random-input row trains to 0.488 but only generalises to 0.369 — the train/test gap (0.12) means the MLP is partly memorising per-residue noise rather than generalising structure, consistent with the encoder's true variance being small.
+The random-input row trains to 0.487 but only generalises to 0.373 — the train/test gap (0.11) means the MLP is partly memorising per-residue noise rather than generalising structure, consistent with the encoder's true variance being small.
 
 This does not mean the encoder is useless — it means the *cosine-aligned projector* extracts most of what's available before the transformer ever sees it. The geometric signal that CA-GearNet does carry shows up most clearly in within-vs-between protein similarity (Q1.4) rather than in absolute cosine to individual residues.
 
@@ -98,17 +97,17 @@ LeakyReLU (slope 0.1) produces a fully dense representation with ~62% negative v
 | Metric | Value |
 |--------|-------|
 | Output dim | 512 |
-| Effective rank | **77.5** |
-| Participation ratio | 37.7 |
-| Dims for 90% variance | 78 |
-| Dims for 95% variance | 118 |
-| Dims for 99% variance | 273 |
-| Top singular value | 4 323 |
-| S[0] / S[−1] | 96.9 |
+| **RankMe** | **256.4** |
+| Participation ratio | 37.9 |
+| Dims for 90% variance | 79 |
+| Dims for 95% variance | 119 |
+| Dims for 99% variance | 274 |
+| Top singular value (centered) | 4 330 |
+| S[0] / S[−1] (centered) | 96.6 |
 
-> Effective rank uses entropy on normalised squared singular values (variance): `exp(−Σ p log p)` where `p = S²ᵢ / Σ S²`. Same definition used across all encoder profiles.
+> RankMe (Garrido et al. 2023, ICML) is computed on raw singular values of the *uncentered* embedding matrix: `exp(−Σ p log p)` with `p = σᵢ / Σσ`. PR `(Σλ)²/Σλ²` is computed on covariance eigenvalues (= σ² of the centered matrix; Gao et al. 2017). Both definitions are used consistently across all encoder profiles.
 
-77.5 / 512 = ~15% of capacity. The projector (512 → 512) has ample room. Compare to the random-init floor of **3.3 / 512** — pretraining is contributing ~23× more usable directions. This is the conditioning metric that most clearly distinguishes trained vs random and tracks the (small but positive) Q2 gap.
+RankMe 256.4 / 512 = ~50% of capacity. The projector (512 → 512) has ample room. Compare to the random-init floor of **RankMe 99.8 / 512** — pretraining is contributing ~2.6× the RankMe directions but ~25× the participation ratio (PR 38 vs 1.5). The PR ratio is the right number to point at when you want "pretraining concentrates variance" — RankMe under-states the gap because it weights raw σ rather than σ², so it's less sensitive to where in the spectrum the variance sits.
 
 ### 3.3 Norms & dead dimensions
 
@@ -124,27 +123,27 @@ Well-conditioned: every dimension active, narrow std range (1.8× ratio), per-AA
 
 ## Layer-wise representation
 
-From [layerwise.csv](results/20260429_135327/layerwise.csv) (30 proteins, 8 layers):
+From [layerwise.csv](results/20260504_182028/layerwise.csv) (30 proteins, 8 layers):
 
-| Layer | Eff rank | Mean norm | Sparsity |
-|------:|---------:|----------:|---------:|
-|     0 |     62.0 |     19.77 |     0.00 |
-|     1 |     61.2 |     21.66 |     0.00 |
-|     2 |     62.0 |     25.64 |     0.00 |
-|     3 |     69.8 |     30.89 |     0.00 |
-|     4 |     78.8 |     37.12 |     0.00 |
-|     5 |     86.4 |     44.64 |     0.00 |
-|     6 |   **87.3** |     55.48 |     0.00 |
-|     7 |     68.2 |     78.85 |     0.00 |
+| Layer | RankMe | Mean norm | Sparsity |
+|------:|-------:|----------:|---------:|
+|     0 |  145.4 |     19.77 |     0.00 |
+|     1 |  193.1 |     21.66 |     0.00 |
+|     2 |  225.6 |     25.64 |     0.00 |
+|     3 |  247.4 |     30.89 |     0.00 |
+|     4 |  259.6 |     37.12 |     0.00 |
+|     5 |**264.9**|    44.64 |     0.00 |
+|     6 |  262.1 |     55.48 |     0.00 |
+|     7 |  239.2 |     78.85 |     0.00 |
 
-Effective rank rises through depth and **peaks at layer 6** (87.3), then drops at the final layer (68.2) — the readout compresses information into a more rotation-aligned subspace. Norms grow monotonically (residual accumulation, ~4× from L0 to L7); cosine similarity normalises this away. **Implication**: aligning REPA to layer 6 instead of layer 7 may give more discriminative gradients; worth a brief comparison run.
+RankMe rises through depth and **peaks at layer 5** (264.9), then drops slightly at layers 6–7 (the readout compresses information into a more rotation-aligned subspace). Norms grow monotonically (residual accumulation, ~4× from L0 to L7); cosine similarity normalises this away. **Implication**: aligning REPA to layer 5 instead of layer 7 may give more discriminative gradients; worth a brief comparison run.
 
 ## Implications for REPA training
 
 1. **What REPA can teach with CA-GearNet:** geometric / protein-context information (Q1.4 Δ = 0.222 vs random 0.035). It cannot teach residue identity (Q1.1 — the encoder doesn't encode it).
-2. **Tight projector saturation (Q2 gap +0.006):** the alignment loss may saturate quickly; expect modest cosine improvements during training. Consider lowering `lambda_repa` (e.g. 0.25) to avoid stealing gradient bandwidth from the flow-matching objective.
-3. **Multi-layer alignment** (`layers: [2, 4, 6]`) plausibly helps spread the signal across the network — Q3.2 eff rank rises monotonically through depth.
+2. **Tight projector saturation (Q2 gap +0.009):** the alignment loss may saturate quickly; expect modest cosine improvements during training. Consider lowering `lambda_repa` (e.g. 0.25) to avoid stealing gradient bandwidth from the flow-matching objective.
+3. **Multi-layer alignment** (`layers: [2, 4, 6]`) plausibly helps spread the signal across the network — Q3.2 RankMe rises monotonically through depth and peaks mid-network.
 4. **Auxiliary AA-type loss** could complement REPA cleanly: CA-GearNet doesn't carry residue identity (Q1.1), so a small CE loss on residue-type prediction from hidden states adds an orthogonal signal.
-5. **Try aligning to layer 6 not 7:** rank/discrimination peaks one layer earlier than the standard readout.
+5. **Try aligning to layer 5 not 7:** RankMe peaks two layers before the standard readout.
 
 For why CA-GearNet is preferred over MC-GearNet-Edge or PW-GearNet, and how it compares head-to-head against ESM2, see [../FINDINGS.md](../FINDINGS.md).

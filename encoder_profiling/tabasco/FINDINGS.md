@@ -22,7 +22,7 @@ The diagnostic value lives in the **gap between Q1 and Q2 = REPA headroom**, mod
                     │
         ┌───────────┴───────────┐
         ▼                       ▼
-   eff rank ↑          atom-type / molecule Δ ↑
+   RankMe / PR ↑       atom-type / molecule Δ ↑
         │                       │
         ▼                       │
   mean-dir cos ↓                │
@@ -44,15 +44,17 @@ Caveat: a large gap alone is necessary but not sufficient. CheMeleon's projector
 
 ## Headline comparison
 
-| Encoder           | Embed dim | Eff rank (entropy) | Sparsity | Atom probe acc | Atom-type Δ within−between | 3D-aware? | Mean-dir | Best projector | **Gap**    |
-|-------------------|----------:|-------------------:|---------:|---------------:|---------------------------:|:---------:|---------:|---------------:|-----------:|
-| **CheMeleon** (2048-d) | 2048 | 138 | 93.8% | 1.000 | 0.093 (QM9) | **No** (2D-only) | ~0.43 | 0.471 | **+0.04**  |
-| **MACE-OFF small** (192-d) | 192 | 40.6 | 0.0% | 1.000 | 0.260 | Yes (weak) | ~0.86 | 0.863 | **+0.005** |
+| Encoder           | Embed dim | Rank (note)                          | Sparsity | Atom probe acc | Atom-type Δ within−between | 3D-aware? | Mean-dir | Best projector | **Gap**    |
+|-------------------|----------:|--------------------------------------|---------:|---------------:|---------------------------:|:---------:|---------:|---------------:|-----------:|
+| **CheMeleon** (2048-d) | 2048 | ~138 (entropy on σ², stale)¹    | 93.8% | 1.000 | 0.093 (QM9) | **No** (2D-only) | ~0.43 | 0.471 | **+0.04**  |
+| **MACE-OFF small** (192-d) | 192 | RankMe 40.6                | 0.0% | 1.000 | 0.260 | Yes (weak) | ~0.86 | 0.863 | **+0.005** |
+
+¹ The CheMeleon `investigate.py` was switched to also emit RankMe on 2026-05-04, but the encoder hasn't been re-run since. The 138 number is `exp(H(p))` with `p = σᵢ² / Σσ²` (the *old* proteina convention). Not directly comparable to MACE's 40.6 (which is RankMe = `exp(H(p))` with `p = σᵢ / Σσ`); a CheMeleon re-run is a tracked follow-up.
 
 Columns map to the three questions:
 - **Q1 evidence**: Atom probe acc (Q1.1), atom-type Δ within−between (Q1.3 — same-element / different-environment discrimination), 3D-aware? (Q1.2). Per-encoder files break Q1 down further (molecule-level identity Q1.4, conformer sensitivity, etc.).
 - **Q2 evidence**: Mean-dir, Best projector, **Gap = best − mean-dir** (a structural property of the encoder).
-- **Q3 evidence**: Eff rank (entropy), Sparsity. Per-encoder files add norms, dead dims, and the threshold-based eff-rank for cross-checking.
+- **Q3 evidence**: Rank (RankMe for MACE; entropy-on-σ² for CheMeleon until re-run), Sparsity. Per-encoder files add norms, dead dims, and the threshold-based rank for cross-checking.
 
 ### What the "Gap" column is — and isn't
 
@@ -75,7 +77,7 @@ Workflow: the table tells you which encoders *could* offer headroom; the trainin
 | Encoder       | Verdict      | Deciding metric(s) |
 |---------------|--------------|--------------------|
 | **CheMeleon** | **unusable as a 3D-REPA target** | **Q1.2 catastrophic**: identical embeddings for all conformers (L2 = 0.000) — REPA cannot teach 3D geometry. **Q3.1 catastrophic**: 93.8% sparsity (ReLU) — cosine operates over ~130 active dims of 2048, gradients dominated by activation pattern. **Q3.2**: 500 dims for 90% variance vs 128-d projector input — bottleneck. **Q1.1 strong** (probe 1.000) but trivial in QM9 (max 9 atoms). **Q2 floor 0.43 with gap +0.04** — the gap exists, but it's 2D bond-graph context, conformation-invariant, useless for 3D guidance. |
-| **MACE-OFF small** | **borderline; saturated** | **Q1.2 weak-positive**: cos 0.998 between conformers — geometry-aware but the 3D signal is small (local environments dominate, MACE was trained on energies). **Q3 clean**: 0% sparsity, dense gradients, eff rank 40.6 fits projector easily, no dead dims, no norm explosion. **Q1.1 / Q1.3 strong**: probe 1.000, atom-type Δ = 0.260 (3× CheMeleon). **Q2 saturated**: mean-dir floor ≈ 0.86, gap +0.005. Random and atom-onehot inputs both reach ~0.86 — *the projector saturates without any input signal*. Even a perfect transformer can lift cosine ≤ 0.14 above the floor; most of that headroom is local geometry, not global conformation. |
+| **MACE-OFF small** | **borderline; saturated** | **Q1.2 weak-positive**: cos 0.998 between conformers — geometry-aware but the 3D signal is small (local environments dominate, MACE was trained on energies). **Q3 clean**: 0% sparsity, dense gradients, RankMe 40.6 fits projector easily, no dead dims, no norm explosion. **Q1.1 / Q1.3 strong**: probe 1.000, atom-type Δ = 0.260 (3× CheMeleon). **Q2 saturated**: mean-dir floor ≈ 0.86, gap +0.005. Random and atom-onehot inputs both reach ~0.86 — *the projector saturates without any input signal*. Even a perfect transformer can lift cosine ≤ 0.14 above the floor; most of that headroom is local geometry, not global conformation. |
 
 ## Why no random-init baseline (cf. proteina)
 
@@ -92,3 +94,49 @@ Reading across the two encoders:
 5. **The MACE saturation is a calibration warning.** Any MACE-REPA training that reports `cos > 0.86` is hitting the projector floor — it does not by itself indicate the transformer learned anything. Genuine learning requires `training_cos > 0.86 + ε` and ideally `> 0.90`.
 
 For per-encoder methodology, raw numbers, and historical context, see the per-encoder FINDINGS files linked above.
+
+## Reframing through the iREPA lens (Singh et al. 2025)
+
+Singh et al. ("What matters for Representation Alignment", arXiv:2512.10794) studied 27 vision encoders as REPA targets and found that **spatial structure** — pairwise patch-token cosine $S_{ij}$ tracking object/region relationships — correlates with generation FID at $|r| > 0.85$, while **global information** (ImageNet linear-probe accuracy) correlates only at $|r| = 0.26$. Their fix (iREPA) is a 4-line change: replace the per-token MLP projector with a `Conv2d(k=3, p=1)` and add instance-norm across the spatial dimension. The same recipe gives consistent gains across all 27 encoders.
+
+That framing is a useful second pass over the verdicts above. The Q1/Q2/Q3 rubric still does the work — the iREPA lens just gives a sharper *causal* story for what the headroom numbers were measuring.
+
+### Three concepts, not two
+
+Mapping our probes onto the paper's two axes requires being careful — we have measurements for at least three distinct things, and only two of them line up with the paper's axes:
+
+- **Global info** (paper's concept): a property of the *whole input* read from a pooled vector — e.g. "what class is this image" via linear probe. Our closest analogue is the **within-vs-between molecule cosine Δ**: do per-atom embeddings agree across atoms that they belong to the same molecule? Higher Δ ⇒ more pooled whole-input signal.
+- **Per-token information richness** (NOT one of the paper's axes): can a linear probe read each token's own identity off its embedding? Our **atom-ID probe** measures this. A token can be highly individuated (high probe accuracy) without carrying any whole-input signal and without its similarities to other tokens being structurally meaningful.
+- **Spatial structure** (paper's concept): does the *pairwise* $S_{ij}$ between tokens within one molecule align with known structural relationships (ring co-membership, bond-graph distance, 3D distance)?
+
+Per-token richness and spatial structure are easy to confuse but distinct: an encoder can have near-perfect per-token atom-ID readout while its $S_{ij}$ is dominated by "are these two atoms the same element" — a categorical relation that's mostly orthogonal to 3D geometry. So high per-token richness does not buy spatial structure.
+
+### Reframed table
+
+| Encoder | Global info (within-vs-between Δ) | Per-token richness | Spatial structure | REPA verdict |
+|---|---|---|---|---|
+| **CheMeleon** | Modest (Δ 0.093 QM9 / 0.044 GEOM) | High (atom-ID probe 1.000) | **None** (conformer L2 = 0.000; 2D bond-graph; 93.8% sparsity; projector saturates ~0.47 from random) | Unusable |
+| **MACE-OFF small** | Not directly probed (see follow-up below) | High (atom-ID probe 1.000; same-element-different-env Δ 0.260) | **Weak-positive** (conformer cos 0.998 — sensitive but tiny; dense; RankMe 40.6/192) | Saturated, gap +0.005 |
+
+### Reading the table
+
+- **Spatial structure tracks REPA viability — but neither encoder has much of it.** CheMeleon has none (2D-only by construction), MACE has the right kind but very little magnitude. The paper's central claim ("spatial structure is what matters") predicts both should be poor REPA targets, which matches our verdicts.
+- **Per-token richness does not track viability.** Both encoders score atom-ID probe 1.000 (trivial in QM9, but still). That signal is uninformative about REPA quality — it's per-atom self-identity, not between-atom relational signal.
+- **Global info is barely above random.** CheMeleon's modest mol-level Δ is consistent with "encoder distinguishes molecules a little, but not via geometric structure." MACE wasn't directly measured here.
+- **MACE has the right *kind* of signal, just very little magnitude.** Conformer cos 0.998 means almost-no variation across conformers; the framing predicts MACE-large or any 3D encoder with stronger conformer sensitivity should do better.
+
+### What this changes for picks
+
+- Per-token atom-ID probes and pooled mol-level Δ are both essentially uninformative about REPA target quality. The thing to evaluate is *between*-atom relational structure: does $S_{ij}$ track ring co-membership, bond-graph distance, 3D contact?
+- This de-prioritises "bigger CheMeleon" — adding per-token richness or 2D context won't help. It prioritises 3D-aware encoders with strong conformer sensitivity, dense per-atom embeddings, and high RankMe — i.e. the MACE direction, but with stronger 3D signal magnitude.
+- The iREPA projector recipe (replace `src/tabasco/` REPA's per-token projector MLP with a neighbour-mixing layer over the molecular graph + axis-instance-norm across atoms) is a low-risk follow-up the framing predicts should help. Out of scope here, kept on the radar.
+
+### What's missing if we wanted to verify the paper's claim quantitatively
+
+The paper's spatial-structure axis is **per-molecule pairwise $S_{ij}$ binned by a known structural relation** — for us: bond-graph distance, ring co-membership, 3D Euclidean distance, functional-group co-membership. None of these are computed today. The closest existing measurement is the same-element-different-env Δ (0.260 for MACE, 0.093 for CheMeleon) which is one slice of the relational structure but not directly comparable to the paper's metrics.
+
+Adding it is ~100 lines reusing existing precomputed embeddings. The deliverable would be a two-axis scatter — best relational-$S_{ij}$ delta on x, REPA headroom on y, one point per encoder — i.e. the paper's correlation plot rebuilt in our domain. Out of scope for this commit.
+
+### Aside: filling the one missing global-info number
+
+MACE's mol-level within-vs-between Δ is the only directly measurable cell in the table that we don't have. Easy follow-up: ~30-line script over existing precomputed embeddings, no encoder rerun. Not blocking — the paper argues this column is approximately uninformative for REPA target quality regardless.

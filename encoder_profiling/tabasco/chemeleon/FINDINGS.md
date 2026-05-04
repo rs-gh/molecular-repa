@@ -102,13 +102,14 @@ CheMeleon uses ReLU at the output, so 93.8% of values are exactly zero. Cosine s
 
 ### 3.2 Effective dimensionality & singular values
 
-> **Definition note**: This page reports effective rank using two definitions for cross-checking. (a) **Threshold-based** = count of singular values exceeding 1% of S₀. (b) **Entropy-based** = exp(−Σ p log p) where p = Sᵢ² / Σ S² (the definition used everywhere in the proteina probes and the [cross-encoder summary](../FINDINGS.md)).
+> **Definition note (stale)**: This page's effective-rank numbers were computed under two definitions: (a) **Threshold-based** = count of singular values exceeding 1% of S₀; (b) **Entropy-based on σ²** = exp(−Σ p log p) where p = Sᵢ² / Σ S². The proteina probes were switched to **RankMe** (Garrido et al. 2023, ICML — entropy on raw σ of the *uncentered* matrix) on 2026-05-04, so neither of the numbers below is directly comparable to the cross-encoder [proteina FINDINGS](../../proteina/FINDINGS.md) anymore. The CheMeleon `investigate.py` was updated 2026-05-04 to also emit RankMe, but **has not yet been re-run**; the numbers below stand under their original definitions until a fresh sweep lands.
 
 | Metric | QM9 | GEOM |
 |--------|-----|------|
 | Output dim | 2048 | 2048 |
 | Effective rank (1% threshold) | 500 | 500 |
-| Effective rank (entropy) | ~138 | ~138 |
+| Effective rank (entropy on σ², old) | ~138 | ~138 |
+| RankMe (Roy–Vetterli on raw σ) | *pending re-run* | *pending re-run* |
 | Participation ratio | 58.5 | 50.0 |
 | Dims for 90% variance | ~100 | ~100 |
 | Dims for 99% variance | ~300 | ~300 |

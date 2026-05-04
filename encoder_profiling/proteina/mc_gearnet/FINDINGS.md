@@ -1,17 +1,17 @@
 # MC-GearNet-Edge Per-Residue Encoder Characterization
 
-**Date**: 2026-04-29
+**Date**: 2026-05-04 (re-run with RankMe metric).
 **Encoder**: MC-GearNet-Edge (`MCGearNetEdgePerResidueEncoder`, 6 layers, 3072-dim concat output)
 **Checkpoint**: `mc_gearnet_edge.pth` (Zenodo 7593637)
 **Data**: 200 PDB train proteins (42,034 residues)
-**SLURM**: 28596016 (full sweep). Latest results: [results/20260429_135919/results.json](results/20260429_135919/results.json), [layerwise.csv](results/20260429_135919/layerwise.csv).
+**SLURM**: 28852949 (full sweep). Latest results: [results/20260504_182918/results.json](results/20260504_182918/results.json), [layerwise.csv](results/20260504_182918/layerwise.csv).
 **Cross-encoder context**: [../FINDINGS.md](../FINDINGS.md) — for the three-question framing (Q1 information, Q2 saturation, Q3 conditioning) used throughout.
 
 ## Summary
 
-**MC-GearNet-Edge is unusable as a REPA target in its current form.** This is a **Q3 conditioning catastrophe** that propagates downstream: the `concat_hidden=True` output concatenates 6 BatchNorm + residual layers whose mean L2 norms grow ~17,500× from layer 0 (82) to layer 5 (1.45 × 10⁶). Layer 5 dominates the concatenated 3072-d output; the whole representation collapses onto a 1-D subspace (effective rank **1.1 / 3072**, top direction carries ≥95% of variance). The Q2 mean-direction baseline reaches **0.855** test cos-sim, and no projector input (random, AA one-hot, +position) beats it by more than 0.001 — the saturation gap is **negative** (−0.002).
+**MC-GearNet-Edge is unusable as a REPA target in its current form.** This is a **Q3 conditioning catastrophe** that propagates downstream: the `concat_hidden=True` output concatenates 6 BatchNorm + residual layers whose mean L2 norms grow ~17,700× from layer 0 (82) to layer 5 (1.45 × 10⁶). Layer 5 dominates the concatenated 3072-d output; the whole representation collapses onto a near-1-D subspace (RankMe **12.0 / 3072**, PR **1.04**, **95% of variance in 1 dimension**). The Q2 mean-direction baseline reaches **0.855** test cos-sim, and no projector input (random, AA one-hot, +position) beats it by more than 0.003 — the saturation gap is **+0.002**, an order of magnitude smaller than CA-GearNet's +0.009 and 25× smaller than ESM2's +0.053.
 
-The Q1 evidence supports the same diagnosis: the residue-shuffle test (Q1.1, coords fixed, labels permuted) yields cos = 0.983 — residue identity barely modulates the embedding despite being fed in as node features. Q1.2 geometry is preserved in the sense that 0.5 Å noise drops cos only to 0.81, but the gradient signal sits in the 1-D exploding subspace and carries almost no information to align against.
+The Q1 evidence supports the same diagnosis: the residue-shuffle test (Q1.1, coords fixed, labels permuted) yields cos = 0.983 — residue identity barely modulates the embedding despite being fed in as node features. Q1.2 geometry is preserved in the sense that 0.5 Å noise drops cos only to 0.81, but the gradient signal sits in the near-1-D exploding subspace and carries almost no information to align against.
 
 ## Q1. What information does the encoder encode?
 
@@ -19,14 +19,14 @@ The Q1 evidence supports the same diagnosis: the residue-shuffle test (Q1.1, coo
 
 | Metric | Value |
 |--------|-------|
-| Linear probe accuracy | 15.0% |
+| Linear probe accuracy | 14.6% |
 | Mean cos between AA centroids | **0.9999** |
 | Within-type cos | 0.770 ± 0.365 |
 | Between-type cos | 0.729 ± 0.394 |
 | Δ (within − between) | **+0.041** |
 | Residue-shuffle cos (coords fixed, labels permuted) | **0.983 ± 0.005** |
 
-Per-AA centroids have pairwise cos 0.9999 — they all point in the same direction. The within/between Δ of +0.04 swims inside the ±0.4 standard deviations: it is not a meaningful discrimination signal. Probe accuracy 15.0% is comparable to CA-GearNet's 13.7% — but CA-GearNet doesn't see residue types at all.
+Per-AA centroids have pairwise cos 0.9999 — they all point in the same direction. The within/between Δ of +0.04 swims inside the ±0.4 standard deviations: it is not a meaningful discrimination signal. Probe accuracy 14.6% is comparable to CA-GearNet's 13.7% — but CA-GearNet doesn't see residue types at all.
 
 **Residue-shuffle cos = 0.983 is the most damning Q1 finding.** MC-GearNet-Edge takes residue identity as its node features (one-hot → 21 dims), and yet permuting the labels within a protein barely moves the embedding. Whatever information the network transmits is neither from *which* residues nor from *where* they are.
 
@@ -71,11 +71,10 @@ Two of four AAs show *negative* delta (between > within), again consistent with 
 | Input condition          | Train cos | Test cos |
 |--------------------------|----------:|---------:|
 | Mean direction (no MLP)  |        —  | **0.855** |
-| Random 128-d             |    0.860  |    0.852  |
-| AA one-hot (21-d)        |    0.860  |    0.853  |
-| AA one-hot + position    |    0.860  | **0.853** |
+| Random 128-d             |    0.864  |    0.857  |
+| AA one-hot (21-d)        |    0.862  | **0.858** |
 
-**Saturation gap = best − mean-dir = −0.002.** The projector cannot beat the zero-parameter mean-direction baseline. Three radically different inputs (random noise, AA one-hot, AA one-hot + position) all land within 0.001 of each other and below the constant baseline. A 3-layer MLP with 512 hidden has hundreds of thousands of parameters and 300 epochs to beat a constant — and cannot. The target is a ray in 3072-d; any prediction that points down that ray wins, regardless of input.
+**Saturation gap = best − mean-dir = +0.002.** The projector barely beats the zero-parameter mean-direction baseline. Different inputs (random noise, AA one-hot) land within 0.001 of each other and only ~0.003 above the constant baseline. A 3-layer MLP with hundreds of thousands of parameters and 300 epochs essentially recovers the constant prediction. The target is a ray in 3072-d; any prediction that points down that ray wins, regardless of input.
 
 This is the textbook Q3 → Q2 propagation: rank collapse + norm explosion → variance concentrated on one direction → projector matches by pointing along that ray → REPA has no operating budget.
 
@@ -100,13 +99,13 @@ Values are enormous — max 5.2 × 10⁷. Fully dense, but "dense" is meaningles
 | Metric | Value |
 |--------|-------|
 | Output dim | 3072 |
-| Effective rank | **1.1** |
-| Participation ratio | 1.0 |
+| **RankMe** | **12.0** |
+| Participation ratio | **1.04** |
 | Dims for 90% / 95% / 99% variance | **1 / 1 / 2** |
-| Top singular value | 4.3 × 10⁸ |
-| S[0] / S[−1] | **4.3 × 10²⁰** |
+| Top singular value (centered) | 4.3 × 10⁸ |
+| S[0] / S[−1] (centered) | **4.3 × 10²⁰** |
 
-**Catastrophic rank collapse.** Eff rank 1.1 / 3072 means the representation occupies essentially a single direction. S[0]/S[−1] = 10²⁰ is numerical-precision territory — layer 5 (see layer-wise table) accounts for nearly all variance because its norm is ~60× the sum of layers 0–4.
+**Catastrophic rank collapse.** RankMe 12.0 / 3072 (~0.4% of full rank), PR 1.04 (essentially 1 effective component), and 95% of variance in 1 dimension. The representation occupies a near-1-D subspace; the long tail of small singular values that pushes RankMe above 1 doesn't carry any meaningful variance. S[0]/S[−1] = 10²⁰ is numerical-precision territory — layer 5 (see layer-wise table) accounts for nearly all variance because its norm is ~60× the sum of layers 0–4.
 
 ### 3.3 Norms & dead dimensions
 
@@ -126,22 +125,22 @@ The three Q3 probes co-fail in a single coherent failure mode: `concat_hidden=Tr
 
 ## Layer-wise representation
 
-The final output is the **concatenation** of all 6 hidden layers (`concat_hidden=True`), each 512-dim → 3072-d. From [layerwise.csv](results/20260429_135919/layerwise.csv):
+The final output is the **concatenation** of all 6 hidden layers (`concat_hidden=True`), each 512-dim → 3072-d. From [layerwise.csv](results/20260504_182918/layerwise.csv):
 
-| Layer | Dim | Eff rank | Mean norm |
-|------:|----:|---------:|----------:|
-|     0 | 512 |      5.6 |     **82.0** |
-|     1 | 512 |      9.9 |        36.0 |
-|     2 | 512 |      7.1 |       264.7 |
-|     3 | 512 |      5.0 |      1 380.3 |
-|     4 | 512 |      5.2 |     **24 379.8** |
-|     5 | 512 |    **1.1** | **1 451 946.8** |
+| Layer | Dim | RankMe | Mean norm |
+|------:|----:|-------:|----------:|
+|     0 | 512 |   51.7 |     **82.0** |
+|     1 | 512 | **79.6** |       36.0 |
+|     2 | 512 |   47.8 |       264.7 |
+|     3 | 512 |   42.3 |      1 380.3 |
+|     4 | 512 |   34.7 |     **24 379.8** |
+|     5 | 512 |  **9.6** | **1 451 946.8** |
 
-**Layer-norm timeline**: 82 → 36 → 265 → 1 380 → 24 380 → 1 451 947. Layer 5 / layer 0 = ~17 700×; layer 5 / Σ(layers 0–4) ≈ 56×. When concatenated, layer 5's values — collapsed to ~1-D — dwarf everything.
+**Layer-norm timeline**: 82 → 36 → 265 → 1 380 → 24 380 → 1 451 947. Layer 5 / layer 0 = ~17 700×; layer 5 / Σ(layers 0–4) ≈ 56×. When concatenated, layer 5's values — collapsed to RankMe ≈ 10 — dwarf everything.
 
-**Effective rank** collapses from 9.9 (layer 1) to 1.1 (layer 5). Each successive layer projects onto fewer directions with larger magnitude. This is not healthy representation evolution; it is the BN+residual chain amplifying and rotating a collapsing attractor.
+**RankMe** collapses from 80 (layer 1) to 10 (layer 5). Each successive layer projects onto fewer directions with larger magnitude. This is not healthy representation evolution; it is the BN+residual chain amplifying and rotating a collapsing attractor.
 
-In isolation, **layer 0 or layer 1** (norms 82 and 36, eff rank 5–10, 0% sparsity, rotation-invariant) would be a usable — if low-rank — REPA target. The problem is the concat: it exposes only the worst slab.
+In isolation, **layer 0 or layer 1** (norms 82 and 36, RankMe 50–80 / 512, 0% sparsity, rotation-invariant) would be a usable REPA target — moderate rank, sane norms. The problem is the concat: it exposes only the worst slab.
 
 ## Implications for REPA training
 
@@ -151,9 +150,9 @@ The representation is 1-dimensional with exploding norms. No projector can fit i
 
 ### Possible fixes (not tested here)
 
-1. **Use a single intermediate layer, not the concat.** Layer 0 or 1 has eff rank 5–10 and norms O(100). Usable, low-rank REPA target.
+1. **Use a single intermediate layer, not the concat.** Layer 0 or 1 has RankMe 50–80 / 512 and norms O(100). Usable REPA target.
 2. **LayerNorm the per-layer slabs before concat.** Standard protocol for `concat_hidden` encoders; absent here.
-3. **z-score the encoder output** inside the REPA loss (running mean/std). Addresses the symptom but not the collapse — eff rank 1.1 means 1 informative dim out of 3072 even after standardisation.
+3. **z-score the encoder output** inside the REPA loss (running mean/std). Addresses the symptom but not the collapse — RankMe 12 / 3072 with 95% of variance in 1 dim means standardisation alone cannot recover meaningful direction structure.
 4. **Drop MC-GearNet-Edge.** CA-GearNet gives more usable REPA signal; MC's extra features (edge types, angle bins, residue identity) do not translate into representation. The simplest conclusion is that this checkpoint's output isn't designed to be consumed raw.
 
 ### Implication for `gearnet_mc_edge` config variants in the tree
@@ -163,5 +162,5 @@ The representation is 1-dimensional with exploding norms. No projector can fit i
 ## Caveats
 
 - 200 proteins, randomised seed 0. Same sample as the other encoders so comparisons are apples-to-apples.
-- SVD/probe subsampled to 30k residues for memory. Qualitative result (eff rank ≈ 1) is robust to sample size; the collapse is structural.
+- SVD/probe subsampled to 30k residues for memory. Qualitative result (PR ≈ 1, 95% variance in 1 dim) is robust to sample size; the collapse is structural.
 - Linear probe did not converge (`lbfgs` hit max_iter=1000). Scaling features first would likely help, but the probe is near chance anyway.

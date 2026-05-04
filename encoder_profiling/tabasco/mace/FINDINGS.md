@@ -9,7 +9,7 @@
 
 ## Summary
 
-MACE-OFF small is the cleanest *3D-aware* REPA target available off-the-shelf in our shortlist, and it fixes every Q3 conditioning problem CheMeleon has: **0% sparsity** (vs CheMeleon 93.8%), eff rank 40.6 fits the projector with room to spare, no dead dims, no norm explosion. Q1.1 and Q1.3 are strong (probe 1.000, atom-type Δ = 0.260 — 3× CheMeleon).
+MACE-OFF small is the cleanest *3D-aware* REPA target available off-the-shelf in our shortlist, and it fixes every Q3 conditioning problem CheMeleon has: **0% sparsity** (vs CheMeleon 93.8%), RankMe 40.6 fits the projector with room to spare, no dead dims, no norm explosion. Q1.1 and Q1.3 are strong (probe 1.000, atom-type Δ = 0.260 — 3× CheMeleon).
 
 The catch is at Q2. The mean-direction floor is ~0.86 — *random inputs alone reach this number* — and the projector gap above the floor is only ~+0.005. The Q1.2 conformer signal is real but small (cos 0.998 between conformers): MACE-OFF was trained on energies, and local chemistry dominates the energy, so global conformation has weak influence on embeddings. Net: **borderline; saturated**. REPA against MACE has very little operating budget — any cosine ≥ 0.86 reported during training is likely the projector floor, not learning.
 
@@ -79,7 +79,7 @@ MLP from each input condition to the MACE embedding, cosine loss (`probe_and_sat
 
 **Saturation gap = atom-onehot − random ≈ +0.005.** Two facts to read together:
 
-1. **The floor is enormous.** Random inputs reach 0.858 — i.e., the projector emits something close to the mean direction of the embedding distribution and gets free 0.86 cosine. This is consistent with Q3.2: eff rank 40.6 means the embedding manifold is low-dim, the mean direction captures most of it.
+1. **The floor is enormous.** Random inputs reach 0.858 — i.e., the projector emits something close to the mean direction of the embedding distribution and gets free 0.86 cosine. This is consistent with Q3.2: RankMe 40.6 means the embedding manifold is low-dim, the mean direction captures most of it.
 2. **Atom identity barely moves the needle.** From 0.858 → 0.863 with atom-type input. The encoder's variance off the mean direction is so tight that even informative input can't extract much more.
 
 **Implication for REPA training**: any reported `cos_sim > 0.86` is achievable without input information. Genuine learning requires `cos > 0.86 + ε`. The theoretical ceiling (1.0) leaves ~0.14 of room; most of that is local geometry from Q1.2; the headroom for the transformer to do useful work is tiny.
@@ -99,16 +99,16 @@ MACE has **no sparsity** — output values follow a roughly Gaussian distributio
 
 ### 3.2 Effective dimensionality & singular values
 
-> **Definition note**: Eff rank below uses entropy on normalised squared singular values (`exp(−Σ p log p)` where `p = Sᵢ² / Σ S²`). Same definition used everywhere in the proteina probes and the [cross-encoder summary](../FINDINGS.md). CheMeleon's "500" eff rank in its own FINDINGS uses the threshold-based variant.
+> **Definition note**: The MACE rank below was always computed as RankMe (Garrido et al. 2023, ICML) — entropy on normalised raw singular values of the *uncentered* embedding matrix, `exp(−Σ p log p)` with `p = σᵢ / Σσ`. The proteina probes were switched to the same RankMe definition on 2026-05-04 (previously they used entropy on σ², which is a different — smaller — quantity). CheMeleon's per-page numbers haven't been re-run yet under the new pipeline; the "500 (1% threshold)" and "~138 (entropy on σ²)" numbers in its own FINDINGS are *not* directly comparable to RankMe.
 
 | Metric | MACE | CheMeleon |
 |--------|------|-----------|
 | Output dim | 192 | 2048 |
-| Effective rank (entropy) | **40.6** | ~138 |
+| RankMe | **40.6** | (not re-measured under new pipeline) |
 | Dims for 90% variance | 7 | ~100 |
 | Dims for 99% variance | ~30 | ~300 |
 
-40.6 / 192 ≈ 21% of capacity. **The projector input dim (128 or 256) is larger than the eff rank** — no bottleneck, every direction in the target manifold is recoverable in principle. This is the structural opposite of CheMeleon, where 500 dims for 90% variance vs 128-d input was a hard bottleneck.
+40.6 / 192 ≈ 21% of capacity. **The projector input dim (128 or 256) is larger than the RankMe** — no bottleneck, every direction in the target manifold is recoverable in principle. This is the structural opposite of CheMeleon, where 500 dims for 90% variance vs 128-d input was a hard bottleneck.
 
 The flip side: 94% of variance lives in just 10 dimensions. That's why Q2 saturates so hard — capturing those 10 dims is easy, and there's not much else.
 
@@ -123,13 +123,13 @@ CheMeleon failure mode → MACE status:
 | CheMeleon problem (Q-tag) | MACE status |
 |---------------------------|-------------|
 | Q3.1 sparsity 93.8% | ✅ solved (0%) |
-| Q3.2 projector bottleneck (500 dims for 90%, 128-d input) | ✅ solved (eff rank 40.6, fits) |
+| Q3.2 projector bottleneck (500 dims for 90%, 128-d input) | ✅ solved (RankMe 40.6, fits) |
 | Q1.2 zero 3D sensitivity (L2 = 0 across conformers) | ◐ partially solved (cos 0.998 between conformers — small but nonzero) |
 | Q2 fast/slow path divergence (cos 0.23) | ✅ N/A (MACE takes coords directly, no SMILES path) |
 
 MACE does *not* solve the saturation problem at Q2 — it trades the high-dim sparse-target mode for a low-rank dense-target mode. Both modes are bad for the projector, just differently:
 
-- **CheMeleon**: lots of structure (high eff rank) but trapped behind sparse activation patterns and a too-narrow projector input. Floor 0.43, modest +0.04 gap.
+- **CheMeleon**: lots of structure (high rank under any definition) but trapped behind sparse activation patterns and a too-narrow projector input. Floor 0.43, modest +0.04 gap.
 - **MACE**: clean dense gradients but the structure itself is so low-dim that the mean direction already explains most of it. Floor 0.86, tiny +0.005 gap.
 
 ## Caveats
@@ -149,7 +149,7 @@ cos = 0.998 between conformers means even a perfect transformer would only see a
 ## Implications for REPA training
 
 1. **Q2 saturation is the dominant concern.** Any MACE-REPA training run reporting `cos > 0.86` should be cross-checked against the random-input floor (0.858) before claiming alignment progress. Aim for `> 0.90` to demonstrate genuine learning.
-2. **MACE small may be too compressed.** 94% variance in 10 dims is extreme. MACE *medium* has more interaction layers and a larger feature dim — likely higher eff rank, possibly stronger conformer sensitivity. Worth profiling with the same probes if MACE-REPA results are mixed.
+2. **MACE small may be too compressed.** 94% variance in 10 dims is extreme. MACE *medium* has more interaction layers and a larger feature dim — likely higher RankMe, possibly stronger conformer sensitivity. Worth profiling with the same probes if MACE-REPA results are mixed.
 3. **Auxiliary geometry loss.** Given the weak conformer signal, an explicit pairwise-distance / RMSD loss alongside MACE-REPA likely beats either alone for 3D accuracy.
 4. **Atom-type CE baseline.** Both MACE and CheMeleon hit Q1.1 probe = 1.000. If REPA's main contribution is teaching atom identity, a direct atom-type CE loss is much cheaper and likely matches the effect.
 5. **Cache aggressively.** MACE is rotation-invariant, so per-conformer embeddings precompute once; `CachedMACEEncoder` mirrors `CachedChemPropEncoder` and avoids the per-step encoder cost entirely.
