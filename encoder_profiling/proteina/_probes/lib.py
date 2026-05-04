@@ -1219,64 +1219,77 @@ def analyze_dimensionality(all_emb: torch.Tensor, max_residues: int = 30000):
 
     What it measures
     ----------------
-    SVD of the centered (residues x dim) embedding matrix, then summary
-    statistics of the spectrum:
+    Two complementary spectral diagnostics on the (residues x dim)
+    embedding matrix Z:
 
-    - **effective rank**:
-          exp(-sum_i p_i log p_i)   where  p_i = sigma_i^2 / sum sigma^2
-      Equals N if the spectrum is flat (all singular values equal);
-      equals 1 if a single direction carries all the variance. This is
-      the entropy of the variance spectrum, exponentiated.
-    - **participation ratio**:
-          (sum sigma^2)^2  /  sum sigma^4
-      Similar idea, less sensitive to long tails of small singular
-      values.
-    - **dims for {90, 95, 99}% variance**: how many PCs you need to
-      span that fraction of the spread.
-    - **condition number** sigma_max / sigma_min: numerical stability
-      of any operation that needs to invert / pseudo-invert the
-      embedding.
+    - **RankMe effective rank** (Garrido et al. 2023, ICML):
+          erank(Z) = exp(H(p))   with   p_i = sigma_i / sum_j sigma_j
+      where sigma are the singular values of the *uncentered* Z. This
+      is the Roy-Vetterli effective rank applied directly to the
+      embedding matrix and is the metric RankMe shows correlates with
+      downstream linear-probe performance for SSL representations.
+    - **Participation ratio** (Gao et al. 2017):
+          PR = (sum lambda_i)^2 / sum lambda_i^2
+      where lambda_i are eigenvalues of the *centered* covariance
+      (= sigma_i^2 of the centered Z). One-number summary of "effective
+      number of equally-weighted PCs."
+    - **Dims for {90, 95, 99}% variance**: cumulative explained
+      variance of the centered covariance. Most direct answer to "is
+      the projector input dim a bottleneck?"
+    - **Condition number** sigma_max / sigma_min of centered Z:
+      numerical stability of operations that pseudo-invert Z.
+
+    Centering convention
+    --------------------
+    RankMe is computed on **uncentered** Z (its published convention,
+    since it scores the embedding matrix directly). Variance-spectrum
+    quantities (PR, cum-var, condition number) are computed on
+    **centered** Z so they correspond to PCA / covariance eigenvalues.
+    This is why the function does two SVDs.
 
     Why it matters for REPA
     -----------------------
-    1. Anti-collapse signal. Low effective rank means embeddings live
-       near a low-dim subspace; the projector can match the target by
+    1. Anti-collapse signal. Low rankme means embeddings live near a
+       low-dim subspace; the projector can match the target by
        predicting the mean (cf. analyze_projector_saturation - Q2).
-       MC-GearNet-Edge's eff rank 1.1/3072 is exactly this pathology -
+       MC-GearNet-Edge's rankme ~1 / 3072 is exactly this pathology -
        mean-dir cos 0.855, gap negative.
 
     2. Projector bottleneck check. The student's REPA projector has a
-       specific input dim (transformer hidden size). If
-              eff_rank(encoder)  >  projector_in_dim
-       the projector cannot recover all of the encoder's variance even
-       in principle. CheMeleon's 500-d effective rank with a 128-d
+       specific input dim. If `dims_for_95pct_var > projector_in_dim`
+       the projector cannot recover most of the encoder's variance
+       even in principle. CheMeleon's 500-d 95% cutoff with a 128-d
        projector input is this failure mode.
 
-    3. Discriminability proxy. High eff rank correlates with the
+    3. Discriminability proxy. High rankme correlates with the
        embedding space being 'spread out' - distinct inputs land in
        distinct outputs.
 
     How to read the output
     ----------------------
-    - eff_rank << total_dim with mean-dir cos near 1: rank collapse.
+    - rankme << total_dim with mean-dir cos near 1: rank collapse.
       Encoder unusable.
-    - eff_rank << total_dim but mean-dir cos modest (~0.5): low-rank
+    - rankme << total_dim but mean-dir cos modest (~0.5): low-rank
       but spread across that subspace; usable.
     - condition_number > 1e6: numerical issues; co-occurs with norm
       explosion (analyze_norms - Q3.3).
-
-    Correlations
-    ------------
-    Strongly anti-correlated with mean_direction_cos in
-    analyze_projector_saturation (Q2); strongly correlated with the
-    projector gap. The chain is:
-        eff rank up -> mean-dir down -> gap up -> REPA headroom up.
 
     Implementation note
     -------------------
     Subsample to max_residues=30000 for tractability; SVD is O(n d^2).
     Spectrum tail is preserved in the JSON sidecar (`spectrum.json`)
     in case downstream analysis wants the full curve.
+
+    References
+    ----------
+    Garrido, Balestriero, Najman, LeCun (2023), "RankMe: Assessing the
+    Downstream Performance of Pretrained Self-Supervised
+    Representations by Their Rank", ICML 2023.
+    Gao, Trautmann, Yu, Santhanam, Ryu, Shenoy, Ganguli (2017),
+    "A theory of multineuronal dimensionality, dynamics and
+    measurement", bioRxiv 214262.
+    Roy & Vetterli (2007), "The Effective Rank: A Measure of Effective
+    Dimensionality", EUSIPCO.
     """
     _header("Q3.2 - Dimensionality & Singular Values")
     emb = all_emb
@@ -1284,23 +1297,29 @@ def analyze_dimensionality(all_emb: torch.Tensor, max_residues: int = 30000):
         idx = torch.randperm(emb.shape[0])[:max_residues]
         emb = emb[idx]
         print(f"  (subsampled {max_residues}/{all_emb.shape[0]} residues for SVD)")
+
+    # RankMe: Roy-Vetterli effective rank on the *uncentered* embedding matrix.
+    S_raw = torch.linalg.svdvals(emb).numpy()
+    p_raw = S_raw / S_raw.sum()
+    p_raw = p_raw[p_raw > 0]
+    rankme = float(np.exp(-np.sum(p_raw * np.log(p_raw))))
+
+    # Variance spectrum: covariance eigenvalues = sigma^2 of the centered Z.
     centered = emb - emb.mean(dim=0)
     S = torch.linalg.svdvals(centered).numpy()
     var = S**2
     cum_var = np.cumsum(var) / var.sum()
-    p = var / var.sum()
-    p = p[p > 0]
-    eff_rank = float(np.exp(-np.sum(p * np.log(p))))
     part_ratio = float((var.sum() ** 2) / np.sum(var**2))
-    print(f"Effective rank: {eff_rank:.1f} / {all_emb.shape[1]}")
+
+    print(f"RankMe: {rankme:.1f} / {all_emb.shape[1]}")
     print(f"Participation ratio: {part_ratio:.1f}")
     print(f"Dims for 90% variance: {int(np.searchsorted(cum_var, 0.90)) + 1}")
     print(f"Dims for 95% variance: {int(np.searchsorted(cum_var, 0.95)) + 1}")
     print(f"Dims for 99% variance: {int(np.searchsorted(cum_var, 0.99)) + 1}")
-    print(f"Top singular value: {S[0]:.2f}")
-    print(f"S[0]/S[-1] ratio: {S[0] / max(S[-1], 1e-12):.2e}")
+    print(f"Top singular value (centered): {S[0]:.2f}")
+    print(f"S[0]/S[-1] ratio (centered): {S[0] / max(S[-1], 1e-12):.2e}")
     return {
-        "effective_rank": eff_rank,
+        "rankme": rankme,
         "participation_ratio": part_ratio,
         "dim_total": int(all_emb.shape[1]),
         "dims_for_90pct_var": int(np.searchsorted(cum_var, 0.90)) + 1,
@@ -1308,7 +1327,8 @@ def analyze_dimensionality(all_emb: torch.Tensor, max_residues: int = 30000):
         "dims_for_99pct_var": int(np.searchsorted(cum_var, 0.99)) + 1,
         "top_singular_value": float(S[0]),
         "condition_number": float(S[0] / max(S[-1], 1e-12)),
-        "singular_values": S.tolist(),
+        "singular_values_uncentered": S_raw.tolist(),
+        "singular_values_centered": S.tolist(),
         "cumulative_variance": cum_var.tolist(),
     }
 
@@ -1497,7 +1517,12 @@ def run_pipeline(probe: EncoderProbe, proteins: list, device, *, skip: tuple = (
             slim["dimensionality"] = {
                 k: v
                 for k, v in slim["dimensionality"].items()
-                if k not in ("singular_values", "cumulative_variance")
+                if k
+                not in (
+                    "singular_values_uncentered",
+                    "singular_values_centered",
+                    "cumulative_variance",
+                )
             }
         with open(json_path, "w") as f:
             json.dump(slim, f, indent=2)
@@ -1505,13 +1530,18 @@ def run_pipeline(probe: EncoderProbe, proteins: list, device, *, skip: tuple = (
         # Full SVD spectra to a sidecar file
         if (
             "dimensionality" in results
-            and "singular_values" in results["dimensionality"]
+            and "singular_values_centered" in results["dimensionality"]
         ):
             spec_path = os.path.join(probe.output_dir, "spectrum.json")
             with open(spec_path, "w") as f:
                 json.dump(
                     {
-                        "singular_values": results["dimensionality"]["singular_values"],
+                        "singular_values_uncentered": results["dimensionality"][
+                            "singular_values_uncentered"
+                        ],
+                        "singular_values_centered": results["dimensionality"][
+                            "singular_values_centered"
+                        ],
                         "cumulative_variance": results["dimensionality"][
                             "cumulative_variance"
                         ],

@@ -81,22 +81,23 @@ def layerwise_fn(encoder, proteins, device):
             layer_embs[i].append(h_v.float().cpu())
 
     rows = []
-    print(f"\n{'Layer':>5} | {'Eff Rank':>9} | {'Mean Norm':>10} | {'Sparsity':>9}")
+    print(f"\n{'Layer':>5} | {'RankMe':>9} | {'Mean Norm':>10} | {'Sparsity':>9}")
     print("-" * 50)
     for i in range(n_layers):
         H = torch.cat(layer_embs[i], dim=0)
-        centered = H - H.mean(dim=0)
-        S = torch.linalg.svdvals(centered).numpy()
-        p = (S**2) / (S**2).sum()
+        # RankMe: Roy-Vetterli effective rank on uncentered features
+        # (Garrido et al. 2023, ICML).
+        S = torch.linalg.svdvals(H).numpy()
+        p = S / S.sum()
         p = p[p > 0]
-        eff_rank = float(np.exp(-np.sum(p * np.log(p))))
+        rankme = float(np.exp(-np.sum(p * np.log(p))))
         mean_norm = float(H.norm(dim=-1).mean())
         sparsity = float((H == 0).float().mean())
-        print(f"  {i:>3d} | {eff_rank:>9.1f} | {mean_norm:>10.4f} | {sparsity:>8.4f}")
+        print(f"  {i:>3d} | {rankme:>9.1f} | {mean_norm:>10.4f} | {sparsity:>8.4f}")
         rows.append(
             {
                 "layer": i,
-                "eff_rank": eff_rank,
+                "rankme": rankme,
                 "mean_norm": mean_norm,
                 "sparsity": sparsity,
             }

@@ -444,14 +444,32 @@ def section_2_sparsity_dimensionality():
             f"top-100={cumvar[99]:.3f}, top-200={cumvar[min(199, n_components-1)]:.3f}"
         )
 
-        # Effective rank
+        # Effective rank (1%-threshold variant; kept for backwards compat
+        # with prior CheMeleon FINDINGS numbers).
         sv = pca.singular_values_
         effective_rank_1pct = (sv > 0.01 * sv[0]).sum()
-        # Participation ratio
+        # Participation ratio (Gao et al. 2017): on covariance eigenvalues.
         eigenvals = pca.explained_variance_
         participation_ratio = eigenvals.sum() ** 2 / (eigenvals**2).sum()
+        # RankMe (Garrido et al. 2023, ICML): Roy-Vetterli effective rank
+        # on raw singular values of the *uncentered* embedding matrix.
+        # This is the canonical cross-encoder metric; the proteina probes
+        # use the same definition. Mirror their max_atoms=30000 cap to
+        # keep SVD memory/runtime bounded on GEOM (~28M atoms).
+        max_atoms_rankme = 30000
+        if all_emb.shape[0] > max_atoms_rankme:
+            rng = np.random.default_rng(0)
+            idx_sub = rng.choice(all_emb.shape[0], max_atoms_rankme, replace=False)
+            emb_sub = all_emb[idx_sub]
+        else:
+            emb_sub = all_emb
+        S_raw = np.linalg.svd(emb_sub, compute_uv=False)
+        p_raw = S_raw / S_raw.sum()
+        p_raw = p_raw[p_raw > 0]
+        rankme = float(np.exp(-np.sum(p_raw * np.log(p_raw))))
         print(f"  Effective rank (1% of max SV): {effective_rank_1pct}")
         print(f"  Participation ratio: {participation_ratio:.1f}")
+        print(f"  RankMe: {rankme:.1f} / {all_emb.shape[1]}")
 
         results[ds_name] = {
             "all_emb": all_emb,
@@ -463,6 +481,7 @@ def section_2_sparsity_dimensionality():
             "sv": sv,
             "effective_rank": effective_rank_1pct,
             "participation_ratio": participation_ratio,
+            "rankme": rankme,
             "smiles_list": smiles_list,
             "items": items,
         }
@@ -1153,6 +1172,11 @@ def section_7_summary(results: dict):
             "Effective rank (1% SV)",
             str(qm9.get("effective_rank", "N/A")),
             str(geom.get("effective_rank", "N/A")),
+        ),
+        (
+            "RankMe",
+            fmt(qm9.get("rankme"), ".1f"),
+            fmt(geom.get("rankme"), ".1f"),
         ),
         (
             "Participation ratio",

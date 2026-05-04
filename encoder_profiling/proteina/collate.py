@@ -85,7 +85,9 @@ def load_encoder_metrics(name: str, root: Path):
 
 HEADLINE_KEYS = [
     ("embed_dim", "Embed dim"),
-    ("dimensionality.effective_rank", "Effective rank"),
+    ("dimensionality.rankme", "RankMe"),
+    ("dimensionality.participation_ratio", "PR"),
+    ("dimensionality.dims_for_95pct_var", "Dims@95% var"),
     ("distribution.exact_zero_frac", "Exact-zero frac"),
     ("perturbation.sigma_1.0A.mean", "Pert@1A cos"),
     ("rotation.rotation_cos_mean", "Rotation cos"),

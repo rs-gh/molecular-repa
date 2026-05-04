@@ -232,11 +232,13 @@ def analyze_representation(embeddings, name=""):
     print(f"  Near-zero (<1e-6): {near_zero*100:.1f}%")
 
     if flat.shape[0] > 1 and flat.shape[1] > 1:
+        # RankMe: Roy-Vetterli effective rank on raw singular values
+        # of the uncentered embedding matrix (Garrido et al. 2023, ICML).
         S = torch.linalg.svdvals(flat)
         S_norm = S / S.sum()
         entropy = -(S_norm * torch.log(S_norm + 1e-10)).sum()
-        eff_rank = torch.exp(entropy).item()
-        print(f"  Effective rank: {eff_rank:.1f} / {min(flat.shape)}")
+        rankme = torch.exp(entropy).item()
+        print(f"  RankMe: {rankme:.1f} / {min(flat.shape)}")
 
         cum_var = torch.cumsum(S**2, dim=0) / (S**2).sum()
         for k in [10, 50, 100]:

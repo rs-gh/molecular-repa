@@ -357,14 +357,16 @@ def fig_05_comparison_table(mace_embs, chem_embs):
     metrics = {}
     for name, flat in [("MACE", mace_flat), ("CheMeleon", chem_flat)]:
         sparsity = (flat == 0).float().mean().item()
+        # RankMe: Roy-Vetterli effective rank on raw singular values of
+        # the uncentered embedding matrix (Garrido et al. 2023, ICML).
         S = torch.linalg.svdvals(flat)
         Sn = S / S.sum()
-        eff_rank = torch.exp(-(Sn * torch.log(Sn + 1e-10)).sum()).item()
+        rankme = torch.exp(-(Sn * torch.log(Sn + 1e-10)).sum()).item()
         cum_var = torch.cumsum(S**2, 0) / (S**2).sum()
         dims_90 = (cum_var < 0.9).sum().item() + 1
         metrics[name] = {
             "Sparsity (%)": sparsity * 100,
-            "Effective rank": eff_rank,
+            "RankMe": rankme,
             "Dims for 90% var": dims_90,
             "Dimension": flat.shape[1],
         }

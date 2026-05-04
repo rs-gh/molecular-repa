@@ -121,7 +121,7 @@ def layerwise_fn(encoder, proteins, device, n_test=30, max_residues=10000):
         torch.cuda.empty_cache()
 
     print(
-        f"\n{'Layer':>5} | {'Eff Rank':>9} | {'Mean Norm':>10} | "
+        f"\n{'Layer':>5} | {'RankMe':>9} | {'Mean Norm':>10} | "
         f"{'Sparsity':>9} | {'AA Probe':>9}"
     )
     print("-" * 60)
@@ -129,11 +129,12 @@ def layerwise_fn(encoder, proteins, device, n_test=30, max_residues=10000):
     rows = []
     for li in range(n_layers + 1):
         feats = torch.cat(per_layer_feats[li], dim=0)[keep]
-        centered = feats - feats.mean(dim=0)
-        S = torch.linalg.svdvals(centered).numpy()
-        p = (S**2) / (S**2).sum()
+        # RankMe: Roy-Vetterli effective rank on uncentered features
+        # (Garrido et al. 2023, ICML).
+        S = torch.linalg.svdvals(feats).numpy()
+        p = S / S.sum()
         p = p[p > 0]
-        eff_rank = float(np.exp(-np.sum(p * np.log(p))))
+        rankme = float(np.exp(-np.sum(p * np.log(p))))
         mean_norm = float(feats.norm(dim=-1).mean())
         sparsity = float((feats.abs() < 1e-6).float().mean())
 
@@ -148,13 +149,13 @@ def layerwise_fn(encoder, proteins, device, n_test=30, max_residues=10000):
         clf.fit(X_tr, y_tr)
         probe_acc = accuracy_score(y_te, clf.predict(X_te))
         print(
-            f"  {li:>3d} | {eff_rank:>9.1f} | {mean_norm:>10.4f} | "
+            f"  {li:>3d} | {rankme:>9.1f} | {mean_norm:>10.4f} | "
             f"{sparsity:>8.4f} | {probe_acc:>8.4f}"
         )
         rows.append(
             {
                 "layer": li,
-                "eff_rank": eff_rank,
+                "rankme": rankme,
                 "mean_norm": mean_norm,
                 "sparsity": sparsity,
                 "aa_probe_acc": float(probe_acc),

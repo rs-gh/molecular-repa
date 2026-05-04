@@ -4,7 +4,11 @@
 #
 # Smoke first:  ./encoder_profiling/proteina/run_all.sh smoke
 # Full run:     ./encoder_profiling/proteina/run_all.sh
-set -euo pipefail
+#
+# Per-encoder failures don't abort the sweep — we collect failures and exit
+# nonzero at the end if any encoder failed. Collate still runs so partial
+# results are usable.
+set -uo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 HERE="encoder_profiling/proteina"
@@ -23,23 +27,44 @@ fi
 SEED=0
 echo "Mode=$MODE  N=$N  seed=$SEED"
 
-# CA-GearNet (trained)
-python "$HERE/gearnet/explore_gearnet.py" --n-proteins "$N" --random-seed "$SEED"
+FAILED=()
+run_encoder() {
+  local label="$1"; shift
+  echo ""
+  echo "=== $label ==="
+  if "$@"; then
+    echo "=== $label OK ==="
+  else
+    local rc=$?
+    echo "=== $label FAILED rc=$rc ==="
+    FAILED+=("$label(rc=$rc)")
+  fi
+}
 
-# CA-GearNet (random init x3 seeds)
-python "$HERE/gearnet_random/explore_gearnet_random.py" --n-proteins "$N" --random-seed "$SEED" \
-  --init-seeds 0 1 2
+run_encoder "ca-gearnet" \
+  python "$HERE/gearnet/explore_gearnet.py" --n-proteins "$N" --random-seed "$SEED"
 
-# ESM2 650M
-python "$HERE/esm/explore_esm.py" --n-proteins "$N" --random-seed "$SEED" $EXTRA_ESM
+run_encoder "ca-gearnet-random" \
+  python "$HERE/gearnet_random/explore_gearnet_random.py" --n-proteins "$N" --random-seed "$SEED" \
+    --init-seeds 0 1 2
 
-# MC-GearNet-Edge
-python "$HERE/mc_gearnet/explore_mc_gearnet.py" --n-proteins "$N" --random-seed "$SEED"
+run_encoder "esm2-650m" \
+  python "$HERE/esm/explore_esm.py" --n-proteins "$N" --random-seed "$SEED" $EXTRA_ESM
 
-# PW-GearNet (torsional - the recommended variant)
-python "$HERE/pw_gearnet/explore_pw_gearnet.py" --n-proteins "$N" --random-seed "$SEED" \
-  --ckpt "$PW_TORSIONAL" --variant torsional
+run_encoder "mc-gearnet-edge" \
+  python "$HERE/mc_gearnet/explore_mc_gearnet.py" --n-proteins "$N" --random-seed "$SEED"
 
-# Collate
-python "$HERE/collate.py"
+run_encoder "pw-gearnet-torsional" \
+  python "$HERE/pw_gearnet/explore_pw_gearnet.py" --n-proteins "$N" --random-seed "$SEED" \
+    --ckpt "$PW_TORSIONAL" --variant torsional
+
+# Collate (best-effort: if all encoders failed, this will produce empty rows)
+python "$HERE/collate.py" || echo "[warn] collate.py exited nonzero"
+
+if [[ ${#FAILED[@]} -gt 0 ]]; then
+  echo ""
+  echo "FAILED encoders: ${FAILED[*]}"
+  echo "See $HERE/comparison.csv and $HERE/figures/ for whatever succeeded."
+  exit 1
+fi
 echo "Done. See $HERE/comparison.csv and $HERE/figures/."
