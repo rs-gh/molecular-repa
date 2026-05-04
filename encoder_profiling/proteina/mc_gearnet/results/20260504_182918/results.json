@@ -1,0 +1,298 @@
+{
+  "name": "mc-gearnet-edge",
+  "capabilities": {
+    "is_3d_aware": true,
+    "accepts_residue_type": true,
+    "context_mode": "structural"
+  },
+  "n_proteins": 200,
+  "notes": [],
+  "timestamp": "2026-05-04T18:29:18",
+  "n_residues": 42034,
+  "embed_dim": 3072,
+  "residue_probe": {
+    "linear_probe_acc": 0.14616666666666667,
+    "centroid_cos_mean": 0.9998602867126465,
+    "centroid_cos_min": 0.9994651079177856,
+    "centroid_cos_max": 0.9999918937683105,
+    "within_type_cos_mean": 0.7702176069155623,
+    "within_type_cos_std": 0.3654505491092047,
+    "between_type_cos_mean": 0.7291899540976476,
+    "between_type_cos_std": 0.39369736234599473
+  },
+  "residue_shuffle": {
+    "shuffle_cos_mean": 0.9829896140098572,
+    "shuffle_cos_std": 0.004975446095871967
+  },
+  "perturbation": {
+    "sigma_0.1A": {
+      "mean": 0.8843586385250092,
+      "std": 0.032327859063803456
+    },
+    "sigma_0.5A": {
+      "mean": 0.8127364337444305,
+      "std": 0.05464254054654036
+    },
+    "sigma_1.0A": {
+      "mean": 0.781370792388916,
+      "std": 0.0685115719632241
+    },
+    "sigma_2.0A": {
+      "mean": 0.7399010741710663,
+      "std": 0.07383364543999363
+    },
+    "sigma_5.0A": {
+      "mean": 0.692874835729599,
+      "std": 0.10067543857115402
+    }
+  },
+  "rotation": {
+    "rotation_cos_mean": 0.999746835231781,
+    "rotation_cos_std": 0.0009062216880463419
+  },
+  "structural_context": {
+    "ALA": {
+      "within_ss_cos_mean": 0.8369975498108154,
+      "between_ss_cos_mean": 0.8463667078585786,
+      "delta": -0.00936915804776317,
+      "context_counts": {
+        "helix": 2197,
+        "sheet": 781,
+        "loop": 480
+      }
+    },
+    "GLY": {
+      "within_ss_cos_mean": 0.698228749493416,
+      "between_ss_cos_mean": 0.7233577192589534,
+      "delta": -0.025128969765537468,
+      "context_counts": {
+        "helix": 1496,
+        "sheet": 740,
+        "loop": 832
+      }
+    },
+    "LEU": {
+      "within_ss_cos_mean": 0.7730200313398222,
+      "between_ss_cos_mean": 0.7620725072609639,
+      "delta": 0.01094752407885835,
+      "context_counts": {
+        "helix": 2264,
+        "sheet": 1166,
+        "loop": 490
+      }
+    },
+    "VAL": {
+      "within_ss_cos_mean": 0.7455132212412718,
+      "between_ss_cos_mean": 0.7368042374285384,
+      "delta": 0.00870898381273344,
+      "context_counts": {
+        "helix": 1122,
+        "sheet": 1335,
+        "loop": 540
+      }
+    }
+  },
+  "protein_similarity": {
+    "within_protein_cos_mean": 0.7573487298497108,
+    "within_protein_cos_std": 0.37560574918004613,
+    "between_protein_cos_mean": 0.7144509209446384,
+    "between_protein_cos_std": 0.4020262841026561,
+    "delta": 0.04289780890507244
+  },
+  "projector": {
+    "mean_direction_cos": 0.8552173376083374,
+    "conditions": {
+      "random": {
+        "train_cos": 0.8585221767425537,
+        "test_cos": 0.8567055463790894
+      },
+      "onehot": {
+        "train_cos": 0.8589338064193726,
+        "test_cos": 0.8575522303581238
+      },
+      "onehot+pos": {
+        "train_cos": 0.8589807748794556,
+        "test_cos": 0.8575905561447144
+      }
+    }
+  },
+  "distribution": {
+    "shape": [
+      42034,
+      3072
+    ],
+    "mean": 601.6936645507812,
+    "std": 52290.625,
+    "min": -41487.484375,
+    "max": 52008680.0,
+    "exact_zero_frac": 0.0,
+    "near_zero_frac": 1.3939608412237712e-07,
+    "negative_frac": 0.8512662523443324
+  },
+  "dimensionality": {
+    "rankme": 11.99057674407959,
+    "participation_ratio": 1.0360631621208987,
+    "dim_total": 3072,
+    "dims_for_90pct_var": 1,
+    "dims_for_95pct_var": 1,
+    "dims_for_99pct_var": 2,
+    "top_singular_value": 432724160.0,
+    "condition_number": 4.3272416e+20
+  },
+  "norms": {
+    "norm_mean": 1476209.0,
+    "norm_std": 2494351.5,
+    "norm_min": 35.33820724487305,
+    "norm_max": 52016348.0,
+    "dead_dims": 507,
+    "dim_total": 3072,
+    "dim_std_min": 0.0,
+    "dim_std_max": 2480061.5,
+    "per_aa_norm": {
+      "ALA": {
+        "mean": 1762678.5,
+        "std": 2837642.5,
+        "n": 3489
+      },
+      "ARG": {
+        "mean": 923427.625,
+        "std": 1344244.75,
+        "n": 2080
+      },
+      "ASN": {
+        "mean": 1054447.5,
+        "std": 2059865.875,
+        "n": 1829
+      },
+      "ASP": {
+        "mean": 1008680.875,
+        "std": 1737599.375,
+        "n": 2279
+      },
+      "CYS": {
+        "mean": 2308670.5,
+        "std": 3081805.25,
+        "n": 638
+      },
+      "GLN": {
+        "mean": 939356.3125,
+        "std": 1563555.75,
+        "n": 1595
+      },
+      "GLU": {
+        "mean": 916045.625,
+        "std": 1611535.625,
+        "n": 2612
+      },
+      "GLY": {
+        "mean": 2069036.5,
+        "std": 3551233.5,
+        "n": 3084
+      },
+      "HIS": {
+        "mean": 1361555.125,
+        "std": 2261693.25,
+        "n": 971
+      },
+      "ILE": {
+        "mean": 1787463.625,
+        "std": 2793804.25,
+        "n": 2376
+      },
+      "LEU": {
+        "mean": 1462716.0,
+        "std": 2172398.75,
+        "n": 3937
+      },
+      "LYS": {
+        "mean": 802842.125,
+        "std": 1250542.0,
+        "n": 2363
+      },
+      "MET": {
+        "mean": 1771969.0,
+        "std": 2801137.25,
+        "n": 932
+      },
+      "PHE": {
+        "mean": 1732092.5,
+        "std": 2694381.25,
+        "n": 1739
+      },
+      "PRO": {
+        "mean": 1093562.625,
+        "std": 1806535.625,
+        "n": 1906
+      },
+      "SER": {
+        "mean": 1543510.0,
+        "std": 2771728.0,
+        "n": 2676
+      },
+      "THR": {
+        "mean": 1620561.625,
+        "std": 2670283.75,
+        "n": 2425
+      },
+      "TRP": {
+        "mean": 1548340.375,
+        "std": 2019673.875,
+        "n": 579
+      },
+      "TYR": {
+        "mean": 1890558.625,
+        "std": 2690077.25,
+        "n": 1506
+      },
+      "VAL": {
+        "mean": 2064701.25,
+        "std": 3080136.25,
+        "n": 3018
+      }
+    }
+  },
+  "layerwise": [
+    {
+      "layer": 0,
+      "dim": 512,
+      "rankme": 51.725799560546875,
+      "mean_norm": 82.0491943359375,
+      "sparsity": 0.0
+    },
+    {
+      "layer": 1,
+      "dim": 512,
+      "rankme": 79.5584487915039,
+      "mean_norm": 35.987796783447266,
+      "sparsity": 0.0
+    },
+    {
+      "layer": 2,
+      "dim": 512,
+      "rankme": 47.783565521240234,
+      "mean_norm": 264.6647644042969,
+      "sparsity": 0.0
+    },
+    {
+      "layer": 3,
+      "dim": 512,
+      "rankme": 42.34786605834961,
+      "mean_norm": 1380.27685546875,
+      "sparsity": 0.0
+    },
+    {
+      "layer": 4,
+      "dim": 512,
+      "rankme": 34.68472671508789,
+      "mean_norm": 24379.8125,
+      "sparsity": 0.0
+    },
+    {
+      "layer": 5,
+      "dim": 512,
+      "rankme": 9.602804183959961,
+      "mean_norm": 1451946.75,
+      "sparsity": 0.0
+    }
+  ]
+}
