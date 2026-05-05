@@ -1,11 +1,12 @@
 # Proteina REPA Encoder Comparison
 
 Cross-encoder summary. Per-encoder depth lives in:
-- [gearnet/FINDINGS.md](gearnet/FINDINGS.md) — CA-GearNet (trained)
+- [gearnet/FINDINGS.md](gearnet/FINDINGS.md) — CA-GearNet (CATH-classifier-trained)
 - [gearnet_random/](gearnet_random/) — CA-GearNet random-init baseline (3 seeds)
 - [esm/FINDINGS.md](esm/FINDINGS.md) — ESM-2 650M
 - [mc_gearnet/FINDINGS.md](mc_gearnet/FINDINGS.md) — MC-GearNet-Edge
 - [pw_gearnet/FINDINGS.md](pw_gearnet/FINDINGS.md) — ProteinWorkshop GearNet-Edge
+- [mpnn/FINDINGS.md](mpnn/FINDINGS.md) — ProteinMPNN CA-only (inverse-folding)
 
 ## How to read these findings
 
@@ -52,11 +53,12 @@ Caveat: a large gap alone is necessary but not sufficient. ESM2's +0.053 gap is 
 
 | Encoder                         | Embed dim | RankMe       | PR    | Dims@95% | AA probe | Δ within−between | Mean-dir | Best projector | **Gap**    |
 |---------------------------------|----------:|-------------:|------:|---------:|---------:|-----------------:|---------:|---------------:|-----------:|
-| **ca-gearnet** (trained)        |       512 |        256.4 |  37.9 |      119 |    0.137 |            0.222 |    0.425 |          0.434 | **+0.009** |
+| **ca-gearnet** (CATH-cls)       |       512 |        256.4 |  37.9 |      119 |    0.137 |            0.222 |    0.425 |          0.434 | **+0.009** |
 | ca-gearnet-random (3-seed avg)  |       512 | 99.8 ± 4.5   |   1.5 |     38.7 |    0.127 |            0.035 |    0.952 |          0.954 |   +0.003   |
 | **esm2-650M** (last layer)      |      1280 |       1030.5 |  43.3 |      993 |    0.998 |            0.098 |    0.671 |          0.723 | **+0.053** |
 | **mc-gearnet-edge**             |      3072 |         12.0 |   1.0 |        1 |    0.146 |            0.043 |    0.855 |          0.858 |   +0.002   |
 | **pw-gearnet** (torsional)      |      3072 |        207.7 |   5.5 |       36 |    0.928 |            0.102 |    0.710 |          0.723 |   +0.013   |
+| **proteinmpnn-ca** (inv-fold)   |       128 |         84.9 |  33.3 |       92 |    0.327 |            0.022 |    0.835 |          0.850 |   +0.014   |
 
 Columns map to the three questions:
 - **Q1 evidence**: AA probe acc (Q1.1 residue identity), Δ within−between (Q1.4 protein-level identity); per-encoder files break this down further into 3D sensitivity (Q1.2) and structural/sequence context (Q1.3).
@@ -88,6 +90,7 @@ Workflow: the table tells you which encoders *could* offer headroom; the trainin
 | **esm2-650M** (L33)     | **usable, but use mid-layers** | **Q2**: largest projector gap in the field (+0.053). **Q1**: AA-probe 0.998 confirms last-layer collapse to AA identity (cf. [esm/FINDINGS.md](esm/FINDINGS.md), recommends layers 24–30 for richer reps). Sequence-only — Q1.2 (3D sensitivity) is N/A by construction; gap is sequence-context, not 3D. |
 | **mc-gearnet-edge**     | **unusable**| **Q3 catastrophe**: RankMe 12 / 3072, PR 1.0, **95% variance in 1 dim** (collapse), 507 dead dims, mean L2 norm 1.5×10⁶ (norm explosion). **Q2**: gap +0.002 — projector barely beats the mean-direction constant baseline. Confirms [mc_gearnet/FINDINGS.md](mc_gearnet/FINDINGS.md). |
 | **pw-gearnet** (torsional) | **borderline** | **Q3**: RankMe 208 / 3072 (severe under-utilisation, ~17× MC-GearNet); PR 5.5 still low; 95% variance in 36 dims. **Q1**: AA-probe 0.928 (identity-driven), strong SS-Δ. **Q2**: gap +0.013 — ~4× random but well below ESM2. Usable if no better option, but ESM2 mid-layers and CA-GearNet are stronger choices. |
+| **proteinmpnn-ca** (inv-fold) | **borderline, empirical test pending** | **Q3 cleanest of any 3D-aware encoder we've probed**: 0% sparsity, 0 dead dims, RankMe 84.9 / 128 = 66% utilisation, tight bounded norms (3.13 ± 0.20). **Q2**: gap +0.014, slightly above CA-GearNet but on a much higher floor (mean-dir 0.835 vs 0.425) — embeddings cluster tight. **Q1**: less coord-sensitive than CA-GN (1 Å noise → cos 0.726 vs 0.269), and protein-specificity is **10× weaker** (Δ 0.022 vs 0.222). AA probe 0.327 — moderate per-token identity leakage from inverse-folding pretraining. n=128 + n=256 runs in flight to settle. See [mpnn/FINDINGS.md](mpnn/FINDINGS.md). |
 
 ## Random-init baseline interpretation
 
@@ -127,6 +130,7 @@ It would be a mistake to read "AA probe acc 0.998" as "ESM2 has high global info
 | **esm2-650M** (L33) | Modest (Δ 0.098) | **Very high** (probe 0.998) | **None by design** (sequence-only) | Saturated, gap +0.053 but conformation-invariant |
 | **mc-gearnet-edge** | Collapsed (Δ 0.043) | Collapsed (probe 0.146) | Collapsed (RankMe 12/3072; 95% variance in 1 dim; norm 1.5e6) | Unusable |
 | **pw-gearnet** (torsional) | Modest (Δ 0.102) | High (probe 0.928; AA in input) | **Strong** (3D-sensitive; torsional pretraining → SSE Δ) | Borderline |
+| **proteinmpnn-ca** (inv-fold) | Floor-like (Δ 0.022) | Moderate (probe 0.327; CA-only input — inverse-folding leak) | **Weak** (1 Å noise → cos 0.726, ~3× smoother than CA-GN; SSE Δ ~0.025) | Borderline, empirical test pending |
 
 ### Reading the table
 

@@ -33,6 +33,7 @@ DEFAULT_ENCODERS = [
     "esm",
     "mc_gearnet",
     "pw_gearnet",
+    "mpnn",
 ]
 
 

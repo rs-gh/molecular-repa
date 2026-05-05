@@ -13,6 +13,8 @@ set -uo pipefail
 cd "$(git rev-parse --show-toplevel)"
 HERE="encoder_profiling/proteina"
 DATA_PATH="${DATA_PATH:-/rds/user/sr2173/hpc-work/proteina/data}"
+PROTEINMPNN_WEIGHTS_DIR="${PROTEINMPNN_WEIGHTS_DIR:-/home/sr2173/rds/hpc-work/proteina/ProteinMPNN}"
+export PROTEINMPNN_WEIGHTS_DIR
 PW_TORSIONAL="$DATA_PATH/metric_factory/model_weights/pw_gearnet_torsional_denoising_ca_angles.ckpt"
 PW_STRUCTURE="$DATA_PATH/metric_factory/model_weights/pw_gearnet_structure_denoising_ca_angles.ckpt"
 
@@ -57,6 +59,9 @@ run_encoder "mc-gearnet-edge" \
 run_encoder "pw-gearnet-torsional" \
   python "$HERE/pw_gearnet/explore_pw_gearnet.py" --n-proteins "$N" --random-seed "$SEED" \
     --ckpt "$PW_TORSIONAL" --variant torsional
+
+run_encoder "proteinmpnn" \
+  python "$HERE/mpnn/explore_mpnn.py" --n-proteins "$N" --random-seed "$SEED"
 
 # Collate (best-effort: if all encoders failed, this will produce empty rows)
 python "$HERE/collate.py" || echo "[warn] collate.py exited nonzero"
