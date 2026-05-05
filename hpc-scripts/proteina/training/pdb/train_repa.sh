@@ -57,6 +57,8 @@ export DATA_PATH="/rds/user/sr2173/hpc-work/proteina/data"
 #! ESM-2-650M weights staged for REPA configs using `encoder.type: esm`.
 #! Ignored by gearnet configs. Falls back to HF hub download if unset.
 export ESM_MODEL_PATH="/rds/user/sr2173/hpc-work/proteina/hf_cache/esm2_t33_650M_UR50D"
+#! ProteinMPNN CA-only weights for REPA configs using `encoder.type: mpnn`. Ignored otherwise.
+export PROTEINMPNN_WEIGHTS_DIR="/rds/user/sr2173/hpc-work/proteina/ProteinMPNN"
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export WANDB_INIT_TIMEOUT=120
