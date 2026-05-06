@@ -37,14 +37,17 @@ n512:
   max_size: 512
   output_dir: results/n512_val
 
-# n=128 bs=80 sweep: same parameters as n128 but writes to a separate output
+# n=128 L4 bs=80 sweep: same parameters as n128 but writes to a separate output
 # dir so the canonical n128_val/ results stay untouched. Pass --runs on the
 # CLI to select the bs80 sweep entries (baseline_128_bs80, repa_l4_128_bs80,
 # repa_l4_128_bs80_lr3x, repa_l4_128_random).
-n128_bs80_sweep:
+#
+# Renamed 2026-05-06 from n128_bs80_sweep -> n128_L4_bs80 to make the
+# layer-4-only scope explicit (cf. n128, which is a L0/L4/L9 layer ablation).
+n128_L4_bs80:
   <<: *defaults
   max_size: 128
-  output_dir: results/n128_bs80_sweep_val
+  output_dir: results/n128_L4_bs80_val
 
 # ─── Pretrained-probe pipeline (pretrain_probe_sweep.py) ─────────────────────
 #

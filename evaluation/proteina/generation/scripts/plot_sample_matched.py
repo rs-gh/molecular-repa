@@ -23,9 +23,33 @@ FIGURES_DIR = HERE.parent / "figures"
 # -- Data ----------------------------------------------------------------------
 
 SIZES = {
-    "n128": {"label": "n=128", "samples": "19.5M samples", "dir": "n128"},
-    "n256": {"label": "n=256", "samples": "7.0M samples", "dir": "n256"},
-    "n512_sm": {"label": "n=512", "samples": "3.0M samples", "dir": "n512_sm"},
+    "n128": {"label": "n=128", "dir": "n128"},
+    "n256": {"label": "n=256", "dir": "n256"},
+    "n512_sm": {"label": "n=512", "dir": "n512_sm"},
+}
+
+# Per-cell samples_M lookup (used for the per-bar x-tick). Steps are read from
+# the JSONL at runtime; samples_M is hard-coded because it depends on the
+# run-specific bs schedule (not derivable from step alone):
+#   n=128: baseline bs=24 fixed; repa_l* bs=24->80@220K
+#          baseline 800K -> 19.20M, repa_l* 400K -> 19.68M
+#   n=256: bs=12->24 ramp fired at different relative steps per run, so
+#          samples = epoch_at_step_400K * 267,789 (PDB train n<=256 subset).
+#          epochs from CSV: baseline 21, l4 22, l9 25, l0 26
+#   n=512: baseline bs=6 fixed -> 500K = 3.00M; repa_l* bs=4 fixed -> 750K = 3.00M
+SAMPLES_M = {
+    ("n128", "Baseline"): 19.2,
+    ("n128", "REPA L0"): 19.7,
+    ("n128", "REPA L4"): 19.7,
+    ("n128", "REPA L9"): 19.7,
+    ("n256", "Baseline"): 5.6,
+    ("n256", "REPA L0"): 7.0,
+    ("n256", "REPA L4"): 5.9,
+    ("n256", "REPA L9"): 6.7,
+    ("n512_sm", "Baseline"): 3.0,
+    ("n512_sm", "REPA L0"): 3.0,
+    ("n512_sm", "REPA L4"): 3.0,
+    ("n512_sm", "REPA L9"): 3.0,
 }
 
 # Canonical display order and style per run
@@ -100,12 +124,15 @@ def _load_per_run_csv_metrics(config_name: str, run_key: str, step) -> dict:
     return out
 
 
-def load_results() -> dict:
-    """Return {size_key: {run_label: {metric: value}}}."""
+def load_results() -> tuple[dict, dict]:
+    """Return ({size_key: {run_label: {metric: value}}},
+    {size_key: {run_label: step}})."""
     data = {}
+    steps_by_size: dict[str, dict[str, int]] = {}
     for size_key, cfg in SIZES.items():
         jsonl = RESULTS_ROOT / cfg["dir"] / "sweep_results.jsonl"
         size_data: dict[str, dict] = {}
+        size_steps: dict[str, int] = {}
         if jsonl.exists():
             with open(jsonl) as f:
                 for line in f:
@@ -130,11 +157,21 @@ def load_results() -> dict:
                             if m in csv_metrics:
                                 metrics[m] = csv_metrics[m]
                     size_data[label] = metrics
+                    size_steps[label] = int(r["step"])
         data[size_key] = size_data
-    return data
+        steps_by_size[size_key] = size_steps
+    return data, steps_by_size
 
 
-def plot(data: dict) -> None:
+def _xtick_label(size_key: str, run_label: str, step: int | None) -> str:
+    """Two-line tick: '<run>\nstep <K>K | <samples>M smp'."""
+    samples = SAMPLES_M.get((size_key, run_label))
+    if step is None or samples is None:
+        return run_label
+    return f"{run_label}\nstep {step // 1000}K | {samples:.1f}M smp"
+
+
+def plot(data: dict, steps_by_size: dict) -> None:
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
     n_metrics = len(METRICS)
@@ -143,7 +180,7 @@ def plot(data: dict) -> None:
     fig, axes = plt.subplots(
         n_sizes,
         n_metrics,
-        figsize=(4.5 * n_metrics, 3.3 * n_sizes),
+        figsize=(4.8 * n_metrics, 4.0 * n_sizes),
         sharey="col",
     )
 
@@ -152,6 +189,7 @@ def plot(data: dict) -> None:
 
     for row, (size_key, size_cfg) in enumerate(SIZES.items()):
         size_data = data[size_key]
+        size_steps = steps_by_size.get(size_key, {})
 
         for col, (metric_key, (metric_label, lower_better, n_note)) in enumerate(
             METRICS.items()
@@ -224,7 +262,12 @@ def plot(data: dict) -> None:
                 bars[best_i].set_linewidth(2.5)
 
             ax.set_xticks(x_positions)
-            ax.set_xticklabels(RUN_ORDER, fontsize=9)
+            ax.set_xticklabels(
+                [_xtick_label(size_key, r, size_steps.get(r)) for r in RUN_ORDER],
+                fontsize=7.5,
+                rotation=20,
+                ha="right",
+            )
             ax.grid(axis="y", alpha=0.3, zorder=0)
             ax.set_axisbelow(True)
 
@@ -238,8 +281,8 @@ def plot(data: dict) -> None:
 
             if col == 0:
                 ax.set_ylabel(
-                    f"{size_cfg['label']}\n{size_cfg['samples']}",
-                    fontsize=10,
+                    size_cfg["label"],
+                    fontsize=11,
                     fontweight="bold",
                 )
 
@@ -254,18 +297,20 @@ def plot(data: dict) -> None:
         bbox_to_anchor=(0.5, -0.02),
     )
 
+    plt.tight_layout(rect=[0, 0.04, 1, 0.96])
     fig.suptitle(
-        "Generation quality - sample-matched comparison\n(single training-cap length per size)",
-        fontsize=13,
+        "Generation quality - cross-size comparison\n"
+        "Per-bar x-tick: step | samples-seen. n=128 and n=512_sm are sample-matched within each row; "
+        "n=256 is NOT (bs=12->24 ramp fired at different relative steps).",
+        fontsize=12,
         fontweight="bold",
-        y=1.01,
+        y=0.99,
     )
-    plt.tight_layout()
     out = FIGURES_DIR / "fig_grid_sample_matched.png"
     fig.savefig(out, dpi=150, bbox_inches="tight")
     print(f"Saved {out}")
 
 
 if __name__ == "__main__":
-    data = load_results()
-    plot(data)
+    data, steps_by_size = load_results()
+    plot(data, steps_by_size)

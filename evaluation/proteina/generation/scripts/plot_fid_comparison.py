@@ -16,9 +16,7 @@ import pandas as pd
 
 # Layout: scripts/ sits next to results/ and figures/ under generation/.
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "results", "pdb", "fid")
-OUTPUT_DIR = os.path.join(
-    os.path.dirname(__file__), "..", "figures", "n512_convergence"
-)
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "figures", "n512_full_eval")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Which metrics exist and whether lower is better
@@ -114,13 +112,13 @@ def load_early_results():
 
 
 def _step_labels(results):
-    """Labels with samples seen, e.g. 'Baseline\n4.5M samples'."""
+    """Two-line tick: '<run>\nstep <K>K | <samples>M smp'."""
     labels = []
     for name, _, step, _ in results:
         if step is not None:
             bs = BATCH_SIZES.get(name, 1)
             samples = step * bs
-            labels.append(f"{name}\n{samples / 1e6:.1f}M samples")
+            labels.append(f"{name}\nstep {step // 1000}K | {samples / 1e6:.1f}M smp")
         else:
             labels.append(name)
     return labels
@@ -194,13 +192,16 @@ def plot_fid_bars(results_late, results_early):
         step_labels = []
         for label in run_labels:
             info = grouped[label]
-            parts = [label]
             if "late" in info and info["late"][0]:
+                step = info["late"][0]
                 bs = BATCH_SIZES.get(label, 1)
-                samples = info["late"][0] * bs
-                parts.append(f"{samples / 1e6:.1f}M samples")
-            step_labels.append("\n".join(parts))
-        ax.set_xticklabels(step_labels)
+                samples = step * bs
+                step_labels.append(
+                    f"{label}\nstep {step // 1000}K | {samples / 1e6:.1f}M smp"
+                )
+            else:
+                step_labels.append(label)
+        ax.set_xticklabels(step_labels, fontsize=8.5, rotation=15, ha="right")
 
         # Annotate late bars
         for bar, v in zip(bars_l, late_vals):
@@ -321,7 +322,7 @@ def plot_fjsd_bars(results_late, results_early):
         ax.set_ylabel("Fold JSD (lower = better)")
         ax.set_title(f"Fold JSD - {level_name}")
         ax.set_xticks(x)
-        ax.set_xticklabels(tick_labels, rotation=20, ha="right")
+        ax.set_xticklabels(tick_labels, fontsize=8, rotation=20, ha="right")
         ax.legend(fontsize=8)
         ax.set_ylim(0, max(max(pdb_vals), max(afdb_vals)) * 1.3)
 
@@ -388,7 +389,9 @@ def plot_fold_score_bars(results_late, results_early):
         ax.set_title(METRIC_INFO[key][0])
         ax.set_ylim(0, max(all_vals) * 1.25)
         ax.set_xticks(x)
-        ax.set_xticklabels(_step_labels(results_late))
+        ax.set_xticklabels(
+            _step_labels(results_late), fontsize=8, rotation=15, ha="right"
+        )
 
         for bar, v in zip(bars_l, late_vals):
             ax.text(

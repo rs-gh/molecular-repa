@@ -1,6 +1,6 @@
-"""Bar chart comparison of generation metrics for the n=128 bs=80 sweep.
+"""Bar chart comparison of generation metrics for the n=128 L4 bs=80 sweep.
 
-Reads from results/n128_bs80_sweep/sweep_results.jsonl and produces a
+Reads from results/n128_L4_bs80/sweep_results.jsonl and produces a
 2 x len(METRICS) grid:
     rows  = step bucket (mid ~8M / end ~16M samples)
     cols  = metric (PDB FID, fS, fJSD, designability, scRMSD)
@@ -8,8 +8,12 @@ Reads from results/n128_bs80_sweep/sweep_results.jsonl and produces a
 
 Mirrors plot_sample_matched.py but groups by step instead of model size.
 
+Renamed 2026-05-06 from plot_n128_bs80_sweep.py -> plot_n128_L4_bs80.py to
+make the layer-4-only scope explicit (cf. plot_n128_sweep.py, which is the
+L0/L4/L9 layer ablation).
+
 Usage:
-    python evaluation/proteina/generation/scripts/plot_n128_bs80_sweep.py
+    python evaluation/proteina/generation/scripts/plot_n128_L4_bs80.py
 """
 
 from __future__ import annotations
@@ -22,8 +26,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
-RESULTS_DIR = HERE.parent / "results" / "n128_bs80_sweep"
-FIGURES_DIR = HERE.parent / "figures"
+RESULTS_DIR = HERE.parent / "results" / "n128_L4_bs80"
+FIGURES_DIR = HERE.parent / "figures" / "n128_L4_bs80"
 
 # 4 runs in canonical display order; colour scheme matches plot_sample_matched.py
 RUNS = {
@@ -74,20 +78,34 @@ def load_rows() -> list[dict]:
     return rows
 
 
-def organize(rows: list[dict]) -> dict:
-    """Return {bucket: {run_label: {metric: value}}}."""
+def organize(rows: list[dict]) -> tuple[dict, dict]:
+    """Return ({bucket: {run_label: {metric: value}}},
+    {bucket: {run_label: step}})."""
     out: dict[str, dict[str, dict]] = {"mid": {}, "end": {}}
+    steps: dict[str, dict[str, int]] = {"mid": {}, "end": {}}
     for r in rows:
         bucket = r["_step_bucket"]
         label = KEY_TO_LABEL[r["run"]]
         out[bucket][label] = {m: r.get(m) for m in METRICS}
-    return out
+        steps[bucket][label] = int(r["step"])
+    return out, steps
 
 
-def plot(data: dict) -> None:
+def _xtick_label(label: str, step: int | None) -> str:
+    """Two-line tick: '<run>\nstep <K>K | <samples>M smp'.
+
+    All n128_L4_bs80 runs train at bs=80 throughout, so samples = step * 80.
+    """
+    if step is None:
+        return label
+    samples_M = step * 80 / 1e6
+    return f"{label}\nstep {step // 1000}K | {samples_M:.1f}M smp"
+
+
+def plot(data: dict, steps: dict) -> None:
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     n_metrics = len(METRICS)
-    fig, axes = plt.subplots(2, n_metrics, figsize=(3.7 * n_metrics, 6.6), sharey="col")
+    fig, axes = plt.subplots(2, n_metrics, figsize=(4.2 * n_metrics, 7.8), sharey="col")
     x = np.arange(len(RUN_LABELS))
 
     for row, bucket in enumerate(["mid", "end"]):
@@ -154,7 +172,12 @@ def plot(data: dict) -> None:
                 bars[best_i].set_linewidth(2.5)
 
             ax.set_xticks(x)
-            ax.set_xticklabels(RUN_LABELS, fontsize=8, rotation=15, ha="right")
+            ax.set_xticklabels(
+                [_xtick_label(lbl, steps[bucket].get(lbl)) for lbl in RUN_LABELS],
+                fontsize=7.5,
+                rotation=20,
+                ha="right",
+            )
             ax.grid(axis="y", alpha=0.3, zorder=0)
             ax.set_axisbelow(True)
 
@@ -179,18 +202,18 @@ def plot(data: dict) -> None:
     )
 
     fig.suptitle(
-        "n=128 bs=80 sweep - generation metrics at sample-matched checkpoints",
+        "n=128 L4 bs=80 sweep - generation metrics at sample-matched checkpoints",
         fontsize=13,
         fontweight="bold",
         y=1.01,
     )
     plt.tight_layout()
-    out = FIGURES_DIR / "n128_bs80_sweep.png"
+    out = FIGURES_DIR / "n128_L4_bs80.png"
     fig.savefig(out, dpi=150, bbox_inches="tight")
     print(f"Saved {out}")
 
 
 if __name__ == "__main__":
     rows = load_rows()
-    data = organize(rows)
-    plot(data)
+    data, steps = organize(rows)
+    plot(data, steps)

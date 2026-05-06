@@ -1,6 +1,6 @@
-"""Per-layer probe plots for the n=128 bs=80 sweep.
+"""Per-layer probe plots for the n=128 L4 bs=80 sweep.
 
-Reads results/n128_bs80_sweep_val/sweep_results.csv and produces a 2 x 3 grid:
+Reads results/n128_L4_bs80_val/sweep_results.csv and produces a 2 x 3 grid:
     rows = step bucket (mid ~8M / end ~16M samples)
     cols = probe timestep t in {0.5, 0.75, 1.0}
     x    = transformer layer (0..9 for our 10-layer 60M model)
@@ -14,8 +14,12 @@ A second figure with the same layout but y = cath_acc is also written.
 Mirrors plot_per_n.py but groups by step bucket instead of model size and
 restricts the family set to the four bs=80 students.
 
+Renamed 2026-05-06 from plot_per_n_bs80_sweep.py -> plot_per_n_L4_bs80.py
+to make the layer-4-only scope explicit (cf. plot_per_n.py, which covers the
+L0/L4/L9 layer ablation across n=128/256/512).
+
 Usage:
-    python evaluation/proteina/representation/scripts/plot_per_n_bs80_sweep.py
+    python evaluation/proteina/representation/scripts/plot_per_n_L4_bs80.py
 """
 
 from __future__ import annotations
@@ -26,7 +30,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
-RESULTS = HERE.parent / "results" / "n128_bs80_sweep_val"
+RESULTS = HERE.parent / "results" / "n128_L4_bs80_val"
 FIG_DIR = HERE.parent / "figures"
 
 # Per-checkpoint colour, matches the gen-side bs80 plot for consistency
@@ -168,6 +172,6 @@ def _plot_grid(df: pd.DataFrame, metric: str, ylabel: str, out_name: str) -> Non
 if __name__ == "__main__":
     df = _load()
     _plot_grid(
-        df, "p_at_L_5_linear", "P@L/5 (linear)", "n128_bs80_sweep_per_layer_PaL5.png"
+        df, "p_at_L_5_linear", "P@L/5 (linear)", "n128_L4_bs80_per_layer_PaL5.png"
     )
-    _plot_grid(df, "cath_acc", "CATH accuracy", "n128_bs80_sweep_per_layer_cath.png")
+    _plot_grid(df, "cath_acc", "CATH accuracy", "n128_L4_bs80_per_layer_cath.png")
