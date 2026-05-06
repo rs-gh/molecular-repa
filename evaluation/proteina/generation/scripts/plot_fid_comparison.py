@@ -233,10 +233,10 @@ def plot_fid_bars(results_late, results_early):
         bars_l[best_idx].set_linewidth(2.5)
 
     axes[0].legend(fontsize=9)
-    n_samples = "~6,125"
     fig.suptitle(
-        f"FID Evaluation ({n_samples} samples/run)",
-        fontsize=13,
+        "FID Evaluation\n"
+        "Sampling: lengths 60-500 step 10 (45 lengths) x 125 samples/length = 5,625 PDBs/run",
+        fontsize=12,
         fontweight="bold",
     )
     plt.tight_layout()
@@ -327,8 +327,9 @@ def plot_fjsd_bars(results_late, results_early):
         ax.set_ylim(0, max(max(pdb_vals), max(afdb_vals)) * 1.3)
 
     fig.suptitle(
-        "Fold Jensen-Shannon Divergence (latest ckpt, triangles = ~0.5x samples)",
-        fontsize=13,
+        "Fold Jensen-Shannon Divergence (latest ckpt, triangles = ~0.5x samples)\n"
+        "Sampling: lengths 60-500 step 10 (45 lengths) x 125 samples/length = 5,625 PDBs/run",
+        fontsize=12,
         fontweight="bold",
     )
     plt.tight_layout()
@@ -409,8 +410,9 @@ def plot_fold_score_bars(results_late, results_early):
 
     axes[0].legend(fontsize=9)
     fig.suptitle(
-        "Fold Score - Inception Score variant",
-        fontsize=13,
+        "Fold Score - Inception Score variant\n"
+        "Sampling: lengths 60-500 step 10 (45 lengths) x 125 samples/length = 5,625 PDBs/run",
+        fontsize=12,
         fontweight="bold",
     )
     plt.tight_layout()

@@ -258,7 +258,11 @@ def main():
     plot_metric(data, "_res_AFDB_FID", axes_fid[1], log_y=True)
     axes_fid[0].legend(fontsize=9)
     fig_fid.suptitle(
-        "FID vs Samples Seen (BS=6 baseline, BS=4 REPA)", fontsize=14, fontweight="bold"
+        "FID vs Samples Seen (BS=6 baseline, BS=4 REPA)\n"
+        "Sampling: lite eval (dotted) = lengths 60-500 step 40 x 25/len = 300 PDBs/ckpt; "
+        "full eval (solid) = lengths 60-500 step 10 x 125/len = 5,625 PDBs/ckpt",
+        fontsize=12,
+        fontweight="bold",
     )
     fig_fid.tight_layout()
     fid_path = os.path.join(OUTPUT_DIR, "fid_convergence.png")
@@ -273,8 +277,10 @@ def main():
             plot_metric(data, metric, axes_jsd[i, j])
     axes_jsd[0, 0].legend(fontsize=9)
     fig_jsd.suptitle(
-        "Fold JSD vs Samples Seen (BS=6 baseline, BS=4 REPA)",
-        fontsize=14,
+        "Fold JSD vs Samples Seen (BS=6 baseline, BS=4 REPA)\n"
+        "Sampling: lite eval (dotted) = lengths 60-500 step 40 x 25/len = 300 PDBs/ckpt; "
+        "full eval (solid) = lengths 60-500 step 10 x 125/len = 5,625 PDBs/ckpt",
+        fontsize=12,
         fontweight="bold",
     )
     fig_jsd.tight_layout()
@@ -289,8 +295,10 @@ def main():
         plot_metric(data, metric, axes_fs[j])
     axes_fs[0].legend(fontsize=9)
     fig_fs.suptitle(
-        "Fold Scores vs Samples Seen (BS=6 baseline, BS=4 REPA)",
-        fontsize=14,
+        "Fold Scores vs Samples Seen (BS=6 baseline, BS=4 REPA)\n"
+        "Sampling: lite eval (dotted) = lengths 60-500 step 40 x 25/len = 300 PDBs/ckpt; "
+        "full eval (solid) = lengths 60-500 step 10 x 125/len = 5,625 PDBs/ckpt",
+        fontsize=12,
         fontweight="bold",
     )
     fig_fs.tight_layout()

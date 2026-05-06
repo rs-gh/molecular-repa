@@ -202,8 +202,10 @@ def plot(data: dict, steps: dict) -> None:
     )
 
     fig.suptitle(
-        "n=128 L4 bs=80 sweep - generation metrics at sample-matched checkpoints",
-        fontsize=13,
+        "n=128 L4 bs=80 sweep - generation metrics at sample-matched checkpoints\n"
+        "Sampling per checkpoint: nres_lens=[128] x 200 samples/length = 200 PDBs "
+        "(FID/fS/fJSD/novelty use all 200; designability/scRMSD subsample N=100).",
+        fontsize=11,
         fontweight="bold",
         y=1.01,
     )

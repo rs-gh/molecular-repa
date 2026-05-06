@@ -191,8 +191,10 @@ def plot(data: dict, steps: dict) -> None:
     fig.suptitle(
         "n=256 sweep - generation metrics (all runs at step 400K, NOT sample-matched)\n"
         "All 4 runs share dataset pdb_lmdb_256 (bs=12->24 bumped 2026-04-19), "
-        "but the bs ramp fired at different relative steps; samples seen = epoch x 267,789.",
-        fontsize=11,
+        "but the bs ramp fired at different relative steps; samples seen = epoch x 267,789.\n"
+        "Sampling per checkpoint: nres_lens=[256] x 200 samples/length, gen_bs=80 rounds up "
+        "via split_nlens -> 240 PDBs (FID/fS/fJSD/novelty use all 240; designability/scRMSD subsample N=100).",
+        fontsize=10,
         fontweight="bold",
         y=0.99,
     )

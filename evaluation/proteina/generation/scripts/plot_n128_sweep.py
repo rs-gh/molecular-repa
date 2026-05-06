@@ -196,8 +196,10 @@ def plot(data: dict, steps: dict) -> None:
     fig.suptitle(
         "n=128 sweep - generation metrics at sample-matched checkpoints (~19.5M samples)\n"
         "Baseline trained at fixed bs=24; REPA students switched bs=24->80 at step 220K. "
-        "Each bar is one EMA checkpoint; tick labels show per-run bs/step/samples.",
-        fontsize=11,
+        "Each bar is one EMA checkpoint; tick labels show per-run bs/step/samples.\n"
+        "Sampling per checkpoint: nres_lens=[128] x 200 samples/length = 200 PDBs "
+        "(FID/fS/fJSD/novelty use all 200; designability/scRMSD subsample N=100).",
+        fontsize=10,
         fontweight="bold",
         y=0.99,
     )

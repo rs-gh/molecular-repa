@@ -297,12 +297,15 @@ def plot(data: dict, steps_by_size: dict) -> None:
         bbox_to_anchor=(0.5, -0.02),
     )
 
-    plt.tight_layout(rect=[0, 0.04, 1, 0.96])
+    plt.tight_layout(rect=[0, 0.04, 1, 0.95])
     fig.suptitle(
         "Generation quality - cross-size comparison\n"
         "Per-bar x-tick: step | samples-seen. n=128 and n=512_sm are sample-matched within each row; "
-        "n=256 is NOT (bs=12->24 ramp fired at different relative steps).",
-        fontsize=12,
+        "n=256 is NOT (bs=12->24 ramp fired at different relative steps).\n"
+        "Sampling per checkpoint: n=128/512 -> 200 PDBs (nres=[L] x 200/length); "
+        "n=256 -> 240 PDBs (nres=[256] x 200/length, gen_bs=80 rounds up via split_nlens). "
+        "Designability/scRMSD subsample N=100.",
+        fontsize=11,
         fontweight="bold",
         y=0.99,
     )
