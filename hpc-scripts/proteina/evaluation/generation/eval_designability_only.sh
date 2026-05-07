@@ -179,8 +179,8 @@ sys.argv = [
     '--output_suffix', '$OUTPUT_SUFFIX',
     '--skip_generation',
     '--skip_fid',
-    '--designability_subset', '$DESIG_N',
-    '--diversity_subset_per_bin', '0',
+    '--designability_subset_per_length', '$DESIG_N',
+    '--metrics', 'designability',
     '--seed', '$EVAL_SEED',
 ]
 import evaluate

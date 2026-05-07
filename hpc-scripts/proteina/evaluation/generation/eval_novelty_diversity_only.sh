@@ -3,10 +3,12 @@
 #! Novelty + diversity backfill for existing generation-sweep output directories.
 #! CPU-only (TM-score via biotite, no GPU needed).
 #!
-#! Runs evaluate.py with --skip_generation --skip_fid --designability_subset 0
-#! on an existing eval_output/ dir, reads the PDBs already in samples_fid/, and
-#! merges _res_novelty_* and _res_diversity_* columns into the existing
-#! results_*.csv. Then call --consolidate_only to rebuild sweep_results.jsonl.
+#! Runs evaluate.py with --skip_generation --skip_fid --metrics
+#! diversity,novelty_centroid,novelty_foldseek on an existing eval_output/
+#! dir, reads the PDBs already in samples_fid/, and merges _res_novelty_*
+#! and _res_diversity_* columns into the existing results_*.csv. Then call
+#! --consolidate_only to rebuild sweep_results.jsonl. Diversity + novelty
+#! run on the full designable subset — no per-bin cap.
 #!
 #! Wall-time estimates (icelake CPU, per task):
 #!   diversity (200-240 PDBs, 1 length bin): O(N^2/2) ~20-30K TM-aligns, ~20-30s
@@ -54,11 +56,10 @@ TASKS=(
 )
 
 CENTROID_PATH="/rds/user/sr2173/hpc-work/proteina/data/centroids_pdb.pt"
-DIVERSITY_N="${DIVERSITY_N:-200}"
 EVAL_SEED="${EVAL_SEED:-42}"
 
 if [ "${1:-}" = "--list" ]; then
-    echo "Task list (${#TASKS[@]} tasks, DIVERSITY_N=$DIVERSITY_N, CENTROID=$CENTROID_PATH):"
+    echo "Task list (${#TASKS[@]} tasks, CENTROID=$CENTROID_PATH):"
     for i in "${!TASKS[@]}"; do
         IFS='|' read -r cfg suf <<< "${TASKS[$i]}"
         slug="${cfg//\//_}"
@@ -99,7 +100,7 @@ echo "=== Novelty + diversity backfill (CPU-only) ==="
 echo "=== TASK_ID: $TASK_ID ==="
 echo "=== CONFIG_NAME: $CONFIG_NAME ==="
 echo "=== OUTPUT_SUFFIX: $OUTPUT_SUFFIX ==="
-echo "=== DIVERSITY_N: $DIVERSITY_N, CENTROID_PATH: $CENTROID_PATH ==="
+echo "=== CENTROID_PATH: $CENTROID_PATH ==="
 echo "=== NODE: $(hostname), Time: $(date) ==="
 echo ""
 
@@ -124,8 +125,7 @@ sys.argv = [
     '--output_suffix', '$OUTPUT_SUFFIX',
     '--skip_generation',
     '--skip_fid',
-    '--designability_subset', '0',
-    '--diversity_subset_per_bin', '$DIVERSITY_N',
+    '--metrics', 'diversity,novelty_centroid,novelty_foldseek',
     '--centroid_path', '$CENTROID_PATH',
     '--seed', '$EVAL_SEED',
 ]

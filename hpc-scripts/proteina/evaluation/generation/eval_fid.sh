@@ -30,7 +30,7 @@
 ### Parse arguments                                         ###
 ###############################################################
 
-CONFIG_NAME="${1:?Usage: sbatch eval_fid.sh <config_name> [config_subdir] [--designability_subset N] ...}"
+CONFIG_NAME="${1:?Usage: sbatch eval_fid.sh <config_name> [config_subdir] [--designability_subset_per_length N] ...}"
 CONFIG_SUBDIR="${2:-}"
 # If second arg starts with --, it's an extra arg not a subdir
 if [[ "$CONFIG_SUBDIR" == --* ]]; then

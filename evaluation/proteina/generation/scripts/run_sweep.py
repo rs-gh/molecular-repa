@@ -36,7 +36,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import os
 import sys
@@ -58,6 +57,13 @@ from lib.checkpoints import (  # noqa: E402
     find_checkpoint_path,
     resolve_step,
 )
+
+# ``evaluate`` is imported lazily inside ``run_one_task`` because it pulls in
+# proteinfoundation modules that aren't on sys.path during --dry_run /
+# --consolidate_only invocations from a vanilla shell. METRIC_PREFIX and the
+# shared CLI helper come from ``_metric_args`` directly so this module stays
+# importable without the proteina src tree.
+from utils._metric_args import METRIC_PREFIX, add_metric_args  # noqa: E402
 
 SWEEP_CONFIG_PATH = HERE.parent / "sweep_config.yaml"
 
@@ -83,6 +89,66 @@ def _load_sweep_config(profile: str) -> Dict:
 # -- Task list construction ----------------------------------------------------
 
 
+def load_ckpts_file(path: Path) -> List[Tuple[str, Optional[int], str, Path]]:
+    """Parse a TSV of (label, ckpt_path, config_name) into a task list.
+
+    Each non-comment line must have exactly three TAB-separated fields. Step
+    is left None so resolve_step picks the actual integer from the checkpoint
+    filename (or last-EMA fallback) at execution time.
+    """
+    if not path.exists():
+        raise FileNotFoundError(f"--ckpts_file not found: {path}")
+    tasks: List[Tuple[str, Optional[int], str, Path]] = []
+    seen_labels: Set[str] = set()
+    with open(path) as f:
+        for lineno, raw in enumerate(f, 1):
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split("\t")
+            if len(parts) != 3:
+                raise ValueError(
+                    f"{path}:{lineno}: expected 3 TAB-separated fields "
+                    f"(label, ckpt_path, config_name), got {len(parts)}: {line!r}"
+                )
+            label, ckpt_path, config_name = (p.strip() for p in parts)
+            if not label or not ckpt_path or not config_name:
+                raise ValueError(f"{path}:{lineno}: empty field in {line!r}")
+            if label in seen_labels:
+                raise ValueError(
+                    f"{path}:{lineno}: duplicate label {label!r}; labels are "
+                    f"used as the JSONL key and must be unique within a file."
+                )
+            seen_labels.add(label)
+            tasks.append((label, None, config_name, Path(ckpt_path)))
+    if not tasks:
+        raise ValueError(f"{path}: no checkpoint rows found")
+    return tasks
+
+
+_PROTOCOL_SUFFIXES = ("_fid", "_des")
+
+
+def _strip_protocol_suffix(run_name: str) -> str:
+    """Return the RUN_SCHEDULES key for a run name with an optional `_fid` /
+    `_des` protocol suffix.
+
+    Paper-protocol sweeps use one RUN_SCHEDULES entry per checkpoint and let
+    the run-name suffix select the protocol (FID vs des/div). We map e.g.
+    ``baseline_256_ep21_fid`` → ``baseline_256_ep21`` for the schedule lookup.
+    Names that aren't in RUN_SCHEDULES even after stripping fall through
+    unchanged so the caller's unknown-run error fires with the original name.
+    """
+    if run_name in RUN_SCHEDULES:
+        return run_name
+    for suf in _PROTOCOL_SUFFIXES:
+        if run_name.endswith(suf):
+            stripped = run_name[: -len(suf)]
+            if stripped in RUN_SCHEDULES:
+                return stripped
+    return run_name
+
+
 def build_task_list(
     runs: List[str],
 ) -> List[Tuple[str, Optional[int], str, Path]]:
@@ -91,10 +157,15 @@ def build_task_list(
     Expands each run's step_list from RUN_SCHEDULES.  Tasks are ordered
     run-first then step-ascending so a partial --array covers early steps of
     all runs before late steps of any run.
+
+    Run names ending in ``_fid`` / ``_des`` are protocol-suffixed paper-style
+    keys; their RUN_SCHEDULES entry lives under the suffix-stripped name
+    while their GEN_RUN_CONFIGS entry uses the full suffixed name.
     """
     tasks = []
     for run_name in runs:
-        if run_name not in RUN_SCHEDULES:
+        schedule_key = _strip_protocol_suffix(run_name)
+        if schedule_key not in RUN_SCHEDULES:
             raise ValueError(
                 f"Unknown run '{run_name}'. Available: {sorted(RUN_SCHEDULES)}"
             )
@@ -103,7 +174,7 @@ def build_task_list(
                 f"Run '{run_name}' has no GEN_RUN_CONFIGS entry. "
                 f"Add it to evaluation/proteina/lib/checkpoints.py."
             )
-        run_dir, _is_repa, _layer, step_list = RUN_SCHEDULES[run_name]
+        run_dir, _is_repa, _layer, step_list = RUN_SCHEDULES[schedule_key]
         config_name = GEN_RUN_CONFIGS[run_name]
         for step in step_list:
             ckpt_path = find_checkpoint_path(run_dir, step)
@@ -162,7 +233,18 @@ _METRIC_COLS = [
     "_res_scRMSD_median",
     "_res_designability_n",
     "_res_diversity_clusters_mean",
+    "_res_diversity_pairwise_tm_mean",
+    "_res_diversity_n",
+    "_res_diversity_designable_filtered",
     "_res_novelty_rate",
+    "_res_novelty_max_tm_mean",
+    "_res_novelty_designable_filtered",
+    "_res_novelty_foldseek_pdb_rate",
+    "_res_novelty_foldseek_pdb_max_tm_mean",
+    "_res_novelty_foldseek_pdb_n",
+    "_res_novelty_foldseek_afdb_swissprot_rate",
+    "_res_novelty_foldseek_afdb_swissprot_max_tm_mean",
+    "_res_novelty_foldseek_afdb_swissprot_n",
 ]
 
 
@@ -195,7 +277,7 @@ def _backfill_from_csv(rows: List[Dict], repo_root: Path) -> int:
         new_vals = {
             k: v
             for k, v in df.iloc[0].items()
-            if str(k).startswith("_res_") and k not in r
+            if str(k).startswith(METRIC_PREFIX) and k not in r
         }
         if new_vals:
             r.update(new_vals)
@@ -204,7 +286,12 @@ def _backfill_from_csv(rows: List[Dict], repo_root: Path) -> int:
 
 
 def consolidate(jsonl_path: Path, output_dir: Path) -> None:
-    """Rebuild sweep_results.csv and sweep_results.md from the JSONL."""
+    """Rebuild the sweep_results.md human summary from the JSONL.
+
+    JSONL is the source of truth (append-only, drives the resume-skip set and
+    every plot loader). MD is a glanceable side-effect for IDE / PR review;
+    everything plot-facing reads JSONL directly via load_sweep_rows().
+    """
     _, rows = _load_done_set(jsonl_path)
     if not rows:
         print("No rows in JSONL yet, skipping consolidation.")
@@ -226,33 +313,7 @@ def consolidate(jsonl_path: Path, output_dir: Path) -> None:
             f"  Backfilled _res_ columns from per-checkpoint CSVs for {n_updated} rows."
         )
 
-    # Write full JSON list
-    json_path = output_dir / "sweep_results.json"
-    with open(json_path, "w") as f:
-        json.dump(rows, f, indent=2, default=str)
-
-    # Write CSV
-    all_keys = []
-    seen = set()
-    base_cols = ["run", "step", "config_name", "ckpt_path", "seed", "error"]
-    for k in base_cols:
-        if k not in seen:
-            all_keys.append(k)
-            seen.add(k)
-    for r in rows:
-        for k in r:
-            if k not in seen:
-                all_keys.append(k)
-                seen.add(k)
-
-    csv_path = output_dir / "sweep_results.csv"
-    with open(csv_path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=all_keys, extrasaction="ignore")
-        writer.writeheader()
-        for r in rows:
-            writer.writerow(r)
-
-    # Write MD summary - one row per (run, step), key metrics only
+    # MD summary - one row per (run, step), key metrics only
     md_path = output_dir / "sweep_results.md"
     present_metrics = [c for c in _METRIC_COLS if any(c in r for r in rows)]
     header = ["run", "step"] + present_metrics
@@ -271,7 +332,7 @@ def consolidate(jsonl_path: Path, output_dir: Path) -> None:
     with open(md_path, "w") as f:
         f.write("\n".join(lines) + "\n")
 
-    print(f"Consolidated {len(result_rows)} rows -> {csv_path}, {md_path}")
+    print(f"Consolidated {len(result_rows)} rows -> {md_path}")
 
 
 # -- Single-task execution -----------------------------------------------------
@@ -284,17 +345,30 @@ def run_one_task(
     ckpt_path: Optional[Path],
     output_dir: Path,
     seed: int,
-    designability_subset: int,
-    diversity_subset_per_bin: int,
+    designability_subset_per_length: int,
+    designability_lengths: Optional[str],
     skip_fid: bool,
     fast_inference: bool,
     jsonl_path: Path,
     cath_subset: int = 0,
     cath_head_path: Optional[str] = None,
     centroid_path: Optional[str] = None,
+    centroid_filter_designable: bool = True,
+    foldseek_target_dbs: Optional[str] = None,
+    foldseek_alignment_type: int = 2,
+    foldseek_max_seqs: int = 1000,
+    foldseek_sensitivity: float = 9.5,
+    foldseek_threads: int = 0,
+    foldseek_filter_designable: bool = True,
+    metrics: Optional[str] = None,
+    skip_generation: bool = False,
 ) -> None:
-    """Run evaluate.py for one (run_name, step) and append to JSONL."""
-    import importlib
+    """Run evaluate.main() for one (run_name, step) and append to JSONL."""
+    # Lazy import: evaluate pulls in proteinfoundation, which isn't always on
+    # sys.path (e.g. during --dry_run from a vanilla shell). Pulling it in
+    # only when we're about to actually generate keeps the orchestrator
+    # importable in lighter modes.
+    import evaluate  # noqa: PLC0415
 
     if ckpt_path is None or not ckpt_path.exists():
         msg = f"Checkpoint not found for run={run_name} step={step}: {ckpt_path}"
@@ -303,58 +377,55 @@ def run_one_task(
         return
 
     # Resolve actual step integer (handles step=None -> last-EMA)
-    from lib.checkpoints import resolve_step as _resolve_step
-
-    actual_step = _resolve_step(ckpt_path, step)
+    actual_step = resolve_step(ckpt_path, step)
     ckpt_name = ckpt_path.name
-    ckpt_dir = str(ckpt_path.parent)
 
     print(f"=== run={run_name} step={actual_step} config={config_name} ===")
     print(f"    ckpt: {ckpt_path}")
 
-    # Build sys.argv for evaluate.py's parse_args()
-    argv = [
-        "evaluate.py",
-        "--config_name",
-        config_name,
-        "--ckpt_name_override",
-        ckpt_name,
-        "--output_suffix",
-        f"sweep_{run_name}_step_{actual_step}",
-        "--seed",
-        str(seed),
-        "--designability_subset",
-        str(designability_subset),
-        "--diversity_subset_per_bin",
-        str(diversity_subset_per_bin),
-    ]
-    if skip_fid:
-        argv.append("--skip_fid")
-    if not fast_inference:
-        argv.append("--no-fast_inference")
-    argv.extend(["--cath_subset", str(cath_subset)])
-    if cath_head_path:
-        argv.extend(["--cath_head_path", cath_head_path])
-    if centroid_path:
-        argv.extend(["--centroid_path", centroid_path])
+    # Auto-derive --metrics from the run-name protocol suffix (paper-protocol
+    # sweeps). The `_fid` suffix selects fid metrics only; `_des` selects
+    # designability + diversity. Unsuffixed run names fall through to the
+    # caller's value (legacy sweeps run everything by default).
+    if run_name.endswith("_fid"):
+        metrics_eff = "fid"
+    elif run_name.endswith("_des"):
+        metrics_eff = "designability,diversity"
+    else:
+        metrics_eff = metrics
 
-    # Patch cfg.ckpt_path via env so evaluate.py uses our resolved path
-    os.environ["_GEN_SWEEP_CKPT_DIR_OVERRIDE"] = ckpt_dir
+    # Build the Namespace evaluate.main() consumes. Mirrors evaluate.parse_args
+    # plus the shared metric flags from add_metric_args. None values trigger
+    # evaluate's resolve_evaluate_defaults so the standalone defaults stay
+    # authoritative for evaluate.py.
+    eval_args = argparse.Namespace(
+        config_name=config_name,
+        config_subdir=None,
+        ckpt_name_override=ckpt_name,
+        ckpt_path_override=str(ckpt_path.parent),
+        output_suffix=f"sweep_{run_name}_step_{actual_step}",
+        skip_generation=skip_generation,
+        novelty_tm_threshold=0.5,
+        seed=seed,
+        designability_subset_per_length=designability_subset_per_length,
+        designability_lengths=designability_lengths,
+        cath_subset=cath_subset,
+        cath_head_path=cath_head_path,
+        centroid_path=centroid_path,
+        centroid_filter_designable=centroid_filter_designable,
+        foldseek_target_dbs=foldseek_target_dbs,
+        foldseek_alignment_type=foldseek_alignment_type,
+        foldseek_max_seqs=foldseek_max_seqs,
+        foldseek_sensitivity=foldseek_sensitivity,
+        foldseek_threads=foldseek_threads,
+        foldseek_filter_designable=foldseek_filter_designable,
+        skip_fid=skip_fid,
+        fast_inference=fast_inference,
+        metrics=metrics_eff,
+    )
 
-    saved_argv = sys.argv[:]
-    sys.argv = argv
     try:
-        evaluate = importlib.import_module("evaluate")
-        importlib.reload(evaluate)  # ensure fresh state if called multiple times
-        evaluate.main()
-        # Read back the per-checkpoint CSV to get metric values
-        output_suffix = f"sweep_{run_name}_step_{actual_step}"
-        config_slug = config_name.replace("/", "_")
-        results_csv = (
-            HERE.parent.parent.parent.parent  # repo root
-            / f"eval_output/{config_slug}_{output_suffix}"
-            / f"results_{config_slug}_{output_suffix}_fid.csv"
-        )
+        result_row = evaluate.main(args=eval_args)
         row: Dict = {
             "run": run_name,
             "step": actual_step,
@@ -362,15 +433,14 @@ def run_one_task(
             "ckpt_path": str(ckpt_path),
             "seed": seed,
         }
-        if results_csv.exists():
-            import pandas as pd
-
-            df = pd.read_csv(results_csv)
-            if len(df) > 0:
-                metric_vals = {
-                    k: v for k, v in df.iloc[0].items() if str(k).startswith("_res_")
+        if isinstance(result_row, dict):
+            row.update(
+                {
+                    k: v
+                    for k, v in result_row.items()
+                    if str(k).startswith(METRIC_PREFIX)
                 }
-                row.update(metric_vals)
+            )
         _append_row(jsonl_path, row)
         print(f"    -> appended to {jsonl_path}")
     except Exception as exc:
@@ -385,9 +455,6 @@ def run_one_task(
                 "error": msg,
             },
         )
-    finally:
-        sys.argv = saved_argv
-        os.environ.pop("_GEN_SWEEP_CKPT_DIR_OVERRIDE", None)
 
 
 # -- CLI -----------------------------------------------------------------------
@@ -454,42 +521,33 @@ def parse_args():
         "Defaults to profile's output_dir field (relative to generation/).",
     )
 
-    # Metric settings (all overridable; defaults come from sweep profile)
-    p.add_argument("--seed", type=int, default=None)
+    # Metric settings (all overridable; defaults come from sweep profile).
+    # The exact set of flags is shared with evaluate.py via add_metric_args
+    # so the two scripts stay in sync.
+    add_metric_args(p)
+
+    # Arbitrary checkpoint list (TSV: label\tckpt_path\tconfig_name per row).
+    # Bypasses RUN_SCHEDULES; one task per row. Mutually exclusive with
+    # --config / --runs / --ckpt_path.
     p.add_argument(
-        "--designability_subset",
-        type=int,
+        "--ckpts_file",
+        type=str,
         default=None,
-        help="PDBs to eval for designability (0=skip).",
+        help="Path to TSV file with one row per checkpoint to evaluate. "
+        "Each non-comment line: 'label<TAB>ckpt_path<TAB>config_name'. Lines "
+        "starting with # are ignored. Use with --array=0-N-1 to fan out one "
+        "task per row.",
     )
-    p.add_argument("--diversity_subset_per_bin", type=int, default=None)
+
+    # Metric-only resume: reuse cached PDBs in eval_output, skip the
+    # generation loop. Maps directly to evaluate.py's --skip_generation.
     p.add_argument(
-        "--skip_fid",
+        "--skip_generation",
         action="store_true",
-        default=None,
-        help="Skip GearNet FID/fJSD/fS metrics.",
-    )
-    p.add_argument(
-        "--fast_inference", action=argparse.BooleanOptionalAction, default=True
-    )
-    p.add_argument(
-        "--cath_subset",
-        type=int,
-        default=None,
-        help="PDBs to score with the CATH head (0=skip).",
-    )
-    p.add_argument(
-        "--cath_head_path",
-        type=str,
-        default=None,
-        help="Path to .pkl from build_cath_classifier.py. Required for CATH metrics.",
-    )
-    p.add_argument(
-        "--centroid_path",
-        type=str,
-        default=None,
-        help="Path to training-set centroid .pt from precompute_centroids.py. "
-        "Required for novelty metrics (skipped if absent).",
+        help="Reuse cached PDBs under eval_output/<output_suffix>/ instead of "
+        "regenerating. Use to retry metric-only after an earlier task crashed "
+        "during designability/diversity. Requires the cache to already hold "
+        "the full PDB pool (1125 for paper protocols).",
     )
 
     # Utility modes
@@ -516,22 +574,22 @@ def main():
         profile_cfg = _load_sweep_config(args.config)
 
     seed = args.seed if args.seed is not None else int(profile_cfg.get("seed", 42))
-    designability_subset = (
-        args.designability_subset
-        if args.designability_subset is not None
-        else int(profile_cfg.get("designability_subset", 0))
+    designability_subset_per_length = (
+        args.designability_subset_per_length
+        if args.designability_subset_per_length is not None
+        else int(profile_cfg.get("designability_subset_per_length", 0))
     )
-    diversity_subset_per_bin = (
-        args.diversity_subset_per_bin
-        if args.diversity_subset_per_bin is not None
-        else int(profile_cfg.get("diversity_subset_per_bin", 0))
+    designability_lengths = (
+        args.designability_lengths
+        if args.designability_lengths is not None
+        else profile_cfg.get("designability_lengths")
     )
     skip_fid = (
         args.skip_fid
         if args.skip_fid is not None
         else bool(profile_cfg.get("skip_fid", False))
     )
-    fast_inference = args.fast_inference
+    fast_inference = args.fast_inference if args.fast_inference is not None else True
     cath_subset = (
         args.cath_subset
         if args.cath_subset is not None
@@ -539,6 +597,44 @@ def main():
     )
     cath_head_path = args.cath_head_path or profile_cfg.get("cath_head_path")
     centroid_path = args.centroid_path or profile_cfg.get("centroid_path")
+    centroid_filter_designable = (
+        args.centroid_filter_designable
+        if args.centroid_filter_designable is not None
+        else bool(profile_cfg.get("centroid_filter_designable", True))
+    )
+    metrics = args.metrics if args.metrics is not None else profile_cfg.get("metrics")
+
+    # Foldseek knobs: CLI > profile > script default. Empty target_dbs -> skip.
+    foldseek_target_dbs = (
+        args.foldseek_target_dbs
+        if args.foldseek_target_dbs is not None
+        else profile_cfg.get("foldseek_target_dbs")
+    )
+    foldseek_alignment_type = (
+        args.foldseek_alignment_type
+        if args.foldseek_alignment_type is not None
+        else int(profile_cfg.get("foldseek_alignment_type", 2))
+    )
+    foldseek_max_seqs = (
+        args.foldseek_max_seqs
+        if args.foldseek_max_seqs is not None
+        else int(profile_cfg.get("foldseek_max_seqs", 1000))
+    )
+    foldseek_sensitivity = (
+        args.foldseek_sensitivity
+        if args.foldseek_sensitivity is not None
+        else float(profile_cfg.get("foldseek_sensitivity", 9.5))
+    )
+    foldseek_threads = (
+        args.foldseek_threads
+        if args.foldseek_threads is not None
+        else int(profile_cfg.get("foldseek_threads", 0))
+    )
+    foldseek_filter_designable = (
+        args.foldseek_filter_designable
+        if args.foldseek_filter_designable is not None
+        else bool(profile_cfg.get("foldseek_filter_designable", True))
+    )
 
     # -- Resolve output dir -------------------------------------------------- #
     if args.output_dir:
@@ -555,8 +651,22 @@ def main():
         consolidate(jsonl_path, output_dir)
         return
 
+    # -- Mutually exclusive task sources ------------------------------------- #
+    sources = sum(
+        bool(x)
+        for x in (args.ckpt_path, args.ckpts_file, args.runs or profile_cfg.get("runs"))
+    )
+    if sources > 1 and not args.ckpt_path:  # ckpt_path handled below standalone
+        # Allow --runs override of profile, but disallow combining with --ckpts_file
+        if args.ckpts_file and (args.runs or profile_cfg.get("runs")):
+            raise ValueError(
+                "--ckpts_file is mutually exclusive with --runs / profile runs."
+            )
+
     # -- Ad-hoc single checkpoint -------------------------------------------- #
     if args.ckpt_path:
+        if args.ckpts_file:
+            raise ValueError("--ckpt_path and --ckpts_file are mutually exclusive.")
         if not args.ckpt_label or not args.config_name:
             raise ValueError("--ckpt_path requires --ckpt_label and --config_name")
         ckpt_path = Path(args.ckpt_path)
@@ -572,24 +682,39 @@ def main():
                 ckpt_path=ckpt_path,
                 output_dir=output_dir,
                 seed=seed,
-                designability_subset=designability_subset,
-                diversity_subset_per_bin=diversity_subset_per_bin,
+                designability_subset_per_length=designability_subset_per_length,
+                designability_lengths=designability_lengths,
                 skip_fid=skip_fid,
                 fast_inference=fast_inference,
                 jsonl_path=jsonl_path,
                 cath_subset=cath_subset,
                 cath_head_path=cath_head_path,
                 centroid_path=centroid_path,
+                centroid_filter_designable=centroid_filter_designable,
+                foldseek_target_dbs=foldseek_target_dbs,
+                foldseek_alignment_type=foldseek_alignment_type,
+                foldseek_max_seqs=foldseek_max_seqs,
+                foldseek_sensitivity=foldseek_sensitivity,
+                foldseek_threads=foldseek_threads,
+                foldseek_filter_designable=foldseek_filter_designable,
+                metrics=metrics,
+                skip_generation=args.skip_generation,
             )
         consolidate(jsonl_path, output_dir)
         return
 
-    # -- Build task list from RUN_SCHEDULES --------------------------------- #
-    runs_str = args.runs or profile_cfg.get("runs", "")
-    if not runs_str:
-        raise ValueError("Specify --runs or --config with a runs field.")
-    runs = [r.strip() for r in runs_str.split(",") if r.strip()]
-    tasks = build_task_list(runs)
+    # -- Build task list (file-driven OR RUN_SCHEDULES-driven) -------------- #
+    if args.ckpts_file:
+        tasks = load_ckpts_file(Path(args.ckpts_file))
+    else:
+        runs_str = args.runs or profile_cfg.get("runs", "")
+        if not runs_str:
+            raise ValueError(
+                "Specify one of --ckpts_file, --ckpt_path, --runs, or --config "
+                "with a runs field."
+            )
+        runs = [r.strip() for r in runs_str.split(",") if r.strip()]
+        tasks = build_task_list(runs)
 
     # -- Dry run ------------------------------------------------------------- #
     if args.dry_run:
@@ -600,9 +725,11 @@ def main():
             print(
                 f"  {i:>4}  {run_name:<20}  {str(step):>8}  {config_name}  [{ckpt_exists}]"
             )
-        print(
-            f"\nSubmit with: sbatch --array=0-{len(tasks)-1} run_sweep.sh --config {args.config or '<profile>'}"
-        )
+        if args.ckpts_file:
+            hint = f"--ckpts_file {args.ckpts_file}"
+        else:
+            hint = f"--config {args.config or '<profile>'}"
+        print(f"\nSubmit with: sbatch --array=0-{len(tasks)-1} run_sweep.sh {hint}")
         return
 
     # -- Select task(s) to run ----------------------------------------------- #
@@ -641,12 +768,23 @@ def main():
             ckpt_path=ckpt_path,
             output_dir=output_dir,
             seed=seed,
-            designability_subset=designability_subset,
-            diversity_subset_per_bin=diversity_subset_per_bin,
+            designability_subset_per_length=designability_subset_per_length,
+            designability_lengths=designability_lengths,
             skip_fid=skip_fid,
             fast_inference=fast_inference,
             jsonl_path=jsonl_path,
+            cath_subset=cath_subset,
+            cath_head_path=cath_head_path,
             centroid_path=centroid_path,
+            centroid_filter_designable=centroid_filter_designable,
+            foldseek_target_dbs=foldseek_target_dbs,
+            foldseek_alignment_type=foldseek_alignment_type,
+            foldseek_max_seqs=foldseek_max_seqs,
+            foldseek_sensitivity=foldseek_sensitivity,
+            foldseek_threads=foldseek_threads,
+            foldseek_filter_designable=foldseek_filter_designable,
+            metrics=metrics,
+            skip_generation=args.skip_generation,
         )
 
     consolidate(jsonl_path, output_dir)

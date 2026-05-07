@@ -191,6 +191,151 @@ RUN_SCHEDULES = {
     "repa_l0_512_sm": ("proteina_60m_repa_layer0_v2", True, 0, [750000]),
     "repa_l4_512_sm": ("proteina_60m_repa_v2", True, 4, [750000]),
     "repa_l9_512_sm": ("proteina_60m_repa_layer9_v2", True, 9, [750000]),
+    # ── n=256 paper-protocol epoch-matched checkpoints ───────────────────── #
+    # Three comparison groups, each at an epoch-matched checkpoint (epoch =
+    # one full pass over training data; step counts vary across runs because
+    # of bs=12→24 transitions and AFDB vs PDB dataset sizes).
+    #   PDB main (drop _random): target ~ep24, span ep21-26 (all step 400K)
+    #   PDB random sweep: target ep17 (capped by _random)
+    #   AFDB sweep: target ep20 (exact match)
+    # Paper-protocol runs use the suffix-stripped key for schedule lookup;
+    # GEN_RUN_CONFIGS holds the suffixed `_fid` / `_des` variants pointing at
+    # one of the two shared protocol configs.
+    "baseline_256_ep21": ("proteina_60m_baseline_256", False, 4, [400000]),
+    "repa_l0_256_ep26": ("proteina_60m_repa_l0_256_per_residue", True, 0, [400000]),
+    "repa_l4_256_ep22": ("proteina_60m_repa_l4_256_per_residue", True, 4, [400000]),
+    "repa_l9_256_ep25": ("proteina_60m_repa_l9_256_per_residue", True, 9, [400000]),
+    "repa_l9_256_ep17": ("proteina_60m_repa_l9_256_per_residue", True, 9, [300000]),
+    "repa_l4_256_random_ep17": (
+        "proteina_60m_repa_l4_256_per_residue_random",
+        True,
+        4,
+        [200000],
+    ),
+    "baseline_afdb_256_ep20": (
+        "proteina_60m_baseline_afdb_swissprot_256",
+        False,
+        4,
+        [200000],
+    ),
+    "repa_l4_afdb_256_ep20": (
+        "proteina_60m_repa_l4_256_afdb_per_residue",
+        True,
+        4,
+        [200000],
+    ),
+    # ── n=128 paper-protocol entries ─────────────────────────────────────── #
+    # One per (run, step) snapshot. step suffixes: _step100k / _step200k /
+    # _step400k / _steplast (= last-EMA, used for runs still training so we
+    # explicitly note we're picking up wherever they are).
+    #
+    # ABLATION 1 (layer @ bs=80): baseline + l0 + l4 + l9. l0/l9 only have
+    # last-EMA at ~63-66K (= ~5M samples) — early; redo at 200K when training
+    # reaches it. Plot caption should note the asymmetry.
+    "baseline_128_bs80_step200k": (
+        "proteina_60m_baseline_128_bs80",
+        False,
+        4,
+        [200000],
+    ),
+    "repa_l0_128_bs80_steplast": (
+        "proteina_60m_repa_l0_128_per_residue_bs80",
+        True,
+        0,
+        [None],  # last-EMA, currently ~66.5K (5.32M samples)
+    ),
+    "repa_l4_128_bs80_step200k": (
+        "proteina_60m_repa_l4_128_per_residue_bs80",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_l9_128_bs80_steplast": (
+        "proteina_60m_repa_l9_128_per_residue_bs80",
+        True,
+        9,
+        [None],  # last-EMA, currently ~63K (5.04M samples)
+    ),
+    # ABLATION 2 (encoder @ L4 bs=80): baseline + 6 REPA targets. pw_*  only
+    # have 100K — earlier (8M vs 16M samples) — redo at 200K once available.
+    # ESM_t30 (penultimate-layer target) has no checkpoints yet, dropped here.
+    "repa_l4_128_random_step200k": (
+        "proteina_60m_repa_l4_128_per_residue_random",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_l4_128_pw_structure_step100k": (
+        "proteina_60m_repa_l4_128_per_residue_pw_structure",
+        True,
+        4,
+        [100000],  # only 100K available — note 8M sample budget
+    ),
+    "repa_l4_128_pw_torsional_step100k": (
+        "proteina_60m_repa_l4_128_per_residue_pw_torsional",
+        True,
+        4,
+        [100000],  # only 100K available — note 8M sample budget
+    ),
+    "repa_mpnn_l4_128_bs80_step200k": (
+        "proteina_60m_repa_mpnn_l4_128_per_residue_bs80",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_esm_l4_128_step200k": (
+        "proteina_60m_repa_esm_l4_128_per_residue",
+        True,
+        4,
+        [200000],
+    ),
+    # ABLATION 3 (bs+lr ablation): clean factorial. baseline_128_bs24 uses
+    # the original `proteina_60m_baseline_128` directory (bs=24 was the
+    # original n=128 batch size). repa_l4_128_bs24 uses the newer explicit
+    # bs=24 re-run (`_bs24` suffix), not the older `_per_residue` directory.
+    "baseline_128_bs24_step200k": (
+        "proteina_60m_baseline_128",
+        False,
+        4,
+        [200000],
+    ),
+    "baseline_128_bs24_step400k": (
+        "proteina_60m_baseline_128",
+        False,
+        4,
+        [400000],
+    ),
+    "baseline_128_bs80_lr3x_step200k": (
+        "proteina_60m_baseline_128_bs80_lr3x",
+        False,
+        4,
+        [200000],
+    ),
+    # repa_l4_128_bs80_lr3x stopped at step ~161K (epoch 123) without a 200K
+    # checkpoint — use last-EMA (~12.9M samples vs 16M for other bs=80 runs).
+    "repa_l4_128_bs24_step200k": (
+        "proteina_60m_repa_l4_128_per_residue_bs24",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_l4_128_bs24_step400k": (
+        "proteina_60m_repa_l4_128_per_residue_bs24",
+        True,
+        4,
+        [400000],
+    ),
+    "repa_l4_128_bs80_lr3x_steplast": (
+        "proteina_60m_repa_l4_128_per_residue_bs80_lr3x",
+        True,
+        4,
+        [None],  # last-EMA at ~161K (12.88M samples) — see note above
+    ),
+    # TODO (lambda ablation): once `proteina_60m_repa_l4_128_per_residue_bs80_lambda1`
+    # (λ=1.0) reaches 100K-step EMA, add:
+    #   "repa_l4_128_bs80_lambda1_step100k": (..., True, 4, [100000]),
+    # And similarly extend `lambda2` (λ=2.0) once it has a 100K ckpt (currently
+    # at 17.5K). The bs80 entry above (λ=0.5) is the third leg of the ablation.
 }
 
 
@@ -201,26 +346,58 @@ RUN_SCHEDULES = {
 # Full-eval configs (6,125 PDBs) are used by eval_fid.sh directly.
 
 GEN_RUN_CONFIGS = {
-    "baseline": "inference/inference_fid_60m_baseline_lite",
-    "repa_l4": "inference/inference_fid_60m_repa_lite",
-    "repa_l0": "inference/inference_fid_60m_repa_layer0_lite",
-    "repa_l9": "inference/inference_fid_60m_repa_layer9_lite",
-    "baseline_128": "inference/inference_fid_60m_baseline_128_lite",
-    "repa_l0_128": "inference/inference_fid_60m_repa_l0_128_lite",
-    "repa_l4_128": "inference/inference_fid_60m_repa_l4_128_lite",
-    "repa_l9_128": "inference/inference_fid_60m_repa_l9_128_lite",
-    "baseline_256": "inference/inference_fid_60m_baseline_256_lite",
-    "repa_l0_256": "inference/inference_fid_60m_repa_l0_256_lite",
-    "repa_l4_256": "inference/inference_fid_60m_repa_l4_256_lite",
-    "repa_l9_256": "inference/inference_fid_60m_repa_l9_256_lite",
-    "baseline_512_sm": "inference/inference_fid_60m_baseline_512_sm_lite",
-    "repa_l0_512_sm": "inference/inference_fid_60m_repa_l0_512_sm_lite",
-    "repa_l4_512_sm": "inference/inference_fid_60m_repa_l4_512_sm_lite",
-    "repa_l9_512_sm": "inference/inference_fid_60m_repa_l9_512_sm_lite",
-    "baseline_128_bs80": "inference/inference_fid_60m_baseline_128_bs80_lite",
-    "repa_l4_128_bs80": "inference/inference_fid_60m_repa_l4_128_bs80_lite",
-    "repa_l4_128_bs80_lr3x": "inference/inference_fid_60m_repa_l4_128_bs80_lr3x_lite",
-    "repa_l4_128_random": "inference/inference_fid_60m_repa_l4_128_random_lite",
+    "baseline": "inference/lite/inference_fid_60m_baseline_lite",
+    "repa_l4": "inference/lite/inference_fid_60m_repa_lite",
+    "repa_l0": "inference/lite/inference_fid_60m_repa_layer0_lite",
+    "repa_l9": "inference/lite/inference_fid_60m_repa_layer9_lite",
+    "baseline_128": "inference/lite/inference_fid_60m_baseline_128_lite",
+    "repa_l0_128": "inference/lite/inference_fid_60m_repa_l0_128_lite",
+    "repa_l4_128": "inference/lite/inference_fid_60m_repa_l4_128_lite",
+    "repa_l9_128": "inference/lite/inference_fid_60m_repa_l9_128_lite",
+    "baseline_256": "inference/lite/inference_fid_60m_baseline_256_lite",
+    "repa_l0_256": "inference/lite/inference_fid_60m_repa_l0_256_lite",
+    "repa_l4_256": "inference/lite/inference_fid_60m_repa_l4_256_lite",
+    "repa_l9_256": "inference/lite/inference_fid_60m_repa_l9_256_lite",
+    "baseline_512_sm": "inference/lite/inference_fid_60m_baseline_512_sm_lite",
+    "repa_l0_512_sm": "inference/lite/inference_fid_60m_repa_l0_512_sm_lite",
+    "repa_l4_512_sm": "inference/lite/inference_fid_60m_repa_l4_512_sm_lite",
+    "repa_l9_512_sm": "inference/lite/inference_fid_60m_repa_l9_512_sm_lite",
+    "baseline_128_bs80": "inference/lite/inference_fid_60m_baseline_128_bs80_lite",
+    "repa_l4_128_bs80": "inference/lite/inference_fid_60m_repa_l4_128_bs80_lite",
+    "repa_l4_128_bs80_lr3x": "inference/lite/inference_fid_60m_repa_l4_128_bs80_lr3x_lite",
+    "repa_l4_128_random": "inference/lite/inference_fid_60m_repa_l4_128_random_lite",
+    # ── n=256 paper protocol (unified FID + designability + diversity) ─── #
+    # One generation pool per ckpt feeds all metric families. FID/fJSD/fS run
+    # on the full 1125-PDB pool; designability/diversity run on the 5
+    # paper-protocol lengths {50, 100, 150, 200, 250} via the orchestrator's
+    # --designability_lengths flag (set in sweep_config.yaml).
+    "baseline_256_ep21": "inference/paper/inference_fid_60m_paper",
+    "repa_l0_256_ep26": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_ep22": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_ep25": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_ep17": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_random_ep17": "inference/paper/inference_fid_60m_paper",
+    "baseline_afdb_256_ep20": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_afdb_256_ep20": "inference/paper/inference_fid_60m_paper",
+    # ── n=128 paper protocol (truncated to in-distribution lengths) ──────── #
+    # All point at inference/inference_fid_60m_n128_paper which generates 500
+    # PDBs at lengths {50, 75, 100, 125} × 125 each (vs n=256's 1125 PDBs).
+    # Designability subsamples 50 of 125 per length × 4 lengths = 200 PDBs.
+    "baseline_128_bs80_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l0_128_bs80_steplast": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_bs80_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l9_128_bs80_steplast": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_random_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_pw_structure_step100k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_pw_torsional_step100k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l4_128_bs80_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_esm_l4_128_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_128_bs24_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_128_bs24_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_128_bs80_lr3x_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_bs24_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_bs24_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_bs80_lr3x_steplast": "inference/paper/inference_fid_60m_n128_paper",
 }
 
 

@@ -30,6 +30,15 @@
 #!   # override seed
 #!   EVAL_SEED=123 sbatch --array=0-3 hpc-scripts/proteina/evaluation/generation/run_sweep.sh --config n128
 #!
+#!   # n=256 paper protocol (2400 PDBs FID, 250 PDBs des/div, epoch matched)
+#!   sbatch --array=0-7 hpc-scripts/proteina/evaluation/generation/run_sweep.sh --config n256_paper_pdb
+#!   sbatch --array=0-5 hpc-scripts/proteina/evaluation/generation/run_sweep.sh --config n256_paper_random
+#!   sbatch --array=0-3 hpc-scripts/proteina/evaluation/generation/run_sweep.sh --config n256_paper_afdb
+#!
+#! --time bumped from 01:30 to 02:30 because the paper-protocol DES tasks
+#! (250 PDBs × 8 ESMFold = 2000 calls at avg L=150) take ~1h45 — designability
+#! is the bottleneck. Lite tasks (~70 min) still fit comfortably.
+#!
 
 #SBATCH -A LIO-CHARM-SL2-GPU
 #SBATCH --job-name=gen-sweep
@@ -37,7 +46,7 @@
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=24
-#SBATCH --time=01:30:00
+#SBATCH --time=02:30:00
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-user=sr2173@cam.ac.uk
 #SBATCH --output=/rds/user/sr2173/hpc-work/proteina/logs/gen-sweep-%A_%a.out
@@ -74,6 +83,11 @@ export DATA_PATH="/rds/user/sr2173/hpc-work/proteina/data"
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 
+#! Foldseek for the novelty pipeline. evaluate.py / novelty_foldseek.py shells
+#! out to `foldseek easy-search` if foldseek_target_dbs is set in
+#! sweep_config.yaml; if foldseek isn't on PATH the wrapper logs and skips.
+export PATH="/rds/user/sr2173/hpc-work/tools/foldseek/bin:$PATH"
+
 mkdir -p /rds/user/sr2173/hpc-work/proteina/logs
 
 ###############################################################
@@ -108,10 +122,20 @@ export TMPDIR="/rds/user/sr2173/hpc-work/proteina/tmp"
 mkdir -p "$CACHE_DIR/hub" "$TMPDIR"
 
 ###############################################################
-### Clean stale caches                                      ###
+### Per-job-scoped torchinductor cache                      ###
 ###############################################################
-
-rm -rf /tmp/torchinductor_${USER} 2>/dev/null
+#! Concurrent array tasks used to race on /tmp/torchinductor_${USER}: when
+#! task N+1 starts, its `rm -rf` would clobber task N's mid-compile state
+#! and hang task N indefinitely. We now scope to the SLURM array task so
+#! every task has a private cache dir. Setting TORCHINDUCTOR_CACHE_DIR
+#! tells torch.compile where to write; the rm cleans up any leftover from
+#! a prior run with the SAME job ID (rare but possible after a node
+#! reschedule). __pycache__ wipe stays — bytecode staleness across edits
+#! is a separate problem.
+TORCHINDUCTOR_CACHE_DIR="/tmp/torchinductor_${USER}_${SLURM_JOB_ID:-nojob}_${SLURM_ARRAY_TASK_ID:-0}"
+export TORCHINDUCTOR_CACHE_DIR
+rm -rf "$TORCHINDUCTOR_CACHE_DIR" 2>/dev/null
+mkdir -p "$TORCHINDUCTOR_CACHE_DIR"
 find "$REPO_DIR/src/proteina" -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null
 
 ###############################################################
@@ -147,20 +171,16 @@ python -u -c "
 import os, sys
 sys.path.insert(0, 'src/proteina/proteinfoundation')
 sys.path.insert(0, 'src/proteina')
+sys.path.insert(0, 'evaluation/proteina')
 
 import proteinfoundation.repa.pyg_compat  # patches sys.modules
 
-import torch
-_orig_torch_load = torch.load
-def _patched_load(*args, **kwargs):
-    kwargs['weights_only'] = False
-    result = _orig_torch_load(*args, **kwargs)
-    if isinstance(result, dict) and 'state_dict' in result:
-        sd = result['state_dict']
-        sd = {k.replace('_orig_mod.', ''): v for k, v in sd.items()}
-        result['state_dict'] = {k: v for k, v in sd.items() if not k.startswith('repa_loss.')}
-    return result
-torch.load = _patched_load
+# Centralised torch.load patcher (weights_only=False, _orig_mod. prefix strip,
+# repa_loss.* filtering for the generation flavour). Old inline patch used
+# to live here; see lib/torch_load_patch.py for the full rationale and the
+# representation flavour (strip_repa=False).
+from lib.torch_load_patch import apply as _apply_torch_load_patch
+_apply_torch_load_patch(strip_repa=True)
 
 # Build argv: pass all shell args + inject seed
 args = list('${PY_ARGS[*]}'.split()) if '${PY_ARGS[*]}' else []
@@ -179,6 +199,12 @@ SWEEP_EXIT=$?
 
 kill $GPU_MON_PID 2>/dev/null
 wait $GPU_MON_PID 2>/dev/null
+
+#! Free the per-task torchinductor cache from /tmp. Each cache is scoped to
+#! ${SLURM_JOB_ID}_${SLURM_ARRAY_TASK_ID} so this only nukes our own task's
+#! cache, never another running task's. Leaving these around long-term
+#! would chew /tmp space (several GB per task across many shapes).
+rm -rf "$TORCHINDUCTOR_CACHE_DIR" 2>/dev/null
 
 echo ""
 echo "=== SWEEP TASK COMPLETE (exit code: $SWEEP_EXIT) ==="

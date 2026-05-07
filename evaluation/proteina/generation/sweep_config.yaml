@@ -32,15 +32,29 @@
 #   sbatch hpc-scripts/proteina/evaluation/generation/run_sweep.sh \
 #     --ckpt_path /rds/...ckpt --ckpt_label myrun_100k \
 #     --config_name inference/inference_fid_60m_baseline_lite
+#
+#   # arbitrary checkpoint list (one task per row; bypasses RUN_SCHEDULES)
+#   #   ckpts.tsv rows: '<label>\t<ckpt_path>\t<config_name>' (# for comments)
+#   sbatch --array=0-N-1 hpc-scripts/proteina/evaluation/generation/run_sweep.sh \
+#     --ckpts_file /path/to/ckpts.tsv --output_dir results/adhoc_run
+#
+#   # rerun only one metric on existing PDBs (merges into per-checkpoint CSV,
+#   # does not clobber other metric columns)
+#   sbatch --array=0-3 hpc-scripts/proteina/evaluation/generation/run_sweep.sh \
+#     --config n128 --metrics novelty_foldseek
 
 _defaults: &defaults
   seed: 42
-  designability_subset: 100   # ProteinMPNN(8 seqs) -> ESMFold -> scRMSD on N PDBs.
-                              # 100 is the lite-sweep default; headline/standalone
-                              # reruns can bump to 500 via --designability_subset 500.
-  diversity_subset_per_bin: 200  # use all generated PDBs; generations are fixed-length
-                                 # so there is one bin per run → O(N^2/2)=20K TM-aligns,
-                                 # ~3 min overhead per checkpoint.
+  # ProteinMPNN(8 seqs) -> ESMFold -> scRMSD on N PDBs. Dual-semantic (TODO
+  # below):
+  #   - With designability_lengths set (paper profiles): N PDBs PER LENGTH.
+  #   - With designability_lengths unset (legacy profiles n128/n256/n512_*/
+  #     n128_L4_bs80, where the inference config typically generates a single
+  #     length anyway): N is a GLOBAL cap on the whole pool.
+  # TODO: tighten this. Set designability_lengths on every profile (matching
+  # the inference config's nres_lens), then drop the global-cap fallback in
+  # evaluate.compute_designability_metrics so the name is unambiguous.
+  designability_subset_per_length: 100
   skip_fid: false
   cath_subset: 100            # 2026-04-27: GearNet+CATH-head scoring on N generated PDBs.
                               # Emits _res_cath_topclass_conf_mean / _res_cath_n_unique /
@@ -55,29 +69,43 @@ _defaults: &defaults
   # this to /rds/.../centroids_afdb_swissprot.pt.
   centroid_path: /rds/user/sr2173/hpc-work/proteina/data/centroids_pdb.pt
 
+  # Foldseek-based novelty (paper-style protocol). Prebuilt DBs live under
+  # /rds/.../foldseek_dbs/{pdb,afdb_swissprot}/db -- built one-off by
+  # hpc-scripts/proteina/data_prep/download_foldseek_dbs.sh. Empty string
+  # disables the Foldseek path; the centroid path stays available either way.
+  # The flag values below are pinned across all sweeps so absolute novelty
+  # numbers stay comparable -- changing alignment-type or max-seqs invalidates
+  # cross-checkpoint comparisons.
+  foldseek_target_dbs: "pdb=/rds/user/sr2173/hpc-work/proteina/foldseek_dbs/pdb/db,afdb_swissprot=/rds/user/sr2173/hpc-work/proteina/foldseek_dbs/afdb_swissprot/db"
+  foldseek_alignment_type: 2     # 3Di+TMalign refine. 1=full TMalign, 0=Gotoh-only.
+  foldseek_max_seqs: 1000        # prefilter survivors per query
+  foldseek_sensitivity: 9.5      # Foldseek -s
+  foldseek_threads: 0            # 0 = let Foldseek pick all cores
+  foldseek_filter_designable: true  # match paper App. F (designable subset only)
+
 # n=512: full convergence curve (11-12 log-spaced checkpoints per run)
 n512_convergence:
   <<: *defaults
   runs: "baseline,repa_l0,repa_l4,repa_l9"
-  output_dir: results/n512_convergence
+  output_dir: results/lite/n512_convergence_lite
 
 # n=128: sample-matched @ ~19.5M samples (baseline step=800K, repa step=400K)
 n128:
   <<: *defaults
   runs: "baseline_128,repa_l0_128,repa_l4_128,repa_l9_128"
-  output_dir: results/n128
+  output_dir: results/lite/n128_lite
 
 # n=256: sample-matched @ ~7M samples (all runs step=400K)
 n256:
   <<: *defaults
   runs: "baseline_256,repa_l0_256,repa_l4_256,repa_l9_256"
-  output_dir: results/n256
+  output_dir: results/lite/n256_lite
 
 # n=512: sample-matched @ 3.0M samples (baseline step=500K, repa step=750K)
 n512_sm:
   <<: *defaults
   runs: "baseline_512_sm,repa_l0_512_sm,repa_l4_512_sm,repa_l9_512_sm"
-  output_dir: results/n512_sm
+  output_dir: results/lite/n512_sm_lite
 
 # n=128 L4 bs=80 sweep: 1 baseline + 3 REPA-L4 variants, each at mid (8M) + end (~16M)
 # samples. All bs=80 throughout, so steps == samples / 80. lr3x has no step=200K
@@ -89,4 +117,104 @@ n512_sm:
 n128_L4_bs80:
   <<: *defaults
   runs: "baseline_128_bs80,repa_l4_128_bs80,repa_l4_128_bs80_lr3x,repa_l4_128_random"
-  output_dir: results/n128_L4_bs80
+  output_dir: results/lite/n128_L4_bs80_lite
+
+# ─────────────────────────────────────────────────────────────────────────── #
+# n=256 paper-protocol sweeps (epoch-matched checkpoints).
+#
+# Unified protocol: ONE generation pool per ckpt drives all metric families.
+#   Length grid: {50, 75, 100, 125, 150, 175, 200, 225, 250} (step 25 from 50)
+#   Samples/length: 125 (paper App. F convention)
+#   Total PDBs per ckpt: 1125
+# FID/fJSD/fS run on the full 1125-PDB pool. Designability runs on the 5
+# paper-protocol lengths {50, 100, 150, 200, 250} with 50 PDBs per length
+# (= 250 PDBs total) via designability_lengths + designability_subset_per_length
+# below. Diversity and novelty then run on whichever of those 250 are
+# designable (no further subsampling). One SLURM task per ckpt.
+#
+# baseline_256_ep21 appears in both n256_paper_pdb and n256_paper_random;
+# the second sweep reuses cached PDBs (same output_suffix → same eval_output
+# dir) so generation is skipped on the second pass — only metrics re-run.
+# Step rationale documented in evaluation/proteina/lib/checkpoints.py.
+# ─────────────────────────────────────────────────────────────────────────── #
+
+# Designability is per-length (50 PDBs sampled at EACH of the listed lengths,
+# paper App. F: 50 × 5 = 250 evaluated). Lengths must be a subset of
+# nres_lens in inference_fid_60m_paper.yaml. Diversity and novelty run on
+# *all* designable PDBs from this 250-PDB set with no further subsampling
+# — at ≤50/length the pairwise-TM cost is seconds.
+_paper_defaults: &paper_defaults
+  <<: *defaults
+  designability_subset_per_length: 50
+  designability_lengths: "50,100,150,200,250"
+  metrics: "fid,designability,diversity"
+
+# Main PDB-trained comparison (drop _random; target ~ep24, span ep21-26)
+n256_paper_pdb:
+  <<: *paper_defaults
+  runs: "baseline_256_ep21,repa_l0_256_ep26,repa_l4_256_ep22,repa_l9_256_ep25"
+  output_dir: results/paper/n256_paper_pdb
+
+# PDB-trained sweep including _random (capped at ep17)
+n256_paper_random:
+  <<: *paper_defaults
+  runs: "baseline_256_ep21,repa_l9_256_ep17,repa_l4_256_random_ep17"
+  output_dir: results/paper/n256_paper_random
+
+# AFDB-Swissprot-trained comparison (epoch 20 exact match)
+n256_paper_afdb:
+  <<: *paper_defaults
+  runs: "baseline_afdb_256_ep20,repa_l4_afdb_256_ep20"
+  output_dir: results/paper/n256_paper_afdb
+
+# ─────────────────────────────────────────────────────────────────────────── #
+# n=128 paper-protocol sweeps (mirrors n=256 paper but truncated to in-
+# distribution lengths {50, 75, 100, 125}). 500 PDBs/ckpt; designability on
+# 50/length × 4 lengths = 200 PDBs. Step suffixes (_step100k / _step200k /
+# _step400k / _steplast) are baked into RUN_SCHEDULES keys so each row
+# pins to a specific snapshot.
+#
+# Three ablations, each its own profile so plots are independent:
+#   layer    — baseline + l0 / l4 / l9 @ bs=80 (step=200K for baseline+l4,
+#              last-EMA for l0/l9 since they have not reached 200K yet — REDO
+#              once they do; plot needs an asterisk)
+#   encoder  — baseline + 6 REPA targets @ L4 bs=80 (step=200K for 5 of 7,
+#              step=100K for pw_structure / pw_torsional which have nothing
+#              past 100K — note in plot caption)
+#   bs_lr    — clean factorial of bs ∈ {24, 80} × lr ∈ {1×, 3×} ± REPA. Sub-
+#              question 1: step=200K for all 6 runs. Sub-question 2: step=400K
+#              for the two bs=24 runs only (extra training, sample-matched
+#              vs bs=80@200K = 16M).
+#
+# TODO (lambda ablation): defer until proteina_60m_repa_l4_128_per_residue_
+# bs80_lambda1 (λ=1.0) and _lambda2 (λ=2.0, currently 17.5K) reach 100K-step
+# EMA. The bs80 entry (λ=0.5) is the third leg already.
+# ─────────────────────────────────────────────────────────────────────────── #
+
+# Designability is per-length (50 PDBs sampled at each of the 4 listed lengths,
+# so 50 × 4 = 200 evaluated). Lengths must be a subset of nres_lens in
+# inference_fid_60m_n128_paper.yaml (= the same set, in this case).
+_paper_n128_defaults: &paper_n128_defaults
+  <<: *defaults
+  designability_subset_per_length: 50
+  designability_lengths: "50,75,100,125"
+  metrics: "fid,designability,diversity"
+
+# Ablation 1: layer ablation (4 tasks)
+n128_paper_layer:
+  <<: *paper_n128_defaults
+  runs: "baseline_128_bs80_step200k,repa_l0_128_bs80_steplast,repa_l4_128_bs80_step200k,repa_l9_128_bs80_steplast"
+  output_dir: results/paper/n128_paper_layer
+
+# Ablation 2: encoder ablation (7 tasks)
+n128_paper_encoder:
+  <<: *paper_n128_defaults
+  runs: "baseline_128_bs80_step200k,repa_l4_128_bs80_step200k,repa_l4_128_random_step200k,repa_l4_128_pw_structure_step100k,repa_l4_128_pw_torsional_step100k,repa_mpnn_l4_128_bs80_step200k,repa_esm_l4_128_step200k"
+  output_dir: results/paper/n128_paper_encoder
+
+# Ablation 3: batch-size + LR ablation (8 tasks = 6 @ step200k + 2 extras
+# @ step400k for the bs=24 runs).
+n128_paper_bs_lr:
+  <<: *paper_n128_defaults
+  runs: "baseline_128_bs24_step200k,baseline_128_bs24_step400k,baseline_128_bs80_step200k,baseline_128_bs80_lr3x_step200k,repa_l4_128_bs24_step200k,repa_l4_128_bs24_step400k,repa_l4_128_bs80_step200k,repa_l4_128_bs80_lr3x_steplast"
+  output_dir: results/paper/n128_paper_bs_lr

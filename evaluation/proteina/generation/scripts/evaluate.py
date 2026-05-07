@@ -23,6 +23,7 @@ import lightning as L
 import numpy as np
 import pandas as pd
 import torch
+from hydra.core.global_hydra import GlobalHydra
 from loguru import logger
 from omegaconf import OmegaConf
 
@@ -34,34 +35,51 @@ from proteinfoundation.metrics.metric_factory import (
 )
 from proteinfoundation.utils.ff_utils.pdb_utils import write_prot_to_pdb
 
+from utils._metric_args import METRIC_PREFIX, add_metric_args, resolve_evaluate_defaults
+from utils.novelty_foldseek import compute_novelty_foldseek, parse_target_dbs_arg
+
+
+def _subsample(items, n, seed):
+    """Deterministically sample up to n items without replacement, sorted by index.
+
+    Returns [] when n<=0 or items is empty. Used by designability, centroid
+    novelty, and CATH metrics — three call-sites that previously inlined the
+    same RandomState.choice pattern.
+    """
+    if n <= 0 or len(items) == 0:
+        return []
+    n_eval = min(n, len(items))
+    rng = np.random.RandomState(seed)
+    idx = rng.choice(len(items), size=n_eval, replace=False)
+    return [items[i] for i in sorted(idx)]
+
+
+def _parse_lengths_csv(s):
+    """Parse a comma-separated lengths string (e.g. '50,100,150') to a list of ints.
+
+    Returns None for empty / None input so callers can use truthiness to decide
+    whether the length filter is active.
+    """
+    if s is None or not str(s).strip():
+        return None
+    out = []
+    for tok in str(s).split(","):
+        tok = tok.strip()
+        if not tok:
+            continue
+        out.append(int(tok))
+    return out or None
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    # ── evaluate-only flags (not shared with run_sweep.py) ───────────────── #
     parser.add_argument("--config_name", type=str, required=True)
     parser.add_argument(
         "--config_subdir",
         type=str,
         default=None,
         help="Subdirectory under experiment_config/ (e.g. 'inference').",
-    )
-    parser.add_argument(
-        "--designability_subset",
-        type=int,
-        default=500,
-        help="Number of PDBs to evaluate for designability (0 to skip)",
-    )
-    parser.add_argument(
-        "--diversity_subset_per_bin",
-        type=int,
-        default=100,
-        help="Max PDBs per length bin for diversity (0 to skip)",
-    )
-    parser.add_argument(
-        "--centroid_path",
-        type=str,
-        default=None,
-        help="Path to .pt file with precomputed training set centroid "
-        "coords (list of [n_i, 37, 3] arrays). Required for novelty.",
     )
     parser.add_argument(
         "--novelty_tm_threshold",
@@ -75,15 +93,17 @@ def parse_args():
         help="Skip generation, only compute metrics on existing PDBs",
     )
     parser.add_argument(
-        "--skip_fid",
-        action="store_true",
-        help="Skip GearNet FID/fJSD/fS metrics (no GPU required)",
-    )
-    parser.add_argument(
         "--ckpt_name_override",
         type=str,
         default=None,
         help="Override ckpt_name from config (for sweeping checkpoints)",
+    )
+    parser.add_argument(
+        "--ckpt_path_override",
+        type=str,
+        default=None,
+        help="Override cfg.ckpt_path (the directory) from config. Lets a "
+        "single shared protocol config be reused across many checkpoints.",
     )
     parser.add_argument(
         "--output_suffix",
@@ -91,37 +111,37 @@ def parse_args():
         default=None,
         help="Suffix appended to output directory (e.g. step_100000)",
     )
-    parser.add_argument(
-        "--fast_inference",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Use torch.compile(reduce-overhead) + bf16 autocast for generation. "
-        "Validated at L=256 as ~4.6x faster with matching geometry distributions. "
-        "First batch per length absorbs a one-time ~60-90s compile warmup. "
-        "Disable with --no-fast_inference for the legacy eager fp32 path.",
-    )
-    parser.add_argument(
-        "--seed",
-        type=int,
-        default=None,
-        help="Random seed for generation and PDB subset sampling. Overrides cfg.seed "
-        "(default in config is 5). Controls both L.seed_everything and all "
-        "np.random subsampling (designability, diversity, novelty subsets).",
-    )
-    parser.add_argument(
-        "--cath_head_path",
-        type=str,
-        default=None,
-        help="Path to .pkl from build_cath_classifier.py. Required for CATH metrics. "
-        "If unset or file missing, CATH metrics are skipped silently.",
-    )
-    parser.add_argument(
-        "--cath_subset",
-        type=int,
-        default=100,
-        help="Number of PDBs to score with the CATH head (0 to skip).",
-    )
+    # ── shared metric flags (also registered by run_sweep.py) ────────────── #
+    add_metric_args(parser)
     return parser.parse_args()
+
+
+_VALID_METRICS = {
+    "fid",
+    "designability",
+    "diversity",
+    "novelty_centroid",
+    "novelty_foldseek",
+    "cath",
+}
+
+
+def _parse_metrics(s):
+    """Parse --metrics CSV into a set, or None for 'run everything'."""
+    if s is None or not s.strip():
+        return None
+    names = {n.strip() for n in s.split(",") if n.strip()}
+    bad = names - _VALID_METRICS
+    if bad:
+        raise ValueError(
+            f"Unknown metric(s) {sorted(bad)}. Valid: {sorted(_VALID_METRICS)}"
+        )
+    return names
+
+
+def _should_run(name, selected):
+    """True if metric should run: either no selector set, or name is selected."""
+    return selected is None or name in selected
 
 
 def build_length_to_pdbs(tensors_dir, samples_dir):
@@ -170,7 +190,7 @@ def compute_fid_metrics(list_of_pdbs, metric_factory_cfgs):
         metric_factory = GenerationMetricFactory(**cfg_mf).cuda()
         metrics = generation_metric_from_list(list_of_pdbs, metric_factory)
         for k, v in metrics.items():
-            results["_res_" + k] = v.cpu().item()
+            results[METRIC_PREFIX + k] = v.cpu().item()
         logger.info(f"Metrics ({cfg_mf.get('prefix', '')}) computed")
         #! Free GearNet before next factory / downstream ESMFold
         del metric_factory
@@ -178,71 +198,185 @@ def compute_fid_metrics(list_of_pdbs, metric_factory_cfgs):
     return results
 
 
-def compute_designability_metrics(list_of_pdbs, subset_size, tmp_root, seed=42):
+def compute_designability_metrics(
+    list_of_pdbs,
+    subset_size,
+    tmp_root,
+    seed=42,
+    length_filter=None,
+    tensors_dir=None,
+    samples_dir=None,
+):
     """Run designability on a random subset of generated PDBs.
 
     Loads ESMFold on-demand and offloads after completion.
 
+    Args:
+        list_of_pdbs: full list of generated PDB paths.
+        subset_size: cap on PDBs to evaluate. If `length_filter` is set this
+            is interpreted as PER-LENGTH; otherwise as a global cap.
+        tmp_root: workspace dir for ProteinMPNN+ESMFold artefacts.
+        seed: RNG for subsampling.
+        length_filter: optional iterable of integer lengths. When provided,
+            evaluation is restricted to those lengths and `subset_size` PDBs
+            are sampled per length (paper App. F: 50 per length × 5 lengths).
+            None or empty -> use entire list with a global subset_size cap.
+        tensors_dir, samples_dir: required if `length_filter` is set, so we
+            can rebuild the per-length PDB grouping. (The same `tensors_dir`
+            already exists in the eval_output layout.)
+
     Returns:
-        dict with designability metric columns.
+        Tuple of (metrics_dict, designable_pdbs):
+            metrics_dict: dict with designability metric columns.
+            designable_pdbs: list of PDB paths from `list_of_pdbs` whose
+                scRMSD < 2.0 Å. Empty list when designability is skipped or
+                no PDBs were evaluated successfully. Used downstream to
+                filter the diversity metric to designable backbones, matching
+                the Proteina paper's protocol (App. F).
     """
     from proteinfoundation.metrics.designability import batch_designability
 
-    if subset_size <= 0 or len(list_of_pdbs) == 0:
-        return {}
+    if length_filter:
+        if tensors_dir is None or samples_dir is None:
+            raise ValueError(
+                "length_filter requires tensors_dir and samples_dir to "
+                "rebuild the per-length PDB grouping."
+            )
+        wanted = set(int(L) for L in length_filter)
+        length_to_pdbs = build_length_to_pdbs(tensors_dir, samples_dir)
+        subset_pdbs: list = []
+        per_length_seen: list = []
+        for nres in sorted(wanted):
+            pool = length_to_pdbs.get(nres, [])
+            if not pool:
+                logger.warning(
+                    f"Designability: length_filter requested L={nres} but "
+                    f"no PDBs were generated at that length; skipping."
+                )
+                continue
+            sampled = _subsample(pool, subset_size, seed + nres)
+            subset_pdbs.extend(sampled)
+            per_length_seen.append((nres, len(sampled), len(pool)))
+        if not subset_pdbs:
+            return {}, []
+        logger.info(
+            "Designability per-length subsamples: "
+            + ", ".join(f"L={n}:{k}/{N}" for n, k, N in per_length_seen)
+        )
+    else:
+        subset_pdbs = _subsample(list_of_pdbs, subset_size, seed)
+        if not subset_pdbs:
+            return {}, []
 
-    n_eval = min(subset_size, len(list_of_pdbs))
-    rng = np.random.RandomState(seed)
-    indices = rng.choice(len(list_of_pdbs), size=n_eval, replace=False)
-    subset_pdbs = [list_of_pdbs[i] for i in sorted(indices)]
+    n_eval = len(subset_pdbs)
 
     logger.info(f"Computing designability on {n_eval}/{len(list_of_pdbs)} PDBs...")
     results = batch_designability(subset_pdbs, tmp_root=tmp_root)
 
+    # Build designable filter from per-PDB scRMSD list. `pdb_paths_evaluated`
+    # is aligned with `scRMSD_list`; PDBs whose pipeline raised are absent
+    # from both. Failures count as non-designable, matching the paper convention.
+    paths = results.get("pdb_paths_evaluated", [])
+    scrmsds = results.get("scRMSD_list", [])
+    designable_pdbs = [p for p, r in zip(paths, scrmsds) if r < 2.0]
+
     return {
-        "_res_designability_n": n_eval,
-        "_res_scRMSD_mean": results["scRMSD_mean"],
-        "_res_scRMSD_median": results["scRMSD_median"],
-        "_res_designability_rate": results["designability_rate"],
-        "_res_tm_score_self_mean": results["tm_score_mean"],
-        "_res_plddt_mean": results["plddt_mean"],
-        "_res_plddt_median": results["plddt_median"],
-    }
+        f"{METRIC_PREFIX}designability_n": n_eval,
+        f"{METRIC_PREFIX}scRMSD_mean": results["scRMSD_mean"],
+        f"{METRIC_PREFIX}scRMSD_median": results["scRMSD_median"],
+        f"{METRIC_PREFIX}designability_rate": results["designability_rate"],
+        f"{METRIC_PREFIX}tm_score_self_mean": results["tm_score_mean"],
+        f"{METRIC_PREFIX}plddt_mean": results["plddt_mean"],
+        f"{METRIC_PREFIX}plddt_median": results["plddt_median"],
+    }, designable_pdbs
 
 
 def compute_diversity_metrics(
-    tensors_dir, samples_dir, subset_per_bin, tm_threshold=0.5, seed=42
+    tensors_dir,
+    samples_dir,
+    tm_threshold=0.5,
+    seed=42,
+    designable_pdbs=None,
+    length_filter=None,
 ):
     """Compute structural diversity per length bin via TM-score clustering.
+
+    Runs on every designable PDB per length bin (no further subsampling) —
+    pool size is already bounded upstream by designability_subset_per_length.
+
+    Filters to the designable subset when `designable_pdbs` is provided,
+    matching Proteina App. F (both diversity metrics are reported on
+    designable samples only). Without that filter, low-quality near-duplicates
+    can drag both metrics in either direction.
+
+    Emits two complementary diversity columns per call:
+        _res_diversity_clusters_mean      higher = more diverse (Yim 2023b style)
+        _res_diversity_pairwise_tm_mean   lower  = more diverse (Bose 2024 style)
+
+    Args:
+        tensors_dir, samples_dir: where generated PDBs and atom37 tensors live.
+        tm_threshold: cluster membership cutoff (default 0.5 = same fold).
+        seed: unused, kept for API symmetry with designability/novelty.
+        designable_pdbs: iterable of PDB paths classified as designable; when
+            non-empty, length bins are restricted to these. None or empty -> no
+            filter (legacy behaviour, kept so this function still runs when
+            designability was skipped).
+        length_filter: optional iterable of integer lengths. When provided,
+            only those length bins are considered (paper-protocol DES uses a
+            specific subset of lengths). None or empty -> all lengths.
 
     Returns:
         dict with diversity metric columns.
     """
     from proteinfoundation.metrics.tm_score import compute_diversity
 
-    if subset_per_bin <= 0:
-        return {}
-
     length_to_pdbs = build_length_to_pdbs(tensors_dir, samples_dir)
     if not length_to_pdbs:
         logger.warning("No length bins found for diversity computation")
         return {}
 
+    if length_filter:
+        wanted = set(int(L) for L in length_filter)
+        kept = {nres: pdbs for nres, pdbs in length_to_pdbs.items() if nres in wanted}
+        missing = wanted - set(kept.keys())
+        if missing:
+            logger.warning(
+                f"Diversity: length_filter requested {sorted(wanted)} but "
+                f"no PDBs at lengths {sorted(missing)} were generated; skipping those."
+            )
+        length_to_pdbs = kept
+        if not length_to_pdbs:
+            logger.warning(
+                "No length bins matched the length_filter, skipping diversity"
+            )
+            return {}
+
+    if designable_pdbs:
+        designable_set = set(designable_pdbs)
+        length_to_pdbs = {
+            nres: [p for p in pdbs if p in designable_set]
+            for nres, pdbs in length_to_pdbs.items()
+        }
+        n_total = sum(len(p) for p in length_to_pdbs.values())
+        logger.info(
+            f"Diversity: filtered to {n_total} designable PDBs "
+            f"across {sum(1 for p in length_to_pdbs.values() if len(p) >= 2)} bins"
+        )
+        if n_total == 0:
+            logger.warning("No designable PDBs after filtering, skipping diversity")
+            return {}
+
     from proteinfoundation.metrics.designability import load_pdb
 
     bin_clusters = []
+    bin_pairwise_tm = []
+    bin_n = []
     bin_lengths = []
-    rng = np.random.RandomState(seed)
 
     for nres in sorted(length_to_pdbs.keys()):
         pdbs = length_to_pdbs[nres]
         if len(pdbs) < 2:
             continue
-
-        # Subsample if needed (pairwise TM is O(n^2))
-        if len(pdbs) > subset_per_bin:
-            idx = rng.choice(len(pdbs), size=subset_per_bin, replace=False)
-            pdbs = [pdbs[i] for i in sorted(idx)]
 
         logger.info(f"Diversity: length={nres}, n_structures={len(pdbs)}")
 
@@ -251,36 +385,65 @@ def compute_diversity_metrics(
             prot = load_pdb(pdb_path)
             coords_list.append(np.array(prot.atom_positions))
 
-        n_clusters = compute_diversity(coords_list, tm_threshold=tm_threshold)
-        bin_clusters.append(n_clusters)
+        div = compute_diversity(coords_list, tm_threshold=tm_threshold)
+        bin_clusters.append(div["n_clusters"])
+        bin_pairwise_tm.append(div["mean_pairwise_tm"])
+        bin_n.append(len(coords_list))
         bin_lengths.append(nres)
-        logger.info(f"  -> {n_clusters} clusters")
+        logger.info(
+            f"  -> {div['n_clusters']} clusters, "
+            f"mean pairwise TM={div['mean_pairwise_tm']:.3f}"
+        )
 
     if not bin_clusters:
         return {}
 
     clusters_arr = np.array(bin_clusters)
+    pairwise_arr = np.array(bin_pairwise_tm)
     return {
-        "_res_diversity_n_bins": len(bin_clusters),
-        "_res_diversity_clusters_mean": float(clusters_arr.mean()),
-        "_res_diversity_clusters_median": float(np.median(clusters_arr)),
-        "_res_diversity_clusters_total": int(clusters_arr.sum()),
+        f"{METRIC_PREFIX}diversity_n_bins": len(bin_clusters),
+        f"{METRIC_PREFIX}diversity_n": int(sum(bin_n)),
+        f"{METRIC_PREFIX}diversity_designable_filtered": bool(designable_pdbs),
+        f"{METRIC_PREFIX}diversity_clusters_mean": float(clusters_arr.mean()),
+        f"{METRIC_PREFIX}diversity_clusters_median": float(np.median(clusters_arr)),
+        f"{METRIC_PREFIX}diversity_clusters_total": int(clusters_arr.sum()),
+        f"{METRIC_PREFIX}diversity_pairwise_tm_mean": float(np.nanmean(pairwise_arr)),
+        f"{METRIC_PREFIX}diversity_pairwise_tm_median": float(
+            np.nanmedian(pairwise_arr)
+        ),
     }
 
 
 def compute_novelty_metrics(
-    list_of_pdbs, centroid_path, tm_threshold=0.5, max_eval=500, seed=42
+    list_of_pdbs,
+    centroid_path,
+    tm_threshold=0.5,
+    seed=42,
+    designable_pdbs=None,
 ):
     """Compute novelty as fraction of generated structures dissimilar to training centroids.
+
+    Runs on every candidate PDB (no further subsampling) — pool size is
+    already bounded upstream by designability_subset_per_length feeding into
+    the designable filter.
+
+    When ``designable_pdbs`` is non-empty the candidate pool is restricted to
+    that intersection, matching the Proteina paper App. F protocol (novelty
+    reported on the designable subset only). Pass ``None`` or an empty list
+    to keep the legacy "all generated PDBs" behaviour.
 
     Args:
         list_of_pdbs: All generated PDB paths.
         centroid_path: Path to .pt file containing list of [n_i, 37, 3] centroid arrays.
         tm_threshold: A structure is novel if max TM-score to any centroid < threshold.
-        max_eval: Max number of generated PDBs to evaluate (random subset).
+        seed: unused, kept for API symmetry.
+        designable_pdbs: Optional iterable of PDB paths classified as designable.
+            When non-empty, restricts the candidate pool.
 
     Returns:
-        dict with novelty metric columns.
+        dict with novelty metric columns. Includes a
+        ``_res_novelty_designable_filtered`` boolean for traceability,
+        analogous to ``_res_diversity_designable_filtered``.
     """
     from proteinfoundation.metrics.tm_score import compute_tm_score
     from proteinfoundation.metrics.designability import load_pdb
@@ -292,6 +455,21 @@ def compute_novelty_metrics(
             )
         return {}
 
+    candidate_pdbs = list_of_pdbs
+    filtered = bool(designable_pdbs)
+    if filtered:
+        designable_set = set(designable_pdbs)
+        candidate_pdbs = [p for p in list_of_pdbs if p in designable_set]
+        logger.info(
+            f"Novelty (centroid): filtered to {len(candidate_pdbs)} "
+            f"designable PDBs (paper App. F protocol)"
+        )
+        if not candidate_pdbs:
+            logger.warning(
+                "No designable PDBs after filtering, skipping centroid novelty"
+            )
+            return {}
+
     logger.info(f"Loading training set centroids from {centroid_path}")
     centroids = torch.load(centroid_path, map_location="cpu", weights_only=False)
     # centroids: list of numpy arrays, each [n_i, 37, 3]
@@ -299,11 +477,8 @@ def compute_novelty_metrics(
         centroids = [centroids[i].numpy() for i in range(len(centroids))]
     logger.info(f"Loaded {len(centroids)} training set cluster centroids")
 
-    # Subsample generated PDBs
-    n_eval = min(max_eval, len(list_of_pdbs))
-    rng = np.random.RandomState(seed)
-    indices = rng.choice(len(list_of_pdbs), size=n_eval, replace=False)
-    eval_pdbs = [list_of_pdbs[i] for i in sorted(indices)]
+    eval_pdbs = candidate_pdbs
+    n_eval = len(eval_pdbs)
 
     logger.info(
         f"Computing novelty on {n_eval} PDBs against {len(centroids)} centroids..."
@@ -330,10 +505,11 @@ def compute_novelty_metrics(
     novelty_rate = float((max_tm_arr < tm_threshold).mean())
 
     return {
-        "_res_novelty_n": n_eval,
-        "_res_novelty_rate": novelty_rate,
-        "_res_novelty_max_tm_mean": float(max_tm_arr.mean()),
-        "_res_novelty_max_tm_median": float(np.median(max_tm_arr)),
+        f"{METRIC_PREFIX}novelty_n": n_eval,
+        f"{METRIC_PREFIX}novelty_designable_filtered": filtered,
+        f"{METRIC_PREFIX}novelty_rate": novelty_rate,
+        f"{METRIC_PREFIX}novelty_max_tm_mean": float(max_tm_arr.mean()),
+        f"{METRIC_PREFIX}novelty_max_tm_median": float(np.median(max_tm_arr)),
     }
 
 
@@ -391,10 +567,10 @@ def compute_cath_metrics(
         )
         return {}
 
-    n_eval = min(max_eval, len(list_of_pdbs))
-    rng = np.random.RandomState(seed)
-    indices = rng.choice(len(list_of_pdbs), size=n_eval, replace=False)
-    eval_pdbs = [list_of_pdbs[i] for i in sorted(indices)]
+    eval_pdbs = _subsample(list_of_pdbs, max_eval, seed)
+    n_eval = len(eval_pdbs)
+    if n_eval == 0:
+        return {}
     logger.info(
         f"Computing CATH metrics on {n_eval} PDBs (level={train_meta['level']})"
     )
@@ -452,12 +628,12 @@ def compute_cath_metrics(
     n_unique = int((gen_counts > 0).sum())
 
     return {
-        "_res_cath_n_pdbs": int(n_eval),
-        "_res_cath_level": str(train_meta["level"]),
-        "_res_cath_topclass_conf_mean": float(top1.mean()),
-        "_res_cath_n_unique": n_unique,
-        "_res_cath_distribution_kl": kl,
-        "_res_cath_entropy": entropy,
+        f"{METRIC_PREFIX}cath_n_pdbs": int(n_eval),
+        f"{METRIC_PREFIX}cath_level": str(train_meta["level"]),
+        f"{METRIC_PREFIX}cath_topclass_conf_mean": float(top1.mean()),
+        f"{METRIC_PREFIX}cath_n_unique": n_unique,
+        f"{METRIC_PREFIX}cath_distribution_kl": kl,
+        f"{METRIC_PREFIX}cath_entropy": entropy,
     }
 
 
@@ -492,19 +668,91 @@ def split_nlens(nlens_dict, max_nsamples=16):
     return lens_sample, nsamples
 
 
-def main():
-    args = parse_args()
+_logger_handler_id = None
 
-    needs_gpu = not (
-        args.skip_generation and args.skip_fid and args.designability_subset == 0
+
+def _setup_logger():
+    """Add the stdout sink exactly once per process.
+
+    Loguru's ``logger.add`` is not idempotent — calling it on every
+    ``main()`` invocation duplicates log lines. We track the handler id at
+    module level and reuse it across re-entries.
+    """
+    global _logger_handler_id
+    if _logger_handler_id is None:
+        _logger_handler_id = logger.add(
+            sys.stdout,
+            format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+        )
+
+
+def main(args=None):
+    """Run generation + metrics for one checkpoint.
+
+    Args:
+        args: Parsed argparse Namespace with the same shape as ``parse_args()``
+            returns. When None, parses ``sys.argv`` and applies the standalone
+            defaults via ``resolve_evaluate_defaults``. ``run_sweep.py`` builds
+            this Namespace directly to avoid argv reconstruction.
+
+    Returns:
+        dict[str, Any] of column → value, one row's worth of the per-checkpoint
+        CSV. ``run_sweep.py`` consumes the ``_res_*`` subset and writes it to
+        the sweep JSONL.
+    """
+    if args is None:
+        args = parse_args()
+    resolve_evaluate_defaults(args)
+
+    selected_metrics = _parse_metrics(args.metrics)
+    run_fid = (not args.skip_fid) and _should_run("fid", selected_metrics)
+    run_designability = args.designability_subset_per_length > 0 and _should_run(
+        "designability", selected_metrics
     )
+    run_diversity = _should_run("diversity", selected_metrics)
+    run_novelty_centroid = _should_run("novelty_centroid", selected_metrics)
+    run_novelty_foldseek = _should_run("novelty_foldseek", selected_metrics)
+    run_cath = args.cath_subset > 0 and _should_run("cath", selected_metrics)
+
+    needs_gpu = not (args.skip_generation and not run_fid and not run_designability)
     if needs_gpu:
-        assert torch.cuda.is_available(), "CUDA not available (use --skip_generation --skip_fid --designability_subset 0 for CPU-only mode)"
+        assert torch.cuda.is_available(), "CUDA not available (use --skip_generation --skip_fid --designability_subset_per_length 0 for CPU-only mode)"
 
-    logger.add(
-        sys.stdout,
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
-    )
+    _setup_logger()
+    # Defensive: clear any GlobalHydra state from a previous main() that may
+    # have crashed mid-`with hydra.initialize()`. Clean exit handles cleanup
+    # via the context manager; this covers the abrupt-exit case so re-entry
+    # from run_sweep.py doesn't need importlib.reload().
+    if GlobalHydra.instance().is_initialized():
+        GlobalHydra.instance().clear()
+
+    try:
+        return _main_body(
+            args,
+            run_fid,
+            run_designability,
+            run_diversity,
+            run_novelty_centroid,
+            run_novelty_foldseek,
+            run_cath,
+            selected_metrics,
+        )
+    finally:
+        if GlobalHydra.instance().is_initialized():
+            GlobalHydra.instance().clear()
+
+
+def _main_body(
+    args,
+    run_fid,
+    run_designability,
+    run_diversity,
+    run_novelty_centroid,
+    run_novelty_foldseek,
+    run_cath,
+    selected_metrics,
+):
+    """Body of main(); split out so the try/finally above stays readable."""
 
     # -- Load config --
     config_name = (
@@ -521,6 +769,8 @@ def main():
     # Apply CLI overrides
     if args.ckpt_name_override:
         cfg = OmegaConf.merge(cfg, {"ckpt_name": args.ckpt_name_override})
+    if getattr(args, "ckpt_path_override", None):
+        cfg = OmegaConf.merge(cfg, {"ckpt_path": args.ckpt_path_override})
     if args.seed is not None:
         cfg = OmegaConf.merge(cfg, {"seed": args.seed})
     logger.info(f"Config: {args.config_name}, seed: {cfg.seed}")
@@ -546,9 +796,15 @@ def main():
 
         # Fast inference: validated at L=256 as ~4.6x speedup with matching
         # geometry distributions (bond, Rg, clash, angles) - see
-        # playground/proteina/generation_speedup/. Compile is static-shape so
-        # each unique (batch_size, nres) triggers a one-time ~60-90s recompile;
-        # over a 200-sample eval this is amortized into throughput.
+        # playground/proteina/generation_speedup/. Static-shape compile so
+        # each unique (batch_size, nres) triggers a one-time ~60-90s
+        # warmup; the n512_convergence lite sweep (12 unique lengths) runs
+        # cleanly under this path, so multi-length is fine in itself. We
+        # tried dynamic=True briefly to skip per-shape recompiles, but
+        # inductor under dynamic shapes elided the .contiguous() guard in
+        # _attn_sdpa (see TestContiguousBiasFix in tests/proteina/
+        # test_sdpa_attention.py), causing SDPA's "(*bias): last dimension
+        # must be contiguous" runtime error mid-sampling. Reverted.
         if args.fast_inference:
             logger.info(
                 "Fast inference ON: torch.compile(reduce-overhead) + bf16 autocast"
@@ -675,7 +931,7 @@ def main():
     )
     logger.info(f"Computing metrics on {len(list_of_pdbs)} PDBs...")
 
-    if not args.skip_fid:
+    if run_fid:
         flat_cfg = OmegaConf.to_container(cfg, resolve=True, enum_to_str=True)
         flat_dict = pd.json_normalize(flat_cfg, sep="_").to_dict(orient="records")[0]
         flat_dict = {k: str(v) for k, v in flat_dict.items()}
@@ -685,20 +941,32 @@ def main():
     res_row = list(flat_dict.values())
 
     # -- FID / fJSD / fS metrics --
-    if not args.skip_fid:
+    if run_fid:
         fid_results = compute_fid_metrics(list_of_pdbs, cfg.metric_factory)
         for k, v in fid_results.items():
             columns.append(k)
             res_row.append(v)
     else:
-        logger.info("Skipping GearNet FID/fJSD/fS metrics (--skip_fid)")
+        logger.info(
+            "Skipping GearNet FID/fJSD/fS metrics (--skip_fid or --metrics filter)"
+        )
 
     # -- Designability metrics --
-    desig_results = compute_designability_metrics(
+    # Returns the list of designable PDB paths so diversity / foldseek below can
+    # filter to designable backbones (paper App. F protocol). When designability
+    # is skipped, downstream filters fall back to all generated PDBs.
+    # designability_lengths (CSV) restricts evaluation to specific lengths and
+    # subsamples designability_subset_per_length PDBs per length (paper-protocol DES).
+    designability_lengths = _parse_lengths_csv(args.designability_lengths)
+    desig_subset = args.designability_subset_per_length if run_designability else 0
+    desig_results, designable_pdbs = compute_designability_metrics(
         list_of_pdbs,
-        subset_size=args.designability_subset,
+        subset_size=desig_subset,
         tmp_root=os.path.join(root_path, "tmp_designability"),
         seed=cfg.seed,
+        length_filter=designability_lengths,
+        tensors_dir=tensors_dir,
+        samples_dir=samples_dir,
     )
     for k, v in desig_results.items():
         columns.append(k)
@@ -706,15 +974,25 @@ def main():
     if desig_results:
         logger.info(
             f"Designability: rate={desig_results.get('_res_designability_rate', 'N/A'):.3f}, "
-            f"scRMSD_mean={desig_results.get('_res_scRMSD_mean', 'N/A'):.3f}"
+            f"scRMSD_mean={desig_results.get('_res_scRMSD_mean', 'N/A'):.3f}, "
+            f"n_designable={len(designable_pdbs)}"
         )
 
     # -- Diversity metrics --
-    div_results = compute_diversity_metrics(
-        tensors_dir,
-        samples_dir,
-        subset_per_bin=args.diversity_subset_per_bin,
-        seed=cfg.seed,
+    # Diversity uses the same length filter as designability (per paper App. F
+    # both metrics are reported on the same designable subset of length bins).
+    # Runs on every designable PDB per length bin — at the per-length subset
+    # cap (≤ designability_subset_per_length) the pairwise TM cost is seconds.
+    div_results = (
+        compute_diversity_metrics(
+            tensors_dir,
+            samples_dir,
+            seed=cfg.seed,
+            designable_pdbs=designable_pdbs,
+            length_filter=designability_lengths,
+        )
+        if run_diversity
+        else {}
     )
     for k, v in div_results.items():
         columns.append(k)
@@ -722,27 +1000,92 @@ def main():
     if div_results:
         logger.info(
             f"Diversity: mean_clusters={div_results.get('_res_diversity_clusters_mean', 'N/A'):.1f}, "
-            f"n_bins={div_results.get('_res_diversity_n_bins', 'N/A')}"
+            f"mean_pairwise_tm={div_results.get('_res_diversity_pairwise_tm_mean', 'N/A'):.3f}, "
+            f"n_bins={div_results.get('_res_diversity_n_bins', 'N/A')}, "
+            f"n={div_results.get('_res_diversity_n', 'N/A')}, "
+            f"designable_filtered={div_results.get('_res_diversity_designable_filtered', False)}"
         )
 
-    # -- Novelty metrics --
-    nov_results = compute_novelty_metrics(
-        list_of_pdbs,
-        centroid_path=args.centroid_path,
-        tm_threshold=args.novelty_tm_threshold,
-        seed=cfg.seed,
-    )
-    for k, v in nov_results.items():
-        columns.append(k)
-        res_row.append(v)
-    if nov_results:
-        logger.info(
-            f"Novelty: rate={nov_results.get('_res_novelty_rate', 'N/A'):.3f}, "
-            f"max_tm_mean={nov_results.get('_res_novelty_max_tm_mean', 'N/A'):.3f}"
+    # -- Novelty metrics (centroid-file path) --
+    # Filter to designable subset by default (paper App. F protocol). Earlier
+    # sweeps had no such filter; the boolean column emitted below records
+    # which protocol produced a given row.
+    if run_novelty_centroid:
+        centroid_designable = (
+            designable_pdbs if args.centroid_filter_designable else None
         )
+        nov_results = compute_novelty_metrics(
+            list_of_pdbs,
+            centroid_path=args.centroid_path,
+            tm_threshold=args.novelty_tm_threshold,
+            seed=cfg.seed,
+            designable_pdbs=centroid_designable,
+        )
+        for k, v in nov_results.items():
+            columns.append(k)
+            res_row.append(v)
+        if nov_results:
+            logger.info(
+                f"Novelty (centroid): rate={nov_results.get('_res_novelty_rate', 'N/A'):.3f}, "
+                f"max_tm_mean={nov_results.get('_res_novelty_max_tm_mean', 'N/A'):.3f}"
+            )
+    else:
+        logger.info("Skipping centroid-novelty metrics (--metrics filter)")
+
+    # -- Novelty metrics (Foldseek path) --
+    # Runs against prebuilt Foldseek DBs (PDB / AFDB-SwissProt). Internally
+    # consistent across sweep checkpoints when flag values are pinned.
+    target_dbs = (
+        parse_target_dbs_arg(args.foldseek_target_dbs) if run_novelty_foldseek else []
+    )
+    if target_dbs:
+        # Default to the designable subset (paper convention). Falls back to
+        # all generated PDBs if designability was skipped or returned nothing.
+        fs_queries = (
+            designable_pdbs
+            if (args.foldseek_filter_designable and designable_pdbs)
+            else list_of_pdbs
+        )
+        for db_label, db_path in target_dbs:
+            try:
+                fs_results = compute_novelty_foldseek(
+                    fs_queries,
+                    target_db=db_path,
+                    db_label=db_label,
+                    alignment_type=args.foldseek_alignment_type,
+                    max_seqs=args.foldseek_max_seqs,
+                    sensitivity=args.foldseek_sensitivity,
+                    threads=args.foldseek_threads,
+                    tm_threshold=args.novelty_tm_threshold,
+                )
+            except Exception as exc:
+                logger.warning(
+                    f"Foldseek novelty failed for db={db_label}: "
+                    f"{type(exc).__name__}: {exc}"
+                )
+                fs_results = {}
+            for k, v in fs_results.items():
+                columns.append(k)
+                res_row.append(v)
+            if fs_results:
+                rate = fs_results.get(f"_res_novelty_foldseek_{db_label}_rate", "N/A")
+                mean = fs_results.get(
+                    f"_res_novelty_foldseek_{db_label}_max_tm_mean", "N/A"
+                )
+                logger.info(
+                    f"Novelty (foldseek/{db_label}): rate={rate:.3f}, "
+                    f"max_tm_mean={mean:.3f}, n={fs_results.get(f'_res_novelty_foldseek_{db_label}_n', 'N/A')}"
+                )
+    else:
+        if not run_novelty_foldseek:
+            logger.info("Skipping foldseek-novelty metrics (--metrics filter)")
+        else:
+            logger.info(
+                "Foldseek novelty skipped (no --foldseek_target_dbs configured)"
+            )
 
     # -- CATH metrics --
-    if args.cath_subset > 0 and list_of_pdbs:
+    if run_cath and list_of_pdbs:
         cath_results = compute_cath_metrics(
             list_of_pdbs,
             head_path=args.cath_head_path,
@@ -760,7 +1103,7 @@ def main():
                 f"entropy={cath_results['_res_cath_entropy']:.3f}"
             )
     else:
-        logger.info("Skipping CATH metrics (--cath_subset 0)")
+        logger.info("Skipping CATH metrics (--cath_subset 0 or --metrics filter)")
 
     # -- Save results --
     df = pd.DataFrame([res_row], columns=columns)
@@ -769,12 +1112,15 @@ def main():
 
     results_csv = os.path.join(root_path, f"results_{config_slug}{suffix}_fid.csv")
 
-    # If skipping FID and an existing CSV has FID columns, merge new columns in.
-    # Also overwrite any _res_ columns already present - allows a retry to fix
+    # If we ran fewer than all metrics and an existing CSV exists, merge new
+    # columns in rather than overwriting (so a single-metric rerun does not
+    # clobber FID/designability/etc. columns from a prior full eval). Also
+    # overwrites any _res_ columns already present - allows a retry to fix
     # stale/corrupted values written by a previously timed-out run.
-    if args.skip_fid and os.path.exists(results_csv):
+    partial_run = args.skip_fid or selected_metrics is not None
+    if partial_run and os.path.exists(results_csv):
         existing_df = pd.read_csv(results_csv)
-        update_cols = [c for c in df.columns if c.startswith("_res_")]
+        update_cols = [c for c in df.columns if c.startswith(METRIC_PREFIX)]
         if update_cols:
             for c in update_cols:
                 existing_df[c] = df[c].iloc[0]
@@ -783,10 +1129,14 @@ def main():
                 f"Merged/updated {len(update_cols)} columns in {results_csv}: {update_cols}"
             )
         else:
-            logger.info(f"No _res_ columns to merge into {results_csv}")
+            logger.info(f"No {METRIC_PREFIX} columns to merge into {results_csv}")
     else:
         df.to_csv(results_csv, index=False)
         logger.info(f"Results saved to {results_csv}")
+
+    # Return the row dict so run_sweep.py can append directly to the JSONL
+    # without round-tripping through the per-checkpoint CSV.
+    return dict(zip(columns, res_row))
 
 
 if __name__ == "__main__":
