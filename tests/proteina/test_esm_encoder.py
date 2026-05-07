@@ -226,6 +226,27 @@ class TestESMEncoderWithStub:
         enc.train(True)  # caller tries to flip to train mode
         assert not enc.training
 
+    def test_layer_selection_returns_intermediate(self, stubbed_esm):
+        """layer=N must return hidden_states[N], not last_hidden_state."""
+        b, n = 1, 4
+        coords = torch.zeros(b, n, 3)
+        mask = torch.ones(b, n, dtype=torch.bool)
+        residue_type = torch.randint(0, 20, (b, n))
+
+        enc_last = ESMPerResidueEncoder(model_id="stub", layer=None)
+        enc_mid = ESMPerResidueEncoder(model_id="stub", layer=1)
+
+        # Force identical weights so any output difference comes from layer pick.
+        enc_mid.load_state_dict(enc_last.state_dict())
+
+        out_last = enc_last(coords, mask, residue_type=residue_type)
+        out_mid = enc_mid(coords, mask, residue_type=residue_type)
+
+        # Stub has 3 layers: hidden_states[1] (post-block-1) must differ from
+        # last_hidden_state (post-block-3); same shape, different values.
+        assert out_last.shape == out_mid.shape
+        assert not torch.allclose(out_last, out_mid)
+
 
 # --- Integration test: loss + residue_type plumbing (no real ESM) -----------
 
