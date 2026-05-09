@@ -167,6 +167,69 @@ n256_paper_afdb:
   runs: "baseline_afdb_256_ep20,repa_l4_afdb_256_ep20"
   output_dir: results/paper/n256_paper_afdb
 
+# External pretrained reference: NVIDIA NGC DFS-60M v1.3 (12 layers, ep=177,
+# global_step=1.3M) evaluated through the n=256 paper protocol so it lands as
+# a top "reference" row in the n=256 plot. Mirrors n128_paper_pretrained.
+n256_paper_pretrained:
+  <<: *paper_defaults
+  runs: "pretrained_dfs_60m_n256_paper"
+  output_dir: results/paper/n256_paper_pretrained
+
+# Averaging-ablation evaluation: 3 per_sample variants (L0/L4/L9) at last-EMA.
+# Companions to the L0 ep26 / L4 ep22 / L9 ep25 per_residue rows already in
+# n256_paper_pdb. Output dir is its own to keep the per_sample jsonl separate
+# from the per_residue main comparison; tables/plots can union them.
+n256_paper_averaging:
+  <<: *paper_defaults
+  runs: "repa_l0_256_per_sample_steplast,repa_l4_256_per_sample_step400k,repa_l9_256_per_sample_steplast"
+  output_dir: results/paper/n256_paper_averaging
+
+# ESM2 encoder ablation row at n=256. Only on-disk 256 ESM run is L9-t30 at
+# bs=12 throughout (ESM-650M OOMs at bs=24). Comparison to the bs=24 encoder
+# block is unfair on the bs axis AND the layer axis (L9-t30 vs L4 default);
+# both gaps are footnoted in n256_paper_tables.md.
+n256_paper_esm:
+  <<: *paper_defaults
+  runs: "repa_esm_l9_t30_256_steplast"
+  output_dir: results/paper/n256_paper_esm
+
+# ProteinMPNN encoder ablation row at n=256. Latest numbered EMA snapshot is
+# step=300K (May 9 12:46); not step-matched to the CA-GearNet L4 ep22 anchor
+# (step=400K) — note in the table when consolidating. Will add a _step400k
+# entry once that snapshot lands.
+n256_paper_mpnn:
+  <<: *paper_defaults
+  runs: "repa_mpnn_l4_256_per_residue_step300k"
+  output_dir: results/paper/n256_paper_mpnn
+
+# λ ablation at n=256: REPA L4, PDB, per_residue, varying λ. λ=0.5 leg
+# reuses the existing `repa_l4_256_ep22` (step=400K) anchor from
+# n256_paper_pdb. λ=1.0 / λ=2.0 are still training; pinned at the latest
+# numbered EMA snapshot available (300K / 200K). Not step-matched to the
+# λ=0.5 anchor — footnote when consolidating; bump to _step400k entries
+# once those snapshots land.
+n256_paper_lambda:
+  <<: *paper_defaults
+  runs: "repa_l4_256_per_residue_lambda1_step300k,repa_l4_256_per_residue_lambda2_step200k"
+  output_dir: results/paper/n256_paper_lambda
+
+# Step-matched-to-L9-ep17 reference: L4 at step=300K (epoch=13, pre-bs-bump).
+# Companion to `repa_l9_256_ep17` for testing per-layer designability onset.
+n256_paper_l4_step300k:
+  <<: *paper_defaults
+  runs: "repa_l4_256_ep13_step300k"
+  output_dir: results/paper/n256_paper_l4_step300k
+
+# Final dated snapshot of the canonical n256 REPA L4 per_residue run at
+# step=500K (ep31, ~10.49M samples). Companion to `repa_l4_256_ep22`
+# (step=400K) — the original n256_paper_pdb anchor — for an "extra
+# training" comparison point on the same run. Union with n256_paper_pdb
+# when tabulating to add a step=500K column to the L4 row.
+n256_paper_l4_step500k:
+  <<: *paper_defaults
+  runs: "repa_l4_256_ep31_step500k"
+  output_dir: results/paper/n256_paper_l4_step500k
+
 # ─────────────────────────────────────────────────────────────────────────── #
 # n=128 paper-protocol sweeps (mirrors n=256 paper but truncated to in-
 # distribution lengths {50, 75, 100, 125}). 500 PDBs/ckpt; designability on
@@ -203,7 +266,7 @@ _paper_n128_defaults: &paper_n128_defaults
 # Ablation 1: layer ablation (4 tasks)
 n128_paper_layer:
   <<: *paper_n128_defaults
-  runs: "baseline_128_bs80_step200k,repa_l0_128_bs80_steplast,repa_l4_128_bs80_step200k,repa_l9_128_bs80_steplast"
+  runs: "baseline_128_bs80_step200k,repa_l0_128_bs80_step200k,repa_l4_128_bs80_step200k,repa_l9_128_bs80_step200k"
   output_dir: results/paper/n128_paper_layer
 
 # Ablation 2: encoder ablation (7 tasks)
@@ -218,3 +281,38 @@ n128_paper_bs_lr:
   <<: *paper_n128_defaults
   runs: "baseline_128_bs24_step200k,baseline_128_bs24_step400k,baseline_128_bs80_step200k,baseline_128_bs80_lr3x_step200k,repa_l4_128_bs24_step200k,repa_l4_128_bs24_step400k,repa_l4_128_bs80_step200k,repa_l4_128_bs80_lr3x_steplast"
   output_dir: results/paper/n128_paper_bs_lr
+
+# External pretrained reference: NVIDIA NGC DFS-60M v1.3 (12 layers, ep=177,
+# global_step=1.3M) evaluated through the same paper protocol so it lands as
+# a top "reference" row in the n=128 plot.
+n128_paper_pretrained:
+  <<: *paper_n128_defaults
+  runs: "pretrained_dfs_60m_n128_paper"
+  output_dir: results/paper/n128_paper_pretrained
+
+# n=128 per-residue layer ablation (mixed-bs runs at step=400k). All three
+# REPA students share the same bs=24→80 schedule (bump at step=220k), so
+# cross-layer comparison is fair despite the bs bump. Companion to the bs=80
+# layer ablation above; helpful sanity check that the layer ranking holds
+# at the larger sample budget (~19.68M vs 16M).
+n128_paper_layer_per_residue:
+  <<: *paper_n128_defaults
+  runs: "baseline_128_bs24_step400k,repa_l0_128_per_residue_step400k,repa_l4_128_per_residue_step400k,repa_l9_128_per_residue_step400k"
+  output_dir: results/paper/n128_paper_layer_per_residue
+
+# λ ablation: REPA L4 bs=80 with varying KL weight. λ=0.5 leg reuses the
+# existing `repa_l4_128_bs80_step200k` cell; λ=2.0 evaluated at last-EMA
+# (~step 182K, ~14.5M samples). λ=1.0 deferred — its training was parked
+# at step 3.5K and was relaunched 2026-05-08.
+n128_paper_lambda:
+  <<: *paper_n128_defaults
+  runs: "repa_l4_128_bs80_step200k,repa_l4_128_bs80_lambda2_steplast"
+  output_dir: results/paper/n128_paper_lambda
+
+# Weight-decay ablation: REPA L4 bs=80 with default wd vs wd=1e-2. Default-wd
+# leg reuses the existing `repa_l4_128_bs80_step200k` cell so cross-block rows
+# stay consistent; wd1e-2 evaluated at the matching step=200K snapshot.
+n128_paper_wd:
+  <<: *paper_n128_defaults
+  runs: "repa_l4_128_bs80_step200k,repa_l4_128_bs80_wd1e2_step200k"
+  output_dir: results/paper/n128_paper_wd

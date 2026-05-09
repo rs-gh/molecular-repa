@@ -206,6 +206,30 @@ RUN_SCHEDULES = {
     "repa_l4_256_ep22": ("proteina_60m_repa_l4_256_per_residue", True, 4, [400000]),
     "repa_l9_256_ep25": ("proteina_60m_repa_l9_256_per_residue", True, 9, [400000]),
     "repa_l9_256_ep17": ("proteina_60m_repa_l9_256_per_residue", True, 9, [300000]),
+    # Step-matched (NOT sample-matched) companion to repa_l9_256_ep17.
+    # Both at step=300K but L4 bumped bs=12→24 at ~269K (only 31K steps
+    # post-bump = 3.97M smp), while L9 bumped at ~196K (104K steps post-bump
+    # = 4.85M smp). L9 has ~22% more samples at the same step. Used to test
+    # whether L4 crosses the designability threshold earlier than L9 — but
+    # interpret the comparison knowing L9 had the bigger sample budget.
+    "repa_l4_256_ep13_step300k": (
+        "proteina_60m_repa_l4_256_per_residue",
+        True,
+        4,
+        [300000],
+    ),
+    # Final dated snapshot of the canonical n256 REPA L4 per_residue run
+    # (ep31, step 500K, ~10.49M samples — bs=12→24 bumped at step 269K so
+    # samples ≈ 12*269K + 24*231K). Companion to repa_l4_256_ep22 for a
+    # late-training point on the same run; lambda025/lambda1/lambda2
+    # comparison can also use this as the upper-bound λ=0.5 anchor once
+    # they reach equivalent budgets.
+    "repa_l4_256_ep31_step500k": (
+        "proteina_60m_repa_l4_256_per_residue",
+        True,
+        4,
+        [500000],
+    ),
     "repa_l4_256_random_ep17": (
         "proteina_60m_repa_l4_256_per_residue_random",
         True,
@@ -220,6 +244,81 @@ RUN_SCHEDULES = {
     ),
     "repa_l4_afdb_256_ep20": (
         "proteina_60m_repa_l4_256_afdb_per_residue",
+        True,
+        4,
+        [200000],
+    ),
+    # ── n=256 averaging-ablation per_sample variants ─────────────────────── #
+    # Sample-matched companions to the per_residue rows (L0 ep26 / L4 ep22 /
+    # L9 ep25). Pinning to last-EMA (None) per user choice 2026-05-07; the
+    # actual step is captured in the sweep jsonl row from the resolved ckpt
+    # filename, so the table can use the real number.
+    "repa_l0_256_per_sample_steplast": (
+        "proteina_60m_repa_l0_256_per_sample",
+        True,
+        0,
+        [None],
+    ),
+    "repa_l4_256_per_sample_steplast": (
+        "proteina_60m_repa_l4_256_per_sample",
+        True,
+        4,
+        [None],
+    ),
+    # Explicit step pin for L4 per_sample because last-EMA.ckpt is a stale
+    # pre-restart file from 2026-04-17 pointing at step ~56K (a fresh-init
+    # run). The real latest is at last-v1-EMA.ckpt (= ep25/400K snapshot,
+    # dated 04-20). The _steplast row above resolves to garbage (proven:
+    # eval 28993862 task 1 returned step=56000, des=0.0); use this _step400k
+    # row instead. Sample-matched to L4 per_residue ep22 (~6.69M smp).
+    "repa_l4_256_per_sample_step400k": (
+        "proteina_60m_repa_l4_256_per_sample",
+        True,
+        4,
+        [400000],
+    ),
+    "repa_l9_256_per_sample_steplast": (
+        "proteina_60m_repa_l9_256_per_sample",
+        True,
+        9,
+        [None],
+    ),
+    # ── n=256 ESM2 encoder ablation ──────────────────────────────────────── #
+    # Only on-disk 256 ESM run is L9 + t=30 conditioning, trained at bs=12
+    # throughout (intentionally, via pdb_lmdb_256_bs12 — ESM-650M OOMs at
+    # bs=24). Layer mismatch (L9-t30 ≠ the L4 default for the encoder block)
+    # is footnoted in the table, not fixed here. Last-EMA per user choice.
+    "repa_esm_l9_t30_256_steplast": (
+        "proteina_60m_repa_esm_l9_t30_256_per_residue",
+        True,
+        9,
+        [None],
+    ),
+    # ── n=256 ProteinMPNN encoder ablation ───────────────────────────────── #
+    # ProteinMPNN target encoder, bs=24 nominal, started 2026-05-06. Step=300K
+    # is the latest numbered EMA snapshot (May 9 12:46). 400K snapshot will
+    # land later; add a `_step400k` entry when it does for parity with the
+    # CA-GearNet L4 ep22 anchor at step=400K.
+    "repa_mpnn_l4_256_per_residue_step300k": (
+        "proteina_60m_repa_mpnn_l4_256_per_residue",
+        True,
+        4,
+        [300000],
+    ),
+    # ── n=256 λ ablation (REPA L4, PDB, GearNet-CA, per_residue, varying λ) ─ #
+    # λ=0.5 leg uses existing `repa_l4_256_ep22` (step=400K). λ=1.0 and λ=2.0
+    # are still training; pinned at the latest numbered EMA snapshot available
+    # (lambda1@300K, lambda2@200K). Not step-matched to the λ=0.5 anchor —
+    # footnote in the table when consolidating, and replace with _step400k
+    # entries once those snapshots land.
+    "repa_l4_256_per_residue_lambda1_step300k": (
+        "proteina_60m_repa_l4_256_per_residue_lambda1",
+        True,
+        4,
+        [300000],
+    ),
+    "repa_l4_256_per_residue_lambda2_step200k": (
+        "proteina_60m_repa_l4_256_per_residue_lambda2",
         True,
         4,
         [200000],
@@ -244,6 +343,12 @@ RUN_SCHEDULES = {
         0,
         [None],  # last-EMA, currently ~66.5K (5.32M samples)
     ),
+    "repa_l0_128_bs80_step200k": (
+        "proteina_60m_repa_l0_128_per_residue_bs80",
+        True,
+        0,
+        [200000],
+    ),
     "repa_l4_128_bs80_step200k": (
         "proteina_60m_repa_l4_128_per_residue_bs80",
         True,
@@ -255,6 +360,12 @@ RUN_SCHEDULES = {
         True,
         9,
         [None],  # last-EMA, currently ~63K (5.04M samples)
+    ),
+    "repa_l9_128_bs80_step200k": (
+        "proteina_60m_repa_l9_128_per_residue_bs80",
+        True,
+        9,
+        [200000],
     ),
     # ABLATION 2 (encoder @ L4 bs=80): baseline + 6 REPA targets. pw_*  only
     # have 100K — earlier (8M vs 16M samples) — redo at 200K once available.
@@ -331,6 +442,70 @@ RUN_SCHEDULES = {
         4,
         [None],  # last-EMA at ~161K (12.88M samples) — see note above
     ),
+    # ── n=128 lambda ablation (REPA L4, bs=80, varying λ) ────────────────── #
+    # λ=0.5 leg uses existing `repa_l4_128_bs80_step200k`. λ=1.0 leg
+    # (`..._bs80_lambda1`) is currently parked at step ~3.5K — relaunched
+    # 2026-05-08, will be added to the ablation once it has a usable ckpt.
+    "repa_l4_128_bs80_lambda2_steplast": (
+        "proteina_60m_repa_l4_128_per_residue_bs80_lambda2",
+        True,
+        4,
+        [None],  # last-EMA (~step 182K, ~14.5M samples assuming clean bs=80)
+    ),
+    # ── n=128 weight-decay ablation (REPA L4, bs=80, wd=1e-2 vs default) ──── #
+    # Pairs with `repa_l4_128_bs80_step200k` (default wd) at matching step
+    # for a clean wd ablation. Run dir uses `wd1e-2` (with dash); registry
+    # key drops the dash for downstream-tooling friendliness.
+    "repa_l4_128_bs80_wd1e2_step200k": (
+        "proteina_60m_repa_l4_128_per_residue_bs80_wd1e-2",
+        True,
+        4,
+        [200000],
+    ),
+    # ── n=128 layer ablation (per_residue, mixed bs=24→80, step=400k) ────── #
+    # The original L0/L4/L9 per_residue runs predate the explicit `_bs24` /
+    # `_bs80` split. All three share the SAME mixed-bs schedule (bs=24 for
+    # the first 220k steps, then bs=80) so cross-layer comparison is fair
+    # despite the bump. Sample budget at step=400k: 220k×24 + 180k×80 =
+    # 19.68M (same convention as the original n=128 sample-matched note).
+    "repa_l0_128_per_residue_step400k": (
+        "proteina_60m_repa_l0_128_per_residue",
+        True,
+        0,
+        [400000],
+    ),
+    "repa_l4_128_per_residue_step400k": (
+        "proteina_60m_repa_l4_128_per_residue",
+        True,
+        4,
+        [400000],
+    ),
+    "repa_l9_128_per_residue_step400k": (
+        "proteina_60m_repa_l9_128_per_residue",
+        True,
+        9,
+        [400000],
+    ),
+    # ── External pretrained reference (NVIDIA NGC DFS-60M v1.3) ──────────── #
+    # 12-layer ProteinTransformerAF3 (vs our 10-layer in-house 60M); released
+    # global_step=1.3M, epoch=177. Same path as PRETRAINED_CHECKPOINTS, but
+    # exposed as a normal RUN_SCHEDULES entry so the n=128 paper orchestrator
+    # treats it as one more cell. Symlinked at
+    # ``$STORE_ROOT/proteina_pretrained_dfs_60m/checkpoints/last-EMA.ckpt``
+    # → .local_ckpts/proteina_v1.3_DFS_60M_notri.ckpt so find_checkpoint_path
+    # resolves cleanly with step=None. is_repa=False (load as plain Proteina).
+    "pretrained_dfs_60m_n128_paper": (
+        "proteina_pretrained_dfs_60m",
+        False,
+        4,  # repa_layer unused for non-REPA loads
+        [None],
+    ),
+    "pretrained_dfs_60m_n256_paper": (
+        "proteina_pretrained_dfs_60m",
+        False,
+        4,  # repa_layer unused for non-REPA loads
+        [None],
+    ),
     # TODO (lambda ablation): once `proteina_60m_repa_l4_128_per_residue_bs80_lambda1`
     # (λ=1.0) reaches 100K-step EMA, add:
     #   "repa_l4_128_bs80_lambda1_step100k": (..., True, 4, [100000]),
@@ -376,17 +551,29 @@ GEN_RUN_CONFIGS = {
     "repa_l4_256_ep22": "inference/paper/inference_fid_60m_paper",
     "repa_l9_256_ep25": "inference/paper/inference_fid_60m_paper",
     "repa_l9_256_ep17": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_ep13_step300k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_ep31_step500k": "inference/paper/inference_fid_60m_paper",
     "repa_l4_256_random_ep17": "inference/paper/inference_fid_60m_paper",
     "baseline_afdb_256_ep20": "inference/paper/inference_fid_60m_paper",
     "repa_l4_afdb_256_ep20": "inference/paper/inference_fid_60m_paper",
+    "repa_l0_256_per_sample_steplast": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_sample_steplast": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_sample_step400k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_per_sample_steplast": "inference/paper/inference_fid_60m_paper",
+    "repa_esm_l9_t30_256_steplast": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_256_per_residue_step300k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_lambda1_step300k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_lambda2_step200k": "inference/paper/inference_fid_60m_paper",
     # ── n=128 paper protocol (truncated to in-distribution lengths) ──────── #
     # All point at inference/inference_fid_60m_n128_paper which generates 500
     # PDBs at lengths {50, 75, 100, 125} × 125 each (vs n=256's 1125 PDBs).
     # Designability subsamples 50 of 125 per length × 4 lengths = 200 PDBs.
     "baseline_128_bs80_step200k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_l0_128_bs80_steplast": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l0_128_bs80_step200k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_l4_128_bs80_step200k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_l9_128_bs80_steplast": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l9_128_bs80_step200k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_l4_128_random_step200k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_l4_128_pw_structure_step100k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_l4_128_pw_torsional_step100k": "inference/paper/inference_fid_60m_n128_paper",
@@ -398,6 +585,18 @@ GEN_RUN_CONFIGS = {
     "repa_l4_128_bs24_step200k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_l4_128_bs24_step400k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_l4_128_bs80_lr3x_steplast": "inference/paper/inference_fid_60m_n128_paper",
+    # External pretrained reference — same n=128 paper protocol
+    # ({50,75,100,125} × 125) so it sits in the same plot rows as our runs.
+    "pretrained_dfs_60m_n128_paper": "inference/paper/inference_fid_60m_n128_paper",
+    # n=128 per_residue layer ablation (mixed-bs runs through paper protocol)
+    "repa_l0_128_per_residue_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_per_residue_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l9_128_per_residue_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    # n=128 lambda ablation (λ=2.0; λ=0.5 leg reuses repa_l4_128_bs80_step200k)
+    "repa_l4_128_bs80_lambda2_steplast": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_bs80_wd1e2_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    # Same checkpoint, n=256 paper protocol ({50..250 step 25} × 125 = 1125 PDBs).
+    "pretrained_dfs_60m_n256_paper": "inference/paper/inference_fid_60m_paper",
 }
 
 
