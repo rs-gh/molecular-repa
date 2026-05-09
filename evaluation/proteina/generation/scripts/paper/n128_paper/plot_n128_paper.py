@@ -52,14 +52,31 @@ FIGURES_DIR = GENERATION_ROOT / "figures" / "paper" / "n128_paper"
 #   bs/lr ablation: baseline tints (blue) vs REPA tints (red); intensity
 #                   tracks step / config strength
 ABLATIONS = {
+    "pretrained": {
+        "label": "External reference\n(NVIDIA NGC DFS-60M v1.3, 12L)",
+        "dir": "n128_paper_pretrained",
+        "runs": [
+            ("pretrained_dfs_60m_n128_paper", "Pretrained DFS-60M", "#9467bd"),
+        ],
+    },
     "layer": {
-        "label": "Layer ablation\n(L0/L4/L9 vs baseline, bs=80)",
+        "label": "Layer ablation\n(L0/L4/L9 vs baseline, bs=80, step=200K)",
         "dir": "n128_paper_layer",
         "runs": [
             ("baseline_128_bs80_step200k", "Baseline", "#4A90D9"),
-            ("repa_l0_128_bs80_steplast", "REPA L0", "#55A868"),
+            ("repa_l0_128_bs80_step200k", "REPA L0", "#55A868"),
             ("repa_l4_128_bs80_step200k", "REPA L4", "#E74C3C"),
-            ("repa_l9_128_bs80_steplast", "REPA L9", "#F39C12"),
+            ("repa_l9_128_bs80_step200k", "REPA L9", "#F39C12"),
+        ],
+    },
+    "layer_per_residue": {
+        "label": "Layer ablation — per_residue\n(mixed bs=24→80 @ step 220k, fair cross-layer)",
+        "dir": "n128_paper_layer_per_residue",
+        "runs": [
+            ("baseline_128_bs24_step400k", "Baseline (bs24)", "#4A90D9"),
+            ("repa_l0_128_per_residue_step400k", "REPA L0", "#55A868"),
+            ("repa_l4_128_per_residue_step400k", "REPA L4", "#E74C3C"),
+            ("repa_l9_128_per_residue_step400k", "REPA L9", "#F39C12"),
         ],
     },
     "encoder": {
@@ -73,6 +90,22 @@ ABLATIONS = {
             ("repa_l4_128_pw_torsional_step100k", "PW-Torsional", "#C44893"),
             ("repa_mpnn_l4_128_bs80_step200k", "ProteinMPNN", "#8B4513"),
             ("repa_esm_l4_128_step200k", "ESM2", "#1ABC9C"),
+        ],
+    },
+    "lambda": {
+        "label": "λ ablation\n(REPA L4, bs=80, λ ∈ {0.5, 2.0}; λ=1.0 pending)",
+        "dir": "n128_paper_lambda",
+        "runs": [
+            ("repa_l4_128_bs80_step200k", "λ=0.5", "#E74C3C"),
+            ("repa_l4_128_bs80_lambda2_steplast", "λ=2.0", "#8B0000"),
+        ],
+    },
+    "wd": {
+        "label": "Weight-decay ablation\n(REPA L4, bs=80, wd default vs 1e-2)",
+        "dir": "n128_paper_wd",
+        "runs": [
+            ("repa_l4_128_bs80_step200k", "wd default", "#E74C3C"),
+            ("repa_l4_128_bs80_wd1e2_step200k", "wd=1e-2", "#8B0000"),
         ],
     },
     "bs_lr": {
@@ -102,24 +135,53 @@ ABLATIONS = {
 # (b) fix the foldseek path, or (c) adopt a different similarity reference.
 METRICS = {
     "_res_PDB_FID": ("PDB FID", True),
+    "_res_PDB_fJSD_C": ("PDB fJSD C", True),
+    "_res_PDB_fJSD_A": ("PDB fJSD A", True),
+    "_res_PDB_fJSD_T": ("PDB fJSD T", True),
     "_res_AFDB_FID": ("AFDB FID", True),
+    "_res_AFDB_fJSD_C": ("AFDB fJSD C", True),
+    "_res_AFDB_fJSD_A": ("AFDB fJSD A", True),
+    "_res_AFDB_fJSD_T": ("AFDB fJSD T", True),
     "_res_fS_T": ("Fold Score (Topo)", False),
-    "_res_PDB_fJSD_T": ("PDB fJSD (Topo)", True),
     "_res_designability_rate": ("Designability", False),
     "_res_scRMSD_mean": ("scRMSD mean (Å)", True),
-    "_res_diversity_clusters_mean": ("Diversity (clusters)", False),
+    # Diversity: clusters_total = sum of clusters across the designable subset
+    # (matches n=256 table and Proteina paper Table 1 "Cluster" count column).
+    # Earlier we reported clusters_mean (per length-bin avg), which understated
+    # the count by ~4× when designability spanned all 4 lengths.
+    "_res_diversity_clusters_total": ("Diversity (clusters)", False),
     "_res_diversity_pairwise_tm_mean": ("Diversity (pairwise TM)", True),
+    # SS composition + JSD vs reference (PDB / AFDB), all-samples and designable-only.
+    # Fractions are display-only ("higher better" is meaningless on a 3-bin
+    # composition); JSDs are lower-better. Catches all-α-helix mode collapse.
+    "_res_ss_frac_H": ("SS %H", False),
+    "_res_ss_frac_E": ("SS %E", False),
+    "_res_ss_jsd_pdb": ("SS JSD (PDB)", True),
+    "_res_ss_jsd_afdb": ("SS JSD (AFDB)", True),
+    "_res_ss_jsd_pdb_designable": ("SS JSD des. (PDB)", True),
+    "_res_ss_jsd_afdb_designable": ("SS JSD des. (AFDB)", True),
 }
 
 N_NOTES = {
     "_res_PDB_FID": "N=500",
-    "_res_AFDB_FID": "N=500",
-    "_res_fS_T": "N=500",
+    "_res_PDB_fJSD_C": "N=500",
+    "_res_PDB_fJSD_A": "N=500",
     "_res_PDB_fJSD_T": "N=500",
+    "_res_AFDB_FID": "N=500",
+    "_res_AFDB_fJSD_C": "N=500",
+    "_res_AFDB_fJSD_A": "N=500",
+    "_res_AFDB_fJSD_T": "N=500",
+    "_res_fS_T": "N=500",
     "_res_designability_rate": "N=200",
     "_res_scRMSD_mean": "N=200",
-    "_res_diversity_clusters_mean": "designable",
+    "_res_diversity_clusters_total": "designable",
     "_res_diversity_pairwise_tm_mean": "designable",
+    "_res_ss_frac_H": "N=500",
+    "_res_ss_frac_E": "N=500",
+    "_res_ss_jsd_pdb": "N=500",
+    "_res_ss_jsd_afdb": "N=500",
+    "_res_ss_jsd_pdb_designable": "designable",
+    "_res_ss_jsd_afdb_designable": "designable",
 }
 
 

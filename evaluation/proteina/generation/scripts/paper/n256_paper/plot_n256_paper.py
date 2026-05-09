@@ -40,6 +40,15 @@ from utils._results_io import load_sweep_rows  # noqa: E402
 RESULTS_ROOT = GENERATION_ROOT / "results" / "paper"
 FIGURES_DIR = GENERATION_ROOT / "figures" / "paper" / "n256_paper"
 
+# External-reference run overlaid as a dashed horizontal line on every panel.
+# 12-layer NVIDIA NGC release ckpt at 1.3M steps; not directly comparable to
+# our 10-layer 60M (see project_proteina_60m_layer_mismatch.md), but useful
+# as an order-of-magnitude target.
+PRETRAINED_PROFILE_DIR = "n256_paper_pretrained"
+PRETRAINED_RUN_NAME = "pretrained_dfs_60m_n256_paper"
+PRETRAINED_LABEL = "Pretrained 60M (NGC, 1.3M steps, 12L)"
+PRETRAINED_LINE_COLOR = "#222222"
+
 # Train-set chains per epoch (used to convert epoch -> samples_M for the
 # x-tick labels). Pulled from the same source as plot_n256_sweep.py for PDB;
 # AFDB derived from step * bs / epoch on the ep20 ckpts (200K * 24 / 20).
@@ -86,6 +95,85 @@ PROFILES = {
             ("repa_l4_afdb_256_ep20", "REPA L4", "#9B59B6", "afdb", 20),
         ],
     },
+    # Encoder ablation — ProteinMPNN. Anchors (Baseline, CA-GearNet=L4 ep22)
+    # mirrored from n256_paper_pdb so the bar chart shows MPNN vs the encoder
+    # block reference points within one panel.
+    "n256_paper_mpnn": {
+        "label": "Encoder ablation — ProteinMPNN (PDB)",
+        "dir": "n256_paper_mpnn",
+        "runs": [
+            ("baseline_256_ep21", "Baseline", "#4A90D9", "pdb", 21),
+            ("repa_l4_256_ep22", "CA-GearNet (L4)", "#E74C3C", "pdb", 22),
+            (
+                "repa_mpnn_l4_256_per_residue_step300k",
+                "ProteinMPNN (L4)",
+                "#8B4513",
+                "pdb",
+                26,
+            ),
+        ],
+    },
+    # Encoder ablation — ESM2 (L9-t30, bs=12). Same anchor pattern. Note ESM
+    # row carries a double caveat (bs mismatch + L9-t30 ≠ L4 default).
+    "n256_paper_esm": {
+        "label": "Encoder ablation — ESM2 L9-t30 (PDB, bs=12*)",
+        "dir": "n256_paper_esm",
+        "runs": [
+            ("baseline_256_ep21", "Baseline", "#4A90D9", "pdb", 21),
+            ("repa_l4_256_ep22", "CA-GearNet (L4)", "#E74C3C", "pdb", 22),
+            # ESM bs=12 throughout; epoch=14 is approx (3.86M smp / chains-per-epoch).
+            ("repa_esm_l9_t30_256_steplast", "ESM2 (L9-t30)", "#1ABC9C", "pdb", 14),
+        ],
+    },
+    # λ ablation — REPA L4 with λ ∈ {0.5, 1.0, 2.0}. λ=0.5 anchored at both
+    # ep22/400K (default reference) and ep13/300K (step-matched to λ=1.0).
+    "n256_paper_lambda": {
+        "label": "λ ablation — REPA L4 (PDB)",
+        "dir": "n256_paper_lambda",
+        "runs": [
+            ("repa_l4_256_ep22", "λ=0.5 ep22", "#E74C3C", "pdb", 22),
+            ("repa_l4_256_ep13_step300k", "λ=0.5 ep13/300K", "#FBB4AE", "pdb", 13),
+            (
+                "repa_l4_256_per_residue_lambda1_step300k",
+                "λ=1.0 ep26",
+                "#C44893",
+                "pdb",
+                26,
+            ),
+            (
+                "repa_l4_256_per_residue_lambda2_step200k",
+                "λ=2.0 ep17",
+                "#8B0000",
+                "pdb",
+                17,
+            ),
+        ],
+    },
+    # L4 step-trajectory — same run as the main L4, two ckpts (ep13/300K and
+    # ep22/400K) so the per-step trajectory is visible at a glance.
+    "n256_paper_l4_step300k": {
+        "label": "REPA L4 step trajectory (PDB)",
+        "dir": "n256_paper_l4_step300k",
+        "runs": [
+            ("repa_l4_256_ep13_step300k", "L4 ep13/300K", "#FBB4AE", "pdb", 13),
+            ("repa_l4_256_ep22", "L4 ep22/400K", "#E74C3C", "pdb", 22),
+        ],
+    },
+    # Averaging ablation — per_residue vs per_sample for L0/L4/L9. Each
+    # per_sample bar paired with its per_residue anchor; lighter tints = the
+    # per_sample variant.
+    "n256_paper_averaging": {
+        "label": "Averaging ablation — per_residue vs per_sample (PDB, L4)",
+        "dir": "n256_paper_averaging",
+        "runs": [
+            ("repa_l0_256_ep26", "L0 per_residue", "#55A868", "pdb", 26),
+            ("repa_l0_256_per_sample_steplast", "L0 per_sample", "#A6D7B5", "pdb", 28),
+            ("repa_l4_256_ep22", "L4 per_residue", "#E74C3C", "pdb", 22),
+            ("repa_l4_256_per_sample_step400k", "L4 per_sample", "#FBB4AE", "pdb", 25),
+            ("repa_l9_256_ep25", "L9 per_residue", "#F39C12", "pdb", 25),
+            ("repa_l9_256_per_sample_steplast", "L9 per_sample", "#FCD9A4", "pdb", 28),
+        ],
+    },
 }
 
 # (display label, lower_is_better). N-note is shared across all paper-protocol
@@ -99,7 +187,16 @@ METRICS = {
     "_res_designability_rate": ("Designability", False),
     "_res_scRMSD_mean": ("scRMSD mean (Å)", True),
     "_res_diversity_pairwise_tm_mean": ("Diversity (pairwise TM)", True),
+    "_res_diversity_clusters_total": ("Diversity (clusters total)", False),
     "_res_novelty_rate": ("Novelty (centroid)", False),
+    # SS composition + JSD vs reference. Display %H, %E (fractions sum to 1
+    # with %C); JSD vs PDB and AFDB, all-samples and designable-only.
+    "_res_ss_frac_H": ("SS %H", False),
+    "_res_ss_frac_E": ("SS %E", False),
+    "_res_ss_jsd_pdb": ("SS JSD (PDB)", True),
+    "_res_ss_jsd_afdb": ("SS JSD (AFDB)", True),
+    "_res_ss_jsd_pdb_designable": ("SS JSD des. (PDB)", True),
+    "_res_ss_jsd_afdb_designable": ("SS JSD des. (AFDB)", True),
 }
 
 N_NOTES = {
@@ -110,7 +207,14 @@ N_NOTES = {
     "_res_designability_rate": "N=250",
     "_res_scRMSD_mean": "N=250",
     "_res_diversity_pairwise_tm_mean": "designable",
+    "_res_diversity_clusters_total": "designable",
     "_res_novelty_rate": "designable",
+    "_res_ss_frac_H": "N=1125",
+    "_res_ss_frac_E": "N=1125",
+    "_res_ss_jsd_pdb": "N=1125",
+    "_res_ss_jsd_afdb": "N=1125",
+    "_res_ss_jsd_pdb_designable": "designable",
+    "_res_ss_jsd_afdb_designable": "designable",
 }
 
 
@@ -163,6 +267,12 @@ def plot() -> None:
     profile_data: dict[str, dict[str, dict]] = {}
     for pkey, pcfg in PROFILES.items():
         profile_data[pkey] = load_profile_rows(RESULTS_ROOT / pcfg["dir"])
+
+    # Load pretrained reference row (single jsonl). Missing keys are silently
+    # skipped per panel; the pretrained sweep didn't run centroid novelty so
+    # the novelty panel will have no overlay.
+    pretrained_rows = load_profile_rows(RESULTS_ROOT / PRETRAINED_PROFILE_DIR)
+    pretrained_row = pretrained_rows.get(PRETRAINED_RUN_NAME)
 
     # One row per profile, one column per metric
     for prow, (pkey, pcfg) in enumerate(PROFILES.items()):
@@ -238,6 +348,29 @@ def plot() -> None:
                 bars[best_i].set_edgecolor("gold")
                 bars[best_i].set_linewidth(2.5)
 
+            # Pretrained reference line (NGC 1.3M-step ckpt). Drawn after bars
+            # so y-limits expand if it sits above our values; labelled once
+            # via the figure-level legend below.
+            pre_v = _val(pretrained_row, mkey)
+            if pre_v is not None:
+                ax.axhline(
+                    pre_v,
+                    color=PRETRAINED_LINE_COLOR,
+                    linestyle="--",
+                    linewidth=1.2,
+                    zorder=4,
+                )
+                ax.text(
+                    ax.get_xlim()[1],
+                    pre_v,
+                    f" {pre_v:.2f}" if abs(pre_v) < 10 else f" {pre_v:.0f}",
+                    ha="left",
+                    va="center",
+                    fontsize=7,
+                    color=PRETRAINED_LINE_COLOR,
+                    style="italic",
+                )
+
             ax.set_xticks(x)
             ax.set_xticklabels(tick_labels, fontsize=7)
             ax.grid(axis="y", alpha=0.3, zorder=0)
@@ -265,6 +398,17 @@ def plot() -> None:
                 legend_entries.append(key)
 
     handles = [mpatches.Patch(color=c, label=lbl) for lbl, c in legend_entries]
+    if pretrained_row is not None:
+        handles.append(
+            plt.Line2D(
+                [0],
+                [0],
+                color=PRETRAINED_LINE_COLOR,
+                linestyle="--",
+                linewidth=1.5,
+                label=PRETRAINED_LABEL,
+            )
+        )
     fig.legend(
         handles=handles,
         loc="lower center",
@@ -276,7 +420,7 @@ def plot() -> None:
 
     plt.tight_layout(rect=[0, 0.04, 1, 0.95])
     fig.suptitle(
-        "n=256 paper-protocol sweep — generation metrics across 3 profiles\n"
+        "n=256 paper-protocol sweep — generation metrics across 8 profiles\n"
         "Pool: 1125 PDBs at L∈{50,75,…,250} × 125; designability on 50/L × 5 lengths = 250; "
         "diversity/novelty on designable subset.\n"
         "Best per panel highlighted in gold.",
