@@ -1,0 +1,3 @@
+| run | step | _res_PDB_FID | _res_PDB_fJSD_C | _res_PDB_fJSD_A | _res_PDB_fJSD_T | _res_AFDB_FID | _res_AFDB_fJSD_C | _res_AFDB_fJSD_A | _res_AFDB_fJSD_T | _res_fS_C | _res_fS_A | _res_fS_T | _res_designability_rate | _res_scRMSD_mean | _res_scRMSD_median | _res_designability_n | _res_diversity_clusters_mean | _res_diversity_pairwise_tm_mean | _res_diversity_n | _res_diversity_designable_filtered |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| pretrained_dfs_60m_n256_paper | 1300000 | 319.8253 | 1.2273 | 1.7527 | 2.6494 | 300.0980 | 0.6796 | 1.2406 | 2.1975 | 1.8489 | 4.8800 | 19.6684 | 0.9200 | 1.1333 | 0.7956 | 250 | 45.2000 | 0.1462 | 230 | True |

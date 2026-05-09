@@ -1,0 +1,4 @@
+| run | step | _res_PDB_FID | _res_PDB_fJSD_C | _res_PDB_fJSD_A | _res_PDB_fJSD_T | _res_AFDB_FID | _res_AFDB_fJSD_C | _res_AFDB_fJSD_A | _res_AFDB_fJSD_T | _res_fS_C | _res_fS_A | _res_fS_T | _res_designability_rate | _res_scRMSD_mean | _res_scRMSD_median | _res_designability_n | _res_diversity_clusters_mean | _res_diversity_pairwise_tm_mean | _res_diversity_n | _res_diversity_designable_filtered |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| repa_l4_128_bs80_lambda2_steplast | 185500 | 339.9714 | 0.0417 | 1.0848 | 2.7681 | 368.7397 | 0.3202 | 1.1753 | 2.7734 | 2.9922 | 6.6257 | 18.4512 | 0.5100 | 4.7002 | 1.9147 | 200 | 11.2500 | 0.4384 | 102 | True |
+| repa_l4_128_bs80_step200k | 200000 | 357.4897 | 0.5871 | 1.1838 | 2.8632 | 354.9557 | 0.3996 | 1.0911 | 2.7182 | 2.7658 | 4.8412 | 13.6492 | 0.8450 | 1.7475 | 1.0276 | 200 | 23.2500 | 0.3822 | 169 | True |

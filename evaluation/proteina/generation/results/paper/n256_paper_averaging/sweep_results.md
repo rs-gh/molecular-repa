@@ -1,0 +1,5 @@
+| run | step | _res_PDB_FID | _res_PDB_fJSD_C | _res_PDB_fJSD_A | _res_PDB_fJSD_T | _res_AFDB_FID | _res_AFDB_fJSD_C | _res_AFDB_fJSD_A | _res_AFDB_fJSD_T | _res_fS_C | _res_fS_A | _res_fS_T | _res_designability_rate | _res_scRMSD_mean | _res_scRMSD_median | _res_designability_n | _res_diversity_clusters_mean | _res_diversity_pairwise_tm_mean | _res_diversity_n | _res_diversity_designable_filtered |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| repa_l0_256_per_sample_steplast | 381500 | 452.4247 | 0.0248 | 0.3151 | 2.0232 | 482.4736 | 0.1791 | 0.6357 | 2.2423 | 2.8787 | 6.1457 | 28.5679 | 0.2280 | 5.8676 | 3.7643 | 250 | 8.8000 | 0.2303 | 57 | True |
+| repa_l4_256_per_sample_step400k | 400000 | 276.7207 | 0.0916 | 0.5864 | 1.8323 | 330.7795 | 0.3272 | 0.8862 | 2.0824 | 2.8029 | 8.3643 | 33.5859 | 0.2800 | 5.7652 | 3.1954 | 250 | 11.6000 | 0.1760 | 70 | True |
+| repa_l9_256_per_sample_steplast | 385000 | 499.1197 | 0.3225 | 0.9595 | 2.4154 | 569.0176 | 0.2007 | 1.0023 | 2.7169 | 2.6572 | 6.0560 | 30.4659 | 0.3280 | 5.2347 | 3.0117 | 250 | 14.0000 | 0.2114 | 82 | True |

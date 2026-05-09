@@ -1,0 +1,3 @@
+| run | step | _res_PDB_FID | _res_PDB_fJSD_C | _res_PDB_fJSD_A | _res_PDB_fJSD_T | _res_AFDB_FID | _res_AFDB_fJSD_C | _res_AFDB_fJSD_A | _res_AFDB_fJSD_T | _res_fS_C | _res_fS_A | _res_fS_T | _res_designability_rate | _res_scRMSD_mean | _res_scRMSD_median | _res_designability_n | _res_diversity_clusters_mean | _res_diversity_pairwise_tm_mean | _res_diversity_n | _res_diversity_designable_filtered |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| repa_mpnn_l4_256_per_residue_step300k | 300000 | 261.2145 | 0.0558 | 0.3339 | 1.6419 | 307.7307 | 0.3098 | 0.7510 | 1.9184 | 2.6432 | 5.8827 | 31.7980 | 0.4120 | 3.9360 | 2.2365 | 250 | 17.8000 | 0.1927 | 103 | True |

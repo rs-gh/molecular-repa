@@ -1,0 +1,3 @@
+| run | step | _res_PDB_FID | _res_PDB_fJSD_C | _res_PDB_fJSD_A | _res_PDB_fJSD_T | _res_AFDB_FID | _res_AFDB_fJSD_C | _res_AFDB_fJSD_A | _res_AFDB_fJSD_T | _res_fS_C | _res_fS_A | _res_fS_T | _res_designability_rate | _res_scRMSD_mean | _res_scRMSD_median | _res_designability_n | _res_diversity_clusters_mean | _res_diversity_pairwise_tm_mean | _res_diversity_n | _res_diversity_designable_filtered |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| repa_esm_l9_t30_256_steplast | 322000 | 314.5523 | 0.7420 | 0.8906 | 2.3068 | 318.1969 | 0.4089 | 0.5565 | 2.0125 | 2.0375 | 3.8485 | 30.3632 | 0.1680 | 6.1087 | 5.0953 | 250 | 8.4000 | 0.1494 | 42 | True |

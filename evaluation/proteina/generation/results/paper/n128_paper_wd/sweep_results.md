@@ -1,0 +1,3 @@
+| run | step | _res_PDB_FID | _res_PDB_fJSD_C | _res_PDB_fJSD_A | _res_PDB_fJSD_T | _res_AFDB_FID | _res_AFDB_fJSD_C | _res_AFDB_fJSD_A | _res_AFDB_fJSD_T | _res_fS_C | _res_fS_A | _res_fS_T | _res_designability_rate | _res_scRMSD_mean | _res_scRMSD_median | _res_designability_n | _res_diversity_clusters_mean | _res_diversity_pairwise_tm_mean | _res_diversity_n | _res_diversity_designable_filtered |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| repa_l4_128_bs80_wd1e2_step200k | 200000 | 478.7033 | 0.3551 | 1.5903 | 3.3211 | 491.5821 | 0.5431 | 1.7784 | 3.3421 | 2.9598 | 4.6158 | 8.6161 | 0.8550 | 1.6026 | 0.8609 | 200 | 12.0000 | 0.5576 | 171 | True |
