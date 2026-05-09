@@ -123,6 +123,7 @@ _VALID_METRICS = {
     "novelty_centroid",
     "novelty_foldseek",
     "cath",
+    "ss",
 }
 
 
@@ -713,6 +714,7 @@ def main(args=None):
     run_novelty_centroid = _should_run("novelty_centroid", selected_metrics)
     run_novelty_foldseek = _should_run("novelty_foldseek", selected_metrics)
     run_cath = args.cath_subset > 0 and _should_run("cath", selected_metrics)
+    run_ss = _should_run("ss", selected_metrics)
 
     needs_gpu = not (args.skip_generation and not run_fid and not run_designability)
     if needs_gpu:
@@ -735,6 +737,7 @@ def main(args=None):
             run_novelty_centroid,
             run_novelty_foldseek,
             run_cath,
+            run_ss,
             selected_metrics,
         )
     finally:
@@ -750,6 +753,7 @@ def _main_body(
     run_novelty_centroid,
     run_novelty_foldseek,
     run_cath,
+    run_ss,
     selected_metrics,
 ):
     """Body of main(); split out so the try/finally above stays readable."""
@@ -977,6 +981,36 @@ def _main_body(
             f"scRMSD_mean={desig_results.get('_res_scRMSD_mean', 'N/A'):.3f}, "
             f"n_designable={len(designable_pdbs)}"
         )
+
+    # -- Secondary-structure metrics --
+    # Cα-only P-SEA assignment (biotite annotate_sse) on every generated PDB.
+    # Cheap (~ms/structure) so always runs on the full pool. Slots here so
+    # `designable_pdbs` is in scope for the designable-subset variant.
+    if run_ss:
+        from utils.ss_metrics import compute_ss_metrics
+
+        from pathlib import Path as _Path
+
+        ss_results = compute_ss_metrics(
+            list_of_pdbs=list_of_pdbs,
+            designable_pdbs=designable_pdbs,
+            ss_reference_pdb_path=args.ss_reference_pdb_path,
+            ss_reference_afdb_path=args.ss_reference_afdb_path,
+            cache_dir=_Path(root_path) / "ss_cache",
+        )
+        for k, v in ss_results.items():
+            columns.append(k)
+            res_row.append(v)
+        if ss_results:
+            logger.info(
+                f"SS: H={ss_results.get('_res_ss_frac_H', 'N/A'):.3f}, "
+                f"E={ss_results.get('_res_ss_frac_E', 'N/A'):.3f}, "
+                f"C={ss_results.get('_res_ss_frac_C', 'N/A'):.3f}, "
+                f"jsd_pdb={ss_results.get('_res_ss_jsd_pdb', float('nan')):.4f}, "
+                f"jsd_afdb={ss_results.get('_res_ss_jsd_afdb', float('nan')):.4f}"
+            )
+    else:
+        logger.info("Skipping SS metrics (--metrics filter)")
 
     # -- Diversity metrics --
     # Diversity uses the same length filter as designability (per paper App. F

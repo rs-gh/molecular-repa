@@ -43,6 +43,8 @@ EVALUATE_DEFAULTS: Dict[str, Any] = {
     "skip_fid": False,
     "fast_inference": True,
     "metrics": None,
+    "ss_reference_pdb_path": None,
+    "ss_reference_afdb_path": None,
 }
 
 
@@ -129,8 +131,22 @@ def add_metric_args(parser: argparse.ArgumentParser) -> None:
         type=str,
         default=None,
         help="Comma-separated subset of metrics to run. Names: fid, "
-        "designability, diversity, novelty_centroid, novelty_foldseek, cath. "
+        "designability, diversity, novelty_centroid, novelty_foldseek, cath, ss. "
         "Unset = run everything per per-knob settings.",
+    )
+    parser.add_argument(
+        "--ss_reference_pdb_path",
+        type=str,
+        default=None,
+        help="Path to .pt with [N,3] (H,E,C) reference fractions from PDB train set. "
+        "Built by precompute_ss_reference.py. Missing = skip ss_jsd_pdb columns.",
+    )
+    parser.add_argument(
+        "--ss_reference_afdb_path",
+        type=str,
+        default=None,
+        help="Path to .pt with [N,3] (H,E,C) reference fractions from AFDB SwissProt. "
+        "Missing = skip ss_jsd_afdb columns.",
     )
 
 

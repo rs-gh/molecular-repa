@@ -362,6 +362,8 @@ def run_one_task(
     foldseek_filter_designable: bool = True,
     metrics: Optional[str] = None,
     skip_generation: bool = False,
+    ss_reference_pdb_path: Optional[str] = None,
+    ss_reference_afdb_path: Optional[str] = None,
 ) -> None:
     """Run evaluate.main() for one (run_name, step) and append to JSONL."""
     # Lazy import: evaluate pulls in proteinfoundation, which isn't always on
@@ -422,6 +424,8 @@ def run_one_task(
         skip_fid=skip_fid,
         fast_inference=fast_inference,
         metrics=metrics_eff,
+        ss_reference_pdb_path=ss_reference_pdb_path,
+        ss_reference_afdb_path=ss_reference_afdb_path,
     )
 
     try:
@@ -603,6 +607,12 @@ def main():
         else bool(profile_cfg.get("centroid_filter_designable", True))
     )
     metrics = args.metrics if args.metrics is not None else profile_cfg.get("metrics")
+    ss_reference_pdb_path = args.ss_reference_pdb_path or profile_cfg.get(
+        "ss_reference_pdb_path"
+    )
+    ss_reference_afdb_path = args.ss_reference_afdb_path or profile_cfg.get(
+        "ss_reference_afdb_path"
+    )
 
     # Foldseek knobs: CLI > profile > script default. Empty target_dbs -> skip.
     foldseek_target_dbs = (
@@ -699,6 +709,8 @@ def main():
                 foldseek_filter_designable=foldseek_filter_designable,
                 metrics=metrics,
                 skip_generation=args.skip_generation,
+                ss_reference_pdb_path=ss_reference_pdb_path,
+                ss_reference_afdb_path=ss_reference_afdb_path,
             )
         consolidate(jsonl_path, output_dir)
         return
@@ -785,6 +797,8 @@ def main():
             foldseek_filter_designable=foldseek_filter_designable,
             metrics=metrics,
             skip_generation=args.skip_generation,
+            ss_reference_pdb_path=ss_reference_pdb_path,
+            ss_reference_afdb_path=ss_reference_afdb_path,
         )
 
     consolidate(jsonl_path, output_dir)
