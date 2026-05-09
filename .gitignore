@@ -93,3 +93,7 @@ evaluation/tabasco/checkpoints/
 
 # Transient smoke-test outputs from the representation sweep harness
 evaluation/proteina/representation/results/smoketest/
+
+# Vendored reference repos (frameflow, genie2, ...) — full git clones, never
+# committed in-tree. Add as submodules if a stable revision is needed.
+third_party/
