@@ -94,6 +94,12 @@ evaluation/tabasco/checkpoints/
 # Transient smoke-test outputs from the representation sweep harness
 evaluation/proteina/representation/results/smoketest/
 
+# Representation: superseded/legacy result dirs and one-off legacy scripts.
+# Kept on disk (move-only, not deleted) for one cycle in case anything needs
+# to be recovered, but no longer tracked.
+evaluation/proteina/representation/results/_archive/
+evaluation/proteina/representation/scripts/_legacy/
+
 # Vendored reference repos (frameflow, genie2, ...) — full git clones, never
 # committed in-tree. Add as submodules if a stable revision is needed.
 third_party/

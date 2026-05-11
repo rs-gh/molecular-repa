@@ -59,16 +59,21 @@ Results land under `evaluation/proteina/generation/results/<profile>/sweep_resul
 
 ## representation/
 
-Heavy lifting in `evaluation/proteina/representation/scripts/run_sweep.py`.
+Heavy lifting in `evaluation/proteina/representation/scripts/`, grouped by
+experimental protocol (`lite/` = in-place split sweep, `convergence/` = n=512
+multi-step trajectory, `paper/` = pretrained-probe paper-table sweeps).
 Canonical probe parameters in `evaluation/proteina/representation/sweep_config.yaml`.
 Always pass `--config <name>` for production sweeps.
 
 | File | Role |
 |---|---|
-| `run_sweep.sh` | Contact P@L/5 + CATH fold probes across checkpoints, layers, and timesteps. |
+| `run_sweep.sh` | Pipeline A: in-place split sweep — contact P@L/5 + CATH fold probes across checkpoints, layers, and timesteps. |
+| `run_pretrained_probe.sh` | Pipeline B: pretrained-probe sweep (large train.lmdb sample, fixed val.lmdb eval manifest). |
+| `run_extract_only.sh` / `run_probe_only.sh` | Pipeline B split-mode (GPU extract → CPU probe fit). |
+| `build_cath_classifier.sh` | One-off: build the CATH-classifier pickle consumed by the generation eval suite. |
 
 ```bash
-# Full sweep for a given protein-length regime
+# Pipeline A: full sweep for a given protein-length regime
 sbatch hpc-scripts/proteina/evaluation/representation/run_sweep.sh --sweep --config n128
 sbatch hpc-scripts/proteina/evaluation/representation/run_sweep.sh --sweep --config n256
 sbatch hpc-scripts/proteina/evaluation/representation/run_sweep.sh --sweep --config n512
@@ -79,6 +84,13 @@ sbatch hpc-scripts/proteina/evaluation/representation/run_sweep.sh --sweep --con
 
 # Override a single field (e.g. quick smoketest)
 sbatch hpc-scripts/proteina/evaluation/representation/run_sweep.sh --sweep --config n128 --n_proteins 20
+
+# Pipeline B: pretrained-probe sweep
+sbatch hpc-scripts/proteina/evaluation/representation/run_pretrained_probe.sh --config pretrained_probe
 ```
 
-Results land under `evaluation/proteina/representation/results/n128_val/`, `n256_val/`, `n512_val/`.
+Results land under:
+- `evaluation/proteina/representation/results/lite/n{128,256,512}_lite/` (Pipeline A)
+- `evaluation/proteina/representation/results/lite/n512_convergence_lite/` (n=512 multi-step)
+- `evaluation/proteina/representation/results/paper/contact_max256/` (Pipeline B contact sweep)
+- `evaluation/proteina/representation/results/paper/n{128,256}_paper_cath/cath/` (Pipeline B paper-table CATH sweeps)

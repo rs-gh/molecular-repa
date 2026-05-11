@@ -6,7 +6,7 @@
 #! Counterpart to run_sweep.sh, but for the pretrained-probe pipeline
 #! (pretrain_probe_sweep.py). Key differences:
 #!   - Stages BOTH train.lmdb (~51 GB) and val.lmdb (~1.1 GB) to /dev/shm
-#!   - Writes to results/pretrained_probe/ (not overwriting the in-place sweep)
+#!   - Writes to results/paper/n256_paper_contact/ (not overwriting the in-place sweep)
 #!   - No gearnet/encoder baselines - probe-relevant sources only
 #!
 #! ALWAYS pass --config pretrained_probe so the canonical N_train / N_eval /
@@ -97,10 +97,10 @@ echo "=== Time: $(date) ==="
 cd "$REPO_DIR"
 
 if [ "$SAMPLE_SIZE" -eq 1 ]; then
-    PROBE_SCRIPT="evaluation/proteina/representation/scripts/sample_size_probe.py"
+    PROBE_SCRIPT="evaluation/proteina/representation/scripts/paper/sample_size_probe.py"
     echo "=== Mode: sample-size learning curve (Phase 1) ==="
 else
-    PROBE_SCRIPT="evaluation/proteina/representation/scripts/pretrain_probe_sweep.py"
+    PROBE_SCRIPT="evaluation/proteina/representation/scripts/paper/pretrain_probe_sweep.py"
     echo "=== Mode: pretrained-probe sweep (Phase 2) ==="
     # Per-checkpoint feature cache lives on /dev/shm (tmpfs, 126 GB, job-local)
     # NOT on /home (50 GB quota - blew through it on 2026-04-24). Cache is

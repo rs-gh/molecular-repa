@@ -7,7 +7,7 @@
 #! the same NoTrainCAGearNet checkpoint the FID metric uses, fits a linear
 #! logistic-regression CATH head, validates on val.lmdb, and writes a pickle
 #! bundle (head + train_meta + train_dist + sidecar JSON) under
-#! evaluation/proteina/representation/results/cath_classifier/.
+#! evaluation/proteina/representation/results/inputs/cath_classifier/.
 #!
 #! Wall-time budget: ~30 min on intr GPU at default n_train=5000.
 #!
@@ -22,7 +22,7 @@
 #!   #! Per-level breakdown (rerun once per level into a different output):
 #!   for L in C A T H; do
 #!     sbatch ... build_cath_classifier.sh --cath_level $L \
-#!         --output evaluation/proteina/representation/results/cath_classifier/cath_gearnet_${L}.pkl
+#!         --output evaluation/proteina/representation/results/inputs/cath_classifier/cath_gearnet_${L}.pkl
 #!   done
 
 #SBATCH -A LIO-CHARM-SL2-GPU
@@ -98,7 +98,7 @@ fi
 echo "=== Args: $EXTRA_ARGS ==="
 
 #! Same torch.load / pyg_compat shims as run_pretrained_probe.sh.
-SCRIPT="evaluation/proteina/representation/scripts/build_cath_classifier.py"
+SCRIPT="evaluation/proteina/representation/scripts/paper/build_cath_classifier.py"
 python -u -c "
 import os, sys
 sys.path.insert(0, 'src/proteina/proteinfoundation')

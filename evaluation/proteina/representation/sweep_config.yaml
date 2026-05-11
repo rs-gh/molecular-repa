@@ -5,6 +5,15 @@
 # should specify a --config so that deviations from the canonical settings
 # are explicit overrides visible in the job log, not silent argparse defaults.
 #
+# Profile-to-protocol map (see README.md for full layout):
+#   n128 / n256 / n512 / n128_L4_bs80  -> results/lite/  (Pipeline A, single-step)
+#   pretrained_probe                    -> results/paper/contact_max256 (Pipeline B)
+#   paper_n128_cath / paper_n256_cath   -> results/{pretrained_probe_paper_n128, paper/n256_paper_cath}
+#
+# The "convergence" (multi-step n=512) sweep is NOT a config profile — it's
+# launched by passing per-step CLI flags to scripts/lite/run_sweep.py and writes
+# to results/convergence/n512_convergence/.
+#
 # Usage examples:
 #   sbatch run_probes.sh --sweep --config n128
 #   sbatch run_probes.sh --sweep --config n128 --runs esm_repa_l0_128,esm_repa_l4_128
@@ -25,20 +34,20 @@ _defaults: &defaults
 n128:
   <<: *defaults
   max_size: 128
-  output_dir: results/n128_val
+  output_dir: results/lite/n128_lite
 
 n256:
   <<: *defaults
   max_size: 256
-  output_dir: results/n256_val
+  output_dir: results/lite/n256_lite
 
 n512:
   <<: *defaults
   max_size: 512
-  output_dir: results/n512_val
+  output_dir: results/lite/n512_lite
 
 # n=128 L4 bs=80 sweep: same parameters as n128 but writes to a separate output
-# dir so the canonical n128_val/ results stay untouched. Pass --runs on the
+# dir so the canonical n128_lite/ results stay untouched. Pass --runs on the
 # CLI to select the bs80 sweep entries (baseline_128_bs80, repa_l4_128_bs80,
 # repa_l4_128_bs80_lr3x, repa_l4_128_random).
 #
@@ -47,7 +56,7 @@ n512:
 n128_L4_bs80:
   <<: *defaults
   max_size: 128
-  output_dir: results/n128_L4_bs80_val
+  output_dir: results/lite/n128_L4_bs80_lite
 
 # ─── Pretrained-probe pipeline (pretrain_probe_sweep.py) ─────────────────────
 #
@@ -89,4 +98,56 @@ pretrained_probe:
                              # probes). "C,A,T,H" for the full per-depth
                              # breakdown.
   cath_min_per_class: 3
-  output_dir: results/pretrained_probe
+  output_dir: results/paper/contact_max256
+
+# ─── Paper-table CATH sweeps (pretrain_probe_sweep.py) ──────────────────────
+# CATH-only rep-quality companion to the n=128 / n=256 paper tables. One row
+# per generation-quality row. Probes C+A+T levels; clean t=1.0 only.
+# Pretrained DFS-60M included via PRETRAINED_CHECKPOINTS (12-layer); the
+# RUN_SCHEDULES aliases pretrained_dfs_60m_n{128,256}_paper would 10-layer-
+# index it incorrectly and are intentionally not in runs lists.
+
+_paper_cath_defaults: &paper_cath_defaults
+  # n_train=5000: trade-off between T-level class coverage and probe-fit
+  # wall time. sklearn LogisticRegression (lbfgs, single-threaded) at
+  # n_train=10000 took ~20s/level on the smoke; saga+n_jobs=-1 didn't help
+  # because n_jobs is a no-op since sklearn 1.8. Halving n_train to 5000
+  # cuts probe-fit to ~10s/level. T vocab shrinks from ~700 to ~400 classes
+  # (still meaningful; A/C unaffected). Net per-ckpt: ~10s × 30 fits +
+  # ~50s extraction = ~6 min. Full job at 22 ckpts ≈ 2.5h parallel.
+  # Cost of n_eval scales only extraction (predict_proba is milliseconds);
+  # keep n_eval=4999 for stable T-level macro-F1.
+  n_train: 5000
+  n_eval: 4999
+  head_type: linear
+  probe_epochs: 15
+  probe_lr: 0.001
+  probe_seed: 42
+  manifest_seed: 42
+  train_manifest_version: train_v1
+  eval_manifest_version: eval_v1
+  timesteps: "1.0"
+  probes: "cath"
+  cath_levels: "C,A,T"
+  cath_min_per_class: 3
+
+paper_n128_cath:
+  <<: *paper_cath_defaults
+  max_size: 128
+  # val.lmdb has 4,999 total proteins, but only ~1,237 are ≤128 residues.
+  # Using all of them; the eval set is smaller than at n256 (4,999) but
+  # still gives ~30 samples/class for CATH-A and ~10/class for CATH-T —
+  # adequate for stable macro-F1 on the surviving vocab.
+  n_eval: 1237
+  output_dir: results/paper/n128_paper_cath
+  runs: "baseline_128_bs80_step200k,repa_l0_128_bs80_steplast,repa_l0_128_bs80_step200k,repa_l4_128_bs80_step200k,repa_l9_128_bs80_steplast,repa_l9_128_bs80_step200k,repa_l4_128_random_step200k,repa_l4_128_pw_structure_step100k,repa_l4_128_pw_torsional_step100k,repa_mpnn_l4_128_bs80_step200k,repa_esm_l4_128_step200k,baseline_128_bs24_step200k,baseline_128_bs24_step400k,baseline_128_bs80_lr3x_step200k,repa_l4_128_bs24_step200k,repa_l4_128_bs24_step400k,repa_l4_128_bs80_lr3x_steplast,repa_l4_128_bs80_lambda2_steplast,repa_l4_128_bs80_wd1e2_step200k,repa_l0_128_per_residue_step400k,repa_l4_128_per_residue_step400k,repa_l9_128_per_residue_step400k,pretrained_dfs_60m"
+
+paper_n256_cath:
+  <<: *paper_cath_defaults
+  max_size: 256
+  # val.lmdb has 4,999 total proteins, but only 3,190 are ≤256 residues
+  # (the longer ones get filtered to avoid truncation distorting the rep).
+  # Plenty for paper-quality T-level macro-F1.
+  n_eval: 3190
+  output_dir: results/paper/n256_paper_cath/cath
+  runs: "baseline_256_ep21,repa_l0_256_ep26,repa_l4_256_ep22,repa_l9_256_ep25,repa_l9_256_ep17,repa_l4_256_ep13_step300k,repa_l4_256_ep31_step500k,repa_l4_256_random_ep17,baseline_afdb_256_ep20,repa_l4_afdb_256_ep20,repa_l0_256_per_sample_steplast,repa_l4_256_per_sample_step400k,repa_l9_256_per_sample_steplast,repa_esm_l9_t30_256_steplast,repa_mpnn_l4_256_per_residue_step300k,repa_l4_256_per_residue_lambda1_step300k,repa_l4_256_per_residue_lambda2_step200k,pretrained_dfs_60m"

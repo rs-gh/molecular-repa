@@ -1,8 +1,10 @@
 # Proteina Representation Quality Probes — Findings
 
-**Status: code complete, execution blocked on Lustre.**
+**Status:** execution complete; results live under `results/{lite,convergence,paper}/`.
+This document captures methodology + interpretation; for invocation see
+[README.md](README.md).
 
-**Date:** 2026-04-18
+**First run:** 2026-04-18. **Findings document last updated:** 2026-05-11.
 
 ## What this is
 
@@ -17,59 +19,50 @@ probes, each targeting a distinct axis of representation quality:
 
 - **P2 — CATH fold classification**
   Linear classifier on mean-pooled per-residue reps → CATH topology
-  (T-level). Falls back to A- or C-level if a subset has too few samples
-  per class.
+  (T-level by default; the paper-table sweeps also probe C and A levels).
+  Falls back to A- or C-level if a subset has too few samples per class.
 
-## Sources (when executed)
+## Sources
 
-Each probe runs against five representation sources, held out the same way:
+Two driver scripts iterate over a shared registry of representation sources
+defined in [lib/checkpoints.py](lib/checkpoints.py) (`RUN_SCHEDULES` for the
+in-place sweep, `PRETRAINED_CHECKPOINTS` for the pretrained-probe sweep).
 
-| Source | Type | Path |
-|---|---|---|
-| GearNet (frozen) | Encoder | `/rds/.../metric_factory/model_weights/gearnet_ca.pth` |
-| baseline | Checkpoint | `store/proteina_60m_baseline_v2/checkpoints/last.ckpt` |
-| repa_l0_per_residue | Checkpoint | `store/proteina_60m_repa_l0_256_per_residue/.../last.ckpt` |
-| repa_l4_per_residue | Checkpoint | `store/proteina_60m_repa_l4_256_per_residue/.../last.ckpt` |
-| repa_l9_per_residue | Checkpoint | `store/proteina_60m_repa_l9_256_per_residue/.../last.ckpt` |
+Categories present in the registry:
+- **Frozen GearNet** (Encoder; reference ceiling on structural decodability).
+- **Pretrained NVIDIA NGC 60M** (`proteina_v1.3_DFS_60M_notri.ckpt`; 12-layer
+  reference for layer-curve shape).
+- **Our in-house 60M baselines and REPA variants** (10-layer trunk), trained at
+  n=128, 256, 512 with different target encoders (CA-GearNet, ESM2, ProteinMPNN,
+  PW-Structure, PW-Torsional, random init) and different alignment layers
+  (L0/L4/L9) — ~17 runs in total. See `RUN_SCHEDULES` for the live list; this
+  document does not enumerate them since the registry changes faster than the
+  doc would.
 
-All four checkpoints are present on `/rds/user/sr2173/hpc-work/proteina/store/`.
-Hidden states are extracted at the matching layer for each REPA variant (0, 4, 9)
-and at layer 4 for the no-REPA baseline.
+Hidden states are extracted at every trunk layer in a single forward pass
+([lib/extract.py](lib/extract.py)); the probe head is fit per layer.
 
-## Current blocker
+## How to run
 
-Lustre `/rds/user/sr2173/hpc-work/proteina/data/pdb_train/lmdb/` is returning
-`Input/output error` / `Cannot send after transport endpoint shutdown` for
-`val.lmdb`, `test.lmdb`, and `train.lmdb` at the time of this run. The probe
-code is complete and smoke-tested (tabasco side runs end-to-end; proteina
-model loading path verified against the `ProteinaREPA` codepath), but the full
-proteina ablation cannot run from the login node while Lustre is in this state.
-
-## How to run once Lustre recovers (or from a compute node)
-
-A SLURM submission script lives at
-[hpc-scripts/proteina/evaluation/run_probes.sh](../../../hpc-scripts/proteina/evaluation/run_probes.sh).
-It copies `val.lmdb` (+ keys + length index) to `/tmp` on the compute node
-before running, following the pattern in
-`feedback_lmdb_local_nvme.md` — Lustre mmap thrashes on compute nodes, so
-every probe read needs to hit local NVMe.
+Full invocation patterns + SLURM wrappers are in [README.md](README.md).
+TL;DR:
 
 ```bash
-sbatch hpc-scripts/proteina/evaluation/run_probes.sh --n_proteins 200
+# Pipeline A (in-place split, fast triage)
+sbatch hpc-scripts/proteina/evaluation/representation/run_sweep.sh \
+    --sweep --config n128
+
+# Pipeline B (pretrained probe, paper-quality)
+sbatch hpc-scripts/proteina/evaluation/representation/run_pretrained_probe.sh \
+    --config pretrained_probe
+
+# Local smoke (no SLURM, ~2 min on a GPU node)
+python evaluation/proteina/representation/scripts/lite/run_sweep.py \
+    --config n128 --runs baseline_128 --n_proteins 20
 ```
 
-Writes machine-readable results to `results.json` and a human-readable
-table to `results.md` under this directory.
-
-To debug the same code on the login node (if Lustre recovers):
-
-```bash
-source .venv/bin/activate
-export PROJECT_ROOT=$(pwd)/src/proteina
-export DATA_PATH=/rds/user/sr2173/hpc-work/proteina/data
-export LMDB_DIR=/rds/user/sr2173/hpc-work/proteina/data/pdb_train/lmdb
-python evaluation/proteina/representation/scripts/run_all.py --n_proteins 50 --only baseline
-```
+Both wrappers stage the relevant LMDB(s) to local NVMe before running —
+Lustre mmap thrashes on compute nodes (see `feedback_lmdb_local_nvme.md`).
 
 ## Design notes
 
@@ -281,18 +274,25 @@ Code layout:
 |---|---|
 | [lib/probes/contact_pretrained.py](lib/probes/contact_pretrained.py) | `train_contact_probe`, `eval_contact_probe`, `run_pretrained_contact_probe` |
 | [lib/feature_cache.py](lib/feature_cache.py) | Extract+cache+purge helpers, per-checkpoint tmp layout |
-| [scripts/sample_size_probe.py](scripts/sample_size_probe.py) | Phase 1 — learning curve at N_train ∈ {500, 1K, 2K, 5K, 10K} |
-| [scripts/pretrain_probe_sweep.py](scripts/pretrain_probe_sweep.py) | Phase 2 — full RUN_SCHEDULES × layers sweep |
+| [scripts/paper/sample_size_probe.py](scripts/paper/sample_size_probe.py) | Phase 1 — learning curve at N_train ∈ {500, 1K, 2K, 5K, 10K} |
+| [scripts/paper/pretrain_probe_sweep.py](scripts/paper/pretrain_probe_sweep.py) | Phase 2 — full RUN_SCHEDULES × layers sweep |
 | [sweep_config.yaml](sweep_config.yaml) `pretrained_probe` | Canonical N_train, N_eval, probe hyperparams |
 | [../../../hpc-scripts/proteina/evaluation/representation/run_pretrained_probe.sh](../../../hpc-scripts/proteina/evaluation/representation/run_pretrained_probe.sh) | SLURM wrapper; stages train.lmdb (51 GB) + val.lmdb to /dev/shm |
 
-Results live in `results/pretrained_probe/` — separate from the in-place
+Results live in `results/paper/contact_max256/` — separate from the in-place
 sweep so both regimes remain queryable. Rows carry `train_manifest` and
 `eval_manifest` tags for reproducibility.
 
-**Scope of this change**: contact probe only, PDB train only, val.lmdb
-evaluation only. CATH probe keeps its in-place split. AFDB pretraining is
-a separate phase (different pool, different homology considerations).
+**Scope of this change (2026-04-23)**: contact probe only, PDB train only,
+val.lmdb evaluation only. AFDB pretraining is a separate phase (different
+pool, different homology considerations).
+
+**Update (2026-04-28)**: CATH probe was added to the pretrained-split
+pipeline via the `paper_n128_cath` / `paper_n256_cath` profiles. Rows are
+tagged `probe_kind="cath"` in the JSONL and carry `cath_accuracy` /
+`cath_macro_f1` at the C/A/T levels. The original Pipeline-A in-place CATH
+probe still exists (run via `--config n{128,256,512}`) but the paper
+numbers come from the pretrained-split protocol.
 
 **How to run**:
 
@@ -300,7 +300,7 @@ a separate phase (different pool, different homology considerations).
    ```
    sbatch hpc-scripts/proteina/evaluation/representation/run_pretrained_probe.sh --sample_size
    ```
-   Inspect `results/pretrained_probe/sample_size_curve.png`, pick the elbow,
+   Inspect `results/paper/contact_max256/sample_size_curve.png`, pick the elbow,
    update `sweep_config.yaml` `pretrained_probe.n_train`.
 
 2. **Phase 2** (per reporting cycle): full sweep.

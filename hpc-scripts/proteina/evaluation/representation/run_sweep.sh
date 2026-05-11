@@ -98,14 +98,14 @@ cd "$REPO_DIR"
 #! Install the same pyg_compat + torch.load shims as eval_fid_lite_sweep.sh so
 #! OmegaConf / torch.compile / REPA-only key filtering works identically.
 if [ "$CATH_PATCH" -eq 1 ]; then
-    PROBE_SCRIPT="evaluation/proteina/representation/scripts/patch_cath.py"
-    echo "=== Mode: CATH patch (second pass, re-runs CATH only) ==="
+    PROBE_SCRIPT="evaluation/proteina/representation/scripts/_legacy/patch_cath.py"
+    echo "=== Mode: CATH patch (second pass, re-runs CATH only — legacy one-off) ==="
 elif [ "$SWEEP" -eq 1 ]; then
-    PROBE_SCRIPT="evaluation/proteina/representation/scripts/run_sweep.py"
+    PROBE_SCRIPT="evaluation/proteina/representation/scripts/lite/run_sweep.py"
     echo "=== Mode: sweep (FID-schedule) ==="
 else
-    PROBE_SCRIPT="evaluation/proteina/representation/scripts/run_all.py"
-    echo "=== Mode: last.ckpt single-point ==="
+    PROBE_SCRIPT="evaluation/proteina/representation/scripts/_legacy/run_all.py"
+    echo "=== Mode: last.ckpt single-point (legacy entry point) ==="
 fi
 
 python -u -c "
