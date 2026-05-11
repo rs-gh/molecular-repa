@@ -149,14 +149,19 @@ PROFILES = {
             ),
         ],
     },
-    # L4 step-trajectory — same run as the main L4, two ckpts (ep13/300K and
-    # ep22/400K) so the per-step trajectory is visible at a glance.
+    # L4 step-trajectory — same run as the main L4, three ckpts (ep13/300K,
+    # ep22/400K, ep31/500K) so the per-step trajectory is visible at a glance.
+    # Loads from two profile dirs (n256_paper_l4_step300k for ep13/ep22,
+    # n256_paper_l4_step500k for ep31) — `extra_dirs` is merged into the
+    # primary `dir` rows in load_profile_rows below.
     "n256_paper_l4_step300k": {
         "label": "REPA L4 step trajectory (PDB)",
         "dir": "n256_paper_l4_step300k",
+        "extra_dirs": ["n256_paper_l4_step500k"],
         "runs": [
             ("repa_l4_256_ep13_step300k", "L4 ep13/300K", "#FBB4AE", "pdb", 13),
             ("repa_l4_256_ep22", "L4 ep22/400K", "#E74C3C", "pdb", 22),
+            ("repa_l4_256_ep31_step500k", "L4 ep31/500K", "#8B0000", "pdb", 31),
         ],
     },
     # Averaging ablation — per_residue vs per_sample for L0/L4/L9. Each
@@ -263,10 +268,17 @@ def plot() -> None:
         squeeze=False,
     )
 
-    # Pre-load all profile data
+    # Pre-load all profile data. `extra_dirs` lets a panel pull rows from
+    # additional sweep dirs (e.g. step-extension panel pulls ep31/500K from
+    # n256_paper_l4_step500k while keeping ep13/300K + ep22/400K from its
+    # primary n256_paper_l4_step300k dir). Primary dir wins on key collision.
     profile_data: dict[str, dict[str, dict]] = {}
     for pkey, pcfg in PROFILES.items():
-        profile_data[pkey] = load_profile_rows(RESULTS_ROOT / pcfg["dir"])
+        merged = {}
+        for extra in pcfg.get("extra_dirs", []):
+            merged.update(load_profile_rows(RESULTS_ROOT / extra))
+        merged.update(load_profile_rows(RESULTS_ROOT / pcfg["dir"]))
+        profile_data[pkey] = merged
 
     # Load pretrained reference row (single jsonl). Missing keys are silently
     # skipped per panel; the pretrained sweep didn't run centroid novelty so
