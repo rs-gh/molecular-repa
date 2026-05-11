@@ -54,6 +54,90 @@ def _subsample(items, n, seed):
     return [items[i] for i in sorted(idx)]
 
 
+def _write_designability_index(
+    output_dir,
+    list_of_pdbs,
+    attempted_paths,
+    evaluated_paths,
+    scrmsds,
+    tm_scores,
+    plddts,
+    length_to_pdbs=None,
+    designable_threshold=2.0,
+):
+    """Persist per-PDB designability outcomes to <output_dir>/designability_index.csv.
+
+    Covers the entire generated pool (`list_of_pdbs`), not just the evaluated
+    subset, so callers can later answer "what's the design rate at length L
+    given the K out of N PDBs we actually scored?". Un-evaluated PDBs get
+    `evaluated=False` and NaN scRMSD; ESMFold/MPNN failures get `evaluated=True`
+    with NaN values (matches the paper convention of counting failures as
+    non-designable). Designable rows are scRMSD < `designable_threshold` (2.0 Å).
+
+    `attempted_paths` is the subset that designability was actually run on
+    (the subsample fed to batch_designability). `evaluated_paths` ⊆
+    `attempted_paths` is the success subset returned in `pdb_paths_evaluated`.
+    The set difference (attempted but not in evaluated) is the failure set.
+    """
+    eval_lookup = dict(zip(evaluated_paths, zip(scrmsds, tm_scores, plddts)))
+    attempted_set = set(attempted_paths)
+    pdb_to_length: dict = {}
+    if length_to_pdbs is not None:
+        for nres, pdbs in length_to_pdbs.items():
+            for p in pdbs:
+                pdb_to_length[p] = int(nres)
+
+    rows = []
+    for p in list_of_pdbs:
+        rel = os.path.relpath(p, output_dir)
+        length = pdb_to_length.get(p, "")
+        if p in eval_lookup:
+            scr, tm, pl = eval_lookup[p]
+            row = {
+                "pdb_path": rel,
+                "length": length,
+                "evaluated": True,
+                "scRMSD": scr,
+                "tm_score": tm,
+                "plddt": pl,
+                "designable": bool(scr < designable_threshold),
+            }
+        elif p in attempted_set:
+            # Pipeline ran but raised (MPNN or ESMFold). Counts as evaluated
+            # for accounting purposes but yields no metric values.
+            row = {
+                "pdb_path": rel,
+                "length": length,
+                "evaluated": True,
+                "scRMSD": float("nan"),
+                "tm_score": float("nan"),
+                "plddt": float("nan"),
+                "designable": False,
+            }
+        else:
+            row = {
+                "pdb_path": rel,
+                "length": length,
+                "evaluated": False,
+                "scRMSD": float("nan"),
+                "tm_score": float("nan"),
+                "plddt": float("nan"),
+                "designable": False,
+            }
+        rows.append(row)
+
+    os.makedirs(output_dir, exist_ok=True)
+    csv_path = os.path.join(output_dir, "designability_index.csv")
+    pd.DataFrame(rows).to_csv(csv_path, index=False)
+    n_eval = sum(1 for r in rows if r["evaluated"])
+    n_des = sum(1 for r in rows if r["designable"])
+    logger.info(
+        f"Wrote designability index: {csv_path} "
+        f"(N={len(rows)}, evaluated={n_eval}, designable={n_des})"
+    )
+    return csv_path
+
+
 def _parse_lengths_csv(s):
     """Parse a comma-separated lengths string (e.g. '50,100,150') to a list of ints.
 
@@ -207,6 +291,7 @@ def compute_designability_metrics(
     length_filter=None,
     tensors_dir=None,
     samples_dir=None,
+    output_dir=None,
 ):
     """Run designability on a random subset of generated PDBs.
 
@@ -224,7 +309,11 @@ def compute_designability_metrics(
             None or empty -> use entire list with a global subset_size cap.
         tensors_dir, samples_dir: required if `length_filter` is set, so we
             can rebuild the per-length PDB grouping. (The same `tensors_dir`
-            already exists in the eval_output layout.)
+            already exists in the eval_output layout.) Also used (when present)
+            to populate the `length` column of the designability index.
+        output_dir: if set, writes `<output_dir>/designability_index.csv` with
+            per-PDB scRMSD / tm_score / plddt / designable rows for the full
+            pool. None disables index writing (back-compat).
 
     Returns:
         Tuple of (metrics_dict, designable_pdbs):
@@ -279,7 +368,35 @@ def compute_designability_metrics(
     # from both. Failures count as non-designable, matching the paper convention.
     paths = results.get("pdb_paths_evaluated", [])
     scrmsds = results.get("scRMSD_list", [])
+    tm_scores = results.get("tm_score_list", [])
+    plddts = results.get("plddt_list", [])
     designable_pdbs = [p for p, r in zip(paths, scrmsds) if r < 2.0]
+
+    if output_dir is not None:
+        # Lengths are best-effort: only available when the tensor sidecar dir
+        # exists (it always does in the standard eval_output layout).
+        length_to_pdbs = None
+        if (
+            tensors_dir is not None
+            and samples_dir is not None
+            and os.path.isdir(tensors_dir)
+        ):
+            try:
+                length_to_pdbs = build_length_to_pdbs(tensors_dir, samples_dir)
+            except Exception as exc:
+                logger.warning(
+                    f"Designability index: length lookup failed ({exc}); lengths blank"
+                )
+        _write_designability_index(
+            output_dir=output_dir,
+            list_of_pdbs=list_of_pdbs,
+            attempted_paths=subset_pdbs,
+            evaluated_paths=paths,
+            scrmsds=scrmsds,
+            tm_scores=tm_scores,
+            plddts=plddts,
+            length_to_pdbs=length_to_pdbs,
+        )
 
     return {
         f"{METRIC_PREFIX}designability_n": n_eval,
@@ -971,6 +1088,7 @@ def _main_body(
         length_filter=designability_lengths,
         tensors_dir=tensors_dir,
         samples_dir=samples_dir,
+        output_dir=root_path,
     )
     for k, v in desig_results.items():
         columns.append(k)
