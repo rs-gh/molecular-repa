@@ -2,8 +2,10 @@
 """Joint probe x FID plots - Fig 3c analogue + probe-redundancy scatter.
 
 Merges:
-  - `evaluation/proteina/representation/results/sweep_results.csv`        (probe quality metrics)
-  - `evaluation/proteina/generation/results/pdb/fid/lite_convergence_all.csv`  (FID / fJSD / fS)
+  - `evaluation/proteina/representation/results/lite/n512_convergence_lite/sweep_results.csv`
+        (probe quality metrics from the n=512 multi-step trajectory sweep)
+  - `evaluation/proteina/generation/results/pdb/fid/lite_convergence_all.csv`
+        (FID / fJSD / fS)
 
 on `(run, samples_seen)` (nsamples = step x batch_size; that's the fair x-axis
 given baseline bs=6 vs REPA bs=4 at 512 residues).
@@ -42,7 +44,14 @@ HERE = Path(__file__).resolve().parent
 # .parent          = .../proteina/joint
 # .parent.parent   = .../proteina
 PROJECT = HERE.parent.parent
-PROBE_CSV = PROJECT / "representation" / "results" / "sweep_results.csv"
+PROBE_CSV = (
+    PROJECT
+    / "representation"
+    / "results"
+    / "lite"
+    / "n512_convergence_lite"
+    / "sweep_results.csv"
+)
 FID_CSV = (
     PROJECT / "generation" / "results" / "pdb" / "fid" / "lite_convergence_all.csv"
 )
