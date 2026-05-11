@@ -38,8 +38,34 @@ RESULTS_GLOBS = [
     ),
 ]
 
-SS_HEADERS = ["SS %H ↑", "SS %E ↑", "SS JSD (PDB) ↓", "SS JSD (AFDB) ↓"]
-SS_KEYS = ["_res_ss_frac_H", "_res_ss_frac_E", "_res_ss_jsd_pdb", "_res_ss_jsd_afdb"]
+SS_HEADERS = [
+    "SS %H ↑",
+    "SS %E ↑",
+    "SS JSD (PDB) ↓",
+    "SS JSD (AFDB) ↓",
+    "SS %H des. ↑",
+    "SS %E des. ↑",
+    "SS JSD des. (PDB) ↓",
+    "SS JSD des. (AFDB) ↓",
+    "SS JSD 2D (PDB) ↓",
+    "SS JSD 2D (AFDB) ↓",
+    "SS JSD 2D des. (PDB) ↓",
+    "SS JSD 2D des. (AFDB) ↓",
+]
+SS_KEYS = [
+    "_res_ss_frac_H",
+    "_res_ss_frac_E",
+    "_res_ss_jsd_pdb",
+    "_res_ss_jsd_afdb",
+    "_res_ss_frac_H_designable",
+    "_res_ss_frac_E_designable",
+    "_res_ss_jsd_pdb_designable",
+    "_res_ss_jsd_afdb_designable",
+    "_res_ss_jsd_pdb_2d",
+    "_res_ss_jsd_afdb_2d",
+    "_res_ss_jsd_pdb_designable_2d",
+    "_res_ss_jsd_afdb_designable_2d",
+]
 
 
 def _load_ss_index() -> dict[tuple[str, int], dict]:
@@ -158,11 +184,22 @@ def append_ss_columns(tsv_path: Path) -> int:
 
         Repeats the trim while SS columns remain in `header_cells` to handle
         prior runs that double-appended (each pass strips one SS block).
+        Accepts both header conventions (n256 "SS %H ↑" and n128 "SS %H (↑)")
+        by matching on `startswith("SS %H")`.
         """
+
+        def _ss_block_start(h: list[str]) -> int | None:
+            for i, x in enumerate(h):
+                if x.strip().startswith("SS %H"):
+                    return i
+            return None
+
         result = list(cells)
         h = list(header_cells)
-        while "SS %H ↑" in h:
-            ss_start = next(i for i, x in enumerate(h) if x.strip() == "SS %H ↑")
+        while True:
+            ss_start = _ss_block_start(h)
+            if ss_start is None:
+                break
             # Find contiguous SS run starting at ss_start.
             ss_end = ss_start
             while ss_end < len(h) and h[ss_end].strip().startswith("SS "):
@@ -212,7 +249,7 @@ def append_ss_columns(tsv_path: Path) -> int:
         insert_at = notes_idx if notes_idx is not None else len(cells)
 
         if _is_separator_row(cells) or _is_blank_row(cells):
-            ss_cells = ["", "", "", ""]
+            ss_cells = [""] * len(SS_HEADERS)
         else:
             n_data += 1
             label = cells[header_run_idx] if header_run_idx is not None else cells[0]
@@ -224,7 +261,7 @@ def append_ss_columns(tsv_path: Path) -> int:
             step = _parse_step(step_str)
             row = _match_run(label, step, ss_index)
             if row is None:
-                ss_cells = ["", "", "", ""]
+                ss_cells = [""] * len(SS_HEADERS)
             else:
                 n_matched += 1
                 vals = []

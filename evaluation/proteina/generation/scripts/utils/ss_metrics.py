@@ -12,6 +12,10 @@ Metric columns emitted (prefix `_res_`):
     ss_frac_H/E/C_designable   same, restricted to scRMSD<2.0Å subset
     ss_jsd_pdb / _afdb                JSD on (H,E,C) vs ref, all samples
     ss_jsd_pdb_designable / _afdb_…   same, designable subset
+    ss_jsd_pdb_2d / _afdb_2d          JSD on 2D histogram of (f_H, f_E)
+                                      with a 5×5 grid; captures shape not
+                                      just centroid (see compute_ss_jsd_2d)
+    ss_jsd_pdb_designable_2d / _afdb_designable_2d  same, designable subset
 
 Reference files (.pt) are produced by `scripts/precompute_ss_reference.py`
 and contain a `[N_ref, 3]` float tensor of per-structure fractions.
@@ -131,6 +135,31 @@ def compute_ss_jsd(gen_fracs: np.ndarray, ref_fracs: np.ndarray) -> float:
     return float(js_dist**2)
 
 
+SS_JSD_2D_N_BINS = 5
+
+
+def compute_ss_jsd_2d(
+    gen_fracs: np.ndarray, ref_fracs: np.ndarray, n_bins: int = SS_JSD_2D_N_BINS
+) -> float:
+    """JSD between 2D histograms of (f_H, f_E) over generated vs reference.
+
+    Captures point-cloud shape rather than just the centroid. Uniform bins
+    over [0, 1]^2; cells above the simplex diagonal (f_H + f_E > 1) are
+    valid grid cells that receive zero mass on both sides and contribute 0.
+    """
+    from scipy.spatial.distance import jensenshannon
+
+    if gen_fracs.size == 0 or ref_fracs.size == 0:
+        return float("nan")
+    edges = np.linspace(0.0, 1.0, n_bins + 1)
+    hp, _, _ = np.histogram2d(gen_fracs[:, 0], gen_fracs[:, 1], bins=(edges, edges))
+    hq, _, _ = np.histogram2d(ref_fracs[:, 0], ref_fracs[:, 1], bins=(edges, edges))
+    p = hp.flatten() / hp.sum()
+    q = hq.flatten() / hq.sum()
+    d = jensenshannon(p, q, base=2)
+    return float(d**2)
+
+
 def _load_ref(path: Optional[str], label: str) -> Optional[np.ndarray]:
     """Load a [N, 3] reference fraction tensor; None if missing."""
     if path is None or not os.path.exists(path):
@@ -190,8 +219,10 @@ def compute_ss_metrics(
     ref_afdb = _load_ref(ss_reference_afdb_path, "AFDB")
     if ref_pdb is not None:
         out[f"{METRIC_PREFIX}ss_jsd_pdb"] = compute_ss_jsd(fracs_all, ref_pdb)
+        out[f"{METRIC_PREFIX}ss_jsd_pdb_2d"] = compute_ss_jsd_2d(fracs_all, ref_pdb)
     if ref_afdb is not None:
         out[f"{METRIC_PREFIX}ss_jsd_afdb"] = compute_ss_jsd(fracs_all, ref_afdb)
+        out[f"{METRIC_PREFIX}ss_jsd_afdb_2d"] = compute_ss_jsd_2d(fracs_all, ref_afdb)
 
     if designable_pdbs:
         designable_set = set(designable_pdbs)
@@ -206,8 +237,14 @@ def compute_ss_metrics(
                 out[f"{METRIC_PREFIX}ss_jsd_pdb_designable"] = compute_ss_jsd(
                     fracs_des, ref_pdb
                 )
+                out[f"{METRIC_PREFIX}ss_jsd_pdb_designable_2d"] = compute_ss_jsd_2d(
+                    fracs_des, ref_pdb
+                )
             if ref_afdb is not None:
                 out[f"{METRIC_PREFIX}ss_jsd_afdb_designable"] = compute_ss_jsd(
+                    fracs_des, ref_afdb
+                )
+                out[f"{METRIC_PREFIX}ss_jsd_afdb_designable_2d"] = compute_ss_jsd_2d(
                     fracs_des, ref_afdb
                 )
 

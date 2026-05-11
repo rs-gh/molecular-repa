@@ -6,6 +6,11 @@ Reads each row of `<sweep_dir>/sweep_results.jsonl`, locates the matching
 merges the resulting `_res_ss_*` columns into the row in place. JSONL is
 rewritten atomically (write-tmp + rename).
 
+When `<eval_root>/designability_index.csv` is present (written by recent
+`evaluate.py` runs or by `backfill_designability_index.py`), the designable
+subset is read from it and the `_res_ss_*_designable` columns are also
+emitted. Without an index those columns stay missing for backfilled rows.
+
 Usage:
     python evaluation/proteina/generation/scripts/backfill_ss.py \
         --sweep_dir evaluation/proteina/generation/results/paper/n128_paper_layer \
@@ -37,6 +42,30 @@ EVAL_OUTPUT_ROOTS = [
     REPO_ROOT / "eval_output",
     Path("/rds/user/sr2173/hpc-work/proteina/eval_output"),
 ]
+
+
+def _load_designable_paths(eval_root: Path) -> list[str] | None:
+    """Read absolute paths of designable PDBs from the per-run index, if present.
+
+    `designability_index.csv` stores `pdb_path` relative to `eval_root`. We
+    re-anchor here so the returned list matches the absolute paths the SS
+    code uses to filter. Path joined without `.resolve()` so the result
+    matches `samples_dir.glob()` byte-for-byte (resolving symlinks here
+    while the caller does not would silently drop matches). Returns None
+    when the index is missing.
+    """
+    idx_path = eval_root / "designability_index.csv"
+    if not idx_path.exists():
+        return None
+    import csv
+
+    out: list[str] = []
+    with open(idx_path) as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if str(row.get("designable", "")).strip().lower() == "true":
+                out.append(str(eval_root / row["pdb_path"]))
+    return out
 
 
 def _samples_dir_for_row(row: dict) -> Path | None:
@@ -103,13 +132,14 @@ def main():
             n_errored += 1
             continue
 
-        # Designable subset: not preserved in JSONL. Run all-samples only;
-        # designable variants stay missing for backfilled rows. Trade-off
-        # accepted to keep this a pure offline backfill.
+        # Designable subset: read from designability_index.csv if present
+        # (written by recent evaluate.py runs). Without it the
+        # `_designable` SS columns stay missing for this row.
+        designable_pdbs = _load_designable_paths(samples_dir.parent)
         try:
             ss = compute_ss_metrics(
                 list_of_pdbs=[str(p) for p in list_of_pdbs],
-                designable_pdbs=None,
+                designable_pdbs=designable_pdbs,
                 ss_reference_pdb_path=args.ss_reference_pdb_path,
                 ss_reference_afdb_path=args.ss_reference_afdb_path,
                 cache_dir=samples_dir.parent / "ss_cache",
