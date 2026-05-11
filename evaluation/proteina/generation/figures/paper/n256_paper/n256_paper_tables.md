@@ -36,6 +36,9 @@ Best per metric within each ablation block is **bolded**.
 | λ=2.0 ep17 | 200K | 24 | 4.80M | 250 | 398.1 | 0.065 | 0.492 | 1.949 | 463.8 | **0.215** | **0.667** | 2.258 | **43.83** | 0.032 | 9.94 | 7 | 0.181 | ✅ clean bs=24 (started 05-07, post-bump era); evaluated 2026-05-09 (slurm 29113620 task 0). **Best fS_T (43.83 > λ=0.5's 40.35)** but **collapse on Designability (0.032)** and **clusters (7 designable across only 2 length bins)** — strong λ over-weights REPA, hurting samplable quality even as topology score climbs. Sample budget 4.80M is 1.3× smaller than λ=0.5's 6.37M. |
 | **Step-matched reference (λ ablation, L4 default at step 300K)** |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | λ=0.5 ep13 step300k | 300K | 24† | 3.97M | 250 | 497.8 | 0.222 | 0.689 | 2.259 | 557.4 | 0.674 | 1.134 | 2.560 | 38.99 | 0.080 | 8.59 | 20 | 0.159 | 🔁 same run as λ=0.5 ep22 (bumped 12→24 at ~269K), earlier ckpt. Step-matched to λ=1.0 ep26@300K. **Sample-budget caveat:** this row has 3.97M smp (bumped run), λ=1.0 has 7.20M (clean bs=24 × 300K) — step-matched but NOT sample-matched, λ=1.0 has 1.8× more samples. Evaluated 2026-05-09 (slurm 29114035). |
+| **L4 step extension — (REPA L4 default beyond ep22/400K — same run, longer training; paired with the ep22 anchor as a 2-step trajectory)** |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| L4 ep22 step400k | 400K | 24† | 6.37M | 250 | **357.4** | 0.093 | **0.491** | 1.866 | **410.6** | 0.329 | **0.719** | **1.998** | **40.35** | 0.320 | 5.35 | 76 | **0.172** | 🔁 = L4 ep22 (bumped 12→24 at ~269K). Anchor row repeated here so the 400K→500K step gap is one row apart. |
+| L4 ep31 step500k | 500K | 24† | 8.77M | 250 | 393.9 | **0.052** | 0.495 | **1.772** | 436.8 | **0.192** | 0.739 | 2.025 | 35.04 | **0.384** | **5.02** | **79** | 0.222 | ✅ **clean bs=24 from step ~269K onward** (same run as ep22, +100K steps). Sample budget = 269K×12 + 231K×24 = 8.77M (verified arithmetic, ckpt `nsamples_processed` not yet read). Designability monotonically improves across the trajectory (ep13/300K=0.080 → ep22/400K=0.320 → ep31/500K=0.384) and scRMSD/diversity-clusters track the same direction; **PDB FID and fS_T peak at ep22 and regress slightly at ep31** — directionally, more training keeps helping samplable quality but topology/FID metrics start to plateau or back off. Evaluated 2026-05-10 (slurm 29125490 task 0). |
 | **Averaging ablation — (REPA L0/L4/L9, per_sample vs per_residue, PDB, GearNet-CA, λ=0.5, nominal bs=24)** |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | L0 per_residue ep26 | 400K | 24† | 7.08M | 250 | **265.7** | **0.014** | 0.421 | **1.682** | **318.5** | **0.164** | 0.664 | **1.873** | 34.33 | 0.084 | 7.12 | 16 | 0.192 | 🔁 = L0 ep26 (bumped 12→24). |
 | L0 per_sample steplast | 381K | 24† | 7.52M | 250 | 452.4 | 0.025 | **0.315** | 2.023 | 482.5 | 0.179 | **0.636** | 2.242 | 28.57 | 0.228 | 5.87 | 44 | 0.230 | 🔁 **rerun candidate**: bs=12 → bs=24 at step ~143K (full run reached step 382K). Per_residue ep26 better than this on FID/fJSD/fS_T but worse on Des; resolved live last-EMA at 381500 (≥ ep19/300K snapshot). Evaluated 2026-05-08 (slurm 28993862 task 0). |
@@ -56,7 +59,7 @@ Best per metric within each ablation block is **bolded**.
 
 **Bump-step reference.** Per-run bs=12→24 bump steps (and the analysis of how earlier estimates over-counted samples by 0.6–1.5M) are tabulated in [`n256_bump_steps.md`](n256_bump_steps.md). The bump step for each affected row is also woven into its Notes cell below.
 
-## Pending rows (status as of 2026-05-09)
+## Pending rows (status as of 2026-05-10)
 
 **Layer ablation** — complete (4/4). No pending rows.
 
@@ -74,6 +77,8 @@ Best per metric within each ablation block is **bolded**.
 **λ ablation** — **complete (3/3)** as of 2026-05-09. λ=0.5 ep22 (bumped run, 6.37M smp); λ=1.0 ep26@300K (slurm 29113620 task 1, clean bs=24, 7.20M smp); λ=2.0 ep17@200K (slurm 29113620 task 0, clean bs=24, 4.80M smp). Step-matched anchor `λ=0.5 ep13 step300k` added (slurm 29114035, 3.97M smp due to mid-run bump) so λ=1.0 ep26@300K can be compared at matched steps even though sample budgets differ. **Net read:** λ=0.5 wins most metrics; λ=2.0 wins fS_T but loses Designability dramatically (0.032) — λ-overweighting is real and harmful past 1.0.
 
 **Averaging ablation** — **complete (6/6)** as of 2026-05-08. L0 per_sample @381K, L9 per_sample @385K (slurm 28993862 tasks 0/2, last-EMA), L4 per_sample @400K (slurm 29012689, explicit step pin after the original last-EMA resolved to a stale 04-17 symlink at step=56K). L4 per_sample is the only sample-matched row (ep25/400K = 6.69M smp); L0/L9 sit slightly past their per_residue sample budgets.
+
+**L4 step extension** — added 2026-05-10 to track L4-default beyond ep22/400K. ep31/500K (slurm 29125490 task 0, 8.77M smp) added as a 2-row trajectory paired with the ep22/400K anchor. L4 training is still running at the time of writing (slurm 29125121, ~9h into a 24h walltime), so a future ep>=35 ckpt will extend this further.
 
 **Batch size + LR ablation** — 0/8 cells filled. The full block requires new training runs that don't exist for n=256 (no `pdb_lmdb_256_bs80`, no `lr3x` variants registered). Either:
 - Mirror n=128's bs∈{24,80} × lr∈{1×,3×} × ±REPA grid (8 cells) — needs ~8 new training launches + ~16h GPU each to reach 200K, OR
