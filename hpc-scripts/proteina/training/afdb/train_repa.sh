@@ -52,6 +52,7 @@ source "$REPO_DIR/.venv/bin/activate"
 
 export DATA_PATH="/rds/user/sr2173/hpc-work/proteina/data"
 export ESM_MODEL_PATH="/rds/user/sr2173/hpc-work/proteina/hf_cache/esm2_t33_650M_UR50D"
+export PROTEINMPNN_WEIGHTS_DIR="/rds/user/sr2173/hpc-work/proteina/ProteinMPNN"
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export WANDB_INIT_TIMEOUT=120
