@@ -1,0 +1,107 @@
+# Meta-evaluation profiles for run_meta_sweep.py.
+#
+# These profiles exist to probe properties of the eval *protocol itself*
+# rather than to score new checkpoints. Each profile fans out a list of
+# target run names (which must exist in RUN_SCHEDULES) over a list of seeds,
+# producing one task per (target, seed) pair. Each task invokes the existing
+# generation/evaluate pipeline ad-hoc with a synthesized ckpt_label of
+# `<target>__seed<S>` so the eval_output cache key differs between reps and
+# PDBs are regenerated fresh per seed (the standard sweep reuses cached PDBs
+# whenever output_suffix matches).
+#
+# Profiles:
+#   sanity_seed_n128 / sanity_seed_n256
+#       One target ckpt, one extra seed (43). Confirms (a) PDBs really do
+#       differ when seed changes, and (b) the magnitude of metric movement
+#       between two independent samples. ~9 min generation at n=128, ~27 min
+#       at n=256, plus designability/diversity.
+#
+#   fid_scaling_n256
+#       Times the FID-only path at N=5625 (paper-protocol full N). Confirms
+#       the ~2h25 wall-clock extrapolation (27 min × 5) before we commit to
+#       running the larger pool across the whole grid.
+#
+#   variance_n128_layer
+#       5 seeds × 2 ckpts (one mid-quality, one weak) under the n=128 paper
+#       protocol. Quantifies between-rep σ for FID, designability, and
+#       diversity. Targets:
+#         - baseline_128_bs80_step200k (designability ~0.745, the anchor)
+#         - repa_l0_128_bs80_step200k (designability ~0.425, weaker so we
+#           can see if variance scales with quality)
+#       10 tasks total. ~15-25 min/task (gen+des+div), ~3h total wall-clock
+#       on a single GPU; serially or fan out across 10 array slots.
+#
+#   variance_n256_layer
+#       Same idea at n=256. 5 seeds × 1 ckpt (baseline_256_ep21) to start
+#       — bumping to 2 ckpts costs 2× the budget and n=256 designability
+#       is the bottleneck at ~1.5h/task. Start with one and expand if the
+#       n=128 results suggest σ is quality-dependent.
+#
+# Output dirs all go under evaluation/proteina/generation/results/meta/ so
+# they're easy to gitignore and prune separately from the paper results.
+
+_defaults: &defaults
+  seed: 42                       # base seed; overridden by per-rep seeds list
+  designability_subset_per_length: 50
+  cath_subset: 0                 # disable CATH topclass (not needed for variance)
+  centroid_path:                 # disable centroid novelty (slow, not needed)
+  foldseek_target_dbs:           # disable foldseek (slow, not needed)
+  skip_fid: false
+  fast_inference: true
+  metrics: "fid,designability,diversity"
+
+_paper_n128_defaults: &paper_n128_defaults
+  <<: *defaults
+  designability_lengths: "50,75,100,125"
+
+_paper_n256_defaults: &paper_n256_defaults
+  <<: *defaults
+  designability_lengths: "50,100,150,200,250"
+
+# ─── Sanity: one extra seed on the n=128 baseline ─────────────────────────── #
+sanity_seed_n128:
+  <<: *paper_n128_defaults
+  targets: "baseline_128_bs80_step200k"
+  seeds: "43"
+  output_dir: results/meta/sanity_seed_n128
+
+# ─── Sanity: one extra seed on the n=256 baseline ─────────────────────────── #
+sanity_seed_n256:
+  <<: *paper_n256_defaults
+  targets: "baseline_256_ep21"
+  seeds: "43"
+  output_dir: results/meta/sanity_seed_n256
+
+# ─── FID-scaling: N=5625 paper-protocol pool at n=256 (FID only) ──────────── #
+# Uses the new inference_fid_60m_paper_n5625 config (625/length × 9 = 5625).
+# `config_name_override` bypasses RUN_SCHEDULES' default config for this run.
+fid_scaling_n256:
+  <<: *paper_n256_defaults
+  targets: "baseline_256_ep21"
+  seeds: "42"
+  metrics: "fid"
+  config_name_override: "inference/paper/inference_fid_60m_paper_n5625"
+  output_dir: results/meta/fid_scaling_n256
+
+# Same idea at n=128 (1250/length × 4 = 5000) for the lighter timing point.
+fid_scaling_n128:
+  <<: *paper_n128_defaults
+  targets: "baseline_128_bs80_step200k"
+  seeds: "42"
+  metrics: "fid"
+  config_name_override: "inference/paper/inference_fid_60m_n128_paper_n5000"
+  output_dir: results/meta/fid_scaling_n128
+
+# ─── Variance: 5 seeds × 2 ckpts at n=128 ─────────────────────────────────── #
+variance_n128_layer:
+  <<: *paper_n128_defaults
+  targets: "baseline_128_bs80_step200k,repa_l0_128_bs80_step200k"
+  seeds: "44,45,46,47,48"
+  output_dir: results/meta/variance_n128_layer
+
+# ─── Variance: 5 seeds × 1 ckpt at n=256 (start small) ────────────────────── #
+variance_n256_layer:
+  <<: *paper_n256_defaults
+  targets: "baseline_256_ep21"
+  seeds: "44,45,46,47,48"
+  output_dir: results/meta/variance_n256_layer

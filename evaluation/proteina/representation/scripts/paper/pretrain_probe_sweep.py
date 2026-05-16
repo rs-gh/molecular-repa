@@ -6,14 +6,19 @@ this script trains probes on hidden states extracted from a fixed train.lmdb
 manifest, evaluates them on a fixed val.lmdb manifest, and appends one row
 per (probe, layer) to a JSONL.
 
-Two probes are first-class citizens, runnable in isolation or together:
+Five probes are first-class citizens, runnable in isolation or together:
 
-    contact   long-range contact-map prediction (P@L, P@L/2, P@L/5)
-    cath      CATH topology classification (accuracy, macro-F1, top-1 conf)
+    contact          long-range contact-map prediction (P@L, P@L/2, P@L/5)
+    cath             CATH topology classification (accuracy, macro-F1, top-1 conf)
+    inverse_folding  per-residue 20-way AA classification (top-1, macro-F1)
+    dihedral         per-residue (φ, ψ) regression (mean angular error in deg)
+    distance         pair Cα-Cα distance regression (Huber-MAE in Å, bucketed)
 
-Selection is via ``--probes contact,cath`` (the default). To probe just one,
-pass ``--probes contact`` or ``--probes cath``. The CATH path takes an
-additional ``--cath_levels`` selector for which level(s) to probe.
+Selection is via ``--probes contact,cath`` (the legacy default). The CATH
+path takes an additional ``--cath_levels`` selector. The three new probes
+target residue-/pair-level structural quality and ship with task-specific
+trivial-geometric baselines (knn_dist, local_frame, seqsep_pair) that
+establish a hard floor — see lib/sources.py and BASELINE_PROBE_KINDS.
 
 Conventions match ``run_sweep.py``:
   - JSONL append-resume - re-running skips rows already present
@@ -57,17 +62,73 @@ from lib.extract import model_num_layers
 from lib.feature_cache import (
     cache_is_complete,
     extract_and_cache,
+    extract_reps_in_memory,
     load_cached_layer,
     purge_cache,
 )
 from lib.manifest import build_or_load_manifest, load_proteina_batch_from_manifest
 from lib.probes.cath_pretrained import eval_cath_probe, train_cath_probe
 from lib.probes.contact_pretrained import eval_contact_probe, train_contact_probe
+from lib.probes.dihedral import eval_dihedral_probe, train_dihedral_probe
+from lib.probes.distance import (
+    eval_distance_probe,
+    eval_distance_probe_seqsep,
+    train_distance_probe,
+    train_distance_probe_seqsep,
+)
+from lib.probes.inverse_folding import (
+    eval_inverse_folding_probe,
+    train_inverse_folding_probe,
+)
+from lib.sources import (
+    LAYER_SEQSEP_PAIR,
+    KnnDistanceRepSource,
+    LocalFrameRepSource,
+    NoiseInputCheckpointRepSource,
+    RandomGaussianRepSource,
+    SeqOnehotRepSource,
+    UntrainedProteinaRepSource,
+)
+
+
+VALID_BASELINES = (
+    "untrained_proteina",
+    "random_gauss",
+    "seq_onehot",
+    "trained_noise",
+    # Trivial-geometric baselines for the new probes (P3-P5). Each is gated
+    # via BASELINE_PROBE_KINDS to its applicable probe_kind only.
+    "knn_dist",  # inverse folding only
+    "local_frame",  # dihedral only
+    "seqsep_pair",  # distance only (pair feature, not a RepSource)
+)
 
 
 VALID_CATH_LEVELS = ("C", "A", "T", "H")
-VALID_PROBES = ("contact", "cath")
+VALID_PROBES = ("contact", "cath", "inverse_folding", "dihedral", "distance")
 EXPECTED_INHOUSE_NLAYERS = 10  # proteina 60M trunk depth
+
+
+# Which probe kinds each baseline source is allowed to fill. Generic
+# representation baselines apply to every per-residue / pair probe;
+# trivial-geometric baselines are scoped to the single probe they bound.
+# `cath` is intentionally excluded from the new probes' baselines since the
+# `run_baselines_cath` path predates this dict and remains unchanged.
+BASELINE_PROBE_KINDS: Dict[str, Set[str]] = {
+    "random_gauss": {"contact", "cath", "inverse_folding", "dihedral", "distance"},
+    "seq_onehot": {"contact", "cath", "inverse_folding", "dihedral", "distance"},
+    "untrained_proteina": {
+        "contact",
+        "cath",
+        "inverse_folding",
+        "dihedral",
+        "distance",
+    },
+    "trained_noise": {"contact", "cath", "inverse_folding", "dihedral", "distance"},
+    "knn_dist": {"inverse_folding"},
+    "local_frame": {"dihedral"},
+    "seqsep_pair": {"distance"},
+}
 
 
 # --------------------------------------------------------------------------- #
@@ -82,6 +143,9 @@ class SweepConfig:
     # Probe selection
     run_contact: bool
     cath_levels: Tuple[str, ...]  # empty tuple => no CATH
+    run_inverse_folding: bool
+    run_dihedral: bool
+    run_distance: bool
 
     # Manifest / batch sizes (logged into rows for downstream filtering)
     n_train: int
@@ -99,6 +163,7 @@ class SweepConfig:
     # Side effects
     keep_cache: bool
     save_heads_dir: Optional[Path]
+    in_memory: bool  # if True, skip the disk feature cache; hold reps in RAM
 
 
 @dataclass(frozen=True)
@@ -160,10 +225,13 @@ class CheckpointJob:
 
 @dataclass
 class DoneSet:
-    """JSONL-derived resume state - two sets, intent-revealing accessors.
+    """JSONL-derived resume state — one set per probe_kind, intent-revealing accessors.
 
-    ``contact`` keys: (run, step, layer, t_tag).
-    ``cath``    keys: (run, step, layer, t_tag, level).
+    ``contact``         keys: (run, step, layer, t_tag).
+    ``cath``            keys: (run, step, layer, t_tag, level).
+    ``inverse_folding`` keys: (run, step, layer, t_tag).
+    ``dihedral``        keys: (run, step, layer, t_tag).
+    ``distance``        keys: (run, step, layer, t_tag).
 
     Pre-CATH JSONL rows had no ``probe_kind`` and are all contact rows by
     construction; treat missing-kind as contact for backward compat.
@@ -171,33 +239,55 @@ class DoneSet:
 
     contact: Set[Tuple[str, int, int, str]] = field(default_factory=set)
     cath: Set[Tuple[str, int, int, str, str]] = field(default_factory=set)
+    inverse_folding: Set[Tuple[str, int, int, str]] = field(default_factory=set)
+    dihedral: Set[Tuple[str, int, int, str]] = field(default_factory=set)
+    distance: Set[Tuple[str, int, int, str]] = field(default_factory=set)
 
     @classmethod
     def from_jsonl(cls, path: Path) -> "DoneSet":
+        """Load resume state from a JSONL file *plus* any sibling shards.
+
+        Sibling shards (``pretrained_sweep_results.<tag>.jsonl``) are written
+        by parallel array tasks under ``--jsonl_shard_tag``. A given task
+        reads ALL shards so it skips rows another concurrent task already
+        produced — and so a resumed task picks up its own prior progress.
+        """
         ds = cls()
-        if not path.exists():
-            return ds
-        with open(path) as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    r = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if "error" in r or not all(k in r for k in ("run", "step", "layer")):
-                    continue
-                key4 = (
-                    r["run"],
-                    int(r["step"]),
-                    int(r["layer"]),
-                    f"{float(r.get('t', 1.0)):.2f}",
-                )
-                if r.get("probe_kind", "contact") == "cath":
-                    ds.cath.add((*key4, r.get("cath_level", "T")))
-                else:
-                    ds.contact.add(key4)
+        if path.parent.exists():
+            paths = sorted(path.parent.glob("pretrained_sweep_results*.jsonl"))
+        else:
+            paths = []
+        for p in paths:
+            with open(p) as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        r = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if "error" in r or not all(
+                        k in r for k in ("run", "step", "layer")
+                    ):
+                        continue
+                    key4 = (
+                        r["run"],
+                        int(r["step"]),
+                        int(r["layer"]),
+                        f"{float(r.get('t', 1.0)):.2f}",
+                    )
+                    kind = r.get("probe_kind", "contact")
+                    if kind == "cath":
+                        ds.cath.add((*key4, r.get("cath_level", "T")))
+                    elif kind == "inverse_folding":
+                        ds.inverse_folding.add(key4)
+                    elif kind == "dihedral":
+                        ds.dihedral.add(key4)
+                    elif kind == "distance":
+                        ds.distance.add(key4)
+                    else:
+                        ds.contact.add(key4)
         return ds
 
     def has_contact(self, job: CheckpointJob, layer: int) -> bool:
@@ -206,14 +296,38 @@ class DoneSet:
     def has_cath(self, job: CheckpointJob, layer: int, level: str) -> bool:
         return (job.run, job.step, layer, job.t_tag, level) in self.cath
 
+    def has_inverse_folding(self, job: CheckpointJob, layer: int) -> bool:
+        return (job.run, job.step, layer, job.t_tag) in self.inverse_folding
+
+    def has_dihedral(self, job: CheckpointJob, layer: int) -> bool:
+        return (job.run, job.step, layer, job.t_tag) in self.dihedral
+
+    def has_distance(self, job: CheckpointJob, layer: int) -> bool:
+        return (job.run, job.step, layer, job.t_tag) in self.distance
+
     def add_contact(self, job: CheckpointJob, layer: int) -> None:
         self.contact.add((job.run, job.step, layer, job.t_tag))
 
     def add_cath(self, job: CheckpointJob, layer: int, level: str) -> None:
         self.cath.add((job.run, job.step, layer, job.t_tag, level))
 
+    def add_inverse_folding(self, job: CheckpointJob, layer: int) -> None:
+        self.inverse_folding.add((job.run, job.step, layer, job.t_tag))
+
+    def add_dihedral(self, job: CheckpointJob, layer: int) -> None:
+        self.dihedral.add((job.run, job.step, layer, job.t_tag))
+
+    def add_distance(self, job: CheckpointJob, layer: int) -> None:
+        self.distance.add((job.run, job.step, layer, job.t_tag))
+
     def __len__(self) -> int:
-        return len(self.contact) + len(self.cath)
+        return (
+            len(self.contact)
+            + len(self.cath)
+            + len(self.inverse_folding)
+            + len(self.dihedral)
+            + len(self.distance)
+        )
 
 
 # --------------------------------------------------------------------------- #
@@ -286,6 +400,21 @@ _CSV_FIELDS = [
     "cath_n_eval",
     "cath_n_eval_in_vocab",
     "cath_n_eval_oov",
+    # Inverse folding columns (probe_kind="inverse_folding")
+    "if_top1_acc",
+    "if_macro_f1",
+    "if_n_residues_test",
+    # Dihedral columns (probe_kind="dihedral")
+    "dih_mae_phi_deg",
+    "dih_mae_psi_deg",
+    "dih_mae_total_deg",
+    "dih_n_residues_test",
+    # Distance columns (probe_kind="distance")
+    "dist_mae_total",
+    "dist_mae_short",
+    "dist_mae_medium",
+    "dist_mae_long",
+    "dist_n_pairs_test",
     # Provenance
     "dim",
     "ckpt_path",
@@ -295,10 +424,24 @@ _CSV_FIELDS = [
 
 
 def consolidate(outdir: Path) -> None:
-    """Read JSONL, write JSON (full) + CSV (flat columns) for plotting."""
-    jsonl = outdir / "pretrained_sweep_results.jsonl"
+    """Read JSONL (canonical + any shard files), write JSON (full) + CSV
+    (flat columns) for plotting.
+
+    Shard files are written when ``--jsonl_shard_tag`` is set on a per-task
+    basis to avoid concurrent-append contention; they're named
+    ``pretrained_sweep_results.<tag>.jsonl``. Consolidate concatenates them
+    with the canonical ``pretrained_sweep_results.jsonl`` (if present).
+
+    Dedup: the per-checkpoint array launcher (run_pretrained_probe_array.sh)
+    historically ran baselines per-task before --baselines "" was added, so
+    baseline rows accumulated multi-fold across per-task shards (~14× for
+    untrained_proteina at n=128). We dedup by the row identity tuple and
+    keep the LAST-seen row, since later writes are typically the dedicated
+    baselines run output and represent the canonical (re-)computation.
+    """
+    jsonl_paths = sorted(outdir.glob("pretrained_sweep_results*.jsonl"))
     rows: List[Dict] = []
-    if jsonl.exists():
+    for jsonl in jsonl_paths:
         with open(jsonl) as f:
             for line in f:
                 line = line.strip()
@@ -309,16 +452,44 @@ def consolidate(outdir: Path) -> None:
                 except json.JSONDecodeError:
                     continue
 
+    # Dedup by (run, step, layer, t, probe_kind, cath_level). Errors are not
+    # deduped — they're kept verbatim so a recurring failure stays visible.
+    seen: Set[Tuple] = set()
+    deduped: List[Dict] = []
+    for r in reversed(rows):  # iterate backwards so first kept = last-seen
+        if "error" in r:
+            deduped.append(r)
+            continue
+        key = (
+            r.get("run"),
+            r.get("step"),
+            r.get("layer"),
+            f"{float(r.get('t', 1.0)):.4f}" if "t" in r else None,
+            r.get("probe_kind", "contact"),
+            r.get("cath_level"),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(r)
+    deduped.reverse()  # restore append order
+
+    n_dropped = len(rows) - len(deduped)
+    if n_dropped > 0:
+        print(
+            f"[consolidate] dedup: dropped {n_dropped} duplicate rows ({len(rows)} -> {len(deduped)})"
+        )
+
     (outdir / "pretrained_sweep_results.json").write_text(
-        json.dumps(rows, indent=2, default=str)
+        json.dumps(deduped, indent=2, default=str)
     )
-    if not rows:
+    if not deduped:
         return
 
     with open(outdir / "pretrained_sweep_results.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=_CSV_FIELDS, extrasaction="ignore")
         w.writeheader()
-        for r in rows:
+        for r in deduped:
             if "error" in r:
                 continue
             w.writerow(r)
@@ -329,20 +500,56 @@ def consolidate(outdir: Path) -> None:
 # --------------------------------------------------------------------------- #
 
 
-def _todo_for_job(
-    job: CheckpointJob, cfg: SweepConfig, done: DoneSet
-) -> Tuple[List[int], Dict[int, List[str]]]:
+@dataclass(frozen=True)
+class JobTodo:
+    """Per-job todo list across all probe kinds. None / empty means nothing to do."""
+
+    contact: List[int]
+    cath: Dict[int, List[str]]
+    inverse_folding: List[int]
+    dihedral: List[int]
+    distance: List[int]
+
+    def any_layer(self) -> List[int]:
+        """Union of layers needed by any probe kind, sorted."""
+        return sorted(
+            set(self.contact)
+            | {L for L, lvls in self.cath.items() if lvls}
+            | set(self.inverse_folding)
+            | set(self.dihedral)
+            | set(self.distance)
+        )
+
+    def is_empty(self) -> bool:
+        return not (
+            self.contact
+            or any(self.cath.values())
+            or self.inverse_folding
+            or self.dihedral
+            or self.distance
+        )
+
+
+def _todo_for_job(job: CheckpointJob, cfg: SweepConfig, done: DoneSet) -> JobTodo:
     """Subtract ``done`` from this job's (layers x probes). Pure function."""
-    contact_todo = (
-        [L for L in job.layers if not done.has_contact(job, L)]
+    return JobTodo(
+        contact=[L for L in job.layers if not done.has_contact(job, L)]
         if cfg.run_contact
-        else []
+        else [],
+        cath={
+            L: [lvl for lvl in cfg.cath_levels if not done.has_cath(job, L, lvl)]
+            for L in job.layers
+        },
+        inverse_folding=[L for L in job.layers if not done.has_inverse_folding(job, L)]
+        if cfg.run_inverse_folding
+        else [],
+        dihedral=[L for L in job.layers if not done.has_dihedral(job, L)]
+        if cfg.run_dihedral
+        else [],
+        distance=[L for L in job.layers if not done.has_distance(job, L)]
+        if cfg.run_distance
+        else [],
     )
-    cath_todo = {
-        L: [lvl for lvl in cfg.cath_levels if not done.has_cath(job, L, lvl)]
-        for L in job.layers
-    }
-    return contact_todo, cath_todo
 
 
 def _ensure_features_cached(
@@ -624,6 +831,614 @@ def _run_cath_for_layer(
         )
 
 
+def _run_inverse_folding_for_layer(
+    job: CheckpointJob,
+    batches: Batches,
+    cfg: SweepConfig,
+    reps_train: torch.Tensor,
+    reps_eval: torch.Tensor,
+    layer: int,
+    jsonl_path: Path,
+    done: DoneSet,
+    device: str,
+) -> None:
+    """Train + eval the inverse-folding probe at one layer, append a JSONL row."""
+    rep_dim = int(reps_train.shape[-1])
+    try:
+        t0 = time.time()
+        head = train_inverse_folding_probe(
+            reps_train,
+            batches.train["residue_type"].cpu(),
+            batches.mask_train,
+            head_type=cfg.head_type,
+            epochs=cfg.probe_epochs,
+            lr=cfg.probe_lr,
+            seed=cfg.probe_seed,
+            device=device,
+        )
+        res = eval_inverse_folding_probe(
+            head,
+            reps_eval,
+            batches.eval["residue_type"].cpu(),
+            batches.mask_eval,
+            device=device,
+        )
+        elapsed = time.time() - t0
+
+        row = {
+            "run": job.run,
+            "step": job.step,
+            "layer": int(layer),
+            "t": float(job.t_value),
+            "probe_kind": "inverse_folding",
+            "head_type": cfg.head_type,
+            "n_train": cfg.n_train,
+            "n_eval": cfg.n_eval,
+            "if_top1_acc": res.top1_acc,
+            "if_macro_f1": res.macro_f1,
+            "if_n_residues_test": res.n_residues_test,
+            "dim": rep_dim,
+            "ckpt_path": job.ckpt_path,
+            "probe_epochs": cfg.probe_epochs,
+            "probe_lr": cfg.probe_lr,
+            "probe_seed": cfg.probe_seed,
+            "probe_train_s": float(elapsed),
+        }
+        _append_row(jsonl_path, row, batches)
+        done.add_inverse_folding(job, layer)
+
+        print(
+            f"      L{layer:2d} inv-fold: top1={res.top1_acc:.3f}  "
+            f"macro_f1={res.macro_f1:.3f}  n_res={res.n_residues_test}  "
+            f"({elapsed:.1f}s)"
+        )
+    except Exception as e:
+        traceback.print_exc()
+        _append_error_row(
+            jsonl_path, job, e, batches, layer=layer, probe_kind="inverse_folding"
+        )
+
+
+def _run_dihedral_for_layer(
+    job: CheckpointJob,
+    batches: Batches,
+    cfg: SweepConfig,
+    reps_train: torch.Tensor,
+    reps_eval: torch.Tensor,
+    layer: int,
+    jsonl_path: Path,
+    done: DoneSet,
+    device: str,
+) -> None:
+    """Train + eval the dihedral probe at one layer, append a JSONL row."""
+    rep_dim = int(reps_train.shape[-1])
+    try:
+        t0 = time.time()
+        head = train_dihedral_probe(
+            reps_train,
+            batches.train["coords"].cpu(),
+            batches.mask_train,
+            head_type=cfg.head_type,
+            epochs=cfg.probe_epochs,
+            lr=cfg.probe_lr,
+            seed=cfg.probe_seed,
+            device=device,
+        )
+        res = eval_dihedral_probe(
+            head,
+            reps_eval,
+            batches.eval["coords"].cpu(),
+            batches.mask_eval,
+            device=device,
+        )
+        elapsed = time.time() - t0
+
+        row = {
+            "run": job.run,
+            "step": job.step,
+            "layer": int(layer),
+            "t": float(job.t_value),
+            "probe_kind": "dihedral",
+            "head_type": cfg.head_type,
+            "n_train": cfg.n_train,
+            "n_eval": cfg.n_eval,
+            "dih_mae_phi_deg": res.mae_phi_deg,
+            "dih_mae_psi_deg": res.mae_psi_deg,
+            "dih_mae_total_deg": res.mae_total_deg,
+            "dih_n_residues_test": res.n_residues_test,
+            "dim": rep_dim,
+            "ckpt_path": job.ckpt_path,
+            "probe_epochs": cfg.probe_epochs,
+            "probe_lr": cfg.probe_lr,
+            "probe_seed": cfg.probe_seed,
+            "probe_train_s": float(elapsed),
+        }
+        _append_row(jsonl_path, row, batches)
+        done.add_dihedral(job, layer)
+
+        print(
+            f"      L{layer:2d} dihedral: mae_phi={res.mae_phi_deg:.1f}°  "
+            f"mae_psi={res.mae_psi_deg:.1f}°  total={res.mae_total_deg:.1f}°  "
+            f"({elapsed:.1f}s)"
+        )
+    except Exception as e:
+        traceback.print_exc()
+        _append_error_row(
+            jsonl_path, job, e, batches, layer=layer, probe_kind="dihedral"
+        )
+
+
+def _run_distance_for_layer(
+    job: CheckpointJob,
+    batches: Batches,
+    cfg: SweepConfig,
+    reps_train: torch.Tensor,
+    reps_eval: torch.Tensor,
+    layer: int,
+    jsonl_path: Path,
+    done: DoneSet,
+    device: str,
+) -> None:
+    """Train + eval the pair-distance probe at one layer, append a JSONL row."""
+    rep_dim = int(reps_train.shape[-1])
+    try:
+        t0 = time.time()
+        head = train_distance_probe(
+            reps_train,
+            batches.ca_train,
+            batches.mask_train,
+            head_type=cfg.head_type,
+            epochs=cfg.probe_epochs,
+            lr=cfg.probe_lr,
+            seed=cfg.probe_seed,
+            device=device,
+        )
+        res = eval_distance_probe(
+            head,
+            reps_eval,
+            batches.ca_eval,
+            batches.mask_eval,
+            device=device,
+        )
+        elapsed = time.time() - t0
+
+        row = {
+            "run": job.run,
+            "step": job.step,
+            "layer": int(layer),
+            "t": float(job.t_value),
+            "probe_kind": "distance",
+            "head_type": cfg.head_type,
+            "n_train": cfg.n_train,
+            "n_eval": cfg.n_eval,
+            "dist_mae_total": res.mae_total,
+            "dist_mae_short": res.mae_short,
+            "dist_mae_medium": res.mae_medium,
+            "dist_mae_long": res.mae_long,
+            "dist_n_pairs_test": res.n_pairs_test,
+            "dim": rep_dim,
+            "ckpt_path": job.ckpt_path,
+            "probe_epochs": cfg.probe_epochs,
+            "probe_lr": cfg.probe_lr,
+            "probe_seed": cfg.probe_seed,
+            "probe_train_s": float(elapsed),
+        }
+        _append_row(jsonl_path, row, batches)
+        done.add_distance(job, layer)
+
+        print(
+            f"      L{layer:2d} distance: total={res.mae_total:.2f}Å  "
+            f"short={res.mae_short:.2f}  med={res.mae_medium:.2f}  "
+            f"long={res.mae_long:.2f}  ({elapsed:.1f}s)"
+        )
+    except Exception as e:
+        traceback.print_exc()
+        _append_error_row(
+            jsonl_path, job, e, batches, layer=layer, probe_kind="distance"
+        )
+
+
+def _run_baseline_cath_at_layer(
+    run_name: str,
+    layer_sentinel: int,
+    reps_train: torch.Tensor,
+    reps_eval: torch.Tensor,
+    batches: Batches,
+    cfg: SweepConfig,
+    level: str,
+    jsonl_path: Path,
+    done: DoneSet,
+) -> None:
+    """Fit + score one (baseline, layer, level) row. Mirrors _run_cath_for_layer
+    but keyed off a synthetic ``CheckpointJob`` (step=0, t=1.0) so DoneSet
+    resume logic still works without forking a parallel schema.
+    """
+    job = CheckpointJob(
+        run=run_name,
+        step=0,
+        ckpt_path="<baseline>",
+        is_repa=False,
+        layers=(layer_sentinel,),
+        t_value=1.0,
+    )
+    if done.has_cath(job, layer_sentinel, level):
+        return
+    _run_cath_for_layer(
+        job,
+        batches,
+        cfg,
+        reps_train,
+        reps_eval,
+        layer_sentinel,
+        level,
+        jsonl_path,
+        done,
+    )
+
+
+def run_baselines_cath(
+    names: List[str],
+    batches: Batches,
+    cfg: SweepConfig,
+    done: DoneSet,
+    jsonl_path: Path,
+    device: str,
+    random_gauss_dim: int = 512,
+    random_gauss_seed: int = 42,
+    untrained_config_name: str = "training_baseline_256",
+    trained_noise_run: Optional[str] = None,
+    trained_noise_step: Optional[int] = None,
+) -> None:
+    """Run the CATH probe over the three rep-source baselines.
+
+    Each baseline emits per-residue features for ``batches.train`` and
+    ``batches.eval``; we then call the shared ``train_cath_probe`` /
+    ``eval_cath_probe`` pair once per CATH level. Sentinel ``layer`` codes
+    (negative; see ``lib/sources.py``) keep these rows from colliding with
+    real trunk-layer rows in the JSONL.
+
+    Baselines are checkpoint-agnostic and t-agnostic, so we tag every row
+    step=0, t=1.0. Resume logic via DoneSet is reused as-is.
+    """
+    if not cfg.cath_levels:
+        return
+    if not names:
+        return
+    print(f"\n=== Baselines (CATH): {names} ===")
+
+    def _get(src, batch):
+        # All three sources return {layer_sentinel: [B, N, D]} on CPU; the
+        # untrained one emits 10 sentinel layers, the others a single layer.
+        return src.get_reps(batch, list(src.emits_layers))
+
+    for name in names:
+        if name not in VALID_BASELINES:
+            print(f"  [skip] unknown baseline: {name}")
+            continue
+        try:
+            if name == "random_gauss":
+                src = RandomGaussianRepSource(
+                    dim=random_gauss_dim, seed=random_gauss_seed
+                )
+            elif name == "seq_onehot":
+                src = SeqOnehotRepSource()
+            elif name == "trained_noise":
+                if not trained_noise_run:
+                    print(
+                        "  [skip] trained_noise baseline requires "
+                        "--baseline_trained_noise_run (or yaml `baseline_trained_noise_run:`)"
+                    )
+                    continue
+                if trained_noise_run not in RUN_SCHEDULES:
+                    print(
+                        f"  [skip] trained_noise baseline: '{trained_noise_run}' not in RUN_SCHEDULES"
+                    )
+                    continue
+                run_dir, is_repa, _bs, steps = RUN_SCHEDULES[trained_noise_run]
+                step = (
+                    trained_noise_step if trained_noise_step is not None else steps[-1]
+                )
+                from lib.checkpoints import find_checkpoint_path
+
+                ckpt_path = find_checkpoint_path(run_dir, step)
+                if ckpt_path is None:
+                    print(
+                        f"  [skip] trained_noise: ckpt not found for {trained_noise_run} step={step}"
+                    )
+                    continue
+                print(
+                    f"  [trained_noise] using {trained_noise_run} step={step} ({ckpt_path})"
+                )
+                src = NoiseInputCheckpointRepSource(
+                    ckpt_path=str(ckpt_path),
+                    is_repa=is_repa,
+                    run_name="trained_noise",
+                )
+            else:  # untrained_proteina
+                src = UntrainedProteinaRepSource(config_name=untrained_config_name)
+
+            print(f"  [{name}] extracting train reps...")
+            reps_train_by_L = _get(src, batches.train)
+            print(f"  [{name}] extracting eval reps...")
+            reps_eval_by_L = _get(src, batches.eval)
+
+            for L in src.emits_layers:
+                reps_train = reps_train_by_L[L]
+                reps_eval = reps_eval_by_L[L]
+                for level in cfg.cath_levels:
+                    _run_baseline_cath_at_layer(
+                        name,
+                        L,
+                        reps_train,
+                        reps_eval,
+                        batches,
+                        cfg,
+                        level,
+                        jsonl_path,
+                        done,
+                    )
+
+            src.unload()
+        except Exception as e:
+            traceback.print_exc()
+            print(f"  [X] baseline {name} failed: {e}")
+            # Write a single error row so the failure is visible in the JSONL.
+            err_job = CheckpointJob(
+                run=name,
+                step=0,
+                ckpt_path="<baseline>",
+                is_repa=False,
+                layers=(-999,),
+                t_value=1.0,
+            )
+            _append_error_row(
+                jsonl_path,
+                err_job,
+                e,
+                batches,
+                layer=-999,
+                probe_kind="cath",
+            )
+
+
+def _baseline_synth_job(name: str, layer_sentinel: int) -> CheckpointJob:
+    """Build a synthetic CheckpointJob for a baseline row. step=0, t=1.0 keep
+    DoneSet's (run, step, layer, t_tag) keying unique without touching schema."""
+    return CheckpointJob(
+        run=name,
+        step=0,
+        ckpt_path="<baseline>",
+        is_repa=False,
+        layers=(layer_sentinel,),
+        t_value=1.0,
+    )
+
+
+def _run_baseline_seqsep_distance(
+    batches: Batches,
+    cfg: SweepConfig,
+    jsonl_path: Path,
+    done: DoneSet,
+    device: str,
+) -> None:
+    """Distance-probe head fed only |i-j| (no representation at all).
+
+    Sets the chain-prior floor: any rep that doesn't beat this MAE has
+    learned nothing about geometry beyond the trivial chain ordering.
+    """
+    job = _baseline_synth_job("seqsep_pair", LAYER_SEQSEP_PAIR)
+    if done.has_distance(job, LAYER_SEQSEP_PAIR):
+        return
+    try:
+        t0 = time.time()
+        head = train_distance_probe_seqsep(
+            batches.ca_train,
+            batches.mask_train,
+            head_type=cfg.head_type,
+            epochs=cfg.probe_epochs,
+            lr=cfg.probe_lr,
+            seed=cfg.probe_seed,
+            device=device,
+        )
+        res = eval_distance_probe_seqsep(
+            head,
+            batches.ca_eval,
+            batches.mask_eval,
+            device=device,
+        )
+        elapsed = time.time() - t0
+        row = {
+            "run": "seqsep_pair",
+            "step": 0,
+            "layer": int(LAYER_SEQSEP_PAIR),
+            "t": 1.0,
+            "probe_kind": "distance",
+            "head_type": cfg.head_type,
+            "n_train": cfg.n_train,
+            "n_eval": cfg.n_eval,
+            "dist_mae_total": res.mae_total,
+            "dist_mae_short": res.mae_short,
+            "dist_mae_medium": res.mae_medium,
+            "dist_mae_long": res.mae_long,
+            "dist_n_pairs_test": res.n_pairs_test,
+            "dim": 1,  # head input is 1-d (|i-j|)
+            "ckpt_path": "<baseline>",
+            "probe_seed": cfg.probe_seed,
+            "probe_train_s": float(elapsed),
+        }
+        _append_row(jsonl_path, row, batches)
+        done.add_distance(job, LAYER_SEQSEP_PAIR)
+        print(
+            f"  [seqsep_pair] distance: total={res.mae_total:.2f}Å  "
+            f"short={res.mae_short:.2f}  med={res.mae_medium:.2f}  "
+            f"long={res.mae_long:.2f}  ({elapsed:.1f}s)"
+        )
+    except Exception as e:
+        traceback.print_exc()
+        _append_error_row(
+            jsonl_path,
+            job,
+            e,
+            batches,
+            layer=LAYER_SEQSEP_PAIR,
+            probe_kind="distance",
+        )
+
+
+def run_baselines_new_probes(
+    names: List[str],
+    chosen_kinds: Set[str],
+    batches: Batches,
+    cfg: SweepConfig,
+    done: DoneSet,
+    jsonl_path: Path,
+    device: str,
+    random_gauss_dim: int = 512,
+    random_gauss_seed: int = 42,
+    untrained_config_name: str = "training_baseline_256",
+    trained_noise_run: Optional[str] = None,
+    trained_noise_step: Optional[int] = None,
+) -> None:
+    """Run the inverse-folding / dihedral / distance probes over baseline sources.
+
+    For each ``(baseline, kind)`` cell allowed by ``BASELINE_PROBE_KINDS``,
+    extracts per-residue features once from the source and dispatches to the
+    matching ``_run_<kind>_for_layer``. Synthetic CheckpointJobs (step=0,
+    t=1.0) keep the DoneSet keying disjoint from real-checkpoint rows.
+
+    The ``seqsep_pair`` baseline is special-cased because its "feature" is
+    pair-only (|i-j|) and bypasses the per-residue rep contract entirely.
+    """
+    chosen_new = chosen_kinds & {"inverse_folding", "dihedral", "distance"}
+    if not chosen_new or not names:
+        return
+    print(f"\n=== Baselines (new probes): {names} kinds={sorted(chosen_new)} ===")
+
+    def _dispatch(
+        kind: str,
+        src_job: CheckpointJob,
+        layer: int,
+        reps_train: torch.Tensor,
+        reps_eval: torch.Tensor,
+    ) -> None:
+        if kind == "inverse_folding":
+            if done.has_inverse_folding(src_job, layer):
+                return
+            _run_inverse_folding_for_layer(
+                src_job,
+                batches,
+                cfg,
+                reps_train,
+                reps_eval,
+                layer,
+                jsonl_path,
+                done,
+                device,
+            )
+        elif kind == "dihedral":
+            if done.has_dihedral(src_job, layer):
+                return
+            _run_dihedral_for_layer(
+                src_job,
+                batches,
+                cfg,
+                reps_train,
+                reps_eval,
+                layer,
+                jsonl_path,
+                done,
+                device,
+            )
+        elif kind == "distance":
+            if done.has_distance(src_job, layer):
+                return
+            _run_distance_for_layer(
+                src_job,
+                batches,
+                cfg,
+                reps_train,
+                reps_eval,
+                layer,
+                jsonl_path,
+                done,
+                device,
+            )
+
+    for name in names:
+        if name not in VALID_BASELINES:
+            print(f"  [skip] unknown baseline: {name}")
+            continue
+        kinds_here = BASELINE_PROBE_KINDS.get(name, set()) & chosen_new
+        if not kinds_here:
+            continue
+
+        # Special-case the pair-only seqsep baseline — no RepSource involved.
+        if name == "seqsep_pair":
+            _run_baseline_seqsep_distance(batches, cfg, jsonl_path, done, device)
+            continue
+
+        try:
+            if name == "random_gauss":
+                src = RandomGaussianRepSource(
+                    dim=random_gauss_dim, seed=random_gauss_seed
+                )
+            elif name == "seq_onehot":
+                src = SeqOnehotRepSource()
+            elif name == "knn_dist":
+                src = KnnDistanceRepSource()
+            elif name == "local_frame":
+                src = LocalFrameRepSource()
+            elif name == "trained_noise":
+                if not trained_noise_run:
+                    print(
+                        "  [skip] trained_noise baseline requires "
+                        "--baseline_trained_noise_run"
+                    )
+                    continue
+                if trained_noise_run not in RUN_SCHEDULES:
+                    print(
+                        f"  [skip] trained_noise: '{trained_noise_run}' not in RUN_SCHEDULES"
+                    )
+                    continue
+                run_dir, is_repa, _bs, steps = RUN_SCHEDULES[trained_noise_run]
+                step = (
+                    trained_noise_step if trained_noise_step is not None else steps[-1]
+                )
+                ckpt_path = find_checkpoint_path(run_dir, step)
+                if ckpt_path is None:
+                    print(
+                        f"  [skip] trained_noise: ckpt not found for {trained_noise_run} step={step}"
+                    )
+                    continue
+                print(f"  [trained_noise] using {trained_noise_run} step={step}")
+                src = NoiseInputCheckpointRepSource(
+                    ckpt_path=str(ckpt_path),
+                    is_repa=is_repa,
+                    run_name="trained_noise",
+                )
+            else:  # untrained_proteina
+                src = UntrainedProteinaRepSource(config_name=untrained_config_name)
+
+            print(f"  [{name}] extracting train reps...")
+            reps_train_by_L = src.get_reps(batches.train, list(src.emits_layers))
+            print(f"  [{name}] extracting eval reps...")
+            reps_eval_by_L = src.get_reps(batches.eval, list(src.emits_layers))
+
+            for L in src.emits_layers:
+                rt = reps_train_by_L[L]
+                re_ = reps_eval_by_L[L]
+                for kind in sorted(kinds_here):
+                    job = _baseline_synth_job(name, L)
+                    _dispatch(kind, job, L, rt, re_)
+
+            src.unload()
+        except Exception as e:
+            traceback.print_exc()
+            print(f"  [X] baseline {name} failed: {e}")
+            err_job = _baseline_synth_job(name, -999)
+            _append_error_row(jsonl_path, err_job, e, batches, layer=-999)
+
+
 def run_one_checkpoint(
     job: CheckpointJob,
     batches: Batches,
@@ -646,14 +1461,104 @@ def run_one_checkpoint(
     Use these to split the GPU and CPU phases across different SLURM jobs:
     extract under intr (≤1h GPU), then probe-fit on a CPU-only node.
     """
-    contact_todo, cath_todo = _todo_for_job(job, cfg, done)
-    if not contact_todo and not any(cath_todo.values()):
+    todo = _todo_for_job(job, cfg, done)
+    if todo.is_empty():
         print(f"    t={job.t_tag}: all layers cached, skip")
         return
 
-    todo_layers = sorted(
-        set(contact_todo) | {L for L, lvls in cath_todo.items() if lvls}
-    )
+    todo_layers = todo.any_layer()
+
+    # In-memory mode: load model, forward once for all layers, hold reps in RAM,
+    # run all probes, drop. No disk cache, no purge. Trades disk for memory
+    # (~12-24 GB / ckpt at n=256, fp16). Suited for SLURM array jobs at one
+    # task per checkpoint; mutually exclusive with extract_only / probe_from_cache.
+    if cfg.in_memory:
+        if extract_only or probe_from_cache:
+            raise SystemExit(
+                "--in_memory is mutually exclusive with --extract_only / --probe_from_cache"
+            )
+        print(f"    [in-memory] loading checkpoint: {job.ckpt_path}")
+        t0 = time.time()
+        model = load_checkpoint_by_path(
+            job.ckpt_path, is_repa=job.is_repa, device=device
+        )
+        print(f"    [in-memory] model loaded in {time.time() - t0:.1f}s")
+        try:
+            reps_by_L = extract_reps_in_memory(
+                model,
+                train_batch=batches.train,
+                eval_batch=batches.eval,
+                layers=todo_layers,
+                t_value=job.t_value,
+            )
+        finally:
+            del model
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+        for L in todo_layers:
+            reps_train = reps_by_L[L]["train"].float()
+            reps_eval = reps_by_L[L]["eval"].float()
+            if L in todo.contact:
+                _run_contact_for_layer(
+                    job,
+                    batches,
+                    cfg,
+                    reps_train,
+                    reps_eval,
+                    L,
+                    jsonl_path,
+                    done,
+                    device,
+                )
+            for level in todo.cath.get(L, []):
+                _run_cath_for_layer(
+                    job, batches, cfg, reps_train, reps_eval, L, level, jsonl_path, done
+                )
+            if L in todo.inverse_folding:
+                _run_inverse_folding_for_layer(
+                    job,
+                    batches,
+                    cfg,
+                    reps_train,
+                    reps_eval,
+                    L,
+                    jsonl_path,
+                    done,
+                    device,
+                )
+            if L in todo.dihedral:
+                _run_dihedral_for_layer(
+                    job,
+                    batches,
+                    cfg,
+                    reps_train,
+                    reps_eval,
+                    L,
+                    jsonl_path,
+                    done,
+                    device,
+                )
+            if L in todo.distance:
+                _run_distance_for_layer(
+                    job,
+                    batches,
+                    cfg,
+                    reps_train,
+                    reps_eval,
+                    L,
+                    jsonl_path,
+                    done,
+                    device,
+                )
+            # Free this layer's reps as soon as its probes are done so peak
+            # RAM stays bounded at ~2 layers' worth (current + next).
+            del reps_by_L[L], reps_train, reps_eval
+            gc.collect()
+        return
+
+    # Default: disk-cache mode (original behaviour).
     _ensure_features_cached(
         job, batches, todo_layers, cache_dir, device, require_cached=probe_from_cache
     )
@@ -666,13 +1571,25 @@ def run_one_checkpoint(
 
     for L in todo_layers:
         reps_train, reps_eval = _load_layer_reps(cache_dir, job, L)
-        if L in contact_todo:
+        if L in todo.contact:
             _run_contact_for_layer(
                 job, batches, cfg, reps_train, reps_eval, L, jsonl_path, done, device
             )
-        for level in cath_todo.get(L, []):
+        for level in todo.cath.get(L, []):
             _run_cath_for_layer(
                 job, batches, cfg, reps_train, reps_eval, L, level, jsonl_path, done
+            )
+        if L in todo.inverse_folding:
+            _run_inverse_folding_for_layer(
+                job, batches, cfg, reps_train, reps_eval, L, jsonl_path, done, device
+            )
+        if L in todo.dihedral:
+            _run_dihedral_for_layer(
+                job, batches, cfg, reps_train, reps_eval, L, jsonl_path, done, device
+            )
+        if L in todo.distance:
+            _run_distance_for_layer(
+                job, batches, cfg, reps_train, reps_eval, L, jsonl_path, done, device
             )
 
     if not cfg.keep_cache:
@@ -905,8 +1822,10 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         default="contact,cath",
         help=(
             "Comma-separated probe selection: any subset of "
-            f"{{{', '.join(VALID_PROBES)}}}. Default 'contact,cath' (run both). "
-            "Examples: 'contact', 'cath', 'contact,cath'."
+            f"{{{', '.join(VALID_PROBES)}}}. Default 'contact,cath' (legacy). "
+            "New residue-level probes: 'inverse_folding' (per-residue AA "
+            "classification), 'dihedral' (per-residue (φ, ψ) regression), "
+            "'distance' (pair Cα-Cα regression)."
         ),
     )
     ap.add_argument(
@@ -920,6 +1839,61 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     ap.add_argument("--cath_min_per_class", type=int, default=3)
+    ap.add_argument(
+        "--baselines",
+        type=str,
+        default="",
+        help=(
+            "Comma-separated baselines to add. Any subset of "
+            f"{{{', '.join(VALID_BASELINES)}}}. Generic baselines "
+            "(random_gauss, seq_onehot, untrained_proteina, trained_noise) "
+            "apply to every chosen probe; trivial-geometric baselines are "
+            "scoped via BASELINE_PROBE_KINDS (knn_dist→inverse_folding, "
+            "local_frame→dihedral, seqsep_pair→distance). Each row uses a "
+            "sentinel negative layer code (see lib/sources.py). Empty = skip."
+        ),
+    )
+    ap.add_argument(
+        "--baseline_random_gauss_dim",
+        type=int,
+        default=512,
+        help="Hidden dim D for random_gauss baseline reps (default 512).",
+    )
+    ap.add_argument(
+        "--baseline_random_gauss_seed",
+        type=int,
+        default=42,
+        help="Seed for the single random_gauss draw.",
+    )
+    ap.add_argument(
+        "--baseline_untrained_config",
+        type=str,
+        default="training_baseline_256",
+        help=(
+            "Hydra config name for the freshly-initialised Proteina used as the "
+            "untrained_proteina baseline. The transformer arch is shared across "
+            "sequence lengths, so the default works for any sweep."
+        ),
+    )
+    ap.add_argument(
+        "--baseline_trained_noise_run",
+        type=str,
+        default="",
+        help=(
+            "RUN_SCHEDULES key for the canonical trained checkpoint used by the "
+            "trained_noise baseline (good model + reference-distribution input "
+            "at t=0). Required if 'trained_noise' is in --baselines."
+        ),
+    )
+    ap.add_argument(
+        "--baseline_trained_noise_step",
+        type=int,
+        default=None,
+        help=(
+            "Step for --baseline_trained_noise_run. Defaults to the last step "
+            "listed for that run in RUN_SCHEDULES."
+        ),
+    )
     ap.add_argument(
         "--extract_only",
         action="store_true",
@@ -938,6 +1912,40 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "already exist in --cache_dir (typically populated by a prior "
             "--extract_only run). Errors loudly rather than re-extracting "
             "if features are missing."
+        ),
+    )
+    ap.add_argument(
+        "--baselines_only",
+        action="store_true",
+        help=(
+            "Skip every (run, step) in RUN_SCHEDULES + PRETRAINED_CHECKPOINTS "
+            "and run only the rep-source baselines (see --baselines). Use "
+            "this to backfill baseline rows into an existing JSONL without "
+            "re-touching checkpoint rows. Requires --baselines to be set."
+        ),
+    )
+    ap.add_argument(
+        "--in_memory",
+        action="store_true",
+        help=(
+            "Skip the per-checkpoint disk feature cache; hold all-layer reps "
+            "in RAM (~12-24 GB at n=256, fp16) for the duration of probe-fit "
+            "for one checkpoint, then drop. Each layer's reps are released "
+            "as soon as that layer's probes finish. Suited for SLURM array "
+            "jobs running one task per checkpoint. Mutually exclusive with "
+            "--extract_only / --probe_from_cache."
+        ),
+    )
+    ap.add_argument(
+        "--jsonl_shard_tag",
+        type=str,
+        default="",
+        help=(
+            "Per-task JSONL shard suffix for parallel-safe writes. When set, "
+            "results write to pretrained_sweep_results.<tag>.jsonl instead "
+            "of the shared file. Use with --runs <single> in array jobs to "
+            "avoid concurrent-append contention. consolidate() globs all "
+            "shards plus the canonical file when rebuilding CSV/JSON."
         ),
     )
     return ap
@@ -1042,6 +2050,8 @@ def main() -> None:
 
     if args.extract_only and args.probe_from_cache:
         ap.error("--extract_only and --probe_from_cache are mutually exclusive")
+    if args.baselines_only and not args.baselines:
+        ap.error("--baselines_only requires --baselines (or a config with baselines:)")
 
     train_lmdb = args.train_lmdb_path or _default_train_lmdb()
     eval_lmdb = args.eval_lmdb_path or LMDB_PATH
@@ -1050,7 +2060,16 @@ def main() -> None:
     if not outdir.is_absolute():
         outdir = HERE.parents[1] / args.output_dir
     outdir.mkdir(parents=True, exist_ok=True)
-    jsonl_path = outdir / "pretrained_sweep_results.jsonl"
+    if args.jsonl_shard_tag:
+        # Per-task shard so concurrent array tasks don't append-contend on the
+        # same file. consolidate() globs all shards + canonical when rebuilding.
+        safe_tag = "".join(
+            c if c.isalnum() or c in "-_" else "_" for c in args.jsonl_shard_tag
+        )
+        jsonl_path = outdir / f"pretrained_sweep_results.{safe_tag}.jsonl"
+        print(f"[shard] writing rows to {jsonl_path.name}")
+    else:
+        jsonl_path = outdir / "pretrained_sweep_results.jsonl"
 
     cache_dir = Path(args.cache_dir) if args.cache_dir else outdir / "cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -1076,6 +2095,9 @@ def main() -> None:
     cfg = SweepConfig(
         run_contact=("contact" in chosen_probes),
         cath_levels=cath_levels,
+        run_inverse_folding=("inverse_folding" in chosen_probes),
+        run_dihedral=("dihedral" in chosen_probes),
+        run_distance=("distance" in chosen_probes),
         n_train=args.n_train,
         n_eval=args.n_eval,
         head_type=args.head_type,
@@ -1087,6 +2109,7 @@ def main() -> None:
         # job can pick up the features. Honour the user's flag otherwise.
         keep_cache=args.keep_cache or args.extract_only,
         save_heads_dir=save_heads_dir,
+        in_memory=args.in_memory,
     )
 
     timesteps = [float(t.strip()) for t in args.timesteps.split(",") if t.strip()] or [
@@ -1102,6 +2125,18 @@ def main() -> None:
         print(
             f"  cath: levels={list(cfg.cath_levels)}, min_per_class={cfg.cath_min_per_class}"
         )
+    if cfg.run_inverse_folding:
+        print(
+            f"  inverse_folding: head={cfg.head_type}, epochs={cfg.probe_epochs}, lr={cfg.probe_lr}"
+        )
+    if cfg.run_dihedral:
+        print(
+            f"  dihedral: head={cfg.head_type}, epochs={cfg.probe_epochs}, lr={cfg.probe_lr}"
+        )
+    if cfg.run_distance:
+        print(
+            f"  distance: head={cfg.head_type}, epochs={cfg.probe_epochs}, lr={cfg.probe_lr}"
+        )
     print(f"Train LMDB: {train_lmdb}")
     print(f"Eval  LMDB: {eval_lmdb}")
     print(f"N_train={cfg.n_train}, N_eval={cfg.n_eval}, max_size={args.max_size}")
@@ -1111,7 +2146,9 @@ def main() -> None:
     done = DoneSet.from_jsonl(jsonl_path)
     if len(done):
         print(
-            f"Resuming: {len(done.contact)} contact + {len(done.cath)} cath rows in JSONL"
+            f"Resuming: contact={len(done.contact)} cath={len(done.cath)} "
+            f"if={len(done.inverse_folding)} dih={len(done.dihedral)} "
+            f"dist={len(done.distance)} rows in JSONL"
         )
 
     device = _default_device()
@@ -1134,31 +2171,34 @@ def main() -> None:
     elif args.probe_from_cache:
         print("[mode] PROBE-FROM-CACHE: reading features from cache, no GPU forward")
 
-    for job in iter_jobs(
-        runs_filter=runs_filter,
-        steps_override=steps_override,
-        timesteps=timesteps,
-        skip_pretrained_refs=args.skip_pretrained_refs,
-        device=device,
-        probe_from_cache=args.probe_from_cache,
-        cache_dir=cache_dir,
-    ):
-        try:
-            run_one_checkpoint(
-                job,
-                batches,
-                cfg,
-                done,
-                cache_dir,
-                jsonl_path,
-                device,
-                extract_only=args.extract_only,
-                probe_from_cache=args.probe_from_cache,
-            )
-        except Exception as e:
-            traceback.print_exc()
-            print(f"    [X] {job.run}@{job.step} t={job.t_tag} failed: {e}")
-            _append_error_row(jsonl_path, job, e, batches)
+    if args.baselines_only:
+        print("[mode] BASELINES-ONLY: skipping all checkpoint jobs")
+    else:
+        for job in iter_jobs(
+            runs_filter=runs_filter,
+            steps_override=steps_override,
+            timesteps=timesteps,
+            skip_pretrained_refs=args.skip_pretrained_refs,
+            device=device,
+            probe_from_cache=args.probe_from_cache,
+            cache_dir=cache_dir,
+        ):
+            try:
+                run_one_checkpoint(
+                    job,
+                    batches,
+                    cfg,
+                    done,
+                    cache_dir,
+                    jsonl_path,
+                    device,
+                    extract_only=args.extract_only,
+                    probe_from_cache=args.probe_from_cache,
+                )
+            except Exception as e:
+                traceback.print_exc()
+                print(f"    [X] {job.run}@{job.step} t={job.t_tag} failed: {e}")
+                _append_error_row(jsonl_path, job, e, batches)
 
     if args.extract_only:
         print(
@@ -1166,6 +2206,49 @@ def main() -> None:
             f"Run --probe_from_cache --cache_dir {cache_dir} on a CPU node."
         )
         return
+
+    # --- Baseline rows (checkpoint-agnostic, run after main schedule) ---
+    baseline_names = [b.strip() for b in args.baselines.split(",") if b.strip()]
+    if baseline_names:
+        # CATH baselines (legacy path; only applies when CATH is enabled).
+        if cfg.cath_levels:
+            cath_names = [
+                n
+                for n in baseline_names
+                if "cath" in BASELINE_PROBE_KINDS.get(n, set())
+            ]
+            if cath_names:
+                run_baselines_cath(
+                    cath_names,
+                    batches,
+                    cfg,
+                    done,
+                    jsonl_path,
+                    device,
+                    random_gauss_dim=args.baseline_random_gauss_dim,
+                    random_gauss_seed=args.baseline_random_gauss_seed,
+                    untrained_config_name=args.baseline_untrained_config,
+                    trained_noise_run=args.baseline_trained_noise_run,
+                    trained_noise_step=args.baseline_trained_noise_step,
+                )
+
+        # New-probe baselines (inverse_folding / dihedral / distance).
+        if chosen_probes & {"inverse_folding", "dihedral", "distance"}:
+            run_baselines_new_probes(
+                baseline_names,
+                chosen_probes,
+                batches,
+                cfg,
+                done,
+                jsonl_path,
+                device,
+                random_gauss_dim=args.baseline_random_gauss_dim,
+                random_gauss_seed=args.baseline_random_gauss_seed,
+                untrained_config_name=args.baseline_untrained_config,
+                trained_noise_run=args.baseline_trained_noise_run,
+                trained_noise_step=args.baseline_trained_noise_step,
+            )
+
     consolidate(outdir)
     print(f"\n[out] Consolidated to {outdir}/pretrained_sweep_results.{{csv,json}}")
 

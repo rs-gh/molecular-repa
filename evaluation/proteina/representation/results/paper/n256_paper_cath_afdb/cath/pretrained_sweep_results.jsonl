@@ -1,0 +1,1 @@
+{"run": "baseline_256_ep21", "step": 400000, "layer": -999, "t": 1.0, "ckpt_path": "/rds/user/sr2173/hpc-work/proteina/store/proteina_60m_baseline_256/checkpoints/chk_epoch=00000021_step=000000400000-EMA.ckpt", "error": "RuntimeError: [enforce fail at inline_container.cc:664] . unexpected pos 704 vs 598", "train_manifest": "train_v1", "eval_manifest": "eval_v1"}

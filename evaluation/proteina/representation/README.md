@@ -241,12 +241,15 @@ explicit in the job output.
 |---|---|---|
 | `run, step, layer` | yes | yes |
 | `t` | yes (multi-timestep) | yes (multi-timestep) |
-| `p_at_L, p_at_L_2, p_at_L_5` | yes (nested under `contact:{linear,mlp}`) | yes (flat) |
+| `p_at_L, p_at_L_2, p_at_L_5` | yes (nested under `contact:{linear,mlp}`) | yes (flat; `probe_kind=contact`) |
 | `cath_acc, cath_f1` | yes (nested under `cath:`) | no (cath rows tagged `probe_kind=cath` with flat `cath_accuracy`/`cath_macro_f1`) |
-| `n_proteins_test` | yes (~40) | yes (~490–3190) |
+| `if_top1_acc, if_macro_f1, if_n_residues_test` | no | yes (`probe_kind=inverse_folding`; added 2026-05-14) |
+| `dih_mae_phi_deg, dih_mae_psi_deg, dih_mae_total_deg, dih_n_residues_test` | no | yes (`probe_kind=dihedral`; added 2026-05-14) |
+| `dist_mae_total, dist_mae_short, dist_mae_medium, dist_mae_long, dist_n_pairs_test` | no | yes (`probe_kind=distance`; added 2026-05-14) |
+| `n_proteins_test` | yes (~40) | yes (~490–3190; contact only) |
 | `manifest` | `v1` / `v2` | — |
 | `train_manifest, eval_manifest` | — | `train_v1`, `eval_v1` |
-| `probe_kind` | no | `contact` or `cath` |
+| `probe_kind` | no | one of `contact`, `cath`, `inverse_folding`, `dihedral`, `distance` |
 | `seed` | yes | yes |
 
 Plot scripts under `scripts/lite/`, `scripts/convergence/`, and

@@ -26,6 +26,8 @@ from typing import Dict, List
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from evaluation.proteina.lib.plot_labels import pretty_run_label
+
 
 HERE = Path(__file__).resolve().parent
 REPR_ROOT = HERE.parents[1]
@@ -138,6 +140,77 @@ _PALETTE = [
 ]
 
 
+# Baseline rendering. Matches lib/sources.py sentinel codes and the
+# untrained_proteina sentinel range (layer = -(trunk_layer + 10), so
+# trunk_layer = -layer - 10 inverts it).
+_LAYER_RANDOM_GAUSS = -2
+_LAYER_SEQ_ONEHOT = -3
+_UNTRAINED_LAYER_MIN = -19
+_UNTRAINED_LAYER_MAX = -10
+_TRAINED_NOISE_LAYER_MIN = -29
+_TRAINED_NOISE_LAYER_MAX = -20
+
+_BASELINE_COLORS = {
+    "random_gauss": "#7f7f7f",
+    "seq_onehot": "#8c564b",
+    "untrained_proteina": "#e377c2",
+    "trained_noise": "#17becf",
+}
+
+
+def _split_baselines(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Return (checkpoint_rows, baseline_rows). Baselines have negative layer."""
+    is_baseline = df["layer"] < 0
+    return df[~is_baseline].copy(), df[is_baseline].copy()
+
+
+def _draw_baselines(ax, baselines: pd.DataFrame, level: str) -> None:
+    """Overlay random_gauss + seq_onehot as horizontal lines, untrained_proteina
+    as a curve at trunk-layer index. CATH level filter applied here."""
+    sub = baselines[baselines.cath_level == level]
+    if sub.empty:
+        return
+
+    for name, sentinel in [
+        ("random_gauss", _LAYER_RANDOM_GAUSS),
+        ("seq_onehot", _LAYER_SEQ_ONEHOT),
+    ]:
+        row = sub[sub["layer"] == sentinel]
+        if row.empty:
+            continue
+        v = float(row["cath_accuracy"].iloc[0])
+        ax.axhline(
+            v,
+            linestyle="--",
+            linewidth=0.9,
+            color=_BASELINE_COLORS[name],
+            label=name,
+            alpha=0.75,
+        )
+
+    for run_name, lmin, lmax, offset, marker in [
+        ("untrained_proteina", _UNTRAINED_LAYER_MIN, _UNTRAINED_LAYER_MAX, 10, "s"),
+        ("trained_noise", _TRAINED_NOISE_LAYER_MIN, _TRAINED_NOISE_LAYER_MAX, 20, "^"),
+    ]:
+        curve = sub[
+            (sub["run"] == run_name) & (sub["layer"] >= lmin) & (sub["layer"] <= lmax)
+        ].copy()
+        if curve.empty:
+            continue
+        curve["trunk_layer"] = -curve["layer"] - offset
+        curve = curve.sort_values("trunk_layer")
+        ax.plot(
+            curve["trunk_layer"],
+            curve["cath_accuracy"],
+            "--" + marker,
+            color=_BASELINE_COLORS[run_name],
+            label=run_name,
+            linewidth=1.2,
+            markersize=3.5,
+            alpha=0.85,
+        )
+
+
 def _results_dir(sweep: str) -> Path:
     # Both sweeps now follow the post-refactor convention:
     # ``results/paper/<sweep_short>_paper_cath/cath/``. Probe-from-cache jobs
@@ -174,8 +247,28 @@ def load_results(sweep: str) -> pd.DataFrame:
     return df
 
 
+def _run_step(df: pd.DataFrame, run: str) -> int | None:
+    """Pull the step recorded for ``run`` in this df, or None if missing.
+
+    Eval rows for one run share one ckpt, hence one step. The data row's
+    ``step`` is the authoritative source — the run id suffix (``_steplast``)
+    can mean different actual steps across suites.
+    """
+    if "step" not in df.columns:
+        return None
+    steps = df[df["run"] == run]["step"].dropna().unique()
+    if len(steps) == 0:
+        return None
+    return int(steps[0])
+
+
 def peak_table(df: pd.DataFrame) -> pd.DataFrame:
-    """Per-(run, level) peak accuracy + layer where it occurs."""
+    """Per-(run, level) peak accuracy + layer where it occurs.
+
+    Restricted to real transformer layers (layer >= 0). Baselines have
+    negative sentinel layers and live in a separate companion CSV.
+    """
+    df = df[df["layer"] >= 0]
     idx = df.groupby(["run", "cath_level"])["cath_accuracy"].idxmax()
     peak = df.loc[idx, ["run", "cath_level", "layer", "cath_accuracy", "cath_macro_f1"]]
     return peak.pivot(
@@ -187,11 +280,12 @@ def peak_table(df: pd.DataFrame) -> pd.DataFrame:
 
 def plot_layer_curves(df: pd.DataFrame, outpath: Path, title: str) -> None:
     """3-panel figure: cath-C / A / T accuracy vs layer, all runs overlaid."""
+    ckpt_df, baseline_df = _split_baselines(df)
     fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
-    runs = sorted(df["run"].unique())
+    runs = sorted(ckpt_df["run"].unique())
     colors = {r: _PALETTE[i % len(_PALETTE)] for i, r in enumerate(runs)}
     for ax, level in zip(axes, ["C", "A", "T"]):
-        sub = df[df.cath_level == level]
+        sub = ckpt_df[ckpt_df.cath_level == level]
         for run in runs:
             r = sub[sub["run"] == run].sort_values("layer")
             if r.empty:
@@ -201,10 +295,13 @@ def plot_layer_curves(df: pd.DataFrame, outpath: Path, title: str) -> None:
                 r["cath_accuracy"],
                 marker="o",
                 color=colors[run],
-                label=run,
+                label=pretty_run_label(
+                    run, step=_run_step(sub, run), allow_missing_step=True
+                ),
                 linewidth=1.5,
                 markersize=4,
             )
+        _draw_baselines(ax, baseline_df, level)
         ax.set_title(f"CATH-{level} accuracy vs layer", fontsize=11)
         ax.set_xlabel("transformer layer")
         ax.set_ylabel("accuracy")
@@ -226,10 +323,11 @@ def plot_block(
     sweep_title: str,
 ) -> None:
     """3-panel figure for one ablation block: each run gets a fixed color+label."""
+    _, baseline_df = _split_baselines(df)
     fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
     colors = {run: _PALETTE[i % len(_PALETTE)] for i, (run, _) in enumerate(run_labels)}
     for ax, level in zip(axes, ["C", "A", "T"]):
-        sub = df[df.cath_level == level]
+        sub = df[(df.cath_level == level) & (df["layer"] >= 0)]
         for run, label in run_labels:
             r = sub[sub["run"] == run].sort_values("layer")
             if r.empty:
@@ -239,10 +337,16 @@ def plot_block(
                 r["cath_accuracy"],
                 marker="o",
                 color=colors[run],
-                label=label,
+                label=pretty_run_label(
+                    run,
+                    step=_run_step(sub, run),
+                    display=label,
+                    allow_missing_step=True,
+                ),
                 linewidth=1.5,
                 markersize=5,
             )
+        _draw_baselines(ax, baseline_df, level)
         ax.set_title(f"CATH-{level}", fontsize=11)
         ax.set_xlabel("transformer layer")
         ax.set_ylabel("accuracy")
@@ -277,6 +381,22 @@ def main() -> None:
     peak_csv = fig_dir / "table_peak.csv"
     peak.to_csv(peak_csv)
     print(f"  wrote {peak_csv.name}")
+
+    # Baseline summary (random_gauss / seq_onehot scalars + untrained per layer).
+    _, baseline_df = _split_baselines(df)
+    if not baseline_df.empty:
+        base_csv = fig_dir / "table_baselines.csv"
+        baseline_df[
+            [
+                "run",
+                "layer",
+                "cath_level",
+                "cath_accuracy",
+                "cath_macro_f1",
+                "cath_n_classes",
+            ]
+        ].sort_values(["run", "cath_level", "layer"]).to_csv(base_csv, index=False)
+        print(f"  wrote {base_csv.name}")
 
     # Headline layer curves over all runs.
     plot_layer_curves(

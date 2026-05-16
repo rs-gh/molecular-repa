@@ -506,11 +506,125 @@ RUN_SCHEDULES = {
         4,  # repa_layer unused for non-REPA loads
         [None],
     ),
-    # TODO (lambda ablation): once `proteina_60m_repa_l4_128_per_residue_bs80_lambda1`
-    # (λ=1.0) reaches 100K-step EMA, add:
-    #   "repa_l4_128_bs80_lambda1_step100k": (..., True, 4, [100000]),
-    # And similarly extend `lambda2` (λ=2.0) once it has a 100K ckpt (currently
-    # at 17.5K). The bs80 entry above (λ=0.5) is the third leg of the ablation.
+    # ── n=128 lambda ablation: λ=0.25 and λ=1.0 legs at step=200K ────────── #
+    # Companions to existing λ=0.5 (repa_l4_128_bs80_step200k) and λ=2.0
+    # (repa_l4_128_bs80_lambda2_steplast). Both stores reached 200K on
+    # 2026-05-14; eval'd inline with novelty_foldseek via n128_paper_lambda_ext.
+    "repa_l4_128_bs80_lambda025_step200k": (
+        "proteina_60m_repa_l4_128_per_residue_bs80_lambda025",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_l4_128_bs80_lambda1_step200k": (
+        "proteina_60m_repa_l4_128_per_residue_bs80_lambda1",
+        True,
+        4,
+        [200000],
+    ),
+    # ── n=128 AFDB-Swissprot training (2-GPU bs80 via per-GPU 40 × 2 GPU) ── #
+    # Mirrors n256 AFDB block. All three at step=200K; baseline + mpnn-L4
+    # additionally at step=400K (their stores reached 500K by 2026-05-14).
+    "baseline_afdb_128_bs80_step200k": (
+        "proteina_60m_baseline_afdb_128_bs80_2gpu",
+        False,
+        4,
+        [200000],
+    ),
+    "baseline_afdb_128_bs80_step400k": (
+        "proteina_60m_baseline_afdb_128_bs80_2gpu",
+        False,
+        4,
+        [400000],
+    ),
+    "repa_l4_afdb_128_bs80_step200k": (
+        "proteina_60m_repa_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_mpnn_l4_afdb_128_bs80_step200k": (
+        "proteina_60m_repa_mpnn_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_mpnn_l4_afdb_128_bs80_step400k": (
+        "proteina_60m_repa_mpnn_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [400000],
+    ),
+    # ── n=256 AFDB extension: step=400K/700K/900K snapshots ──────────────── #
+    # Existing baseline_afdb_256_ep20 / repa_l4_afdb_256_ep20 are pinned at
+    # step=200K (epoch 20). These step-keyed companions sample further along
+    # the same stores for a step-vs-FID curve, and add the mpnn-aligned
+    # encoder runs (mpnn-L4 step400k, mpnn-L9 step400k/700k) that didn't
+    # exist when n256_paper_afdb was first run.
+    "baseline_afdb_256_step400k": (
+        "proteina_60m_baseline_afdb_swissprot_256",
+        False,
+        4,
+        [400000],
+    ),
+    "baseline_afdb_256_step700k": (
+        "proteina_60m_baseline_afdb_swissprot_256",
+        False,
+        4,
+        [700000],
+    ),
+    "baseline_afdb_256_step900k": (
+        "proteina_60m_baseline_afdb_swissprot_256",
+        False,
+        4,
+        [900000],
+    ),
+    "repa_l4_afdb_256_step400k": (
+        "proteina_60m_repa_l4_256_afdb_per_residue",
+        True,
+        4,
+        [400000],
+    ),
+    "repa_l4_afdb_256_step700k": (
+        "proteina_60m_repa_l4_256_afdb_per_residue",
+        True,
+        4,
+        [700000],
+    ),
+    "repa_mpnn_l4_afdb_256_step400k": (
+        "proteina_60m_repa_mpnn_l4_256_afdb_per_residue",
+        True,
+        4,
+        [400000],
+    ),
+    "repa_mpnn_l9_afdb_256_step400k": (
+        "proteina_60m_repa_mpnn_l9_256_afdb_per_residue",
+        True,
+        9,
+        [400000],
+    ),
+    "repa_mpnn_l9_afdb_256_step700k": (
+        "proteina_60m_repa_mpnn_l9_256_afdb_per_residue",
+        True,
+        9,
+        [700000],
+    ),
+    # ── n=256 lambda extension: λ=1.0@step200K, λ=2.0@step300K ───────────── #
+    # Step-matched companions: λ=1 already had _step300k entry above; pair it
+    # with a _step200k snapshot. λ=2 already had _step200k; pair with
+    # _step300k (latest numbered ckpt as of 2026-05-14).
+    "repa_l4_256_per_residue_lambda1_step200k": (
+        "proteina_60m_repa_l4_256_per_residue_lambda1",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_l4_256_per_residue_lambda2_step300k": (
+        "proteina_60m_repa_l4_256_per_residue_lambda2",
+        True,
+        4,
+        [300000],
+    ),
 }
 
 
@@ -597,6 +711,27 @@ GEN_RUN_CONFIGS = {
     "repa_l4_128_bs80_wd1e2_step200k": "inference/paper/inference_fid_60m_n128_paper",
     # Same checkpoint, n=256 paper protocol ({50..250 step 25} × 125 = 1125 PDBs).
     "pretrained_dfs_60m_n256_paper": "inference/paper/inference_fid_60m_paper",
+    # ── n=128 lambda ablation extension (λ=0.25, λ=1.0) ──────────────────── #
+    "repa_l4_128_bs80_lambda025_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_bs80_lambda1_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    # ── n=128 AFDB-Swissprot training ────────────────────────────────────── #
+    "baseline_afdb_128_bs80_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_afdb_128_bs80_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_afdb_128_bs80_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l4_afdb_128_bs80_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l4_afdb_128_bs80_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    # ── n=256 AFDB extension (step-curve + mpnn-aligned encoders) ────────── #
+    "baseline_afdb_256_step400k": "inference/paper/inference_fid_60m_paper",
+    "baseline_afdb_256_step700k": "inference/paper/inference_fid_60m_paper",
+    "baseline_afdb_256_step900k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_afdb_256_step400k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_afdb_256_step700k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_afdb_256_step400k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_afdb_256_step400k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_afdb_256_step700k": "inference/paper/inference_fid_60m_paper",
+    # ── n=256 lambda ablation extension ──────────────────────────────────── #
+    "repa_l4_256_per_residue_lambda1_step200k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_lambda2_step300k": "inference/paper/inference_fid_60m_paper",
 }
 
 

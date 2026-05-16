@@ -89,26 +89,33 @@ def _balanced_pairs(
 
 
 def _build_head(
-    in_dim: int, device: str, head_type: Literal["mlp", "linear"] = "mlp"
+    in_dim: int,
+    device: str,
+    head_type: Literal["mlp", "linear"] = "mlp",
+    out_dim: int = 1,
 ) -> torch.nn.Module:
     """Probe head.
 
-    head_type="mlp":    Linear(3D, 256) -> SiLU -> Linear(256, 1)  (~393k params for D=512)
-    head_type="linear": Linear(3D, 1)                              (~1.5k params for D=512)
+    head_type="mlp":    Linear(in_dim, 256) -> SiLU -> Linear(256, out_dim)
+    head_type="linear": Linear(in_dim, out_dim)
 
     The linear variant matters for isolating representation quality — if the
     linear probe tracks the MLP probe closely, the MLP isn't adding
     memorization capacity and the reported number genuinely reflects the
     backbone's rep quality. If the linear probe is much worse, the MLP is
-    finding nonlinear pair-relationships the backbone didn't expose directly.
+    finding nonlinear relationships the backbone didn't expose directly.
+
+    ``out_dim`` was added (default 1, preserving back-compat with the contact
+    probe's binary head) so the same factory serves: contact/distance (1),
+    dihedral (4 — sin/cos of φ and ψ), inverse folding (20).
     """
     if head_type == "linear":
-        return torch.nn.Linear(in_dim, 1).to(device)
+        return torch.nn.Linear(in_dim, out_dim).to(device)
     elif head_type == "mlp":
         return torch.nn.Sequential(
-            torch.nn.Linear(in_dim, 256),  # (3D -> 256)
+            torch.nn.Linear(in_dim, 256),
             torch.nn.SiLU(),
-            torch.nn.Linear(256, 1),  # (256 -> 1)
+            torch.nn.Linear(256, out_dim),
         ).to(device)
     raise ValueError(f"unknown head_type: {head_type}")
 

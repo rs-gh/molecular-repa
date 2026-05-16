@@ -316,3 +316,231 @@ tighter upper bound on what's decodable). The *ordering* of REPA vs
 baseline should be preserved; any reordering means the in-place split
 was introducing sample variance rather than measuring representation
 quality.
+
+## Residue/pair-level structural probes added 2026-05-14
+
+Two long-standing weaknesses in the existing pair (P1=contact, P2=CATH):
+
+1. **Contact P@L/k** is a pair-ranking metric on a binary thresholding of
+   distance at 8 Å. A sequence-position-only feature can do non-trivially
+   well; the threshold throws away geometric detail.
+2. **CATH-T (mean-pool)** predicts a per-chain label from a single pooled
+   feature — a global descriptor like radius-of-gyration + length already
+   gets non-trivial macro-F1, so it tells us little about whether `h_i`
+   encodes residue-local structure.
+
+Three new probes target *residue-* and *pair-level* structural quality
+that the existing pair don't measure, each with a task-specific
+trivial-geometric baseline that establishes a hard floor:
+
+- **P3 — Inverse folding** ([lib/probes/inverse_folding.py](lib/probes/inverse_folding.py)).
+  Per-residue 20-way amino-acid classification from `h_i ∈ R^D`. Direct
+  REPA-style residue-level analogue of an ImageNet linear probe — if the
+  hidden states encode the local chemical environment that determines the
+  AA, a linear head should recover it. Reports top-1 accuracy and macro-F1.
+  Trivial-geometric baseline: `knn_dist` (sorted distances to 8 nearest CAs;
+  isolates "what does the local geometry alone tell you about AA identity").
+
+- **P4 — Backbone dihedral regression** ([lib/probes/dihedral.py](lib/probes/dihedral.py)).
+  Per-residue (φ, ψ) regression. The most direct test of whether the
+  diffusion model's hidden states encode the local backbone geometry it is
+  trained to denoise. Targets parameterised as (sin φ, cos φ, sin ψ, cos ψ)
+  so MSE handles the angular wrap-around; reports mean *circular* angular
+  error in degrees. Trivial-geometric baseline: `local_frame` (5 backbone
+  atoms in a per-residue local frame — analytical lower bound, since a
+  sufficiently expressive head can recover the angles essentially exactly
+  from these atoms).
+
+- **P5 — Pair distance regression** ([lib/probes/distance.py](lib/probes/distance.py)).
+  Per-pair Cα-Cα distance regression in Å from `[h_i ‖ h_j ‖ |h_i - h_j|]`.
+  Strict generalisation of the contact probe — contact is the same pair
+  feature thresholded at 8 Å. Reports MAE bucketed by sequence separation
+  (short < 6, medium 6-24, long ≥ 24). Trivial-geometric baseline:
+  `seqsep_pair` (head fed only `|i-j|`; tests how much of the MAE is just
+  chain-prior).
+
+For each new probe we also run the existing generic baselines — `random_gauss`
+(memorisation-floor for the head), `seq_onehot` (only-chemistry baseline),
+`untrained_proteina` (architectural prior, no learning), `trained_noise`
+(weights help but input is uninformative). The `BASELINE_PROBE_KINDS` map
+in `pretrain_probe_sweep.py` gates which (baseline × probe) cells are run.
+
+### Citations
+
+These probes adapt established benchmark tasks; cite as:
+
+- **Inverse folding**: Ingraham et al., *"Generative models for graph-based
+  protein design,"* NeurIPS 2019 (formulation, CATH-topology splits);
+  Jamasb et al., *"Evaluating Representation Learning on the Protein
+  Structure Universe,"* ICLR 2024 (ProteinWorkshop §D.8 — adopts CATH-IF
+  as a downstream node-level evaluation task).
+- **Distance regression**: Zhang et al., *"Protein Representation Learning by
+  Geometric Structure Pretraining"* (GearNet), ICLR 2023, §3.2 (proposes
+  masked distance/angle/dihedral SSL); adopted in ProteinWorkshop §D.7.
+- **Backbone dihedral regression**: Jamasb et al., ICLR 2024, §D.7
+  (ProteinWorkshop adds per-residue backbone dihedral prediction beyond
+  GearNet's quadruplet variant — no external attribution given).
+
+### How to run
+
+Two paper-style profiles in [sweep_config.yaml](sweep_config.yaml) mirror the
+`paper_n{128,256}_cath` sample sizes (n_train=5000, n_eval≈val-clipped, t=1.0
+clean only, linear head, 15 epochs) so the new probe rows are directly
+comparable in scale to the existing CATH rows on the same checkpoints:
+
+```bash
+# n=128 paper-table sweep (22 ckpts)
+python evaluation/proteina/representation/scripts/paper/pretrain_probe_sweep.py \
+    --config paper_n128_struct
+
+# n=256 paper-table sweep (18 ckpts)
+python evaluation/proteina/representation/scripts/paper/pretrain_probe_sweep.py \
+    --config paper_n256_struct
+```
+
+Both profiles auto-include the trivial-geometric baselines (`knn_dist`,
+`local_frame`, `seqsep_pair`) and the generic baselines (`random_gauss`,
+`seq_onehot`, `untrained_proteina`, `trained_noise`); `BASELINE_PROBE_KINDS`
+in `pretrain_probe_sweep.py` gates which baseline applies to which probe.
+
+Quick smoke (no SLURM, single ckpt, single layer, 200/100 sample sizes):
+
+```bash
+python evaluation/proteina/representation/scripts/paper/pretrain_probe_sweep.py \
+    --config paper_n256_struct \
+    --runs baseline_256_ep21 --steps 200000 \
+    --n_train 200 --n_eval 100 \
+    --output_dir results/smoke/three_probes
+```
+
+Linear head only for v1 — sharper ranking signal between checkpoints. The
+`_build_head` factory (`lib/probes/contact.py`) supports MLP via
+`--head_type mlp` if linear underseparates.
+
+## CATH baseline interpretation — what the floor actually is (2026-05-14)
+
+The paper-CATH sweeps ship four rep-source baselines: `random_gauss`,
+`seq_onehot`, `untrained_proteina`, and `trained_noise`. Their meaning is
+easy to misread; in particular the "random" baselines do **not** score at
+`1/K` chance. This section captures the empirically-measured floor and
+what each baseline isolates.
+
+### The right floor is the *intercept-only* floor, not 1/K
+
+A linear LogReg with no informative features still has a per-class intercept
+term. It learns the marginal `P(class)` from the train labels and predicts
+the argmax of that prior — i.e. it always predicts the **train majority
+class**. Its accuracy on eval is therefore the **eval prevalence of the
+train-majority class**, not `1/K`.
+
+CATH is heavily imbalanced (alpha-beta dominates C, Rossmann-like 3.40
+dominates A, immunoglobulin-like 2.60.40 / 3.40.50 dominate T), so the
+intercept floor is much higher than naive `1/K`.
+
+Profiled directly from the manifests at `results/paper/n{128,256}_paper_cath/cath/`
+(via `lmdb.open` + `pickle.loads` over the val.lmdb keys; see
+`results/paper/n128_paper_cath/cath/batch_manifest_*.json`):
+
+| level | n128 K_invocab | n128 floor | n128 maj class | n256 K_invocab | n256 floor | n256 maj class |
+|-------|----------------|------------|----------------|----------------|------------|----------------|
+| C     | 5              | **0.333**  | 2 (mostly-beta)| 5              | **0.484**  | 3 (alpha-beta) |
+| A     | 21             | **0.169**  | 3.30           | 24             | **0.176**  | 3.40           |
+| T     | 116            | **0.123**  | 2.60.40        | 128            | **0.112**  | 3.40.50        |
+
+Notes on the funnel: of 1237 n128 eval proteins, 786 are *unlabelled*
+(no `cath_code`) and drop out of both numerator and denominator entirely;
+the in-vocab denominators above (451, 451, 405) reflect this. The
+n256 split has 3190 evals → 1811 unlabelled, 1379/1371/1168 in-vocab.
+`cath_min_per_class=3` removes T-classes with <3 train examples (46 / 211
+OOV eval drops at n128 / n256).
+
+### What each baseline actually measures
+
+| baseline | features | what it isolates |
+|----------|----------|------------------|
+| `random_gauss` | `torch.randn(B,N,512)` masked, mean-pooled to `[B,512]` | The LogReg's response to features with zero signal. Mean-pool of i.i.d. noise leaks one bit: `‖μ‖² ∝ 1/L` (length signal through norm). |
+| `seq_onehot`   | 20-dim per-residue one-hot of `residue_type`, mean-pooled → AA composition vector | How much CATH structure is in AA composition alone (Chou-Fasman floor). |
+| `untrained_proteina` | freshly-initialised 60M Proteina, 10 trunk layers, real coords + seq | The architecture prior alone — what an SE(3) attention stack with random weights extracts from a real backbone. |
+| `trained_noise` | trained baseline ckpt (n128: `baseline_128_bs80_step200k`, n256: `baseline_256_ep21`), `x_t` drawn from the model's reference distribution at `t=0.0`, real residue_type/mask | The model's learned structural priors independent of the input being a real protein — "good model + uninformative coords". |
+
+### Measured numbers vs floor
+
+| level | floor | random_gauss | seq_onehot | untrained_proteina (best L) |
+|-------|-------|--------------|------------|-----------------------------|
+| n128 C | 0.333 | 0.326 | 0.545 | 0.432 |
+| n128 A | 0.169 | 0.129 | 0.293 | 0.282 |
+| n128 T | 0.123 | 0.057 | 0.126 | 0.217 |
+| n256 C | 0.484 | 0.410 | 0.563 | 0.524 |
+| n256 A | 0.176 | 0.150 | 0.282 | 0.292 |
+| n256 T | 0.112 | 0.098 | 0.165 | 0.226 |
+
+Source: `figures/paper/n{128,256}_paper_cath/cath/table_baselines.csv`.
+`trained_noise` numbers will be added when the in-flight backfill jobs
+(`29348110` n128 + waiter-scheduled n256) finish.
+
+### What this tells us
+
+1. **`random_gauss` sits at or slightly *below* the intercept-only floor
+   everywhere.** It dips below because the fitted LogReg learns small
+   spurious weights on the noise that can't help at eval (fresh noise) but
+   *can* perturb the per-sample argmax away from the majority class. So
+   it's a legitimate "no information" sanity check — slightly worse than a
+   pure intercept predictor would be.
+
+2. **`seq_onehot` adds real signal on C and A, but ≈ at floor on T.**
+   Composition captures alpha/beta/mixed structure cleanly (n128 C: +21pts
+   over floor) but cannot disambiguate 116 fine-grained topologies that
+   share AA-composition statistics.
+
+3. **`untrained_proteina` adds modest signal on C, *substantial* signal on
+   T.** On n128 T the best layer sits +9pts above floor with non-trivial
+   macro-F1 (0.092 vs 0.007 for random_gauss). The SE(3) architecture
+   prior alone is doing real structural work at the hardest level,
+   independent of training.
+
+### `cath_macro_f1` is the discriminating column
+
+Accuracy can be inflated by always predicting the majority class. The ratio
+`macro_f1 / accuracy` reveals whether a baseline is genuinely classifying
+multiple classes or just collapsing to the prior:
+
+| | T-accuracy | T-macro_f1 | ratio |
+|---|---|---|---|
+| n128 random_gauss | 0.057 | 0.007 | 0.12 — degenerate to majority |
+| n128 untrained_proteina (best L) | 0.217 | 0.092 | 0.42 — classifying many |
+| n128 seq_onehot | 0.126 | 0.004 | 0.03 — degenerate |
+| n128 baseline_128_bs80_step200k (best L, real ckpt) | 0.449 | 0.269 | 0.60 — strong multi-class |
+
+For interpretation in paper figures, watch macro-F1 to confirm "this row
+is actually doing classification" rather than "this row is matching the
+intercept floor."
+
+### How to reproduce the floor measurement
+
+```bash
+.venv/bin/python -c "
+import json, lmdb, pickle
+from collections import Counter
+# Load eval manifest keys + train manifest keys, open val.lmdb / train.lmdb
+# at /rds/.../pdb_train/lmdb/ with subdir=False (single-file LMDB), pickle.loads
+# each entry, extract g.cath_code, mask to C/A/T levels, tally Counter, intersect
+# with cath_min_per_class=3 train-vocab filter, divide.
+"
+```
+
+Full one-shot script lives in this session's transcript; collapse into
+`scripts/paper/profile_cath_priors.py` if it gets re-run more than once.
+
+### Caveats and follow-ups
+
+- The intercept floor is the **train**-majority class evaluated on **eval**
+  prevalence. If train/eval distributions diverge, this differs from
+  "eval-majority class" prevalence. In practice for our manifests they
+  match (same majority class, same prevalence to 3 decimals) because train
+  and eval are i.i.d. samples from val.lmdb post-filtering.
+- A `majority_only` analytic baseline that ignores features and always
+  predicts the train majority would pin the floor exactly (no LogReg
+  fitting noise). Adding it is ~15 lines in `lib/sources.py` and would
+  let us *measure* the random_gauss dip-below-floor effect explicitly.
+- A `length_only` baseline (1-dim `log(L)` feature) would quantify the
+  length-leak in `random_gauss` directly. Composition-vs-length isolation.

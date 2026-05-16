@@ -27,6 +27,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from evaluation.proteina.lib.plot_labels import pretty_run_label
+
 
 HERE = Path(__file__).resolve().parent
 REPR_ROOT = HERE.parents[1]
@@ -125,12 +127,19 @@ def _panel(ax: plt.Axes, df: pd.DataFrame, n_bucket: str, metric: str) -> None:
             continue
 
         color = FAMILY_COLORS.get(family, "gray")
+        step_vals = sub["step"].dropna().unique()
+        step = int(step_vals[0]) if len(step_vals) else None
         ax.plot(
             sub["layer"],
             sub[metric],
             "-o",
             color=color,
-            label=FAMILY_LABEL.get(family, family),
+            label=pretty_run_label(
+                run,
+                step=step,
+                display=FAMILY_LABEL.get(family, family),
+                allow_missing_step=True,
+            ),
             linewidth=1.8,
             markersize=4,
         )
@@ -139,12 +148,16 @@ def _panel(ax: plt.Axes, df: pd.DataFrame, n_bucket: str, metric: str) -> None:
     # Pretrained DFS-60M reference (12 transformer layers, different depth)
     ref = df[df["run"] == PRETRAINED_RUN].sort_values("layer")
     if not ref.empty:
+        ref_step_vals = ref["step"].dropna().unique()
+        ref_step = int(ref_step_vals[0]) if len(ref_step_vals) else 1_300_000
         ax.plot(
             ref["layer"],
             ref[metric],
             "--^",
             color=FAMILY_COLORS[PRETRAINED_RUN],
-            label=FAMILY_LABEL[PRETRAINED_RUN],
+            label=pretty_run_label(
+                PRETRAINED_RUN, step=ref_step, display=FAMILY_LABEL[PRETRAINED_RUN]
+            ),
             linewidth=1.5,
             markersize=4,
             alpha=0.85,
