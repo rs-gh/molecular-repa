@@ -865,6 +865,14 @@ def main(args=None):
     needs_gpu = not (args.skip_generation and not run_fid and not run_designability)
     if needs_gpu:
         assert torch.cuda.is_available(), "CUDA not available (use --skip_generation --skip_fid --designability_subset_per_length 0 for CPU-only mode)"
+        # TF32 matmuls for any residual fp32 ops left outside the bf16 autocast
+        # context (e.g. normalisation, ODE-integrator arithmetic in
+        # full_simulation). bf16 autocast handles the heavy matmuls but a few
+        # ops fall back to fp32; enabling TF32 makes those cheap. Training sets
+        # this in train_repa.py:153; mirror it here.
+        torch.set_float32_matmul_precision("medium")
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
 
     _setup_logger()
     # Defensive: clear any GlobalHydra state from a previous main() that may
@@ -1021,7 +1029,7 @@ def _main_body(
 
             # Generate using model.generate() directly (avoids Lightning trainer overhead)
             sampling_args = cfg.sampling_caflow
-            with torch.no_grad(), autocast_ctx():
+            with torch.inference_mode(), autocast_ctx():
                 x = model.generate(
                     nsamples=ns,
                     n=nres,
