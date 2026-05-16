@@ -40,6 +40,7 @@ export PROTEINMPNN_WEIGHTS_DIR="/rds/user/sr2173/hpc-work/proteina/ProteinMPNN"
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export WANDB_INIT_TIMEOUT=120
+export WANDB__SERVICE_WAIT=300
 
 REPA_CONFIG="${1:?config name required}"
 REPA_SUBDIR="${2:?config subdir required}"

@@ -29,6 +29,7 @@
 #SBATCH --output=/rds/user/sr2173/hpc-work/proteina/logs/repa-2gpu-%j.out
 #SBATCH --error=/rds/user/sr2173/hpc-work/proteina/logs/repa-2gpu-%j.err
 #SBATCH -p ampere
+#SBATCH --nice=1  # Tiebreaker so AFDB jobs queue ahead of PDB; -1 vs other users is negligible
 
 . /etc/profile.d/modules.sh
 module purge
@@ -46,6 +47,7 @@ export PROTEINMPNN_WEIGHTS_DIR="/rds/user/sr2173/hpc-work/proteina/ProteinMPNN"
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export WANDB_INIT_TIMEOUT=120
+export WANDB__SERVICE_WAIT=300
 
 REPA_CONFIG="${1:?config name required}"
 REPA_SUBDIR="${2:?config subdir required}"

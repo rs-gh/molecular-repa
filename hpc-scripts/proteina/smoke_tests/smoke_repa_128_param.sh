@@ -118,6 +118,7 @@ sys.argv = [
     '--show_prog_bar',
     '--no_compile',
     '--nolog',
+    '--single',
 ]
 runpy.run_path('train_repa.py', run_name='__main__')
 "

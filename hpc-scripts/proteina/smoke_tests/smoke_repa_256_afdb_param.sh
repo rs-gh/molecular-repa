@@ -119,6 +119,7 @@ argv = [
     '--max_steps', '200',
     '--show_prog_bar',
     '--nolog',
+    '--single',
 ]
 if '${COMPILE_MODE}' == 'eager':
     argv.append('--no_compile')

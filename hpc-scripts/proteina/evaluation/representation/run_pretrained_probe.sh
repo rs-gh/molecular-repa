@@ -20,6 +20,8 @@
 #!       --config pretrained_probe --runs baseline --steps 400000    # smoke
 #!   sbatch hpc-scripts/proteina/evaluation/representation/run_pretrained_probe.sh \
 #!       --config pretrained_probe --n_train 5000                    # override
+#!   sbatch hpc-scripts/proteina/evaluation/representation/run_pretrained_probe.sh \
+#!       --config paper_n256_cath_afdb --lmdb_dataset afdb            # AFDB CATH
 #!
 #! Phase 1 (sample-size learning curve) uses a separate entrypoint:
 #!   sbatch ... run_pretrained_probe.sh --sample_size
@@ -38,15 +40,34 @@
 set -e
 
 #! Parse mode flags and drop them from the args passed to Python.
+#! --lmdb_dataset <pdb|afdb>: which source LMDB to stage to /dev/shm. Default
+#! pdb (the historical paper sweep target). Use afdb for the paper_n256_cath_afdb
+#! profile and its companions — probe trains AND evals against AFDB-Swissprot
+#! CATH labels rather than PDB-structural ones.
 SAMPLE_SIZE=0
+LMDB_DATASET="pdb"
 PY_ARGS=()
+skip_next=0
 for arg in "$@"; do
+    if [ "$skip_next" -eq 1 ]; then
+        LMDB_DATASET="$arg"
+        skip_next=0
+        continue
+    fi
     case "$arg" in
         --sample_size) SAMPLE_SIZE=1 ;;
+        --lmdb_dataset) skip_next=1 ;;
         *)             PY_ARGS+=("$arg") ;;
     esac
 done
 EXTRA_ARGS="${PY_ARGS[@]}"
+
+case "$LMDB_DATASET" in
+    pdb)  LUSTRE_LMDB="/rds/user/sr2173/hpc-work/proteina/data/pdb_train/lmdb" ;;
+    afdb) LUSTRE_LMDB="/rds/user/sr2173/hpc-work/proteina/data/afdb_swissprot/lmdb" ;;
+    *)    echo "ERROR: --lmdb_dataset must be 'pdb' or 'afdb' (got: $LMDB_DATASET)"; exit 2 ;;
+esac
+echo "=== LMDB dataset: $LMDB_DATASET (source: $LUSTRE_LMDB) ==="
 
 . /etc/profile.d/modules.sh
 module purge
@@ -59,11 +80,10 @@ REPO_DIR="/home/sr2173/git/molecular-repa"
 conda deactivate 2>/dev/null || true
 source "$REPO_DIR/.venv/bin/activate"
 
-#! Stage both LMDBs to local tmpfs. /dev/shm is 126 GB on ampere nodes -
-#! train.lmdb is ~51 GB so it fits with headroom. Lustre mmap thrashes on
-#! compute nodes (feedback_lmdb_local_nvme.md).
-LUSTRE_LMDB="/rds/user/sr2173/hpc-work/proteina/data/pdb_train/lmdb"
-LOCAL_LMDB="/dev/shm/proteina_pretrained_lmdb_${SLURM_JOB_ID:-local}"
+#! Stage both LMDBs to local tmpfs. /dev/shm is 126 GB on ampere nodes —
+#! PDB train.lmdb is ~51 GB, AFDB train.lmdb is ~38 GB; both fit with headroom.
+#! Lustre mmap thrashes on compute nodes (feedback_lmdb_local_nvme.md).
+LOCAL_LMDB="/dev/shm/proteina_pretrained_lmdb_${LMDB_DATASET}_${SLURM_JOB_ID:-local}"
 mkdir -p "$LOCAL_LMDB"
 
 echo "=== Copying LMDB sidecars + files to $LOCAL_LMDB ==="
