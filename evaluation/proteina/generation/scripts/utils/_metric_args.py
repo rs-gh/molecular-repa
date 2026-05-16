@@ -35,10 +35,17 @@ EVALUATE_DEFAULTS: Dict[str, Any] = {
     "centroid_path": None,
     "centroid_filter_designable": True,  # paper App. F protocol
     "foldseek_target_dbs": None,
-    "foldseek_alignment_type": 2,
+    # alignment_type=1 (pure TMalign) is required because proteina samples are
+    # CA-only PDBs — type 2 (3Di+TMalign refine) needs full backbone (N,CA,C)
+    # to compute 3Di tokens and silently emits an empty m8 on CA-only input,
+    # making every query look fully novel (max_tm=0, rate=1.0).
+    "foldseek_alignment_type": 1,
     "foldseek_max_seqs": 1000,
     "foldseek_sensitivity": 9.5,
-    "foldseek_threads": 0,
+    # foldseek's --threads requires a positive int; 0 is rejected by the
+    # binary even though "auto-pick" is implied. 16 matches our typical
+    # sl2-cpu / intr task allocation.
+    "foldseek_threads": 16,
     "foldseek_filter_designable": True,
     "skip_fid": False,
     "fast_inference": True,

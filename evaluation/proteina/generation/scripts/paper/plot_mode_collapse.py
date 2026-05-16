@@ -15,20 +15,11 @@ Three-panel figure per n:
               (solid), sorted by Δ%H = %H_des − %H_overall (most-biased on
               top). One bar pair = one run.
 
-Mode-collapse signatures:
-  - Helix-bundle attractor (Type-1):
-      high Des, low fS_T, designable subset is helix-collapsed.
-      → top-left: bottom-right dots, dark color (high SS JSD des).
-      → top-right: well above diagonal.
-      → bottom: large red %H bar in 'des' lane.
-  - Topologically rich but undesignable (Type-2):
-      high fS_T, ~0 Des, tiny clusters; designable subset (when nonempty)
-      may still be helix-biased because the filter selects easy structures.
-  - Honest model:
-      designable SS distribution close to natural; small Δ%H; on or near
-      the y=x line.
+Reads the per-n TSVs produced by ``jsonl_to_tsv.py`` (schema: ``profile``,
+``run``, ``step``, ``ckpt_path``, ``_res_*`` metric columns).
 
-Reads the per-n TSVs produced by md_tables_to_tsv.py.
+Legend lineage rule: every annotation/bar label is rendered via
+``pretty_run_label`` so the checkpoint step is visible on the figure.
 """
 
 from __future__ import annotations
@@ -42,25 +33,23 @@ from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
 from matplotlib.patches import Patch
 
+from evaluation.proteina.lib.plot_labels import pretty_run_label
+
 ROOT = Path(__file__).resolve().parents[2]  # .../proteina/generation
 FIG_ROOT = ROOT / "figures/paper"
 
-# Approx natural PDB SS distribution at chain length 50-275 (DSSP on
-# CATH-curated PDB). Used as a reference cross-hair on scatter and a vertical
-# line on the bar chart. Replace with an empirical measurement on your own
-# reference dataset for a tighter sanity check.
 NATURAL_PDB_H = 0.35
 
-DES_KEYS = ("Des ↑", "Designability (↑)")
-FS_T_KEYS = ("fS T ↑", "Fold Score (Topo) (↑)")
-CLUSTERS_KEYS = ("Div clust total ↑", "Diversity (clusters) (↑)")
-DES_N_KEYS = ("des N",)
-SS_H_KEYS = ("SS %H ↑", "SS %H (↑)")
-SS_E_KEYS = ("SS %E ↑", "SS %E (↑)")
-SS_JSD_PDB_KEYS = ("SS JSD (PDB) ↓", "SS JSD (PDB) (↓)")
-SS_H_DES_KEYS = ("SS %H des. ↑", "SS %H des. (↑)")
-SS_E_DES_KEYS = ("SS %E des. ↑", "SS %E des. (↑)")
-SS_JSD_DES_PDB_KEYS = ("SS JSD des. (PDB) ↓", "SS JSD des. (PDB) (↓)")
+DES_COL = "_res_designability_rate"
+FS_T_COL = "_res_fS_T"
+CLUSTERS_COL = "_res_diversity_clusters_total"
+DES_N_COL = "_res_designability_n"
+SS_H_COL = "_res_ss_frac_H"
+SS_E_COL = "_res_ss_frac_E"
+SS_JSD_PDB_COL = "_res_ss_jsd_pdb"
+SS_H_DES_COL = "_res_ss_frac_H_designable"
+SS_E_DES_COL = "_res_ss_frac_E_designable"
+SS_JSD_DES_PDB_COL = "_res_ss_jsd_pdb_designable"
 
 TARGETS = {
     128: (
@@ -74,25 +63,9 @@ TARGETS = {
 }
 
 
-def parse_tsv(path: Path):
+def parse_tsv(path: Path) -> list[dict]:
     with path.open() as fh:
-        reader = list(csv.reader(fh, delimiter="\t"))
-    header = reader[0]
-    ncol = len(header)
-    rows: list[dict] = []
-    block = "(unlabelled)"
-    for r in reader[1:]:
-        if not r or all(c == "" for c in r):
-            continue
-        nonempty = [c for c in r if c != ""]
-        if len(nonempty) == 1:
-            block = nonempty[0]
-            continue
-        r = (r + [""] * ncol)[:ncol]
-        d = dict(zip(header, r))
-        d["_block"] = block
-        rows.append(d)
-    return rows
+        return list(csv.DictReader(fh, delimiter="\t"))
 
 
 def to_float(x):
@@ -101,45 +74,39 @@ def to_float(x):
     x = x.strip()
     if x in ("", "—", "-"):
         return None
-    x = x.replace(",", "")
-    for ch in "†‡*⚠✅🔁🚫":
-        x = x.replace(ch, "")
     try:
         return float(x)
     except ValueError:
         return None
 
 
-def first_present(row: dict, keys: tuple[str, ...]) -> str:
-    for k in keys:
-        if k in row:
-            return row[k]
-    return ""
-
-
-def short_block(label: str) -> str:
-    return label.split("—")[0].strip() or label[:40]
-
-
-def collect(rows):
+def collect(rows: list[dict]) -> list[dict]:
     pts = []
     for row in rows:
-        des = to_float(first_present(row, DES_KEYS))
-        fs_t = to_float(first_present(row, FS_T_KEYS))
+        des = to_float(row.get(DES_COL, ""))
+        fs_t = to_float(row.get(FS_T_COL, ""))
         if des is None or fs_t is None:
             continue
-        clusters = to_float(first_present(row, CLUSTERS_KEYS))
-        des_n = to_float(first_present(row, DES_N_KEYS))
-        ss_h = to_float(first_present(row, SS_H_KEYS))
-        ss_e = to_float(first_present(row, SS_E_KEYS))
-        ss_jsd = to_float(first_present(row, SS_JSD_PDB_KEYS))
-        ss_h_des = to_float(first_present(row, SS_H_DES_KEYS))
-        ss_e_des = to_float(first_present(row, SS_E_DES_KEYS))
-        ss_jsd_des = to_float(first_present(row, SS_JSD_DES_PDB_KEYS))
+        step_str = row.get("step", "").strip()
+        try:
+            step = int(float(step_str)) if step_str else None
+        except ValueError:
+            step = None
+        clusters = to_float(row.get(CLUSTERS_COL, ""))
+        des_n = to_float(row.get(DES_N_COL, ""))
+        ss_h = to_float(row.get(SS_H_COL, ""))
+        ss_e = to_float(row.get(SS_E_COL, ""))
+        ss_jsd = to_float(row.get(SS_JSD_PDB_COL, ""))
+        ss_h_des = to_float(row.get(SS_H_DES_COL, ""))
+        ss_e_des = to_float(row.get(SS_E_DES_COL, ""))
+        ss_jsd_des = to_float(row.get(SS_JSD_DES_PDB_COL, ""))
         pts.append(
             {
-                "label": row["Run"],
-                "block": short_block(row["_block"]),
+                "run": row["run"],
+                "step": step,
+                "label": pretty_run_label(
+                    row["run"], step=step, allow_missing_step=True
+                ),
                 "des_pct": des * 100.0,
                 "fs_t": fs_t,
                 "clusters": clusters,
@@ -175,11 +142,8 @@ def plot_one(n: int, tsv: Path, out: Path):
 
     # ---- Top-left: Des vs fS_T, color = SS JSD des ----
     jsd_des_vals = [p["ss_jsd_des"] for p in pts if p["ss_jsd_des"] is not None]
-    if jsd_des_vals:
-        norm1 = Normalize(vmin=0.0, vmax=max(jsd_des_vals))
-    else:
-        norm1 = None
-    cmap1 = plt.get_cmap("viridis_r")  # bright/yellow = low JSD = good
+    norm1 = Normalize(vmin=0.0, vmax=max(jsd_des_vals)) if jsd_des_vals else None
+    cmap1 = plt.get_cmap("viridis_r")
 
     for p in pts:
         size = size_from_clusters(p["clusters"])
@@ -266,7 +230,7 @@ def plot_one(n: int, tsv: Path, out: Path):
         color="darkgreen",
     )
 
-    # ---- Top-right: %H_overall vs %H_des, with y=x diagonal ----
+    # ---- Top-right: %H_overall vs %H_des ----
     drawn = 0
     for p in pts:
         if p["ss_h"] is None or p["ss_h_des"] is None:
@@ -330,7 +294,7 @@ def plot_one(n: int, tsv: Path, out: Path):
     ax_sc2.set_xlim(0, 1)
     ax_sc2.set_ylim(0, 1)
 
-    # ---- Bottom: paired SS bars (overall faded, designable solid) ----
+    # ---- Bottom: paired SS bars ----
     bp = [p for p in pts if p["ss_h"] is not None and p["ss_e"] is not None]
 
     def delta_h_key(p):
@@ -459,14 +423,15 @@ def plot_one(n: int, tsv: Path, out: Path):
         "Sorted ascending by Δ%H = des − overall  (top = most helix-biased by filter)"
     )
     ax_bar.axvline(NATURAL_PDB_H, color="black", linestyle="--", linewidth=0.9)
-    ax_bar.text(
-        NATURAL_PDB_H + 0.005,
-        max(y_des) + bar_height,
-        f"natural %H ≈ {NATURAL_PDB_H:.2f}",
-        fontsize=8,
-        va="top",
-        color="black",
-    )
+    if y_des:
+        ax_bar.text(
+            NATURAL_PDB_H + 0.005,
+            max(y_des) + bar_height,
+            f"natural %H ≈ {NATURAL_PDB_H:.2f}",
+            fontsize=8,
+            va="top",
+            color="black",
+        )
 
     legend_elements = [
         Patch(facecolor="#d62728", edgecolor="black", label="α-helix"),

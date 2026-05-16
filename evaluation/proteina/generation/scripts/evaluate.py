@@ -1,13 +1,42 @@
-"""Checkpointed FID evaluation for proteina models.
+"""Generate samples from a Proteina checkpoint and score them with a suite of metrics.
 
-Replaces inference.py's monolithic predict-then-evaluate flow with:
-1. Generate proteins one batch at a time, saving PDBs + atom37 tensors to disk
-2. Skip batches whose output files already exist (resume support)
-3. Compute metrics only after all generation is done
-4. Compute designability, diversity, and novelty metrics
+Codeflow (one invocation = one checkpoint):
 
-Usage (called by hpc-scripts/proteina/evaluation/generation/eval_fid.sh):
-    python evaluate.py --config_name inference_fid_60m_baseline
+1. Parse args + resolve defaults; decide which metrics to run from
+   ``--metrics`` / ``--skip_fid`` / ``--designability_subset_per_length`` /
+   ``--cath_subset``.
+2. Compose the hydra config under ``src/proteina/configs/experiment_config``
+   and apply CLI overrides (``ckpt_name``, ``ckpt_path``, ``seed``).
+3. Set up persistent output dirs under
+   ``./eval_output/<config_slug>[_<suffix>]/`` — ``samples_fid/`` (PDBs) and
+   ``tensors/`` (atom37 batch tensors used for resume + per-length grouping).
+4. Generation phase (skipped with ``--skip_generation``):
+     - Load the Proteina checkpoint, optionally ``torch.compile`` + bf16
+       autocast under ``--fast_inference``.
+     - Build a (length, nsamples) schedule from ``cfg.nres_lens`` /
+       ``cfg.min_len/max_len/step_len`` and ``cfg.generation_batch_size``.
+     - For each batch: if its tensor sidecar already exists, skip (resume);
+       otherwise call ``model.generate`` + ``samples_to_atom37``, save the
+       atom37 tensor and write per-sample PDBs.
+5. Metric phase (collated into one CSV row, ``_res_*`` columns):
+     - FID / fJSD / fS via ``compute_fid_metrics`` (one GearNet factory per
+       reference distribution in ``cfg.metric_factory``).
+     - Designability via ``compute_designability_metrics`` (per-length
+       subsample when ``--designability_lengths`` set, else global cap);
+       returns the designable-PDB set used to filter downstream metrics
+       and writes ``designability_index.csv``.
+     - SS fractions + JSD vs PDB/AFDB references via ``compute_ss_metrics``.
+     - Diversity (cluster count + mean pairwise TM) via
+       ``compute_diversity_metrics``, restricted to the designable subset
+       per paper App. F.
+     - Novelty against a centroid ``.pt`` file via
+       ``compute_novelty_metrics``, and/or against Foldseek DBs via
+       ``compute_novelty_foldseek``.
+     - CATH-head distribution metrics via ``compute_cath_metrics``.
+6. Write the row to ``results_<config_slug>[_<suffix>]_fid.csv``. Partial
+   reruns (subset of metrics) merge ``_res_*`` columns into an existing CSV
+   instead of overwriting. Return the row dict so ``run_sweep.py`` can
+   consume it directly without re-reading the CSV.
 """
 
 import argparse

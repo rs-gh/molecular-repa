@@ -14,6 +14,8 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
+from evaluation.proteina.lib.plot_labels import pretty_run_label
+
 ROOT = Path(__file__).resolve().parents[2]
 FIG_ROOT = ROOT / "figures/paper"
 TSV = FIG_ROOT / "ss_jsd_2d_comparison.tsv"
@@ -51,7 +53,10 @@ def plot_one(rows, n_label: str, out: Path):
                 continue
             x_vals.append(x)
             y_vals.append(y)
-            labels.append(p["run"])
+            # Step is encoded in the run id suffix (e.g. _step200k); pretty_run_label
+            # parses it. For _steplast / _epNN runs we fall back to the raw id —
+            # ambiguity already flagged in lineage audit.
+            labels.append(pretty_run_label(p["run"], allow_missing_step=True))
 
         ax.scatter(
             x_vals,

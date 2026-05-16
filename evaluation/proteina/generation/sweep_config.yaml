@@ -316,3 +316,47 @@ n128_paper_wd:
   <<: *paper_n128_defaults
   runs: "repa_l4_128_bs80_step200k,repa_l4_128_bs80_wd1e2_step200k"
   output_dir: results/paper/n128_paper_wd
+
+# ─────────────────────────────────────────────────────────────────────────── #
+# 2026-05-14 follow-up sweeps — same paper protocols, but with foldseek
+# novelty INLINE (metrics override adds `novelty_foldseek`) instead of the
+# post-hoc backfill we used for the earlier rows. Separate output_dirs so
+# the new sweep_results.jsonl files merge cleanly into the master tsv via
+# jsonl_to_tsv.py without disturbing existing rows. Foldseek DB paths +
+# protocol flags are inherited from `defaults` (lines 79-84 above).
+# ─────────────────────────────────────────────────────────────────────────── #
+
+# n=128 lambda extension: new λ=0.25 and λ=1.0 legs at step=200K, joining
+# the existing λ=0.5 / λ=2.0 rows in n128_paper_lambda.
+n128_paper_lambda_ext:
+  <<: *paper_n128_defaults
+  runs: "repa_l4_128_bs80_lambda025_step200k,repa_l4_128_bs80_lambda1_step200k"
+  output_dir: results/paper/n128_paper_lambda_ext
+  metrics: "fid,designability,diversity,novelty_foldseek"
+
+# n=128 AFDB-Swissprot block: brand-new ablation group (mirrors n256 AFDB).
+# 5 tasks: baseline + l4 + mpnn-l4 @ step=200K; baseline + mpnn-l4 also at
+# step=400K. All eff_bs=80 via per-GPU 40 × 2-GPU DDP.
+n128_paper_afdb:
+  <<: *paper_n128_defaults
+  runs: "baseline_afdb_128_bs80_step200k,baseline_afdb_128_bs80_step400k,repa_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step400k"
+  output_dir: results/paper/n128_paper_afdb
+  metrics: "fid,designability,diversity,novelty_foldseek"
+
+# n=256 AFDB extension (HIGHEST PRIORITY per user 2026-05-14):
+# step-curve at 400/700/900K for baseline; 400/700K for repa_l4 and
+# mpnn-l9; 400K for mpnn-l4. 8 tasks.
+n256_paper_afdb_ext:
+  <<: *paper_defaults
+  runs: "baseline_afdb_256_step400k,baseline_afdb_256_step700k,baseline_afdb_256_step900k,repa_l4_afdb_256_step400k,repa_l4_afdb_256_step700k,repa_mpnn_l4_afdb_256_step400k,repa_mpnn_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step700k"
+  output_dir: results/paper/n256_paper_afdb_ext
+  metrics: "fid,designability,diversity,novelty_foldseek"
+
+# n=256 lambda extension: λ=1.0 at step=200K and λ=2.0 at step=300K, paired
+# with the existing _step300k / _step200k anchors so each λ leg now has 2
+# step points.
+n256_paper_lambda_ext:
+  <<: *paper_defaults
+  runs: "repa_l4_256_per_residue_lambda1_step200k,repa_l4_256_per_residue_lambda2_step300k"
+  output_dir: results/paper/n256_paper_lambda_ext
+  metrics: "fid,designability,diversity,novelty_foldseek"

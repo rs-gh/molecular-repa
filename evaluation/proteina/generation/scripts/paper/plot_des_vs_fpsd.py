@@ -1,18 +1,14 @@
 """Scatter Designability(%) vs FPSD (PDB / AFDB) for n=128 and n=256.
 
-Reads the per-n TSVs produced by md_tables_to_tsv.py, overlays paper Table 1
-baselines (FrameDiff, FoldFlow*, FrameFlow, ESM3, Chroma, RFDiffusion, Proteus,
-Genie2, Proteína M_FS / M_21M / M_LoRA at the listed γ values), and writes a
-two-panel figure per n.
+Reads the per-n TSVs produced by ``jsonl_to_tsv.py`` (schema: ``profile``,
+``run``, ``step``, ``ckpt_path``, ``_res_*`` metric columns), overlays paper
+Table 1 baselines, and writes a two-panel figure per n.
 
-Notes:
-- Our TSV labels the FPSD column "PDB FID" / "AFDB FID"; the paper calls it
-  FPSD. The reference-range row in the n=256 table (129.9–933.9 PDB,
-  159.9–855.4 AFDB) matches FrameFlow's FPSD column from Table 1, confirming
-  these are the same number under different names.
-- Our `Des` is a fraction in [0, 1]; the paper reports %. We multiply ours
-  by 100 so paper baselines and our runs share the y-axis.
-- Designability column is `Des ↑` in n=256 and `Designability (↑)` in n=128.
+Legend lineage rule: every point label includes the checkpoint step (e.g.
+``baseline_128_bs24 @ 200k``) so the figure is traceable to a specific
+checkpoint. Step is read from the TSV's ``step`` column, not parsed from the
+run id (the ``_steplast`` suffix is ambiguous across suites — see
+``plot_labels.pretty_run_label``).
 """
 
 from __future__ import annotations
@@ -21,6 +17,8 @@ import csv
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+
+from evaluation.proteina.lib.plot_labels import pretty_run_label
 
 ROOT = Path(__file__).resolve().parents[2]  # .../proteina/generation
 FIG_ROOT = ROOT / "figures/paper"
@@ -47,86 +45,71 @@ PAPER_BASELINES = [
     ("Proteína M_LoRA γ=0.5", 96.6, 274.1, 336.0),
 ]
 
-# Map of n → (tsv_path, output_path, designability_column).
+# Map of n → (tsv_path, output_path).
 TARGETS = {
     128: (
         FIG_ROOT / "n128_paper/n128_paper_tables.tsv",
         FIG_ROOT / "n128_paper/n128_des_vs_fpsd.png",
-        "Designability (↑)",
     ),
     256: (
         FIG_ROOT / "n256_paper/n256_paper_tables.tsv",
         FIG_ROOT / "n256_paper/n256_des_vs_fpsd.png",
-        "Des ↑",
     ),
 }
 
-# Column names for FPSD differ slightly across the two TSVs.
-PDB_FID_KEYS = ("PDB FID ↓", "PDB FID (↓)")
-AFDB_FID_KEYS = ("AFDB FID ↓", "AFDB FID (↓)")
+DES_COL = "_res_designability_rate"
+PDB_FID_COL = "_res_PDB_FID"
+AFDB_FID_COL = "_res_AFDB_FID"
 
 
-def parse_tsv(path: Path):
+def parse_tsv(path: Path) -> list[dict]:
     with path.open() as fh:
-        reader = list(csv.reader(fh, delimiter="\t"))
-    header = reader[0]
-    ncol = len(header)
-    rows: list[dict] = []
-    block = "(unlabelled)"
-    for r in reader[1:]:
-        if not r or all(c == "" for c in r):
-            continue
-        nonempty = [c for c in r if c != ""]
-        if len(nonempty) == 1:
-            block = nonempty[0]
-            continue
-        r = (r + [""] * ncol)[:ncol]
-        d = dict(zip(header, r))
-        d["_block"] = block
-        rows.append(d)
-    return rows
+        return list(csv.DictReader(fh, delimiter="\t"))
 
 
 def to_float(x: str):
+    if x is None:
+        return None
     x = x.strip()
     if x in ("", "—", "-"):
         return None
-    x = x.replace(",", "")
-    for ch in "†‡*":
-        x = x.replace(ch, "")
     try:
         return float(x)
     except ValueError:
         return None
 
 
-def first_present(row: dict, keys: tuple[str, ...]) -> str:
-    for k in keys:
-        if k in row:
-            return row[k]
-    return ""
+def short_profile(label: str) -> str:
+    """``"n128_paper_bs_lr" -> "bs_lr"`` for shorter legend entries."""
+    for prefix in ("n128_paper_", "n256_paper_", "n512_paper_"):
+        if label.startswith(prefix):
+            return label[len(prefix) :]
+    return label
 
 
-def short_block(label: str) -> str:
-    """Trim block titles to the leading phrase for legend readability."""
-    head = label.split("—")[0].strip()
-    return head or label[:40]
-
-
-def collect(rows, des_col: str):
+def collect(rows: list[dict]) -> list[dict]:
     pts = []
     for row in rows:
-        des_frac = to_float(row.get(des_col, ""))
+        des_frac = to_float(row.get(DES_COL, ""))
         if des_frac is None:
             continue
-        pdb = to_float(first_present(row, PDB_FID_KEYS))
-        afdb = to_float(first_present(row, AFDB_FID_KEYS))
+        pdb = to_float(row.get(PDB_FID_COL, ""))
+        afdb = to_float(row.get(AFDB_FID_COL, ""))
         if pdb is None and afdb is None:
             continue
+        step_str = row.get("step", "").strip()
+        try:
+            step = int(float(step_str)) if step_str else None
+        except ValueError:
+            step = None
         pts.append(
             {
-                "label": row["Run"],
-                "block": short_block(row["_block"]),
+                "run": row["run"],
+                "step": step,
+                "label": pretty_run_label(
+                    row["run"], step=step, allow_missing_step=True
+                ),
+                "block": short_profile(row.get("profile", "(unlabelled)")),
                 "des_pct": des_frac * 100.0,
                 "pdb": pdb,
                 "afdb": afdb,
@@ -135,9 +118,9 @@ def collect(rows, des_col: str):
     return pts
 
 
-def plot_one(n: int, tsv: Path, out: Path, des_col: str):
+def plot_one(n: int, tsv: Path, out: Path):
     rows = parse_tsv(tsv)
-    pts = collect(rows, des_col)
+    pts = collect(rows)
     if not pts:
         raise RuntimeError(f"no usable rows in {tsv}")
 
@@ -151,7 +134,6 @@ def plot_one(n: int, tsv: Path, out: Path, des_col: str):
         (axes[1], "afdb", 3, "FPSD vs AFDB ↓"),
     ]
     for ax, key, paper_idx, title in panels:
-        # Our runs.
         for b in blocks:
             xs = [p[key] for p in pts if p["block"] == b and p[key] is not None]
             ys = [p["des_pct"] for p in pts if p["block"] == b and p[key] is not None]
@@ -181,7 +163,6 @@ def plot_one(n: int, tsv: Path, out: Path, des_col: str):
                 zorder=4,
             )
 
-        # Paper Table 1 baselines (n=256 settings; gray ×, labelled).
         bx = [b[paper_idx] for b in PAPER_BASELINES]
         by = [b[1] for b in PAPER_BASELINES]
         ax.scatter(
@@ -225,8 +206,8 @@ def plot_one(n: int, tsv: Path, out: Path, des_col: str):
 
 
 def main():
-    for n, (tsv, out, des_col) in TARGETS.items():
-        plot_one(n, tsv, out, des_col)
+    for n, (tsv, out) in TARGETS.items():
+        plot_one(n, tsv, out)
 
 
 if __name__ == "__main__":

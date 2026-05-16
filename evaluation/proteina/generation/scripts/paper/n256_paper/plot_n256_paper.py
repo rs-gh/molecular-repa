@@ -194,6 +194,18 @@ METRICS = {
     "_res_diversity_pairwise_tm_mean": ("Diversity (pairwise TM)", True),
     "_res_diversity_clusters_total": ("Diversity (clusters total)", False),
     "_res_novelty_rate": ("Novelty (centroid)", False),
+    # Foldseek novelty (backfilled 2026-05-13). max_tm_mean is the continuous
+    # score (lower = more novel); rate is the paper-style fraction <0.5.
+    "_res_novelty_foldseek_pdb_max_tm_mean": ("Foldseek max-TM (PDB)", True),
+    "_res_novelty_foldseek_pdb_rate": ("Foldseek novelty rate (PDB)", False),
+    "_res_novelty_foldseek_afdb_swissprot_max_tm_mean": (
+        "Foldseek max-TM (AFDB)",
+        True,
+    ),
+    "_res_novelty_foldseek_afdb_swissprot_rate": (
+        "Foldseek novelty rate (AFDB)",
+        False,
+    ),
     # SS composition + JSD vs reference. Display %H, %E (fractions sum to 1
     # with %C); JSD vs PDB and AFDB, all-samples and designable-only.
     "_res_ss_frac_H": ("SS %H", False),
@@ -214,6 +226,10 @@ N_NOTES = {
     "_res_diversity_pairwise_tm_mean": "designable",
     "_res_diversity_clusters_total": "designable",
     "_res_novelty_rate": "designable",
+    "_res_novelty_foldseek_pdb_max_tm_mean": "designable",
+    "_res_novelty_foldseek_pdb_rate": "designable",
+    "_res_novelty_foldseek_afdb_swissprot_max_tm_mean": "designable",
+    "_res_novelty_foldseek_afdb_swissprot_rate": "designable",
     "_res_ss_frac_H": "N=1125",
     "_res_ss_frac_E": "N=1125",
     "_res_ss_jsd_pdb": "N=1125",

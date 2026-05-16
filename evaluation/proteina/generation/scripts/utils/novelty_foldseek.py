@@ -7,11 +7,12 @@ max-TM. See docs/research/proteina_eval_protocol.md (TODO) for the full
 protocol comparison vs the centroid pipeline.
 
 Default knobs:
-  --alignment-type 2        3Di+AA Gotoh + TM-align refinement on top hits.
-                            Reported alntmscore is on the canonical TM-align
-                            scale, but Foldseek skips TM-align on the long
-                            tail of clearly-low survivors (~3-5 ms/pair vs
-                            ~20 ms/pair for --alignment-type 1).
+  --alignment-type 1        Pure TM-align on every prefilter survivor. This
+                            is the only setting that works on proteina's
+                            CA-only PDBs: type 2 (3Di+TMalign refine) needs
+                            full backbone (N,CA,C) to compute 3Di tokens and
+                            silently produces an empty m8 on CA-only input,
+                            making every query look fully novel.
   --max-seqs 1000           Top-1000 prefilter survivors per query. For our
                             single-best-match question this is comfortably
                             above the saturation point on high-TM hits.
@@ -118,13 +119,16 @@ def _run_easy_search(
         str(max_seqs),
         "-s",
         str(sensitivity),
-        "--threads",
-        str(threads),
         "--format-output",
         "query,target,alntmscore,lddt",
         "-v",
         "2",  # warnings + errors only
     ]
+    # Foldseek rejects --threads 0 (the sweep_config sentinel for "auto"); only
+    # pass --threads when caller supplied a positive value. Foldseek's own
+    # default is to use all available cores when the flag is omitted.
+    if threads > 0:
+        cmd += ["--threads", str(threads)]
     logger.info(f"foldseek cmd: {' '.join(cmd)}")
     res = subprocess.run(cmd, check=False, text=True)
     if res.returncode != 0:
@@ -168,10 +172,10 @@ def compute_novelty_foldseek(
     *,
     db_label: str,
     foldseek_bin: Optional[str] = None,
-    alignment_type: int = 2,
+    alignment_type: int = 1,
     max_seqs: int = 1000,
     sensitivity: float = 9.5,
-    threads: int = 0,
+    threads: int = 16,
     tm_threshold: float = 0.5,
     keep_artifacts: bool = False,
     work_root: Optional[str] = None,
@@ -187,14 +191,16 @@ def compute_novelty_foldseek(
             .dbtype, .lookup, etc.) must be present in the same directory.
         db_label: Short tag (e.g. "pdb", "afdb_swissprot") that suffixes the
             emitted column names: `_res_novelty_foldseek_<label>_*`.
-        alignment_type: Foldseek --alignment-type. 2 = 3Di+TMalign refine
-            (default, paper-comparable score scale, fast). 1 = pure TM-align
-            on every survivor (paper-exact). 0 = 3Di Gotoh only (fastest,
-            approximate alntmscore).
+        alignment_type: Foldseek --alignment-type. 1 = pure TM-align on every
+            prefilter survivor — REQUIRED for CA-only PDBs (proteina samples).
+            2 (3Di+TMalign refine) is faster on full-backbone inputs but
+            returns zero hits on CA-only PDBs because 3Di tokens can't be
+            built. 0 (3Di Gotoh only) is similarly broken on CA-only.
         max_seqs: Foldseek prefilter cap. 1000 = default; 10000 for safety
             on borderline-novel queries.
         sensitivity: Foldseek -s.
-        threads: Foldseek --threads. 0 (default) lets Foldseek pick all cores.
+        threads: Foldseek --threads. Must be a positive int — the binary
+            rejects 0, even though "auto-pick" is documented elsewhere.
         tm_threshold: Boundary used to compute the rate column. 0.5 by default.
         keep_artifacts: If True, leave the m8 + tmp dir on disk under
             `work_root` for debugging. Default cleans up.

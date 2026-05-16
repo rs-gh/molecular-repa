@@ -1,0 +1,192 @@
+{
+  "summary": {
+    "cached": 34,
+    "usable": 25,
+    "pruned": 0,
+    "no_dir": 0
+  },
+  "filled": {
+    "foldseek_run": 25,
+    "csv_sync": 0,
+    "sibling_copy": 0
+  },
+  "still_pruned_no_sibling": [],
+  "errors": [],
+  "per_task_wall": [
+    {
+      "profile": "n128_paper_bs_lr",
+      "run": "baseline_128_bs24_step200k",
+      "step": 200000,
+      "n_designable": 10,
+      "wall_s": 8.3
+    },
+    {
+      "profile": "n128_paper_bs_lr",
+      "run": "repa_l4_128_bs80_step200k",
+      "step": 200000,
+      "n_designable": 165,
+      "wall_s": 98.1
+    },
+    {
+      "profile": "n128_paper_bs_lr",
+      "run": "baseline_128_bs24_step400k",
+      "step": 400000,
+      "n_designable": 52,
+      "wall_s": 27.2
+    },
+    {
+      "profile": "n128_paper_encoder",
+      "run": "repa_l4_128_bs80_step200k",
+      "step": 200000,
+      "n_designable": 165,
+      "wall_s": 93.7
+    },
+    {
+      "profile": "n128_paper_encoder",
+      "run": "repa_l4_128_pw_torsional_step100k",
+      "step": 100000,
+      "n_designable": 84,
+      "wall_s": 53.5
+    },
+    {
+      "profile": "n128_paper_layer",
+      "run": "repa_l9_128_bs80_steplast",
+      "step": 63000,
+      "n_designable": 11,
+      "wall_s": 8.2
+    },
+    {
+      "profile": "n128_paper_layer",
+      "run": "repa_l4_128_bs80_step200k",
+      "step": 200000,
+      "n_designable": 165,
+      "wall_s": 93.2
+    },
+    {
+      "profile": "n256_paper_afdb",
+      "run": "repa_l4_afdb_256_ep20",
+      "step": 200000,
+      "n_designable": 171,
+      "wall_s": 225.1
+    },
+    {
+      "profile": "n256_paper_afdb",
+      "run": "baseline_afdb_256_ep20",
+      "step": 200000,
+      "n_designable": 164,
+      "wall_s": 244.5
+    },
+    {
+      "profile": "n256_paper_averaging",
+      "run": "repa_l0_256_ep26",
+      "step": 400000,
+      "n_designable": 21,
+      "wall_s": 25.8
+    },
+    {
+      "profile": "n256_paper_averaging",
+      "run": "repa_l4_256_ep22",
+      "step": 400000,
+      "n_designable": 80,
+      "wall_s": 34.3
+    },
+    {
+      "profile": "n256_paper_averaging",
+      "run": "repa_l9_256_ep25",
+      "step": 400000,
+      "n_designable": 121,
+      "wall_s": 75.1
+    },
+    {
+      "profile": "n256_paper_esm",
+      "run": "baseline_256_ep21",
+      "step": 400000,
+      "n_designable": 31,
+      "wall_s": 31.5
+    },
+    {
+      "profile": "n256_paper_esm",
+      "run": "repa_l4_256_ep22",
+      "step": 400000,
+      "n_designable": 80,
+      "wall_s": 32.6
+    },
+    {
+      "profile": "n256_paper_l4_step300k",
+      "run": "repa_l4_256_ep22",
+      "step": 400000,
+      "n_designable": 80,
+      "wall_s": 32.0
+    },
+    {
+      "profile": "n256_paper_lambda",
+      "run": "repa_l4_256_ep22",
+      "step": 400000,
+      "n_designable": 80,
+      "wall_s": 32.5
+    },
+    {
+      "profile": "n256_paper_mpnn",
+      "run": "baseline_256_ep21",
+      "step": 400000,
+      "n_designable": 31,
+      "wall_s": 30.6
+    },
+    {
+      "profile": "n256_paper_mpnn",
+      "run": "repa_l4_256_ep22",
+      "step": 400000,
+      "n_designable": 80,
+      "wall_s": 32.5
+    },
+    {
+      "profile": "n256_paper_pdb",
+      "run": "repa_l0_256_ep26",
+      "step": 400000,
+      "n_designable": 21,
+      "wall_s": 30.8
+    },
+    {
+      "profile": "n256_paper_pdb",
+      "run": "repa_l9_256_ep25",
+      "step": 400000,
+      "n_designable": 121,
+      "wall_s": 89.8
+    },
+    {
+      "profile": "n256_paper_pdb",
+      "run": "repa_l4_256_ep22",
+      "step": 400000,
+      "n_designable": 80,
+      "wall_s": 41.0
+    },
+    {
+      "profile": "n256_paper_pdb",
+      "run": "baseline_256_ep21",
+      "step": 400000,
+      "n_designable": 31,
+      "wall_s": 38.2
+    },
+    {
+      "profile": "n256_paper_random",
+      "run": "repa_l9_256_ep17",
+      "step": 300000,
+      "n_designable": 10,
+      "wall_s": 22.4
+    },
+    {
+      "profile": "n256_paper_random",
+      "run": "repa_l4_256_random_ep17",
+      "step": 200000,
+      "n_designable": 40,
+      "wall_s": 29.2
+    },
+    {
+      "profile": "n256_paper_random",
+      "run": "baseline_256_ep21",
+      "step": 400000,
+      "n_designable": 31,
+      "wall_s": 38.8
+    }
+  ]
+}

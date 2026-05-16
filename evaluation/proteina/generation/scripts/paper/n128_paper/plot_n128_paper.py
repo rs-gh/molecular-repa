@@ -127,12 +127,12 @@ ABLATIONS = {
 # (display label, lower_is_better). N-note is shared across all paper-protocol
 # panels — generation pool is 500, designability pool is 200, diversity/novelty
 # run on the designable subset.
-# TODO: re-add novelty once we settle on a meaningful metric. Centroid novelty
-# (max-TM vs ~4400 training centroids, threshold 0.5) saturates near 1.0 for any
-# decent generator and doesn't separate runs; foldseek novelty was never
-# persisting (silent exception in compute_novelty_foldseek). Decide between:
-# (a) keep centroid but drop the threshold and report max_tm distribution,
-# (b) fix the foldseek path, or (c) adopt a different similarity reference.
+#
+# Foldseek novelty: backfilled across all 59 paper rows on 2026-05-13 after
+# fixing the silent-failure bug in compute_novelty_foldseek (default
+# --alignment-type 2 returned empty m8 on CA-only PDBs; switched to type 1).
+# Both max_tm_mean (continuous, threshold-free) and rate <0.5 (paper-style)
+# are emitted so plots can show either.
 METRICS = {
     "_res_PDB_FID": ("PDB FID", True),
     "_res_PDB_fJSD_C": ("PDB fJSD C", True),
@@ -156,6 +156,19 @@ METRICS = {
     # composition); JSDs are lower-better. Catches all-α-helix mode collapse.
     "_res_ss_frac_H": ("SS %H", False),
     "_res_ss_frac_E": ("SS %E", False),
+    # Foldseek novelty vs PDB and AFDB-SwissProt DBs. max_tm_mean is the
+    # continuous score (lower = more novel); rate is the paper-style
+    # fraction with max-TM < 0.5.
+    "_res_novelty_foldseek_pdb_max_tm_mean": ("Foldseek max-TM (PDB)", True),
+    "_res_novelty_foldseek_pdb_rate": ("Foldseek novelty rate (PDB)", False),
+    "_res_novelty_foldseek_afdb_swissprot_max_tm_mean": (
+        "Foldseek max-TM (AFDB)",
+        True,
+    ),
+    "_res_novelty_foldseek_afdb_swissprot_rate": (
+        "Foldseek novelty rate (AFDB)",
+        False,
+    ),
     "_res_ss_jsd_pdb": ("SS JSD (PDB)", True),
     "_res_ss_jsd_afdb": ("SS JSD (AFDB)", True),
     "_res_ss_jsd_pdb_designable": ("SS JSD des. (PDB)", True),
@@ -176,6 +189,10 @@ N_NOTES = {
     "_res_scRMSD_mean": "N=200",
     "_res_diversity_clusters_total": "designable",
     "_res_diversity_pairwise_tm_mean": "designable",
+    "_res_novelty_foldseek_pdb_max_tm_mean": "designable",
+    "_res_novelty_foldseek_pdb_rate": "designable",
+    "_res_novelty_foldseek_afdb_swissprot_max_tm_mean": "designable",
+    "_res_novelty_foldseek_afdb_swissprot_rate": "designable",
     "_res_ss_frac_H": "N=500",
     "_res_ss_frac_E": "N=500",
     "_res_ss_jsd_pdb": "N=500",

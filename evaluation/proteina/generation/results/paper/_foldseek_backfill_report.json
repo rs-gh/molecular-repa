@@ -1,0 +1,122 @@
+{
+  "summary": {
+    "cached": 34,
+    "usable": 0,
+    "pruned": 25,
+    "no_dir": 0
+  },
+  "filled": {
+    "foldseek_run": 0,
+    "csv_sync": 34,
+    "sibling_copy": 4
+  },
+  "still_pruned_no_sibling": [
+    {
+      "profile": "n128_paper_bs_lr",
+      "run": "baseline_128_bs24_step200k",
+      "step": 200000
+    },
+    {
+      "profile": "n128_paper_encoder",
+      "run": "repa_l4_128_pw_torsional_step100k",
+      "step": 100000
+    },
+    {
+      "profile": "n128_paper_layer",
+      "run": "repa_l9_128_bs80_steplast",
+      "step": 63000
+    },
+    {
+      "profile": "n256_paper_afdb",
+      "run": "repa_l4_afdb_256_ep20",
+      "step": 200000
+    },
+    {
+      "profile": "n256_paper_afdb",
+      "run": "baseline_afdb_256_ep20",
+      "step": 200000
+    },
+    {
+      "profile": "n256_paper_averaging",
+      "run": "repa_l0_256_ep26",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_averaging",
+      "run": "repa_l4_256_ep22",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_averaging",
+      "run": "repa_l9_256_ep25",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_esm",
+      "run": "baseline_256_ep21",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_esm",
+      "run": "repa_l4_256_ep22",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_l4_step300k",
+      "run": "repa_l4_256_ep22",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_lambda",
+      "run": "repa_l4_256_ep22",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_mpnn",
+      "run": "baseline_256_ep21",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_mpnn",
+      "run": "repa_l4_256_ep22",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_pdb",
+      "run": "repa_l0_256_ep26",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_pdb",
+      "run": "repa_l9_256_ep25",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_pdb",
+      "run": "repa_l4_256_ep22",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_pdb",
+      "run": "baseline_256_ep21",
+      "step": 400000
+    },
+    {
+      "profile": "n256_paper_random",
+      "run": "repa_l9_256_ep17",
+      "step": 300000
+    },
+    {
+      "profile": "n256_paper_random",
+      "run": "repa_l4_256_random_ep17",
+      "step": 200000
+    },
+    {
+      "profile": "n256_paper_random",
+      "run": "baseline_256_ep21",
+      "step": 400000
+    }
+  ],
+  "errors": [],
+  "per_task_wall": []
+}
