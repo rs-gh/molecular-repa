@@ -212,23 +212,23 @@ def _draw_baselines(ax, baselines: pd.DataFrame, level: str) -> None:
 
 
 def _results_dir(sweep: str) -> Path:
-    # Both sweeps now follow the post-refactor convention:
-    # ``results/paper/<sweep_short>_paper_cath/cath/``. Probe-from-cache jobs
-    # write to ``output_dir/cath/`` (probe_kind subdir), so the JSONL/CSV live
-    # one level deeper than the YAML ``output_dir``.
+    # Post-flatten (2026-05-16): no more probe_kind subdir for single-probe
+    # sweeps. JSONL/CSV live directly under ``results/paper/<sweep_short>_paper_cath/``.
     if sweep == "paper_n128_cath":
-        return RESULTS_ROOT / "paper" / "n128_paper_cath" / "cath"
+        return RESULTS_ROOT / "paper" / "n128_paper_cath"
     if sweep == "paper_n256_cath":
-        return RESULTS_ROOT / "paper" / "n256_paper_cath" / "cath"
+        return RESULTS_ROOT / "paper" / "n256_paper_cath"
     raise ValueError(f"unknown sweep {sweep!r}")
 
 
 def _fig_dir(sweep: str) -> Path:
-    # Figures always go to figures/paper/<sweep_short>_paper_cath/cath/, regardless
-    # of where the results JSONL currently lives. The trailing /cath/ matches the
-    # lowest-level probe-type split (contact/ vs cath/) used throughout figures/.
+    # Post-reorg (2026-05-16): probe-kind dirs live under set-level parents.
+    # figures/paper/<set>/cath/ holds the 2-row PDB+AFDB plots (from
+    # plot_cath_pdb_vs_afdb.py) and the per-run CSV tables this script emits.
+    # PNG generation in this script is disabled (single-source plots are the
+    # top row of the 2-row plots).
     short = sweep.replace("paper_", "").replace("_cath", "")  # n128 / n256
-    return FIG_ROOT / f"{short}_paper_cath" / "cath"
+    return FIG_ROOT / short / "cath"
 
 
 def load_results(sweep: str) -> pd.DataFrame:
@@ -368,7 +368,6 @@ def main() -> None:
     args = ap.parse_args()
 
     df = load_results(args.sweep)
-    blocks = BLOCKS_N128 if args.sweep == "paper_n128_cath" else BLOCKS_N256
     fig_dir = _fig_dir(args.sweep)
     fig_dir.mkdir(parents=True, exist_ok=True)
 
@@ -398,28 +397,12 @@ def main() -> None:
         ].sort_values(["run", "cath_level", "layer"]).to_csv(base_csv, index=False)
         print(f"  wrote {base_csv.name}")
 
-    # Headline layer curves over all runs.
-    plot_layer_curves(
-        df,
-        fig_dir / "fig_layer_curves.png",
-        title=f"{args.sweep}: per-layer CATH accuracy",
-    )
-
-    # Per-block figures (skip blocks where >half the runs are missing).
-    for block_name, run_labels in blocks.items():
-        present = sum(1 for run, _ in run_labels if (df["run"] == run).any())
-        if present < max(2, len(run_labels) // 2):
-            print(
-                f"  skip block {block_name} ({present}/{len(run_labels)} runs present)"
-            )
-            continue
-        plot_block(
-            df,
-            block_name,
-            run_labels,
-            fig_dir / f"fig_block_{block_name}.png",
-            sweep_title=args.sweep,
-        )
+    # PNG generation disabled 2026-05-16: single-source cath plots removed
+    # because their data is the top row of plot_cath_pdb_vs_afdb.py. This
+    # script now only emits the CSV tables above. Re-enable by uncommenting
+    # the plot_layer_curves and plot_block calls (and set fig_dir back to
+    # a dedicated single-source location to avoid clashing with the
+    # comparison plots).
 
 
 if __name__ == "__main__":

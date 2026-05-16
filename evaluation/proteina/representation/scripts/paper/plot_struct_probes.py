@@ -149,11 +149,19 @@ BLOCKS_N128: Dict[str, List[Tuple[str, str]]] = {
         ("baseline_128_bs80_step200k", "PDB baseline 200k"),
         ("baseline_afdb_128_bs80_step200k", "AFDB baseline 200k"),
         ("baseline_afdb_128_bs80_step400k", "AFDB baseline 400k"),
+        ("baseline_afdb_128_bs80_step600k", "AFDB baseline 600k"),
+        ("baseline_afdb_128_bs80_step800k", "AFDB baseline 800k"),
+        ("baseline_afdb_128_bs80_step1000k", "AFDB baseline 1000k"),
+        ("baseline_afdb_128_bs80_step1200k", "AFDB baseline 1200k"),
         ("repa_l4_128_bs80_step200k", "PDB REPA L4 200k"),
         ("repa_l4_afdb_128_bs80_step200k", "AFDB REPA L4 200k"),
+        ("repa_l4_afdb_128_bs80_step600k", "AFDB REPA L4 600k"),
         ("repa_mpnn_l4_128_bs80_step200k", "PDB REPA MPNN L4 200k"),
         ("repa_mpnn_l4_afdb_128_bs80_step200k", "AFDB REPA MPNN L4 200k"),
         ("repa_mpnn_l4_afdb_128_bs80_step400k", "AFDB REPA MPNN L4 400k"),
+        ("repa_mpnn_l4_afdb_128_bs80_step600k", "AFDB REPA MPNN L4 600k"),
+        ("repa_mpnn_l4_afdb_128_bs80_step800k", "AFDB REPA MPNN L4 800k"),
+        ("repa_mpnn_l4_afdb_128_bs80_step1000k", "AFDB REPA MPNN L4 1000k"),
     ],
     "pretrained_vs_ours": [
         ("baseline_128_bs80_step200k", "ours (10L) baseline"),
@@ -257,8 +265,22 @@ def _results_dir(sweep: str) -> Path:
 
 
 def _fig_dir(sweep: str) -> Path:
+    # Post-reorg (2026-05-16): each probe kind lives in its own subdir under
+    # the set-level parent. Probe-prefixed filenames lose the prefix.
+    #   figures/paper/<set>/{if,dihedral,distance}/
+    # Inverse-folding plots written by this script are the single-source PDB
+    # rows; the 2-row PDB+AFDB comparison versions live in the same dir,
+    # written by plot_if_pdb_vs_afdb.py. Returned path is the SET-level
+    # parent; callers route per-probe files into the right subdir.
     short = sweep.replace("paper_", "").replace("_struct", "")  # n128 / n256
-    return FIG_ROOT / f"{short}_paper_struct"
+    return FIG_ROOT / short
+
+
+_PROBE_SUBDIR = {
+    "inverse_folding": "if",
+    "dihedral": "dihedral",
+    "distance": "distance",
+}
 
 
 def load_results(sweep: str) -> pd.DataFrame:
@@ -557,14 +579,15 @@ def main() -> None:
 
     df = load_results(args.sweep)
     blocks = BLOCKS_N128 if args.sweep == "paper_n128_struct" else BLOCKS_N256
-    fig_dir = _fig_dir(args.sweep)
-    fig_dir.mkdir(parents=True, exist_ok=True)
+    set_dir = _fig_dir(args.sweep)
+    for sub in _PROBE_SUBDIR.values():
+        (set_dir / sub).mkdir(parents=True, exist_ok=True)
 
     n_rows = len(df)
     n_ckpts = df[["run", "step"]].drop_duplicates().shape[0]
     print(f"[{args.sweep}] {n_rows} rows from {n_ckpts} unique (run, step)")
 
-    # Baseline summary CSV.
+    # Baseline summary CSV — split by probe_kind, one per subdir.
     _, baseline_df = _split_baselines(df)
     if not baseline_df.empty:
         cols = ["run", "layer", "probe_kind"] + [
@@ -582,24 +605,38 @@ def main() -> None:
             )
             if c in baseline_df.columns
         ]
-        baseline_df[cols].sort_values(["probe_kind", "run", "layer"]).to_csv(
-            fig_dir / "table_baselines.csv",
-            index=False,
-        )
-        print("  wrote table_baselines.csv")
+        for probe, sub in _PROBE_SUBDIR.items():
+            sub_df = baseline_df[baseline_df["probe_kind"] == probe]
+            if sub_df.empty:
+                continue
+            sub_df[cols].sort_values(["run", "layer"]).to_csv(
+                set_dir / sub / "table_baselines.csv",
+                index=False,
+            )
+            print(f"  wrote {sub}/table_baselines.csv")
 
     for probe in PROBE_SPEC:
+        sub = _PROBE_SUBDIR[probe]
+        probe_dir = set_dir / sub
+
         # Peak table.
         peak = peak_table_one_probe(df, probe)
         if not peak.empty:
-            peak.to_csv(fig_dir / f"table_peak_{probe}.csv")
-            print(f"  wrote table_peak_{probe}.csv")
+            peak.to_csv(probe_dir / "table_peak.csv")
+            print(f"  wrote {sub}/table_peak.csv")
+
+        # Skip PNG generation for inverse_folding here — the 2-row PDB+AFDB
+        # version (plot_if_pdb_vs_afdb.py) writes to the same subdir; its top
+        # row is this single-source plot. Dihedral/distance have no AFDB
+        # counterpart, so their PNGs still get written here.
+        if probe == "inverse_folding":
+            continue
 
         # Headline layer curves over all runs.
         plot_layer_curves_one_probe(
             df,
             probe,
-            fig_dir / f"fig_layer_curves_{probe}.png",
+            probe_dir / "fig_layer_curves.png",
             title=f"{args.sweep}: {probe}",
         )
 
@@ -620,14 +657,14 @@ def main() -> None:
                 probe,
                 block_name,
                 run_labels,
-                fig_dir / f"fig_block_{probe}_{block_name}.png",
+                probe_dir / f"fig_block_{block_name}.png",
                 sweep_title=args.sweep,
             )
 
     # Distance-only: per-bucket panel for short/medium/long sequence separation.
     plot_distance_buckets(
         df,
-        fig_dir / "fig_distance_buckets.png",
+        set_dir / "distance" / "fig_distance_buckets.png",
         title=f"{args.sweep}: distance MAE by sequence-separation bucket",
     )
 

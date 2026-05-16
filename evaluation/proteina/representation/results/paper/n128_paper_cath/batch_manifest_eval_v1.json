@@ -4,7 +4,7 @@
   "n_proteins": 1237,
   "max_size": 128,
   "require_cath": false,
-  "lmdb_path": "/dev/shm/proteina_pretrained_lmdb_29346113/val.lmdb",
+  "lmdb_path": "/dev/shm/proteina_extract_lmdb_29166930/val.lmdb",
   "keys": [
     "100",
     "1000",

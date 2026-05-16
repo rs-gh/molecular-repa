@@ -147,6 +147,19 @@ _paper_cath_defaults: &paper_cath_defaults
   # n256: baseline_256_ep21).
   baselines: "untrained_proteina,random_gauss,seq_onehot,trained_noise"
 
+paper_n128_cath_afdb:
+  # AFDB-Swissprot CATH probe at n=128. Companion to paper_n128_cath.
+  # AFDB val ≤128 residues: 1586 total (827 labelled with Gene3D cath_code).
+  # Launch with `--lmdb_dataset afdb` so the SLURM wrapper points the LMDB
+  # source at /rds/.../afdb_swissprot/lmdb.
+  <<: *paper_cath_defaults
+  max_size: 128
+  n_eval: 1586
+  output_dir: results/paper/n128_paper_cath_afdb
+  baseline_trained_noise_run: baseline_afdb_128_bs80_step200k
+  # Same 30-run list as paper_n128_cath.
+  runs: "baseline_128_bs80_step200k,repa_l0_128_bs80_steplast,repa_l0_128_bs80_step200k,repa_l4_128_bs80_step200k,repa_l9_128_bs80_steplast,repa_l9_128_bs80_step200k,repa_l4_128_random_step200k,repa_l4_128_pw_structure_step100k,repa_l4_128_pw_torsional_step100k,repa_mpnn_l4_128_bs80_step200k,repa_esm_l4_128_step200k,baseline_128_bs24_step200k,baseline_128_bs24_step400k,baseline_128_bs80_lr3x_step200k,repa_l4_128_bs24_step200k,repa_l4_128_bs24_step400k,repa_l4_128_bs80_lr3x_steplast,repa_l4_128_bs80_lambda025_step200k,repa_l4_128_bs80_lambda1_step200k,repa_l4_128_bs80_lambda2_steplast,repa_l4_128_bs80_wd1e2_step200k,repa_l0_128_per_residue_step400k,repa_l4_128_per_residue_step400k,repa_l9_128_per_residue_step400k,baseline_afdb_128_bs80_step200k,baseline_afdb_128_bs80_step400k,repa_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step400k,baseline_afdb_128_bs80_step600k,baseline_afdb_128_bs80_step800k,baseline_afdb_128_bs80_step1000k,baseline_afdb_128_bs80_step1200k,repa_l4_afdb_128_bs80_step600k,repa_mpnn_l4_afdb_128_bs80_step600k,repa_mpnn_l4_afdb_128_bs80_step800k,repa_mpnn_l4_afdb_128_bs80_step1000k,pretrained_dfs_60m"
+
 paper_n128_cath:
   <<: *paper_cath_defaults
   max_size: 128
@@ -155,13 +168,13 @@ paper_n128_cath:
   # still gives ~30 samples/class for CATH-A and ~10/class for CATH-T —
   # adequate for stable macro-F1 on the surviving vocab.
   n_eval: 1237
-  output_dir: results/paper/n128_paper_cath/cath
+  output_dir: results/paper/n128_paper_cath
   baseline_trained_noise_run: baseline_128_bs80_step200k
   # Updated 2026-05-14: added 5 AFDB-Swissprot runs (2-GPU bs80) and the
   # λ=0.25, λ=1.0 lambda extension legs at step=200K, mirroring the
   # generation paper sweeps under results/paper/n128_paper_{afdb,lambda_ext}.
   # Total 30 runs.
-  runs: "baseline_128_bs80_step200k,repa_l0_128_bs80_steplast,repa_l0_128_bs80_step200k,repa_l4_128_bs80_step200k,repa_l9_128_bs80_steplast,repa_l9_128_bs80_step200k,repa_l4_128_random_step200k,repa_l4_128_pw_structure_step100k,repa_l4_128_pw_torsional_step100k,repa_mpnn_l4_128_bs80_step200k,repa_esm_l4_128_step200k,baseline_128_bs24_step200k,baseline_128_bs24_step400k,baseline_128_bs80_lr3x_step200k,repa_l4_128_bs24_step200k,repa_l4_128_bs24_step400k,repa_l4_128_bs80_lr3x_steplast,repa_l4_128_bs80_lambda025_step200k,repa_l4_128_bs80_lambda1_step200k,repa_l4_128_bs80_lambda2_steplast,repa_l4_128_bs80_wd1e2_step200k,repa_l0_128_per_residue_step400k,repa_l4_128_per_residue_step400k,repa_l9_128_per_residue_step400k,baseline_afdb_128_bs80_step200k,baseline_afdb_128_bs80_step400k,repa_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step400k,pretrained_dfs_60m"
+  runs: "baseline_128_bs80_step200k,repa_l0_128_bs80_steplast,repa_l0_128_bs80_step200k,repa_l4_128_bs80_step200k,repa_l9_128_bs80_steplast,repa_l9_128_bs80_step200k,repa_l4_128_random_step200k,repa_l4_128_pw_structure_step100k,repa_l4_128_pw_torsional_step100k,repa_mpnn_l4_128_bs80_step200k,repa_esm_l4_128_step200k,baseline_128_bs24_step200k,baseline_128_bs24_step400k,baseline_128_bs80_lr3x_step200k,repa_l4_128_bs24_step200k,repa_l4_128_bs24_step400k,repa_l4_128_bs80_lr3x_steplast,repa_l4_128_bs80_lambda025_step200k,repa_l4_128_bs80_lambda1_step200k,repa_l4_128_bs80_lambda2_steplast,repa_l4_128_bs80_wd1e2_step200k,repa_l0_128_per_residue_step400k,repa_l4_128_per_residue_step400k,repa_l9_128_per_residue_step400k,baseline_afdb_128_bs80_step200k,baseline_afdb_128_bs80_step400k,repa_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step400k,baseline_afdb_128_bs80_step600k,baseline_afdb_128_bs80_step800k,baseline_afdb_128_bs80_step1000k,baseline_afdb_128_bs80_step1200k,repa_l4_afdb_128_bs80_step600k,repa_mpnn_l4_afdb_128_bs80_step600k,repa_mpnn_l4_afdb_128_bs80_step800k,repa_mpnn_l4_afdb_128_bs80_step1000k,pretrained_dfs_60m"
 
 paper_n256_cath_afdb:
   # Same protocol as paper_n256_cath but probe trains AND evals against
@@ -179,7 +192,7 @@ paper_n256_cath_afdb:
   <<: *paper_cath_defaults
   max_size: 256
   n_eval: 4521
-  output_dir: results/paper/n256_paper_cath_afdb/cath
+  output_dir: results/paper/n256_paper_cath_afdb
   baseline_trained_noise_run: baseline_afdb_256_ep20
   # Same 28-run list as paper_n256_cath — the comparison axis is the probe
   # dataset, not the trunk set.
@@ -192,7 +205,7 @@ paper_n256_cath:
   # (the longer ones get filtered to avoid truncation distorting the rep).
   # Plenty for paper-quality T-level macro-F1.
   n_eval: 3190
-  output_dir: results/paper/n256_paper_cath/cath
+  output_dir: results/paper/n256_paper_cath
   baseline_trained_noise_run: baseline_256_ep21
   # Updated 2026-05-14: added the longer-training AFDB-256 series (baseline
   # at 400K/700K/900K, repa_l4 at 400K/700K, repa_mpnn_{l4,l9} at 400K, plus
@@ -243,6 +256,19 @@ _paper_struct_defaults: &paper_struct_defaults
   # dihedral, seqsep_pair→distance).
   baselines: "untrained_proteina,random_gauss,seq_onehot,trained_noise,knn_dist,local_frame,seqsep_pair"
 
+paper_n128_struct_afdb:
+  # AFDB-Swissprot inverse-folding probe at n=128. IF-only (residue_type is
+  # the real UniProt sequence — the only AFDB target with unambiguously
+  # real values). Companion to paper_n256_struct_afdb at smaller max_size.
+  <<: *paper_struct_defaults
+  max_size: 128
+  n_eval: 1586
+  probes: "inverse_folding"
+  baselines: "untrained_proteina,random_gauss,seq_onehot,trained_noise,knn_dist"
+  output_dir: results/paper/n128_paper_struct_afdb
+  baseline_trained_noise_run: baseline_afdb_128_bs80_step200k
+  runs: "baseline_128_bs80_step200k,repa_l0_128_bs80_steplast,repa_l0_128_bs80_step200k,repa_l4_128_bs80_step200k,repa_l9_128_bs80_steplast,repa_l9_128_bs80_step200k,repa_l4_128_random_step200k,repa_l4_128_pw_structure_step100k,repa_l4_128_pw_torsional_step100k,repa_mpnn_l4_128_bs80_step200k,repa_esm_l4_128_step200k,baseline_128_bs24_step200k,baseline_128_bs24_step400k,baseline_128_bs80_lr3x_step200k,repa_l4_128_bs24_step200k,repa_l4_128_bs24_step400k,repa_l4_128_bs80_lr3x_steplast,repa_l4_128_bs80_lambda025_step200k,repa_l4_128_bs80_lambda1_step200k,repa_l4_128_bs80_lambda2_steplast,repa_l4_128_bs80_wd1e2_step200k,repa_l0_128_per_residue_step400k,repa_l4_128_per_residue_step400k,repa_l9_128_per_residue_step400k,baseline_afdb_128_bs80_step200k,baseline_afdb_128_bs80_step400k,repa_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step400k,baseline_afdb_128_bs80_step600k,baseline_afdb_128_bs80_step800k,baseline_afdb_128_bs80_step1000k,baseline_afdb_128_bs80_step1200k,repa_l4_afdb_128_bs80_step600k,repa_mpnn_l4_afdb_128_bs80_step600k,repa_mpnn_l4_afdb_128_bs80_step800k,repa_mpnn_l4_afdb_128_bs80_step1000k,pretrained_dfs_60m"
+
 paper_n128_struct:
   <<: *paper_struct_defaults
   max_size: 128
@@ -254,7 +280,29 @@ paper_n128_struct:
   # λ=0.25, λ=1.0 lambda extension legs at step=200K, mirroring the
   # generation paper sweeps under results/paper/n128_paper_{afdb,lambda_ext}.
   # Total 30 runs.
-  runs: "baseline_128_bs80_step200k,repa_l0_128_bs80_steplast,repa_l0_128_bs80_step200k,repa_l4_128_bs80_step200k,repa_l9_128_bs80_steplast,repa_l9_128_bs80_step200k,repa_l4_128_random_step200k,repa_l4_128_pw_structure_step100k,repa_l4_128_pw_torsional_step100k,repa_mpnn_l4_128_bs80_step200k,repa_esm_l4_128_step200k,baseline_128_bs24_step200k,baseline_128_bs24_step400k,baseline_128_bs80_lr3x_step200k,repa_l4_128_bs24_step200k,repa_l4_128_bs24_step400k,repa_l4_128_bs80_lr3x_steplast,repa_l4_128_bs80_lambda025_step200k,repa_l4_128_bs80_lambda1_step200k,repa_l4_128_bs80_lambda2_steplast,repa_l4_128_bs80_wd1e2_step200k,repa_l0_128_per_residue_step400k,repa_l4_128_per_residue_step400k,repa_l9_128_per_residue_step400k,baseline_afdb_128_bs80_step200k,baseline_afdb_128_bs80_step400k,repa_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step400k,pretrained_dfs_60m"
+  runs: "baseline_128_bs80_step200k,repa_l0_128_bs80_steplast,repa_l0_128_bs80_step200k,repa_l4_128_bs80_step200k,repa_l9_128_bs80_steplast,repa_l9_128_bs80_step200k,repa_l4_128_random_step200k,repa_l4_128_pw_structure_step100k,repa_l4_128_pw_torsional_step100k,repa_mpnn_l4_128_bs80_step200k,repa_esm_l4_128_step200k,baseline_128_bs24_step200k,baseline_128_bs24_step400k,baseline_128_bs80_lr3x_step200k,repa_l4_128_bs24_step200k,repa_l4_128_bs24_step400k,repa_l4_128_bs80_lr3x_steplast,repa_l4_128_bs80_lambda025_step200k,repa_l4_128_bs80_lambda1_step200k,repa_l4_128_bs80_lambda2_steplast,repa_l4_128_bs80_wd1e2_step200k,repa_l0_128_per_residue_step400k,repa_l4_128_per_residue_step400k,repa_l9_128_per_residue_step400k,baseline_afdb_128_bs80_step200k,baseline_afdb_128_bs80_step400k,repa_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step400k,baseline_afdb_128_bs80_step600k,baseline_afdb_128_bs80_step800k,baseline_afdb_128_bs80_step1000k,baseline_afdb_128_bs80_step1200k,repa_l4_afdb_128_bs80_step600k,repa_mpnn_l4_afdb_128_bs80_step600k,repa_mpnn_l4_afdb_128_bs80_step800k,repa_mpnn_l4_afdb_128_bs80_step1000k,pretrained_dfs_60m"
+
+paper_n256_struct_afdb:
+  # AFDB-Swissprot inverse-folding probe (only). dihedral + distance probes
+  # are dropped because AFDB coordinates are AF2 predictions; the
+  # residue_type field — the only target the IF probe needs — is the real
+  # UniProt sequence. CATH on AFDB lives in paper_n256_cath_afdb; this
+  # profile is its real-data structural-probe companion.
+  #
+  # Same 28-trunk list as paper_n256_struct so the IF rows are directly
+  # comparable across probe datasets. n_eval=4521 lets every L<=256 AFDB
+  # val protein contribute (~280k residues at ~62-residue mean length).
+  # Baselines pruned to those relevant for inverse folding only —
+  # knn_dist is the trivial-geometric IF baseline gated in
+  # pretrain_probe_sweep.py via BASELINE_PROBE_KINDS.
+  <<: *paper_struct_defaults
+  max_size: 256
+  n_eval: 4521
+  probes: "inverse_folding"
+  baselines: "untrained_proteina,random_gauss,seq_onehot,trained_noise,knn_dist"
+  output_dir: results/paper/n256_paper_struct_afdb
+  baseline_trained_noise_run: baseline_afdb_256_ep20
+  runs: "baseline_256_ep21,repa_l0_256_ep26,repa_l4_256_ep22,repa_l9_256_ep25,repa_l9_256_ep17,repa_l4_256_ep13_step300k,repa_l4_256_ep31_step500k,repa_l4_256_random_ep17,baseline_afdb_256_ep20,repa_l4_afdb_256_ep20,baseline_afdb_256_step400k,baseline_afdb_256_step700k,baseline_afdb_256_step900k,repa_l4_afdb_256_step400k,repa_l4_afdb_256_step700k,repa_mpnn_l4_afdb_256_step400k,repa_mpnn_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step700k,repa_l0_256_per_sample_steplast,repa_l4_256_per_sample_step400k,repa_l9_256_per_sample_steplast,repa_esm_l9_t30_256_steplast,repa_mpnn_l4_256_per_residue_step300k,repa_l4_256_per_residue_lambda1_step200k,repa_l4_256_per_residue_lambda1_step300k,repa_l4_256_per_residue_lambda2_step200k,repa_l4_256_per_residue_lambda2_step300k,pretrained_dfs_60m"
 
 paper_n256_struct:
   <<: *paper_struct_defaults
@@ -270,3 +318,82 @@ paper_n256_struct:
   # results/paper/n256_paper_{afdb,lambda} that the early ep20 anchors miss.
   # Total 28 runs.
   runs: "baseline_256_ep21,repa_l0_256_ep26,repa_l4_256_ep22,repa_l9_256_ep25,repa_l9_256_ep17,repa_l4_256_ep13_step300k,repa_l4_256_ep31_step500k,repa_l4_256_random_ep17,baseline_afdb_256_ep20,repa_l4_afdb_256_ep20,baseline_afdb_256_step400k,baseline_afdb_256_step700k,baseline_afdb_256_step900k,repa_l4_afdb_256_step400k,repa_l4_afdb_256_step700k,repa_mpnn_l4_afdb_256_step400k,repa_mpnn_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step700k,repa_l0_256_per_sample_steplast,repa_l4_256_per_sample_step400k,repa_l9_256_per_sample_steplast,repa_esm_l9_t30_256_steplast,repa_mpnn_l4_256_per_residue_step300k,repa_l4_256_per_residue_lambda1_step200k,repa_l4_256_per_residue_lambda1_step300k,repa_l4_256_per_residue_lambda2_step200k,repa_l4_256_per_residue_lambda2_step300k,pretrained_dfs_60m"
+
+# ─── Serialised CATH + IF + dihedral profiles (added 2026-05-16) ────────────
+# Run cath (C/A/T levels) + inverse_folding + dihedral in ONE task per ckpt,
+# skipping the expensive `distance` probe (which dominates struct wall at
+# ~170 s/layer ≈ 28 min/ckpt). Net per-ckpt wall ≈ 20 min cath +
+# (5 s IF + 8 s dih) × 10 layers + shared extract ≈ ~25 min. Suitable when
+# the distance probe rows are not needed but cath + IF + dih should land in
+# a single JSONL with shared extraction cost (vs running cath / struct as
+# two separate array jobs).
+#
+# Baselines: union of cath + struct minus seqsep_pair (the distance-gated
+# trivial baseline). local_frame stays (gated to dihedral); knn_dist stays
+# (gated to inverse_folding); trained_noise + generic baselines run once
+# per probe kind via the BASELINE_PROBE_KINDS gating in
+# pretrain_probe_sweep.py.
+
+_paper_cath_if_dih_defaults: &paper_cath_if_dih_defaults
+  n_train: 5000
+  n_eval: 4999
+  head_type: linear
+  probe_epochs: 8
+  probe_lr: 0.001
+  probe_seed: 42
+  manifest_seed: 42
+  train_manifest_version: train_v1
+  eval_manifest_version: eval_v1
+  timesteps: "1.0"
+  probes: "cath,inverse_folding,dihedral"
+  cath_levels: "C,A,T"
+  cath_min_per_class: 3
+  baselines: "untrained_proteina,random_gauss,seq_onehot,trained_noise,knn_dist,local_frame"
+
+paper_n256_cath_if_dih:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  # Same val.lmdb slice as paper_n256_cath (~3,190 proteins ≤256 residues).
+  n_eval: 3190
+  output_dir: results/paper/n256_paper_cath_if_dih
+  baseline_trained_noise_run: baseline_256_ep21
+  # 28-run list mirrors paper_n256_cath / paper_n256_struct.
+  runs: "baseline_256_ep21,repa_l0_256_ep26,repa_l4_256_ep22,repa_l9_256_ep25,repa_l9_256_ep17,repa_l4_256_ep13_step300k,repa_l4_256_ep31_step500k,repa_l4_256_random_ep17,baseline_afdb_256_ep20,repa_l4_afdb_256_ep20,baseline_afdb_256_step400k,baseline_afdb_256_step700k,baseline_afdb_256_step900k,repa_l4_afdb_256_step400k,repa_l4_afdb_256_step700k,repa_mpnn_l4_afdb_256_step400k,repa_mpnn_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step700k,repa_l0_256_per_sample_steplast,repa_l4_256_per_sample_step400k,repa_l9_256_per_sample_steplast,repa_esm_l9_t30_256_steplast,repa_mpnn_l4_256_per_residue_step300k,repa_l4_256_per_residue_lambda1_step200k,repa_l4_256_per_residue_lambda1_step300k,repa_l4_256_per_residue_lambda2_step200k,repa_l4_256_per_residue_lambda2_step300k,pretrained_dfs_60m"
+
+paper_n256_cath_if_dih_afdb:
+  # AFDB-Swissprot companion. Launch with `--lmdb_dataset afdb` so the SLURM
+  # wrapper stages /rds/.../afdb_swissprot/lmdb. Note: dihedral targets on
+  # AFDB come from AF2-predicted backbones; cath labels are Gene3D HMM hits;
+  # IF targets are real UniProt sequences. See paper_n256_struct_afdb for
+  # the rationale for keeping IF on AFDB.
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 4521
+  output_dir: results/paper/n256_paper_cath_if_dih_afdb
+  baseline_trained_noise_run: baseline_afdb_256_ep20
+  runs: "baseline_256_ep21,repa_l0_256_ep26,repa_l4_256_ep22,repa_l9_256_ep25,repa_l9_256_ep17,repa_l4_256_ep13_step300k,repa_l4_256_ep31_step500k,repa_l4_256_random_ep17,baseline_afdb_256_ep20,repa_l4_afdb_256_ep20,baseline_afdb_256_step400k,baseline_afdb_256_step700k,baseline_afdb_256_step900k,repa_l4_afdb_256_step400k,repa_l4_afdb_256_step700k,repa_mpnn_l4_afdb_256_step400k,repa_mpnn_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step700k,repa_l0_256_per_sample_steplast,repa_l4_256_per_sample_step400k,repa_l9_256_per_sample_steplast,repa_esm_l9_t30_256_steplast,repa_mpnn_l4_256_per_residue_step300k,repa_l4_256_per_residue_lambda1_step200k,repa_l4_256_per_residue_lambda1_step300k,repa_l4_256_per_residue_lambda2_step200k,repa_l4_256_per_residue_lambda2_step300k,pretrained_dfs_60m"
+
+# ─────────────────────────────────────────────────────────────────────────── #
+# n=256 convergence sweep (added 2026-05-16) — companion to the gen
+# convergence_pdb/afdb profiles. cath+IF+dih probes (skipping distance) at
+# t=1.0, log-spaced step curve across the 9-config matrix (minus PDB L9 MPNN).
+# Run via run_pretrained_probe_array.sh as separate array jobs for PDB and
+# AFDB so each can target its own val.lmdb (PDB ↔ baseline_256_ep21 anchor,
+# AFDB ↔ baseline_afdb_256_ep20 anchor). 45 min wall/task per user 2026-05-16.
+# ─────────────────────────────────────────────────────────────────────────── #
+
+paper_n256_cath_if_dih_convergence_pdb:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 3190
+  output_dir: results/paper/n256_convergence_cath_if_dih_pdb
+  baseline_trained_noise_run: baseline_256_ep21
+  runs: "baseline_256_bs24_2gpu_step100k,baseline_256_bs24_2gpu_step200k,baseline_256_bs24_2gpu_step400k,baseline_256_bs24_2gpu_step700k,baseline_256_bs24_2gpu_step1000k,baseline_256_bs24_2gpu_step1300k,repa_l4_256_per_residue_bs24_2gpu_step100k,repa_l4_256_per_residue_bs24_2gpu_step200k,repa_l4_256_per_residue_bs24_2gpu_step400k,repa_l4_256_per_residue_bs24_2gpu_step700k,repa_mpnn_l4_256_per_residue_step100k,repa_mpnn_l4_256_per_residue_step200k,repa_mpnn_l4_256_per_residue_step400k,repa_mpnn_l4_256_per_residue_step700k,repa_mpnn_l4_256_per_residue_step1000k,repa_mpnn_l4_256_per_residue_step1300k,repa_mpnn_l4_256_per_residue_step1600k,repa_l9_256_per_residue_bs24_2gpu_step100k,repa_l9_256_per_residue_bs24_2gpu_step200k,repa_l9_256_per_residue_bs24_2gpu_step400k,repa_l9_256_per_residue_bs24_2gpu_step700k"
+
+paper_n256_cath_if_dih_convergence_afdb:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 4521
+  output_dir: results/paper/n256_convergence_cath_if_dih_afdb
+  baseline_trained_noise_run: baseline_afdb_256_ep20
+  runs: "baseline_afdb_256_step100k,baseline_afdb_256_step200k,baseline_afdb_256_step400k,baseline_afdb_256_step700k,baseline_afdb_256_step1000k,baseline_afdb_256_step1300k,baseline_afdb_256_step1600k,repa_l4_afdb_256_step100k,repa_l4_afdb_256_step200k,repa_l4_afdb_256_step400k,repa_l4_afdb_256_step700k,repa_l4_afdb_256_step1000k,repa_mpnn_l4_afdb_256_step100k,repa_mpnn_l4_afdb_256_step200k,repa_mpnn_l4_afdb_256_step400k,repa_mpnn_l4_afdb_256_step700k,repa_mpnn_l4_afdb_256_step1000k,repa_l9_afdb_256_step100k,repa_l9_afdb_256_step200k,repa_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step100k,repa_mpnn_l9_afdb_256_step200k,repa_mpnn_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step700k,repa_mpnn_l9_afdb_256_step1000k,repa_mpnn_l9_afdb_256_step1300k"
