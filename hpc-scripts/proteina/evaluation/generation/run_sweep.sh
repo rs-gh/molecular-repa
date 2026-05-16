@@ -167,6 +167,11 @@ GPU_MON_PID=$!
 
 cd "$REPO_DIR"
 
+# Allow python to exit non-zero without aborting the wrapper — we want to
+# capture SWEEP_EXIT and still run the cleanup below so Slurm sees the real
+# failure code (the in-script silent-fail bug was masking task errors as
+# COMPLETED; run_sweep.py now exits 1 on any task failure).
+set +e
 python -u -c "
 import os, sys
 sys.path.insert(0, 'src/proteina/proteinfoundation')
@@ -192,6 +197,7 @@ import runpy
 runpy.run_path('evaluation/proteina/generation/scripts/run_sweep.py', run_name='__main__')
 "
 SWEEP_EXIT=$?
+set -e
 
 ###############################################################
 ### Cleanup and summary                                     ###

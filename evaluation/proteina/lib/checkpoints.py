@@ -555,6 +555,57 @@ RUN_SCHEDULES = {
         4,
         [400000],
     ),
+    # n=128 AFDB extension (2026-05-16): close the 4-way comparison at 600K
+    # (max for repa_l4_afdb), then long-tail at 800K/1M for baseline + mpnn-L4
+    # and 1200K for baseline only (mpnn-L4 store maxes at 1100K).
+    "baseline_afdb_128_bs80_step600k": (
+        "proteina_60m_baseline_afdb_128_bs80_2gpu",
+        False,
+        4,
+        [600000],
+    ),
+    "baseline_afdb_128_bs80_step800k": (
+        "proteina_60m_baseline_afdb_128_bs80_2gpu",
+        False,
+        4,
+        [800000],
+    ),
+    "baseline_afdb_128_bs80_step1000k": (
+        "proteina_60m_baseline_afdb_128_bs80_2gpu",
+        False,
+        4,
+        [1000000],
+    ),
+    "baseline_afdb_128_bs80_step1200k": (
+        "proteina_60m_baseline_afdb_128_bs80_2gpu",
+        False,
+        4,
+        [1200000],
+    ),
+    "repa_l4_afdb_128_bs80_step600k": (
+        "proteina_60m_repa_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [600000],
+    ),
+    "repa_mpnn_l4_afdb_128_bs80_step600k": (
+        "proteina_60m_repa_mpnn_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [600000],
+    ),
+    "repa_mpnn_l4_afdb_128_bs80_step800k": (
+        "proteina_60m_repa_mpnn_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [800000],
+    ),
+    "repa_mpnn_l4_afdb_128_bs80_step1000k": (
+        "proteina_60m_repa_mpnn_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [1000000],
+    ),
     # ── n=256 AFDB extension: step=400K/700K/900K snapshots ──────────────── #
     # Existing baseline_afdb_256_ep20 / repa_l4_afdb_256_ep20 are pinned at
     # step=200K (epoch 20). These step-keyed companions sample further along
@@ -609,6 +660,26 @@ RUN_SCHEDULES = {
         9,
         [700000],
     ),
+    # CA-GearNet L9 AFDB-256 (added 2026-05-16): periodic ckpts 100k–400k @100k,
+    # last-EMA at 423.5k. Shortest n=256 AFDB run; not previously swept.
+    "repa_l9_afdb_256_step200k": (
+        "proteina_60m_repa_l9_256_afdb_per_residue",
+        True,
+        9,
+        [200000],
+    ),
+    "repa_l9_afdb_256_step400k": (
+        "proteina_60m_repa_l9_256_afdb_per_residue",
+        True,
+        9,
+        [400000],
+    ),
+    "repa_l9_afdb_256_steplast": (
+        "proteina_60m_repa_l9_256_afdb_per_residue",
+        True,
+        9,
+        [None],
+    ),
     # ── n=256 lambda extension: λ=1.0@step200K, λ=2.0@step300K ───────────── #
     # Step-matched companions: λ=1 already had _step300k entry above; pair it
     # with a _step200k snapshot. λ=2 already had _step200k; pair with
@@ -624,6 +695,241 @@ RUN_SCHEDULES = {
         True,
         4,
         [300000],
+    ),
+    # ── n=256 convergence sweep (added 2026-05-16) ──────────────────────── #
+    # Log-spaced step curve at {100k, 200k, 400k, 700k, 1000k, 1300k, 1600k}
+    # for the 9-config matrix: {PDB, AFDB} × baseline + {PDB, AFDB} × {L4, L9}
+    # × {GearNet, MPNN}, minus PDB L9 MPNN (no periodic ckpt). Steps above each
+    # run's max are skipped (no snap-to-last). 47 unique ckpts total; this block
+    # adds the 38 missing — the other 9 reuse earlier _step{400,700,900,1000}k
+    # entries (afdb baseline/l4-gn) and _step200k AFDB L9 entries.
+    "baseline_256_bs24_2gpu_step100k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [100000],
+    ),
+    "baseline_256_bs24_2gpu_step200k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [200000],
+    ),
+    "baseline_256_bs24_2gpu_step400k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [400000],
+    ),
+    "baseline_256_bs24_2gpu_step700k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [700000],
+    ),
+    "baseline_256_bs24_2gpu_step1000k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [1000000],
+    ),
+    "baseline_256_bs24_2gpu_step1300k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [1300000],
+    ),
+    "repa_l4_256_per_residue_bs24_2gpu_step100k": (
+        "proteina_60m_repa_l4_256_per_residue_bs24_2gpu",
+        True,
+        4,
+        [100000],
+    ),
+    "repa_l4_256_per_residue_bs24_2gpu_step200k": (
+        "proteina_60m_repa_l4_256_per_residue_bs24_2gpu",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_l4_256_per_residue_bs24_2gpu_step400k": (
+        "proteina_60m_repa_l4_256_per_residue_bs24_2gpu",
+        True,
+        4,
+        [400000],
+    ),
+    "repa_l4_256_per_residue_bs24_2gpu_step700k": (
+        "proteina_60m_repa_l4_256_per_residue_bs24_2gpu",
+        True,
+        4,
+        [700000],
+    ),
+    "repa_mpnn_l4_256_per_residue_step100k": (
+        "proteina_60m_repa_mpnn_l4_256_per_residue",
+        True,
+        4,
+        [100000],
+    ),
+    "repa_mpnn_l4_256_per_residue_step200k": (
+        "proteina_60m_repa_mpnn_l4_256_per_residue",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_mpnn_l4_256_per_residue_step400k": (
+        "proteina_60m_repa_mpnn_l4_256_per_residue",
+        True,
+        4,
+        [400000],
+    ),
+    "repa_mpnn_l4_256_per_residue_step700k": (
+        "proteina_60m_repa_mpnn_l4_256_per_residue",
+        True,
+        4,
+        [700000],
+    ),
+    "repa_mpnn_l4_256_per_residue_step1000k": (
+        "proteina_60m_repa_mpnn_l4_256_per_residue",
+        True,
+        4,
+        [1000000],
+    ),
+    "repa_mpnn_l4_256_per_residue_step1300k": (
+        "proteina_60m_repa_mpnn_l4_256_per_residue",
+        True,
+        4,
+        [1300000],
+    ),
+    "repa_mpnn_l4_256_per_residue_step1600k": (
+        "proteina_60m_repa_mpnn_l4_256_per_residue",
+        True,
+        4,
+        [1600000],
+    ),
+    "repa_l9_256_per_residue_bs24_2gpu_step100k": (
+        "proteina_60m_repa_l9_256_per_residue_bs24_2gpu",
+        True,
+        9,
+        [100000],
+    ),
+    "repa_l9_256_per_residue_bs24_2gpu_step200k": (
+        "proteina_60m_repa_l9_256_per_residue_bs24_2gpu",
+        True,
+        9,
+        [200000],
+    ),
+    "repa_l9_256_per_residue_bs24_2gpu_step400k": (
+        "proteina_60m_repa_l9_256_per_residue_bs24_2gpu",
+        True,
+        9,
+        [400000],
+    ),
+    "repa_l9_256_per_residue_bs24_2gpu_step700k": (
+        "proteina_60m_repa_l9_256_per_residue_bs24_2gpu",
+        True,
+        9,
+        [700000],
+    ),
+    "baseline_afdb_256_step100k": (
+        "proteina_60m_baseline_afdb_swissprot_256",
+        False,
+        4,
+        [100000],
+    ),
+    "baseline_afdb_256_step200k": (
+        "proteina_60m_baseline_afdb_swissprot_256",
+        False,
+        4,
+        [200000],
+    ),
+    "baseline_afdb_256_step1000k": (
+        "proteina_60m_baseline_afdb_swissprot_256",
+        False,
+        4,
+        [1000000],
+    ),
+    "baseline_afdb_256_step1300k": (
+        "proteina_60m_baseline_afdb_swissprot_256",
+        False,
+        4,
+        [1300000],
+    ),
+    "baseline_afdb_256_step1600k": (
+        "proteina_60m_baseline_afdb_swissprot_256",
+        False,
+        4,
+        [1600000],
+    ),
+    "repa_l4_afdb_256_step100k": (
+        "proteina_60m_repa_l4_256_afdb_per_residue",
+        True,
+        4,
+        [100000],
+    ),
+    "repa_l4_afdb_256_step200k": (
+        "proteina_60m_repa_l4_256_afdb_per_residue",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_l4_afdb_256_step1000k": (
+        "proteina_60m_repa_l4_256_afdb_per_residue",
+        True,
+        4,
+        [1000000],
+    ),
+    "repa_mpnn_l4_afdb_256_step100k": (
+        "proteina_60m_repa_mpnn_l4_256_afdb_per_residue",
+        True,
+        4,
+        [100000],
+    ),
+    "repa_mpnn_l4_afdb_256_step200k": (
+        "proteina_60m_repa_mpnn_l4_256_afdb_per_residue",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_mpnn_l4_afdb_256_step700k": (
+        "proteina_60m_repa_mpnn_l4_256_afdb_per_residue",
+        True,
+        4,
+        [700000],
+    ),
+    "repa_mpnn_l4_afdb_256_step1000k": (
+        "proteina_60m_repa_mpnn_l4_256_afdb_per_residue",
+        True,
+        4,
+        [1000000],
+    ),
+    "repa_l9_afdb_256_step100k": (
+        "proteina_60m_repa_l9_256_afdb_per_residue",
+        True,
+        9,
+        [100000],
+    ),
+    "repa_mpnn_l9_afdb_256_step100k": (
+        "proteina_60m_repa_mpnn_l9_256_afdb_per_residue",
+        True,
+        9,
+        [100000],
+    ),
+    "repa_mpnn_l9_afdb_256_step200k": (
+        "proteina_60m_repa_mpnn_l9_256_afdb_per_residue",
+        True,
+        9,
+        [200000],
+    ),
+    "repa_mpnn_l9_afdb_256_step1000k": (
+        "proteina_60m_repa_mpnn_l9_256_afdb_per_residue",
+        True,
+        9,
+        [1000000],
+    ),
+    "repa_mpnn_l9_afdb_256_step1300k": (
+        "proteina_60m_repa_mpnn_l9_256_afdb_per_residue",
+        True,
+        9,
+        [1300000],
     ),
 }
 
@@ -720,6 +1026,14 @@ GEN_RUN_CONFIGS = {
     "repa_l4_afdb_128_bs80_step200k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_mpnn_l4_afdb_128_bs80_step200k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_mpnn_l4_afdb_128_bs80_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_afdb_128_bs80_step600k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_afdb_128_bs80_step800k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_afdb_128_bs80_step1000k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_afdb_128_bs80_step1200k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_afdb_128_bs80_step600k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l4_afdb_128_bs80_step600k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l4_afdb_128_bs80_step800k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l4_afdb_128_bs80_step1000k": "inference/paper/inference_fid_60m_n128_paper",
     # ── n=256 AFDB extension (step-curve + mpnn-aligned encoders) ────────── #
     "baseline_afdb_256_step400k": "inference/paper/inference_fid_60m_paper",
     "baseline_afdb_256_step700k": "inference/paper/inference_fid_60m_paper",
@@ -729,9 +1043,51 @@ GEN_RUN_CONFIGS = {
     "repa_mpnn_l4_afdb_256_step400k": "inference/paper/inference_fid_60m_paper",
     "repa_mpnn_l9_afdb_256_step400k": "inference/paper/inference_fid_60m_paper",
     "repa_mpnn_l9_afdb_256_step700k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_afdb_256_step200k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_afdb_256_step400k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_afdb_256_steplast": "inference/paper/inference_fid_60m_paper",
     # ── n=256 lambda ablation extension ──────────────────────────────────── #
     "repa_l4_256_per_residue_lambda1_step200k": "inference/paper/inference_fid_60m_paper",
     "repa_l4_256_per_residue_lambda2_step300k": "inference/paper/inference_fid_60m_paper",
+    # ── n=256 convergence sweep (added 2026-05-16) ──────────────────────── #
+    "baseline_256_bs24_2gpu_step100k": "inference/paper/inference_fid_60m_paper",
+    "baseline_256_bs24_2gpu_step200k": "inference/paper/inference_fid_60m_paper",
+    "baseline_256_bs24_2gpu_step400k": "inference/paper/inference_fid_60m_paper",
+    "baseline_256_bs24_2gpu_step700k": "inference/paper/inference_fid_60m_paper",
+    "baseline_256_bs24_2gpu_step1000k": "inference/paper/inference_fid_60m_paper",
+    "baseline_256_bs24_2gpu_step1300k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_bs24_2gpu_step100k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_bs24_2gpu_step200k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_bs24_2gpu_step400k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_bs24_2gpu_step700k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_256_per_residue_step100k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_256_per_residue_step200k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_256_per_residue_step400k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_256_per_residue_step700k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_256_per_residue_step1000k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_256_per_residue_step1300k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_256_per_residue_step1600k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_per_residue_bs24_2gpu_step100k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_per_residue_bs24_2gpu_step200k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_per_residue_bs24_2gpu_step400k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_per_residue_bs24_2gpu_step700k": "inference/paper/inference_fid_60m_paper",
+    "baseline_afdb_256_step100k": "inference/paper/inference_fid_60m_paper",
+    "baseline_afdb_256_step200k": "inference/paper/inference_fid_60m_paper",
+    "baseline_afdb_256_step1000k": "inference/paper/inference_fid_60m_paper",
+    "baseline_afdb_256_step1300k": "inference/paper/inference_fid_60m_paper",
+    "baseline_afdb_256_step1600k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_afdb_256_step100k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_afdb_256_step200k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_afdb_256_step1000k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_afdb_256_step100k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_afdb_256_step200k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_afdb_256_step700k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_afdb_256_step1000k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_afdb_256_step100k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_afdb_256_step100k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_afdb_256_step200k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_afdb_256_step1000k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_afdb_256_step1300k": "inference/paper/inference_fid_60m_paper",
 }
 
 

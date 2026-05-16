@@ -19,6 +19,8 @@ import math
 import sys
 from pathlib import Path
 
+import yaml
+
 HERE = Path(__file__).resolve().parent
 PAPER_DIR = HERE.parent
 SCRIPTS_DIR = HERE.parent.parent
@@ -27,10 +29,8 @@ sys.path.insert(0, str(SCRIPTS_DIR))  # for utils._results_io
 sys.path.insert(0, str(PAPER_DIR))  # for md_tables_to_tsv
 sys.path.insert(0, str(HERE))  # for plot_n128_paper (sibling)
 
-from md_tables_to_tsv import md_to_tsv  # noqa: E402
 from utils._results_io import load_sweep_rows  # noqa: E402
 from plot_n128_paper import (  # noqa: E402
-    ABLATIONS,
     METRICS,
     MIN_DESIGNABILITY_N,
     N_NOTES,
@@ -39,24 +39,72 @@ from plot_n128_paper import (  # noqa: E402
 
 RESULTS_ROOT = GENERATION_ROOT / "results" / "paper"
 OUT = GENERATION_ROOT / "figures" / "paper" / "n128_paper" / "n128_paper_tables.md"
+ABLATION_BLOCKS_YAML = RESULTS_ROOT / "ablation_blocks.yaml"
 
 # Training batch size per run name. Encodes the actual effective bs used
 # for the run; not derivable cleanly from the checkpoint, so listed here
 # (mirrors what the plot legend communicates implicitly).
-# Per-ablation row reordering (overrides ABLATIONS order in the table only —
-# plot ordering is left untouched). For bs_lr we pair BL/L4 at matching
-# (bs, step) so eye-level comparison is one row apart.
-TABLE_ROW_ORDER = {
-    "bs_lr": [
-        "baseline_128_bs24_step200k",
-        "repa_l4_128_bs24_step200k",
+# Display label per (ablation_id, run). Falls back to `run` if missing.
+# Ablation IDs come from `ablation_blocks.yaml`. The same run can have
+# different labels in different ablation contexts (e.g. "Baseline" in the
+# layer block, "BL bs80 200k" in the bs block).
+RUN_LABELS: dict[tuple[str, str], str] = {
+    # --- External reference
+    ("n128_external_reference", "pretrained_dfs_60m_n128_paper"): "Pretrained DFS-60M",
+    # --- n=128 PDB bs ablation
+    ("n128_pdb_bs", "baseline_128_bs24_step200k"): "BL bs24 200k",
+    ("n128_pdb_bs", "baseline_128_bs24_step400k"): "BL bs24 400k",
+    ("n128_pdb_bs", "baseline_128_bs80_step200k"): "BL bs80 200k",
+    ("n128_pdb_bs", "repa_l4_128_bs24_step200k"): "L4 bs24 200k",
+    ("n128_pdb_bs", "repa_l4_128_bs24_step400k"): "L4 bs24 400k",
+    ("n128_pdb_bs", "repa_l4_128_bs80_step200k"): "L4 bs80 200k",
+    # --- n=128 PDB L4 REPA wd + λ + lr ablation
+    ("n128_pdb_l4_wd_lambda_lr", "baseline_128_bs80_step200k"): "BL bs80",
+    ("n128_pdb_l4_wd_lambda_lr", "repa_l4_128_bs80_step200k"): "λ=0.5, wd=0, lr=1×",
+    ("n128_pdb_l4_wd_lambda_lr", "repa_l4_128_bs80_lambda025_step200k"): "λ=0.25",
+    ("n128_pdb_l4_wd_lambda_lr", "repa_l4_128_bs80_lambda1_step200k"): "λ=1.0",
+    ("n128_pdb_l4_wd_lambda_lr", "repa_l4_128_bs80_lambda2_steplast"): "λ=2.0",
+    ("n128_pdb_l4_wd_lambda_lr", "repa_l4_128_bs80_wd1e2_step200k"): "wd=1e-2",
+    ("n128_pdb_l4_wd_lambda_lr", "baseline_128_bs80_lr3x_step200k"): "BL lr3×",
+    ("n128_pdb_l4_wd_lambda_lr", "repa_l4_128_bs80_lr3x_steplast"): "L4 lr3×",
+    # --- n=128 PDB L4 REPA encoder ablation
+    ("n128_pdb_l4_encoder", "baseline_128_bs80_step200k"): "Baseline",
+    ("n128_pdb_l4_encoder", "repa_l4_128_bs80_step200k"): "CA-GearNet",
+    ("n128_pdb_l4_encoder", "repa_l4_128_random_step200k"): "GearNet random",
+    ("n128_pdb_l4_encoder", "repa_mpnn_l4_128_bs80_step200k"): "ProteinMPNN",
+    ("n128_pdb_l4_encoder", "repa_esm_l4_128_step200k"): "ESM2",
+    ("n128_pdb_l4_encoder", "repa_l4_128_pw_structure_step100k"): "PW-Structure",
+    ("n128_pdb_l4_encoder", "repa_l4_128_pw_torsional_step100k"): "PW-Torsional",
+    # --- n=128 PDB L9 REPA encoder ablation
+    ("n128_pdb_l9_encoder", "baseline_128_bs80_step200k"): "Baseline",
+    ("n128_pdb_l9_encoder", "repa_l9_128_bs80_step200k"): "CA-GearNet",
+    # --- n=128 PDB REPA bs80 layer ablation
+    ("n128_pdb_bs80_layer", "baseline_128_bs80_step200k"): "Baseline",
+    ("n128_pdb_bs80_layer", "repa_l0_128_bs80_step200k"): "REPA L0",
+    ("n128_pdb_bs80_layer", "repa_l4_128_bs80_step200k"): "REPA L4",
+    ("n128_pdb_bs80_layer", "repa_l9_128_bs80_step200k"): "REPA L9",
+    # --- n=128 PDB per_residue layer @ 400K (mixed bs)
+    (
+        "n128_pdb_per_residue_layer_400k",
         "baseline_128_bs24_step400k",
-        "repa_l4_128_bs24_step400k",
-        "baseline_128_bs80_step200k",
-        "repa_l4_128_bs80_step200k",
-        "baseline_128_bs80_lr3x_step200k",
-        "repa_l4_128_bs80_lr3x_steplast",
-    ],
+    ): "Baseline (bs24)",
+    ("n128_pdb_per_residue_layer_400k", "repa_l0_128_per_residue_step400k"): "REPA L0",
+    ("n128_pdb_per_residue_layer_400k", "repa_l4_128_per_residue_step400k"): "REPA L4",
+    ("n128_pdb_per_residue_layer_400k", "repa_l9_128_per_residue_step400k"): "REPA L9",
+    # --- n=128 AFDB encoder ablation
+    ("n128_afdb_encoder", "baseline_afdb_128_bs80_step200k"): "Baseline AFDB 200k",
+    ("n128_afdb_encoder", "baseline_afdb_128_bs80_step400k"): "Baseline AFDB 400k",
+    ("n128_afdb_encoder", "baseline_afdb_128_bs80_step600k"): "Baseline AFDB 600k",
+    ("n128_afdb_encoder", "baseline_afdb_128_bs80_step800k"): "Baseline AFDB 800k",
+    ("n128_afdb_encoder", "baseline_afdb_128_bs80_step1000k"): "Baseline AFDB 1000k",
+    ("n128_afdb_encoder", "baseline_afdb_128_bs80_step1200k"): "Baseline AFDB 1200k",
+    ("n128_afdb_encoder", "repa_l4_afdb_128_bs80_step200k"): "CA-GearNet 200k",
+    ("n128_afdb_encoder", "repa_l4_afdb_128_bs80_step600k"): "CA-GearNet 600k",
+    ("n128_afdb_encoder", "repa_mpnn_l4_afdb_128_bs80_step200k"): "ProteinMPNN 200k",
+    ("n128_afdb_encoder", "repa_mpnn_l4_afdb_128_bs80_step400k"): "ProteinMPNN 400k",
+    ("n128_afdb_encoder", "repa_mpnn_l4_afdb_128_bs80_step600k"): "ProteinMPNN 600k",
+    ("n128_afdb_encoder", "repa_mpnn_l4_afdb_128_bs80_step800k"): "ProteinMPNN 800k",
+    ("n128_afdb_encoder", "repa_mpnn_l4_afdb_128_bs80_step1000k"): "ProteinMPNN 1000k",
 }
 
 
@@ -110,6 +158,23 @@ RUN_BS = {
     "repa_l0_128_per_residue_step400k": "24→80",
     "repa_l4_128_per_residue_step400k": "24→80",
     "repa_l9_128_per_residue_step400k": "24→80",
+    # AFDB n=128 (2-GPU × per-GPU bs=40, eff bs=80; doc label "bs80_2gpu")
+    "baseline_afdb_128_bs80_step200k": 80,
+    "baseline_afdb_128_bs80_step400k": 80,
+    "baseline_afdb_128_bs80_step600k": 80,
+    "baseline_afdb_128_bs80_step800k": 80,
+    "baseline_afdb_128_bs80_step1000k": 80,
+    "baseline_afdb_128_bs80_step1200k": 80,
+    "repa_l4_afdb_128_bs80_step200k": 80,
+    "repa_l4_afdb_128_bs80_step600k": 80,
+    "repa_mpnn_l4_afdb_128_bs80_step200k": 80,
+    "repa_mpnn_l4_afdb_128_bs80_step400k": 80,
+    "repa_mpnn_l4_afdb_128_bs80_step600k": 80,
+    "repa_mpnn_l4_afdb_128_bs80_step800k": 80,
+    "repa_mpnn_l4_afdb_128_bs80_step1000k": 80,
+    # Extra bs/λ rows mapped into the wd+λ+lr block
+    "repa_l4_128_bs80_lambda025_step200k": 80,
+    "repa_l4_128_bs80_lambda1_step200k": 80,
 }
 
 
@@ -197,6 +262,69 @@ BS_AUDIT: dict[str, tuple[str, str]] = {
         "✅",
         "clean bs=80, wd=1e-2 (config-declared); evaluated 2026-05-09 at step=200K EMA snapshot.",
     ),
+    # λ extension rows (λ=0.25 / λ=1.0)
+    "repa_l4_128_bs80_lambda025_step200k": (
+        "✅",
+        "clean bs=80, λ=0.25 (config-declared); evaluated 2026-05-09.",
+    ),
+    "repa_l4_128_bs80_lambda1_step200k": (
+        "✅",
+        "clean bs=80, λ=1.0 (config-declared); evaluated 2026-05-09.",
+    ),
+    # AFDB n=128 (per-GPU bs=40 × 2 GPU = eff bs=80; verified 2026-05-16
+    # from data_config.json:batch_size + exp_config.json:ngpus_per_node_).
+    "baseline_afdb_128_bs80_step200k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); AFDB-SwissProt; val_check_interval=10000.",
+    ),
+    "baseline_afdb_128_bs80_step400k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); AFDB-SwissProt; continuation.",
+    ),
+    "baseline_afdb_128_bs80_step600k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); AFDB-SwissProt; continuation.",
+    ),
+    "baseline_afdb_128_bs80_step800k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); AFDB-SwissProt; continuation.",
+    ),
+    "baseline_afdb_128_bs80_step1000k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); AFDB-SwissProt; continuation.",
+    ),
+    "baseline_afdb_128_bs80_step1200k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); AFDB-SwissProt; continuation.",
+    ),
+    "repa_l4_afdb_128_bs80_step200k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); REPA L4 CA-GearNet, per_residue, λ=0.5, AFDB.",
+    ),
+    "repa_l4_afdb_128_bs80_step600k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); REPA L4 CA-GearNet, per_residue, λ=0.5, AFDB; continuation.",
+    ),
+    "repa_mpnn_l4_afdb_128_bs80_step200k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); REPA L4 ProteinMPNN, per_residue, λ=0.5, AFDB.",
+    ),
+    "repa_mpnn_l4_afdb_128_bs80_step400k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); REPA L4 ProteinMPNN, per_residue, λ=0.5, AFDB; continuation.",
+    ),
+    "repa_mpnn_l4_afdb_128_bs80_step600k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); REPA L4 ProteinMPNN, per_residue, λ=0.5, AFDB; continuation.",
+    ),
+    "repa_mpnn_l4_afdb_128_bs80_step800k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); REPA L4 ProteinMPNN, per_residue, λ=0.5, AFDB; continuation.",
+    ),
+    "repa_mpnn_l4_afdb_128_bs80_step1000k": (
+        "✅",
+        "clean per-GPU bs=40 × 2 GPU (eff bs=80); REPA L4 ProteinMPNN, per_residue, λ=0.5, AFDB; continuation.",
+    ),
 }
 
 # bs values whose verdict is 🔁 or 🚫 get a † suffix in the bs column.
@@ -247,16 +375,34 @@ def _samples_label(step: int | None, bs: int | str | None, run_name: str = "") -
     return f"{n // 1000}K"
 
 
-def _load_block(akey: str) -> list[tuple[str, str, dict]]:
-    """Return [(run_name, display_label, row)] for an ablation, in config order."""
-    cfg = ABLATIONS[akey]
-    rows = {
-        r["run"]: _scrub_corrupt_designability(r)
-        for r in load_sweep_rows(RESULTS_ROOT / cfg["dir"] / "sweep_results.jsonl")
-    }
-    label_by_run = {rn: lbl for rn, lbl, _c in cfg["runs"]}
-    order = TABLE_ROW_ORDER.get(akey) or [rn for rn, _l, _c in cfg["runs"]]
-    return [(rn, label_by_run[rn], rows.get(rn, {})) for rn in order]
+def _load_blocks_n128() -> list[dict]:
+    """Load yaml ablation blocks for set=n128, in file order."""
+    blocks = yaml.safe_load(ABLATION_BLOCKS_YAML.read_text())
+    return [b for b in blocks if b.get("set") == "n128"]
+
+
+def _index_jsonls() -> dict[tuple[str, str, str], dict]:
+    """Build (profile, run, str(step)) → row index across all n128 profiles."""
+    idx: dict[tuple[str, str, str], dict] = {}
+    for jp in sorted(RESULTS_ROOT.glob("n128_paper_*/sweep_results.jsonl")):
+        profile = jp.parent.name
+        for r in load_sweep_rows(jp):
+            r = _scrub_corrupt_designability(r)
+            r["profile"] = profile
+            idx[(profile, str(r.get("run", "")), str(r.get("step", "")))] = r
+    return idx
+
+
+def _load_block(block: dict, idx: dict) -> list[tuple[str, str, dict]]:
+    """Return [(run_name, display_label, row)] for one yaml block."""
+    out: list[tuple[str, str, dict]] = []
+    for spec in block["rows"]:
+        key = (spec["profile"], str(spec["run"]), str(spec["step"]))
+        row = idx.get(key, {})
+        run_name = str(spec["run"])
+        label = RUN_LABELS.get((block["id"], run_name), run_name)
+        out.append((run_name, label, row))
+    return out
 
 
 def _best_indices(block: list[tuple[str, str, dict]]) -> dict[str, int]:
@@ -320,12 +466,13 @@ def render() -> str:
     aligns = [":---"] + ["---:"] * (n_cols - 1)
     lines.append("| " + " | ".join(aligns) + " |")
 
-    for akey, acfg in ABLATIONS.items():
-        block = _load_block(akey)
+    idx = _index_jsonls()
+    for ablation_block in _load_blocks_n128():
+        block = _load_block(ablation_block, idx)
         best = _best_indices(block)
 
         # Section header row — collapse onto first column.
-        section_label = acfg["label"].replace("\n", " — ")
+        section_label = ablation_block["title"]
         section_cells = [f"**{section_label}**"] + [""] * (n_cols - 1)
         lines.append("| " + " | ".join(section_cells) + " |")
 
@@ -393,9 +540,8 @@ def main() -> None:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(render())
     print(f"Wrote {OUT}")
-    tsv_path = OUT.with_suffix(".tsv")
-    n = md_to_tsv(OUT, tsv_path)
-    print(f"Wrote {tsv_path} ({n} table{'s' if n != 1 else ''})")
+    # TSV is the responsibility of jsonl_to_tsv.py (driven by the same yaml).
+    # Do not emit md_to_tsv here — would clobber the canonical TSV format.
 
 
 if __name__ == "__main__":

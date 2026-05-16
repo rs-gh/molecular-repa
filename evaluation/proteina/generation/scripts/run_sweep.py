@@ -447,9 +447,14 @@ def run_one_task(
             )
         _append_row(jsonl_path, row)
         print(f"    -> appended to {jsonl_path}")
+        return True
     except Exception as exc:
         msg = f"{type(exc).__name__}: {exc}"
-        print(f"ERROR in run={run_name} step={actual_step}: {msg}")
+        # Loud, greppable marker so log scans / sacct sweepers find failures.
+        print(f"!!! TASK_FAILED run={run_name} step={actual_step}: {msg}", flush=True)
+        import traceback
+
+        traceback.print_exc()
         _append_row(
             jsonl_path,
             {
@@ -459,6 +464,7 @@ def run_one_task(
                 "error": msg,
             },
         )
+        return False
 
 
 # -- CLI -----------------------------------------------------------------------
@@ -762,6 +768,7 @@ def main():
     done, _ = _load_done_set(jsonl_path)
 
     # -- Execute ------------------------------------------------------------- #
+    failures = []
     for run_name, step, config_name, ckpt_path in tasks_to_run:
         # Resolve actual step for done-set check (handles step=None)
         if ckpt_path and ckpt_path.exists():
@@ -773,7 +780,7 @@ def main():
             print(f"Already done: run={run_name} step={actual_step}, skipping.")
             continue
 
-        run_one_task(
+        ok = run_one_task(
             run_name=run_name,
             step=step,
             config_name=config_name,
@@ -800,8 +807,19 @@ def main():
             ss_reference_pdb_path=ss_reference_pdb_path,
             ss_reference_afdb_path=ss_reference_afdb_path,
         )
+        if not ok:
+            failures.append((run_name, actual_step))
 
     consolidate(jsonl_path, output_dir)
+
+    if failures:
+        print(
+            f"\n!!! SWEEP_FAILED: {len(failures)}/{len(tasks_to_run)} task(s) errored:",
+            flush=True,
+        )
+        for r, s in failures:
+            print(f"    - run={r} step={s}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,191 @@
+# Ablation-block mapping for paper-sweep TSVs.
+#
+# Each block emits one ordered group of rows in the rendered TSV (and is the
+# section structure mirrored in the *_paper_tables.md files). Block list and
+# row order are taken verbatim from
+# `docs/research/proteina_ablation_checkpoints.md`, with baseline first inside
+# each block. Anchor runs (e.g. baseline_128_bs80_step200k, repa_l4_128_bs80_step200k)
+# are intentionally repeated across blocks — one yaml row per ablation context.
+#
+# Schema:
+#   - id:    short slug, also used as `ablation_id` column value
+#     title: human-readable block title, matches the section header in
+#            proteina_ablation_checkpoints.md
+#     set:   n128 | n256 (selects which TSV the block lands in)
+#     rows:
+#       - { profile: <profile-dir>, run: <run-id>, step: <int> }
+#
+# Index key into the jsonls is (profile, run, str(step)).
+# Run after edits: python evaluation/proteina/generation/scripts/paper/jsonl_to_tsv.py all
+
+# ============================================================================
+# n=128 paper-sweep blocks
+# ============================================================================
+
+- id: n128_external_reference
+  title: "External reference — NVIDIA NGC DFS-60M v1.3 (12L)"
+  set: n128
+  rows:
+    - { profile: n128_paper_pretrained, run: pretrained_dfs_60m_n128_paper, step: 1300000 }
+
+- id: n128_pdb_bs
+  title: "n=128 PDB bs ablation"
+  set: n128
+  rows:
+    - { profile: n128_paper_bs_lr, run: baseline_128_bs24_step200k,  step: 200000 }
+    - { profile: n128_paper_bs_lr, run: baseline_128_bs24_step400k,  step: 400000 }
+    - { profile: n128_paper_bs_lr, run: baseline_128_bs80_step200k,  step: 200000 }
+    - { profile: n128_paper_bs_lr, run: repa_l4_128_bs24_step200k,   step: 200000 }
+    - { profile: n128_paper_bs_lr, run: repa_l4_128_bs24_step400k,   step: 400000 }
+    - { profile: n128_paper_bs_lr, run: repa_l4_128_bs80_step200k,   step: 200000 }
+
+- id: n128_pdb_l4_wd_lambda_lr
+  title: "n=128 PDB L4 REPA weight-decay + λ + lr ablation"
+  set: n128
+  rows:
+    - { profile: n128_paper_bs_lr,      run: baseline_128_bs80_step200k,            step: 200000 }
+    - { profile: n128_paper_lambda,     run: repa_l4_128_bs80_step200k,             step: 200000 }   # λ=0.5 reference
+    - { profile: n128_paper_lambda_ext, run: repa_l4_128_bs80_lambda025_step200k,   step: 200000 }
+    - { profile: n128_paper_lambda_ext, run: repa_l4_128_bs80_lambda1_step200k,     step: 200000 }
+    - { profile: n128_paper_lambda,     run: repa_l4_128_bs80_lambda2_steplast,     step: 185500 }
+    - { profile: n128_paper_wd,         run: repa_l4_128_bs80_wd1e2_step200k,       step: 200000 }
+    - { profile: n128_paper_bs_lr,      run: baseline_128_bs80_lr3x_step200k,       step: 200000 }
+    - { profile: n128_paper_bs_lr,      run: repa_l4_128_bs80_lr3x_steplast,        step: 161000 }
+
+# n=128 PDB REPA averaging ablation: doc lists all 13 runs as Crashed and no
+# jsonl entries exist. Skipped here; md retains a section header for
+# completeness.
+
+- id: n128_pdb_l4_encoder
+  title: "n=128 PDB L4 REPA encoder ablation"
+  set: n128
+  rows:
+    - { profile: n128_paper_encoder, run: baseline_128_bs80_step200k,        step: 200000 }
+    - { profile: n128_paper_encoder, run: repa_l4_128_bs80_step200k,         step: 200000 }   # CA-GearNet default
+    - { profile: n128_paper_encoder, run: repa_l4_128_random_step200k,       step: 200000 }   # random-init CA-GearNet
+    - { profile: n128_paper_encoder, run: repa_mpnn_l4_128_bs80_step200k,    step: 200000 }
+    - { profile: n128_paper_encoder, run: repa_esm_l4_128_step200k,          step: 200000 }
+    - { profile: n128_paper_encoder, run: repa_l4_128_pw_structure_step100k, step: 100000 }
+    - { profile: n128_paper_encoder, run: repa_l4_128_pw_torsional_step100k, step: 100000 }
+
+- id: n128_pdb_l9_encoder
+  title: "n=128 PDB L9 REPA encoder ablation"
+  set: n128
+  rows:
+    - { profile: n128_paper_layer, run: baseline_128_bs80_step200k,  step: 200000 }
+    - { profile: n128_paper_layer, run: repa_l9_128_bs80_step200k,   step: 200000 }   # CA-GearNet default
+
+- id: n128_pdb_bs80_layer
+  title: "n=128 PDB REPA bs80 layer ablation"
+  set: n128
+  rows:
+    - { profile: n128_paper_layer, run: baseline_128_bs80_step200k, step: 200000 }
+    - { profile: n128_paper_layer, run: repa_l0_128_bs80_step200k,  step: 200000 }
+    - { profile: n128_paper_layer, run: repa_l4_128_bs80_step200k,  step: 200000 }
+    - { profile: n128_paper_layer, run: repa_l9_128_bs80_step200k,  step: 200000 }
+
+# Bonus: per_residue layer trajectory at step=400k (bumped runs). Not in the
+# checkpoints-doc block list strictly, but its rows are present in the jsonl
+# and the existing md surfaces them — keep as a follow-on block.
+- id: n128_pdb_per_residue_layer_400k
+  title: "n=128 PDB per_residue layer ablation @ 400K (mixed bs=24→80)"
+  set: n128
+  rows:
+    - { profile: n128_paper_layer_per_residue, run: baseline_128_bs24_step400k,    step: 400000 }
+    - { profile: n128_paper_layer_per_residue, run: repa_l0_128_per_residue_step400k, step: 400000 }
+    - { profile: n128_paper_layer_per_residue, run: repa_l4_128_per_residue_step400k, step: 400000 }
+    - { profile: n128_paper_layer_per_residue, run: repa_l9_128_per_residue_step400k, step: 400000 }
+
+- id: n128_afdb_encoder
+  title: "n=128 AFDB encoder ablation"
+  set: n128
+  rows:
+    - { profile: n128_paper_afdb,     run: baseline_afdb_128_bs80_step200k,       step: 200000 }
+    - { profile: n128_paper_afdb,     run: baseline_afdb_128_bs80_step400k,       step: 400000 }
+    - { profile: n128_paper_afdb, run: baseline_afdb_128_bs80_step600k,       step: 600000 }
+    - { profile: n128_paper_afdb, run: baseline_afdb_128_bs80_step800k,       step: 800000 }
+    - { profile: n128_paper_afdb, run: baseline_afdb_128_bs80_step1000k,      step: 1000000 }
+    - { profile: n128_paper_afdb, run: baseline_afdb_128_bs80_step1200k,      step: 1200000 }
+    - { profile: n128_paper_afdb,     run: repa_l4_afdb_128_bs80_step200k,        step: 200000 }
+    - { profile: n128_paper_afdb, run: repa_l4_afdb_128_bs80_step600k,        step: 600000 }
+    - { profile: n128_paper_afdb,     run: repa_mpnn_l4_afdb_128_bs80_step200k,   step: 200000 }
+    - { profile: n128_paper_afdb,     run: repa_mpnn_l4_afdb_128_bs80_step400k,   step: 400000 }
+    - { profile: n128_paper_afdb, run: repa_mpnn_l4_afdb_128_bs80_step600k,   step: 600000 }
+    - { profile: n128_paper_afdb, run: repa_mpnn_l4_afdb_128_bs80_step800k,   step: 800000 }
+    - { profile: n128_paper_afdb, run: repa_mpnn_l4_afdb_128_bs80_step1000k,  step: 1000000 }
+
+# ============================================================================
+# n=256 paper-sweep blocks
+# ============================================================================
+
+- id: n256_external_reference
+  title: "External reference — NVIDIA NGC DFS-60M v1.3 (12L)"
+  set: n256
+  rows:
+    - { profile: n256_paper_pretrained, run: pretrained_dfs_60m_n256_paper, step: 1300000 }
+
+- id: n256_pdb_encoder_layer_bs
+  title: "n=256 PDB REPA encoder + layer + bs ablation"
+  set: n256
+  rows:
+    - { profile: n256_paper_pdb,    run: baseline_256_ep21,                   step: 400000 }
+    - { profile: n256_paper_pdb,    run: repa_l4_256_ep22,                    step: 400000 }   # CA-GearNet bs24
+    - { profile: n256_paper_random, run: repa_l4_256_random_ep17,             step: 200000 }   # random-init CA-GearNet
+    - { profile: n256_paper_pdb,    run: repa_l9_256_ep25,                    step: 400000 }
+    - { profile: n256_paper_mpnn,   run: repa_mpnn_l4_256_per_residue_step300k, step: 300000 }
+    - { profile: n256_paper_esm,    run: repa_esm_l9_t30_256_steplast,        step: 322000 }
+
+- id: n256_pdb_l4_wd_lambda_bs
+  title: "n=256 PDB L4 GearNet REPA weight-decay + λ + bs ablation"
+  set: n256
+  rows:
+    - { profile: n256_paper_pdb,        run: baseline_256_ep21,                          step: 400000 }
+    - { profile: n256_paper_lambda,     run: repa_l4_256_ep22,                           step: 400000 }   # λ=0.5 reference
+    - { profile: n256_paper_lambda_ext, run: repa_l4_256_per_residue_lambda1_step200k,   step: 200000 }
+    - { profile: n256_paper_lambda,     run: repa_l4_256_per_residue_lambda1_step300k,   step: 300000 }
+    - { profile: n256_paper_lambda,     run: repa_l4_256_per_residue_lambda2_step200k,   step: 200000 }
+    - { profile: n256_paper_lambda_ext, run: repa_l4_256_per_residue_lambda2_step300k,   step: 300000 }
+    - { profile: n256_paper_random,     run: repa_l4_256_random_ep17,                    step: 200000 }
+    # Step-matched anchor for λ comparison (L4 default at 300k):
+    - { profile: n256_paper_lambda,     run: repa_l4_256_ep13_step300k,                  step: 300000 }
+
+# Bonus: L4-default step trajectory (300k → 400k → 500k) — used by the existing
+# md "L4 step extension" block. Not in the checkpoints doc but present in jsonl.
+- id: n256_pdb_l4_step_extension
+  title: "n=256 PDB L4 step extension (REPA L4 default at 300K → 500K)"
+  set: n256
+  rows:
+    - { profile: n256_paper_l4_step300k, run: repa_l4_256_ep13_step300k,   step: 300000 }
+    - { profile: n256_paper_l4_step300k, run: repa_l4_256_ep22,            step: 400000 }
+    - { profile: n256_paper_l4_step500k, run: repa_l4_256_ep31_step500k,   step: 500000 }
+
+- id: n256_afdb_encoder_layer_bs
+  title: "n=256 AFDB REPA encoder + layer + bs ablation"
+  set: n256
+  rows:
+    - { profile: n256_paper_afdb,     run: baseline_afdb_256_ep20,                 step: 200000 }
+    - { profile: n256_paper_afdb_ext, run: baseline_afdb_256_step400k,             step: 400000 }
+    - { profile: n256_paper_afdb_ext, run: baseline_afdb_256_step700k,             step: 700000 }
+    - { profile: n256_paper_afdb_ext, run: baseline_afdb_256_step900k,             step: 900000 }
+    - { profile: n256_paper_afdb,     run: repa_l4_afdb_256_ep20,                  step: 200000 }   # CA-GearNet
+    - { profile: n256_paper_afdb_ext, run: repa_l4_afdb_256_step400k,              step: 400000 }
+    - { profile: n256_paper_afdb_ext, run: repa_l4_afdb_256_step700k,              step: 700000 }
+    - { profile: n256_paper_afdb_ext, run: repa_l9_afdb_256_step200k,              step: 200000 }   # CA-GearNet L9
+    - { profile: n256_paper_afdb_ext, run: repa_l9_afdb_256_step400k,              step: 400000 }
+    - { profile: n256_paper_afdb_ext, run: repa_mpnn_l4_afdb_256_step400k,         step: 400000 }
+    - { profile: n256_paper_afdb_ext, run: repa_mpnn_l9_afdb_256_step400k,         step: 400000 }
+    - { profile: n256_paper_afdb_ext, run: repa_mpnn_l9_afdb_256_step700k,         step: 700000 }
+
+- id: n256_pdb_averaging
+  title: "n=256 PDB averaging ablation"
+  set: n256
+  rows:
+    # No dedicated baseline launched for this sweep — repeat the n=256 PDB
+    # baseline as anchor reference (see checkpoints doc note).
+    - { profile: n256_paper_pdb,       run: baseline_256_ep21,                step: 400000 }
+    - { profile: n256_paper_averaging, run: repa_l0_256_ep26,                 step: 400000 }   # per_residue
+    - { profile: n256_paper_averaging, run: repa_l0_256_per_sample_steplast,  step: 381500 }
+    - { profile: n256_paper_averaging, run: repa_l4_256_ep22,                 step: 400000 }   # per_residue
+    - { profile: n256_paper_averaging, run: repa_l4_256_per_sample_step400k,  step: 400000 }
+    - { profile: n256_paper_averaging, run: repa_l9_256_ep25,                 step: 400000 }   # per_residue
+    - { profile: n256_paper_averaging, run: repa_l9_256_per_sample_steplast,  step: 385000 }
