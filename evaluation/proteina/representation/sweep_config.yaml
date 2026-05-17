@@ -440,3 +440,14 @@ paper_n128_cath_if_dih_convergence_afdb:
   output_dir: results/paper/n128_convergence_cath_if_dih_afdb
   baseline_trained_noise_run: baseline_afdb_128_bs80_step200k
   runs: "baseline_afdb_128_bs80_step100k,baseline_afdb_128_bs80_step200k,baseline_afdb_128_bs80_step400k,baseline_afdb_128_bs80_step700k,baseline_afdb_128_bs80_step1000k,repa_l4_afdb_128_bs80_step100k,repa_l4_afdb_128_bs80_step200k,repa_l4_afdb_128_bs80_step400k,repa_mpnn_l4_afdb_128_bs80_step100k,repa_mpnn_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step400k,repa_mpnn_l4_afdb_128_bs80_step700k,repa_mpnn_l4_afdb_128_bs80_step1000k,repa_mpnn_l9_afdb_128_bs80_2gpu_step100k,repa_mpnn_l9_afdb_128_bs80_2gpu_step200k,repa_mpnn_l9_afdb_128_bs80_2gpu_step400k"
+
+# Retry profile for 4 rep-pdb tasks killed mid-write by an interfering
+# git stash op (FileNotFoundError on partial shard). Same output_dir so
+# retry shards overwrite the partial ones.
+paper_n128_cath_if_dih_convergence_pdb_retry:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 128
+  n_eval: 1237
+  output_dir: results/paper/n128_convergence_cath_if_dih_pdb
+  baseline_trained_noise_run: baseline_128_bs80_step200k
+  runs: "baseline_128_bs80_step200k,repa_l4_128_bs80_step200k,repa_l4_128_bs80_step300k,repa_l4_128_bs80_step400k"

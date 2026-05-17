@@ -456,3 +456,18 @@ n128_convergence_afdb:
   runs: "baseline_afdb_128_bs80_step100k,baseline_afdb_128_bs80_step200k,baseline_afdb_128_bs80_step400k,baseline_afdb_128_bs80_step700k,baseline_afdb_128_bs80_step1000k,repa_l4_afdb_128_bs80_step100k,repa_l4_afdb_128_bs80_step200k,repa_l4_afdb_128_bs80_step400k,repa_mpnn_l4_afdb_128_bs80_step100k,repa_mpnn_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step400k,repa_mpnn_l4_afdb_128_bs80_step700k,repa_mpnn_l4_afdb_128_bs80_step1000k,repa_mpnn_l9_afdb_128_bs80_2gpu_step100k,repa_mpnn_l9_afdb_128_bs80_2gpu_step200k,repa_mpnn_l9_afdb_128_bs80_2gpu_step400k"
   output_dir: results/paper/n128_convergence_afdb
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# Retry sweep: failures from the initial n128_convergence runs (transient
+# /dev/shm ENOSPC + dataloader worker crashes). Same output dir so retry rows
+# merge cleanly into the base jsonl.
+n128_convergence_pdb_retry:
+  <<: *paper_defaults
+  runs: "repa_l4_128_bs80_step100k,repa_l9_128_bs80_step400k,repa_mpnn_l9_128_bs80_2gpu_step300k,repa_mpnn_l9_128_bs80_2gpu_step400k"
+  output_dir: results/paper/n128_convergence_pdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+n128_convergence_afdb_retry:
+  <<: *paper_defaults
+  runs: "repa_l4_afdb_128_bs80_step400k,repa_mpnn_l9_afdb_128_bs80_2gpu_step400k"
+  output_dir: results/paper/n128_convergence_afdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
