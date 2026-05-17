@@ -606,6 +606,208 @@ RUN_SCHEDULES = {
         4,
         [1000000],
     ),
+    # ── n=128 convergence sweep (added 2026-05-17) ─────────────────────────── #
+    # Companion to n=256 convergence. PDB uses dense @100k cadence (max horizon
+    # 700k); AFDB uses log spacing {100,200,400,700,1000} matching n256_convergence.
+    # 6-config PDB matrix (baseline + L4/L9 × {gn, mpnn} + L4 random-gn) and
+    # 4-config AFDB matrix (baseline + L4-gn + L4/L9-mpnn). Steps strictly
+    # above each run's max are skipped (no snap-to-last).
+    # ---- PDB: baseline_128_bs80 (max 700k, last-EMA 714,000) ---- #
+    "baseline_128_bs80_step100k": (
+        "proteina_60m_baseline_128_bs80",
+        False,
+        4,
+        [100000],
+    ),
+    "baseline_128_bs80_step300k": (
+        "proteina_60m_baseline_128_bs80",
+        False,
+        4,
+        [300000],
+    ),
+    "baseline_128_bs80_step400k": (
+        "proteina_60m_baseline_128_bs80",
+        False,
+        4,
+        [400000],
+    ),
+    "baseline_128_bs80_step500k": (
+        "proteina_60m_baseline_128_bs80",
+        False,
+        4,
+        [500000],
+    ),
+    "baseline_128_bs80_step600k": (
+        "proteina_60m_baseline_128_bs80",
+        False,
+        4,
+        [600000],
+    ),
+    "baseline_128_bs80_step700k": (
+        "proteina_60m_baseline_128_bs80",
+        False,
+        4,
+        [700000],
+    ),
+    # ---- PDB: repa_l4_gn_bs80 (max 500k, last-EMA 514,500) ---- #
+    "repa_l4_128_bs80_step100k": (
+        "proteina_60m_repa_l4_128_per_residue_bs80",
+        True,
+        4,
+        [100000],
+    ),
+    "repa_l4_128_bs80_step300k": (
+        "proteina_60m_repa_l4_128_per_residue_bs80",
+        True,
+        4,
+        [300000],
+    ),
+    "repa_l4_128_bs80_step400k": (
+        "proteina_60m_repa_l4_128_per_residue_bs80",
+        True,
+        4,
+        [400000],
+    ),
+    "repa_l4_128_bs80_step500k": (
+        "proteina_60m_repa_l4_128_per_residue_bs80",
+        True,
+        4,
+        [500000],
+    ),
+    # ---- PDB: repa_l9_gn_bs80 (max 400k, last-EMA 483,000) ---- #
+    "repa_l9_128_bs80_step100k": (
+        "proteina_60m_repa_l9_128_per_residue_bs80",
+        True,
+        9,
+        [100000],
+    ),
+    "repa_l9_128_bs80_step300k": (
+        "proteina_60m_repa_l9_128_per_residue_bs80",
+        True,
+        9,
+        [300000],
+    ),
+    "repa_l9_128_bs80_step400k": (
+        "proteina_60m_repa_l9_128_per_residue_bs80",
+        True,
+        9,
+        [400000],
+    ),
+    # ---- PDB: repa_mpnn_l4_bs80 (max 200k, last-EMA 231,000; short anchor) ---- #
+    "repa_mpnn_l4_128_bs80_step100k": (
+        "proteina_60m_repa_mpnn_l4_128_per_residue_bs80",
+        True,
+        4,
+        [100000],
+    ),
+    # ---- PDB: repa_mpnn_l9_bs80_2gpu (new run, max 500k, last-EMA 518,000) ---- #
+    "repa_mpnn_l9_128_bs80_2gpu_step100k": (
+        "proteina_60m_repa_mpnn_l9_128_per_residue_bs80_2gpu",
+        True,
+        9,
+        [100000],
+    ),
+    "repa_mpnn_l9_128_bs80_2gpu_step200k": (
+        "proteina_60m_repa_mpnn_l9_128_per_residue_bs80_2gpu",
+        True,
+        9,
+        [200000],
+    ),
+    "repa_mpnn_l9_128_bs80_2gpu_step300k": (
+        "proteina_60m_repa_mpnn_l9_128_per_residue_bs80_2gpu",
+        True,
+        9,
+        [300000],
+    ),
+    "repa_mpnn_l9_128_bs80_2gpu_step400k": (
+        "proteina_60m_repa_mpnn_l9_128_per_residue_bs80_2gpu",
+        True,
+        9,
+        [400000],
+    ),
+    "repa_mpnn_l9_128_bs80_2gpu_step500k": (
+        "proteina_60m_repa_mpnn_l9_128_per_residue_bs80_2gpu",
+        True,
+        9,
+        [500000],
+    ),
+    # ---- PDB: repa_l4_random (rand-gn, max 400k, last-EMA 490,000) ---- #
+    "repa_l4_128_random_step100k": (
+        "proteina_60m_repa_l4_128_per_residue_random",
+        True,
+        4,
+        [100000],
+    ),
+    "repa_l4_128_random_step300k": (
+        "proteina_60m_repa_l4_128_per_residue_random",
+        True,
+        4,
+        [300000],
+    ),
+    "repa_l4_128_random_step400k": (
+        "proteina_60m_repa_l4_128_per_residue_random",
+        True,
+        4,
+        [400000],
+    ),
+    # ---- AFDB: baseline (max 1200k); need 100, 700 (200/400/1000 already exist) ---- #
+    "baseline_afdb_128_bs80_step100k": (
+        "proteina_60m_baseline_afdb_128_bs80_2gpu",
+        False,
+        4,
+        [100000],
+    ),
+    "baseline_afdb_128_bs80_step700k": (
+        "proteina_60m_baseline_afdb_128_bs80_2gpu",
+        False,
+        4,
+        [700000],
+    ),
+    # ---- AFDB: repa_l4_gn (max 600k); need 100, 400 (200/600 already exist) ---- #
+    "repa_l4_afdb_128_bs80_step100k": (
+        "proteina_60m_repa_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [100000],
+    ),
+    "repa_l4_afdb_128_bs80_step400k": (
+        "proteina_60m_repa_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [400000],
+    ),
+    # ---- AFDB: repa_mpnn_l4 (max 1100k); need 100, 700 (200/400/600/800/1000 exist) ---- #
+    "repa_mpnn_l4_afdb_128_bs80_step100k": (
+        "proteina_60m_repa_mpnn_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [100000],
+    ),
+    "repa_mpnn_l4_afdb_128_bs80_step700k": (
+        "proteina_60m_repa_mpnn_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [700000],
+    ),
+    # ---- AFDB: repa_mpnn_l9 (new run, max 400k, last-EMA 490,000) ---- #
+    "repa_mpnn_l9_afdb_128_bs80_2gpu_step100k": (
+        "proteina_60m_repa_mpnn_l9_128_afdb_per_residue_bs80_2gpu",
+        True,
+        9,
+        [100000],
+    ),
+    "repa_mpnn_l9_afdb_128_bs80_2gpu_step200k": (
+        "proteina_60m_repa_mpnn_l9_128_afdb_per_residue_bs80_2gpu",
+        True,
+        9,
+        [200000],
+    ),
+    "repa_mpnn_l9_afdb_128_bs80_2gpu_step400k": (
+        "proteina_60m_repa_mpnn_l9_128_afdb_per_residue_bs80_2gpu",
+        True,
+        9,
+        [400000],
+    ),
     # ── n=256 AFDB extension: step=400K/700K/900K snapshots ──────────────── #
     # Existing baseline_afdb_256_ep20 / repa_l4_afdb_256_ep20 are pinned at
     # step=200K (epoch 20). These step-keyed companions sample further along
@@ -1150,6 +1352,38 @@ GEN_RUN_CONFIGS = {
     "repa_mpnn_l4_afdb_128_bs80_step600k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_mpnn_l4_afdb_128_bs80_step800k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_mpnn_l4_afdb_128_bs80_step1000k": "inference/paper/inference_fid_60m_n128_paper",
+    # ── n=128 convergence sweep (added 2026-05-17) ──────────────────────── #
+    "baseline_128_bs80_step100k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_128_bs80_step300k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_128_bs80_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_128_bs80_step500k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_128_bs80_step600k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_128_bs80_step700k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_bs80_step100k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_bs80_step300k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_bs80_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_bs80_step500k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l9_128_bs80_step100k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l9_128_bs80_step300k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l9_128_bs80_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l4_128_bs80_step100k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l9_128_bs80_2gpu_step100k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l9_128_bs80_2gpu_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l9_128_bs80_2gpu_step300k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l9_128_bs80_2gpu_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l9_128_bs80_2gpu_step500k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_random_step100k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_random_step300k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_random_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_afdb_128_bs80_step100k": "inference/paper/inference_fid_60m_n128_paper",
+    "baseline_afdb_128_bs80_step700k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_afdb_128_bs80_step100k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_afdb_128_bs80_step400k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l4_afdb_128_bs80_step100k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l4_afdb_128_bs80_step700k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l9_afdb_128_bs80_2gpu_step100k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l9_afdb_128_bs80_2gpu_step200k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l9_afdb_128_bs80_2gpu_step400k": "inference/paper/inference_fid_60m_n128_paper",
     # ── n=256 AFDB extension (step-curve + mpnn-aligned encoders) ────────── #
     "baseline_afdb_256_step400k": "inference/paper/inference_fid_60m_paper",
     "baseline_afdb_256_step700k": "inference/paper/inference_fid_60m_paper",

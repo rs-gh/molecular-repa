@@ -433,3 +433,26 @@ n256_convergence_afdb_ext:
   runs: "repa_l9_afdb_256_step500k,repa_l9_afdb_256_step600k,repa_l4_afdb_256_step1200k,repa_mpnn_l4_afdb_256_step1100k,repa_mpnn_l9_afdb_256_step1400k,repa_mpnn_l9_afdb_256_step1500k"
   output_dir: results/paper/n256_convergence_afdb
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# ─────────────────────────────────────────────────────────────────────────── #
+# n=128 convergence sweep (added 2026-05-17) — REPA-paper-style step curves
+# mirroring n256_convergence. PDB uses dense @100k cadence (max horizon 700k);
+# AFDB uses log spacing {100k, 200k, 400k, 700k, 1000k} matching the n256 grid.
+# PDB matrix (6 configs): baseline + {L4, L9} × {GearNet, MPNN} + L4 random-gn.
+#   27 unique PDB ckpts. mpnn_l4 only reaches 200k (short anchor).
+# AFDB matrix (4 configs): baseline + L4-gn + L4-mpnn + L9-mpnn.
+#   16 unique AFDB ckpts. No L9-gn on AFDB-128 (not trained).
+# Steps strictly above each run's max are skipped (no snap-to-last).
+# ─────────────────────────────────────────────────────────────────────────── #
+
+n128_convergence_pdb:
+  <<: *paper_defaults
+  runs: "baseline_128_bs80_step100k,baseline_128_bs80_step200k,baseline_128_bs80_step300k,baseline_128_bs80_step400k,baseline_128_bs80_step500k,baseline_128_bs80_step600k,baseline_128_bs80_step700k,repa_l4_128_bs80_step100k,repa_l4_128_bs80_step200k,repa_l4_128_bs80_step300k,repa_l4_128_bs80_step400k,repa_l4_128_bs80_step500k,repa_l9_128_bs80_step100k,repa_l9_128_bs80_step200k,repa_l9_128_bs80_step300k,repa_l9_128_bs80_step400k,repa_mpnn_l4_128_bs80_step100k,repa_mpnn_l4_128_bs80_step200k,repa_mpnn_l9_128_bs80_2gpu_step100k,repa_mpnn_l9_128_bs80_2gpu_step200k,repa_mpnn_l9_128_bs80_2gpu_step300k,repa_mpnn_l9_128_bs80_2gpu_step400k,repa_mpnn_l9_128_bs80_2gpu_step500k,repa_l4_128_random_step100k,repa_l4_128_random_step200k,repa_l4_128_random_step300k,repa_l4_128_random_step400k"
+  output_dir: results/paper/n128_convergence_pdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+n128_convergence_afdb:
+  <<: *paper_defaults
+  runs: "baseline_afdb_128_bs80_step100k,baseline_afdb_128_bs80_step200k,baseline_afdb_128_bs80_step400k,baseline_afdb_128_bs80_step700k,baseline_afdb_128_bs80_step1000k,repa_l4_afdb_128_bs80_step100k,repa_l4_afdb_128_bs80_step200k,repa_l4_afdb_128_bs80_step400k,repa_mpnn_l4_afdb_128_bs80_step100k,repa_mpnn_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step400k,repa_mpnn_l4_afdb_128_bs80_step700k,repa_mpnn_l4_afdb_128_bs80_step1000k,repa_mpnn_l9_afdb_128_bs80_2gpu_step100k,repa_mpnn_l9_afdb_128_bs80_2gpu_step200k,repa_mpnn_l9_afdb_128_bs80_2gpu_step400k"
+  output_dir: results/paper/n128_convergence_afdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"

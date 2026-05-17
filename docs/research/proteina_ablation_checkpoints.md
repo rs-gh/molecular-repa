@@ -13,7 +13,7 @@ Conventions:
 - **Enc** is the REPA target encoder (`—` for baselines): `gn` = CA-GearNet (default), `esm` = ESM-2 base (t12), `esm-t30` = ESM-2 t30 medium, `mpnn` = ProteinMPNN, `pw-s/pw-t` = pairwise-GearNet structure / torsional, `rand-gn` = randomly-initialised CA-GearNet. **L** is the transformer layer the REPA head is tapped from. **Avg** is REPA averaging (`per_residue` / `per_sample`).
 - **λ**, **wd**, **lr** are shown only when they differ from defaults (λ=0.5, wd=0, lr=1×base).
 
-Inventory generated 2026-05-16. Periodic-step list comes from `ls /rds/.../store/*/checkpoints/`; `Last-EMA step` is read from each `last-EMA.ckpt`'s `global_step` field via `torch.load(..., mmap=True, weights_only=False)`. Refresh snippet at the bottom of this file.
+Inventory generated 2026-05-16; n=128 blocks refreshed 2026-05-17 (several bs80 runs trained well past the 2026-05-16 snapshot, and two new MPNN-L9 runs landed on disk: `proteina_60m_repa_mpnn_l9_128_per_residue_bs80_2gpu` on PDB and `proteina_60m_repa_mpnn_l9_128_afdb_per_residue_bs80_2gpu` on AFDB). Periodic-step list comes from `ls /rds/.../store/*/checkpoints/`; `Last-EMA step` is read from each `last-EMA.ckpt`'s `global_step` field via `torch.load(..., mmap=True, weights_only=False)`. Refresh snippet at the bottom of this file.
 
 **Common cross-model comparison steps** (intersection of all non-crashed runs in this doc): **100k, 200k**. Most ablations also share 300k–400k; AFDB and the long-running PDB-256 runs go past 1M. Each ablation block notes its own common-step window.
 
@@ -21,15 +21,15 @@ Inventory generated 2026-05-16. Periodic-step list comes from `ls /rds/.../store
 
 ## Ablation: n=128 PDB bs ablation
 
-Common cross-model steps: **100k, 200k**. (bs12 / bs80 stopped at 200k–300k; bs24 and `baseline_128` go further.)
+Common cross-model steps: **100k, 200k**. bs12 caps at 300k; the bs24 REPA-L4 leg reaches 400k; `baseline_128_bs80` now reaches 700k and `baseline_128` reaches 1000k.
 
 | WandB run | Store dir | N | DS | GPUs | bs | eff bs | Enc | L | Avg | Step cadence | Last-EMA step |
 |---|---|---|---|---:|---:|---:|---|---|---|---|---:|
 | `proteina_60m_baseline_128` *(bs_24 in wandb label)* | `proteina_60m_baseline_128` | 128 | PDB | 1 | 24 | 24 | — | — | — | 100k–1000k @100k | 1,004,500 |
-| `proteina_60m_baseline_128_bs80` | `proteina_60m_baseline_128_bs80` | 128 | PDB | 2 | 40 | 80 | — | — | — | 100k–200k @100k | 241,500 |
+| `proteina_60m_baseline_128_bs80` | `proteina_60m_baseline_128_bs80` | 128 | PDB | 2 | 40 | 80 | — | — | — | 100k–700k @100k | 714,000 |
 | `proteina_60m_repa_l4_128_per_residue_bs12` | `proteina_60m_repa_l4_128_per_residue_bs12` | 128 | PDB | 1 | 12 | 12 | gn | 4 | per_residue | 100k–300k @100k | 315,000 |
 | `proteina_60m_repa_l4_128_per_residue_bs24` | `proteina_60m_repa_l4_128_per_residue_bs24` | 128 | PDB | 1 | 24 | 24 | gn | 4 | per_residue | 100k–400k @100k | 472,500 |
-| `proteina_60m_repa_l4_128_per_residue_bs80` | `proteina_60m_repa_l4_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 4 | per_residue | 100k–200k @100k | 220,500 |
+| `proteina_60m_repa_l4_128_per_residue_bs80` | `proteina_60m_repa_l4_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 4 | per_residue | 100k–500k @100k | 514,500 |
 
 ---
 
@@ -39,8 +39,8 @@ Common cross-model steps: **100k, 200k**. (lr3x only reached 100k periodic; last
 
 | WandB run | Store dir | N | DS | GPUs | bs | eff bs | Enc | L | Avg | λ | wd | lr | Step cadence | Last-EMA step |
 |---|---|---|---|---:|---:|---:|---|---|---|---:|---:|---|---|---:|
-| `proteina_60m_baseline_128_bs80` | `proteina_60m_baseline_128_bs80` | 128 | PDB | 2 | 40 | 80 | — | — | — | — | 0 | 1× | 100k–200k @100k | 241,500 |
-| `proteina_60m_repa_l4_128_per_residue_bs80` *(λ=0.5 reference)* | `proteina_60m_repa_l4_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 4 | per_residue | 0.5 | 0 | 1× | 100k–200k @100k | 220,500 |
+| `proteina_60m_baseline_128_bs80` | `proteina_60m_baseline_128_bs80` | 128 | PDB | 2 | 40 | 80 | — | — | — | — | 0 | 1× | 100k–700k @100k | 714,000 |
+| `proteina_60m_repa_l4_128_per_residue_bs80` *(λ=0.5 reference)* | `proteina_60m_repa_l4_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 4 | per_residue | 0.5 | 0 | 1× | 100k–500k @100k | 514,500 |
 | `proteina_60m_repa_l4_128_per_residue_bs80_lambda025` | `proteina_60m_repa_l4_128_per_residue_bs80_lambda025` | 128 | PDB | 1 | 80 | 80 | gn | 4 | per_residue | 0.25 | 0 | 1× | 100k–200k @100k | 234,500 |
 | `proteina_60m_repa_l4_128_per_residue_bs80_lambda1` | `proteina_60m_repa_l4_128_per_residue_bs80_lambda1` | 128 | PDB | 1 | 80 | 80 | gn | 4 | per_residue | 1.0 | 0 | 1× | 100k–200k @100k | 245,000 |
 | `proteina_60m_repa_l4_128_per_residue_bs80_lambda2` | `proteina_60m_repa_l4_128_per_residue_bs80_lambda2` | 128 | PDB | 1 | 80 | 80 | gn | 4 | per_residue | 2.0 | 0 | 1× | 100k–200k @100k | 259,000 |
@@ -57,10 +57,10 @@ Common cross-model steps (over runs with ckpts): **100k, 200k**.
 
 | WandB run | Store dir | N | DS | GPUs | bs | eff bs | Enc | L | Avg | Step cadence | Last-EMA step |
 |---|---|---|---|---:|---:|---:|---|---|---|---|---:|
-| `proteina_60m_baseline_128_bs80` | `proteina_60m_baseline_128_bs80` | 128 | PDB | 2 | 40 | 80 | — | — | — | 100k–200k @100k | 241,500 |
+| `proteina_60m_baseline_128_bs80` | `proteina_60m_baseline_128_bs80` | 128 | PDB | 2 | 40 | 80 | — | — | — | 100k–700k @100k | 714,000 |
 | `proteina_60m_repa_l0_128_per_residue_bs80` | `proteina_60m_repa_l0_128_per_residue_bs80` | 128 | PDB | 1 | 80 | 80 | gn | 0 | per_residue | 100k–200k @100k | 231,000 |
-| `proteina_60m_repa_l4_128_per_residue_bs80` | `proteina_60m_repa_l4_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 4 | per_residue | 100k–200k @100k | 220,500 |
-| `proteina_60m_repa_l9_128_per_residue_bs80` | `proteina_60m_repa_l9_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 9 | per_residue | 100k–200k @100k | 224,000 |
+| `proteina_60m_repa_l4_128_per_residue_bs80` | `proteina_60m_repa_l4_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 4 | per_residue | 100k–500k @100k | 514,500 |
+| `proteina_60m_repa_l9_128_per_residue_bs80` | `proteina_60m_repa_l9_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 9 | per_residue | 100k–400k @100k | 483,000 |
 | `proteina_60m_repa_l0_128_per_sample` | `proteina_60m_repa_l0_128_per_sample` | 128 | PDB | 1 | 80 | 80 | gn | 0 | per_sample | 100k–200k @100k | 217,000 |
 | `proteina_60m_repa_l4_128_per_sample` | `proteina_60m_repa_l4_128_per_sample` | 128 | PDB | 1 | 80 | 80 | gn | 4 | per_sample | 100k–200k @100k | 217,000 |
 | `proteina_60m_repa_l9_128_per_sample` | `proteina_60m_repa_l9_128_per_sample` | 128 | PDB | 1 | 80 | 80 | gn | 9 | per_sample | 100k–200k @100k | 217,000 |
@@ -79,9 +79,9 @@ Common cross-model steps (over runs with ckpts): **100k**. (pw-structure / pw-to
 
 | WandB run | Store dir | N | DS | GPUs | bs | eff bs | Enc | L | Avg | Step cadence | Last-EMA step |
 |---|---|---|---|---:|---:|---:|---|---|---|---|---:|
-| `proteina_60m_baseline_128_bs80` | `proteina_60m_baseline_128_bs80` | 128 | PDB | 2 | 40 | 80 | — | 4 | — | 100k–200k @100k | 241,500 |
-| `proteina_60m_repa_l4_128_per_residue_bs80` *(CA-GearNet, default)* | `proteina_60m_repa_l4_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 4 | per_residue | 100k–200k @100k | 220,500 |
-| `proteina_60m_repa_l4_128_per_residue_random` *(random-init CA-GearNet)* | `proteina_60m_repa_l4_128_per_residue_random` | 128 | PDB | 2 | 40 | 80 | rand-gn | 4 | per_residue | 100k–200k @100k | 203,000 |
+| `proteina_60m_baseline_128_bs80` | `proteina_60m_baseline_128_bs80` | 128 | PDB | 2 | 40 | 80 | — | 4 | — | 100k–700k @100k | 714,000 |
+| `proteina_60m_repa_l4_128_per_residue_bs80` *(CA-GearNet, default)* | `proteina_60m_repa_l4_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 4 | per_residue | 100k–500k @100k | 514,500 |
+| `proteina_60m_repa_l4_128_per_residue_random` *(random-init CA-GearNet)* | `proteina_60m_repa_l4_128_per_residue_random` | 128 | PDB | 2 | 40 | 80 | rand-gn | 4 | per_residue | 100k–400k @100k | 490,000 |
 | `proteina_60m_repa_mpnn_l4_128_per_residue_bs80` | `proteina_60m_repa_mpnn_l4_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | mpnn | 4 | per_residue | 100k–200k @100k | 231,000 |
 | `proteina_60m_repa_esm_l4_128_per_residue` | *(no store dir — config only)* | 128 | PDB | ? | ? | ? | esm | 4 | per_residue | — | — |
 | `proteina_60m_repa_esm_l4_t30_128_per_residue` | `proteina_60m_repa_esm_l4_t30_128_per_residue` | 128 | PDB | 1 | 80 | 80 | esm-t30 | 4 | per_residue | — *(config only)* | — |
@@ -92,12 +92,13 @@ Common cross-model steps (over runs with ckpts): **100k**. (pw-structure / pw-to
 
 ## Ablation: n=128 PDB L9 REPA encoder ablation
 
-Common cross-model steps (over runs with ckpts): **100k, 200k**.
+Common cross-model steps (over runs with ckpts): **100k, 200k**. (`mpnn_l9_bs80_2gpu` reaches 500k; CA-GearNet L9 reaches 400k.)
 
 | WandB run | Store dir | N | DS | GPUs | bs | eff bs | Enc | L | Avg | Step cadence | Last-EMA step |
 |---|---|---|---|---:|---:|---:|---|---|---|---|---:|
-| `proteina_60m_baseline_128_bs80` | `proteina_60m_baseline_128_bs80` | 128 | PDB | 2 | 40 | 80 | — | 9 | — | 100k–200k @100k | 241,500 |
-| `proteina_60m_repa_l9_128_per_residue_bs80` *(CA-GearNet, default)* | `proteina_60m_repa_l9_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 9 | per_residue | 100k–200k @100k | 224,000 |
+| `proteina_60m_baseline_128_bs80` | `proteina_60m_baseline_128_bs80` | 128 | PDB | 2 | 40 | 80 | — | 9 | — | 100k–700k @100k | 714,000 |
+| `proteina_60m_repa_l9_128_per_residue_bs80` *(CA-GearNet, default)* | `proteina_60m_repa_l9_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 9 | per_residue | 100k–400k @100k | 483,000 |
+| `proteina_60m_repa_mpnn_l9_128_per_residue_bs80_2gpu` | `proteina_60m_repa_mpnn_l9_128_per_residue_bs80_2gpu` | 128 | PDB | 2 | 40 | 80 | mpnn | 9 | per_residue | 100k–500k @100k | 518,000 |
 | `proteina_60m_repa_esm_l9_128_per_residue` | *(no store dir — config only)* | 128 | PDB | ? | ? | ? | esm | 9 | per_residue | — | — |
 
 ---
@@ -108,22 +109,23 @@ Common cross-model steps: **100k, 200k**.
 
 | WandB run | Store dir | N | DS | GPUs | bs | eff bs | Enc | L | Avg | Step cadence | Last-EMA step |
 |---|---|---|---|---:|---:|---:|---|---|---|---|---:|
-| `proteina_60m_baseline_128_bs80` | `proteina_60m_baseline_128_bs80` | 128 | PDB | 2 | 40 | 80 | — | — | — | 100k–200k @100k | 241,500 |
+| `proteina_60m_baseline_128_bs80` | `proteina_60m_baseline_128_bs80` | 128 | PDB | 2 | 40 | 80 | — | — | — | 100k–700k @100k | 714,000 |
 | `proteina_60m_repa_l0_128_per_residue_bs80` | `proteina_60m_repa_l0_128_per_residue_bs80` | 128 | PDB | 1 | 80 | 80 | gn | 0 | per_residue | 100k–200k @100k | 231,000 |
-| `proteina_60m_repa_l4_128_per_residue_bs80` | `proteina_60m_repa_l4_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 4 | per_residue | 100k–200k @100k | 220,500 |
-| `proteina_60m_repa_l9_128_per_residue_bs80` | `proteina_60m_repa_l9_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 9 | per_residue | 100k–200k @100k | 224,000 |
+| `proteina_60m_repa_l4_128_per_residue_bs80` | `proteina_60m_repa_l4_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 4 | per_residue | 100k–500k @100k | 514,500 |
+| `proteina_60m_repa_l9_128_per_residue_bs80` | `proteina_60m_repa_l9_128_per_residue_bs80` | 128 | PDB | 2 | 40 | 80 | gn | 9 | per_residue | 100k–400k @100k | 483,000 |
 
 ---
 
 ## Ablation: n=128 AFDB encoder ablation
 
-Common cross-model steps: **100k → 600k @100k** (the shortest run, `l4_afdb`, has 600k as its last; baseline and mpnn run much longer).
+Common cross-model steps: **100k → 400k @100k** (set by the newest run, `mpnn_l9_afdb`, which reaches 400k; `l4_afdb` GearNet reaches 600k, baseline and MPNN-L4 run past 1M).
 
 | WandB run | Store dir | N | DS | GPUs | bs | eff bs | Enc | L | Avg | Step cadence | Last-EMA step |
 |---|---|---|---|---:|---:|---:|---|---|---|---|---:|
 | `proteina_60m_baseline_afdb_128_bs80_2gpu` | `proteina_60m_baseline_afdb_128_bs80_2gpu` | 128 | AFDB | 2 | 40 | 80 | — | — | — | 100k–1200k @100k | 1,200,500 |
 | `proteina_60m_repa_l4_128_afdb_per_residue_bs80_2gpu` *(CA-GearNet)* | `proteina_60m_repa_l4_128_afdb_per_residue_bs80_2gpu` | 128 | AFDB | 2 | 40 | 80 | gn | 4 | per_residue | 100k–600k @100k | 630,000 |
 | `proteina_60m_repa_mpnn_l4_128_afdb_per_residue_bs80_2gpu` | `proteina_60m_repa_mpnn_l4_128_afdb_per_residue_bs80_2gpu` | 128 | AFDB | 2 | 40 | 80 | mpnn | 4 | per_residue | 100k–1100k @100k | 1,158,500 |
+| `proteina_60m_repa_mpnn_l9_128_afdb_per_residue_bs80_2gpu` | `proteina_60m_repa_mpnn_l9_128_afdb_per_residue_bs80_2gpu` | 128 | AFDB | 2 | 40 | 80 | mpnn | 9 | per_residue | 100k–400k @100k | 490,000 |
 
 ---
 

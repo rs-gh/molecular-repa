@@ -417,3 +417,26 @@ paper_n256_cath_if_dih_convergence_afdb_ext:
   output_dir: results/paper/n256_convergence_cath_if_dih_afdb
   baseline_trained_noise_run: baseline_afdb_256_ep20
   runs: "repa_l9_afdb_256_step500k,repa_l9_afdb_256_step600k,repa_l4_afdb_256_step1200k,repa_mpnn_l4_afdb_256_step1100k,repa_mpnn_l9_afdb_256_step1400k,repa_mpnn_l9_afdb_256_step1500k"
+
+# ─────────────────────────────────────────────────────────────────────────── #
+# n=128 convergence sweep (added 2026-05-17) — companion to the gen
+# n128_convergence_{pdb,afdb} profiles. cath+IF+dih probes (skipping distance)
+# at t=1.0. PDB: 27 ckpts (6-config matrix); AFDB: 16 ckpts (4-config matrix).
+# Run as separate array jobs (--lmdb_dataset pdb / afdb).
+# ─────────────────────────────────────────────────────────────────────────── #
+
+paper_n128_cath_if_dih_convergence_pdb:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 128
+  n_eval: 1237
+  output_dir: results/paper/n128_convergence_cath_if_dih_pdb
+  baseline_trained_noise_run: baseline_128_bs80_step200k
+  runs: "baseline_128_bs80_step100k,baseline_128_bs80_step200k,baseline_128_bs80_step300k,baseline_128_bs80_step400k,baseline_128_bs80_step500k,baseline_128_bs80_step600k,baseline_128_bs80_step700k,repa_l4_128_bs80_step100k,repa_l4_128_bs80_step200k,repa_l4_128_bs80_step300k,repa_l4_128_bs80_step400k,repa_l4_128_bs80_step500k,repa_l9_128_bs80_step100k,repa_l9_128_bs80_step200k,repa_l9_128_bs80_step300k,repa_l9_128_bs80_step400k,repa_mpnn_l4_128_bs80_step100k,repa_mpnn_l4_128_bs80_step200k,repa_mpnn_l9_128_bs80_2gpu_step100k,repa_mpnn_l9_128_bs80_2gpu_step200k,repa_mpnn_l9_128_bs80_2gpu_step300k,repa_mpnn_l9_128_bs80_2gpu_step400k,repa_mpnn_l9_128_bs80_2gpu_step500k,repa_l4_128_random_step100k,repa_l4_128_random_step200k,repa_l4_128_random_step300k,repa_l4_128_random_step400k"
+
+paper_n128_cath_if_dih_convergence_afdb:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 128
+  n_eval: 1586
+  output_dir: results/paper/n128_convergence_cath_if_dih_afdb
+  baseline_trained_noise_run: baseline_afdb_128_bs80_step200k
+  runs: "baseline_afdb_128_bs80_step100k,baseline_afdb_128_bs80_step200k,baseline_afdb_128_bs80_step400k,baseline_afdb_128_bs80_step700k,baseline_afdb_128_bs80_step1000k,repa_l4_afdb_128_bs80_step100k,repa_l4_afdb_128_bs80_step200k,repa_l4_afdb_128_bs80_step400k,repa_mpnn_l4_afdb_128_bs80_step100k,repa_mpnn_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step400k,repa_mpnn_l4_afdb_128_bs80_step700k,repa_mpnn_l4_afdb_128_bs80_step1000k,repa_mpnn_l9_afdb_128_bs80_2gpu_step100k,repa_mpnn_l9_afdb_128_bs80_2gpu_step200k,repa_mpnn_l9_afdb_128_bs80_2gpu_step400k"
