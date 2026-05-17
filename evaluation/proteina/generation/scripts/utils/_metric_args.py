@@ -52,6 +52,11 @@ EVALUATE_DEFAULTS: Dict[str, Any] = {
     "metrics": None,
     "ss_reference_pdb_path": None,
     "ss_reference_afdb_path": None,
+    # Sampler overrides for the variance / sampler-regime sweep. Unset =
+    # inherit from the hydra inference config's sampling_caflow block.
+    "sampling_mode": None,
+    "sc_scale_noise": None,
+    "rep_idx": None,
 }
 
 
@@ -154,6 +159,28 @@ def add_metric_args(parser: argparse.ArgumentParser) -> None:
         default=None,
         help="Path to .pt with [N,3] (H,E,C) reference fractions from AFDB SwissProt. "
         "Missing = skip ss_jsd_afdb columns.",
+    )
+    parser.add_argument(
+        "--sampling_mode",
+        type=str,
+        default=None,
+        choices=[None, "vf", "sc"],
+        help="Override cfg.sampling_caflow.sampling_mode. 'vf'=ODE, 'sc'=SDE. "
+        "Unset = inherit from inference config.",
+    )
+    parser.add_argument(
+        "--sc_scale_noise",
+        type=float,
+        default=None,
+        help="Override cfg.sampling_caflow.sc_scale_noise (SDE temperature). "
+        "Unset = inherit from inference config.",
+    )
+    parser.add_argument(
+        "--rep_idx",
+        type=int,
+        default=None,
+        help="Replicate index (0..N-1) for variance estimation. Appended to "
+        "output_suffix and recorded in the JSONL row so reruns don't clobber.",
     )
 
 

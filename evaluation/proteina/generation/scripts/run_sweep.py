@@ -129,6 +129,27 @@ def load_ckpts_file(path: Path) -> List[Tuple[str, Optional[int], str, Path]]:
 _PROTOCOL_SUFFIXES = ("_fid", "_des")
 
 
+def make_sampler_tag(
+    sampling_mode: Optional[str], sc_scale_noise: Optional[float]
+) -> Optional[str]:
+    """Compact tag for the (sampling_mode, sc_scale_noise) pair.
+
+    None when both are unset — caller keeps the legacy single-rep output dir
+    name so existing eval_output/ paths stay untouched. Tags:
+      - vf  -> "ode"
+      - sc, sc_scale_noise=X -> f"sde_n{X}"
+    """
+    if sampling_mode is None and sc_scale_noise is None:
+        return None
+    if sampling_mode == "vf":
+        return "ode"
+    # Treat unset sampling_mode as "sc" since that's the inference config default.
+    noise = sc_scale_noise if sc_scale_noise is not None else 0.45
+    # Use Python's default float repr so 0.45 -> "0.45", 1.0 -> "1.0",
+    # 0.0 -> "0.0" (vs `:g` which strips to "1" / "0").
+    return f"sde_n{float(noise)}"
+
+
 def _strip_protocol_suffix(run_name: str) -> str:
     """Return the RUN_SCHEDULES key for a run name with an optional `_fid` /
     `_des` protocol suffix.
@@ -185,11 +206,34 @@ def build_task_list(
 # -- JSONL resume helpers ------------------------------------------------------
 
 
-def _load_done_set(jsonl_path: Path) -> Tuple[Set[Tuple[str, int]], List[Dict]]:
-    """Read existing JSONL; return set of completed (run, step) keys + all rows."""
+def _row_key(r: Dict) -> Tuple[str, int, Optional[str], Optional[int]]:
+    """Identity key for a JSONL result row.
+
+    Extended from the original (run, step) to discriminate sampler-regime and
+    replicate-index reruns introduced for variance estimation. Legacy rows
+    without these fields fall back to sampler_tag=None, rep_idx=None — which
+    is exactly how the legacy single-rep entries are tagged on write, so
+    they remain compatible.
+    """
+    return (
+        r["run"],
+        int(r["step"]),
+        r.get("sampler_tag"),
+        r.get("rep_idx") if r.get("rep_idx") is None else int(r["rep_idx"]),
+    )
+
+
+def _load_done_set(
+    jsonl_path: Path,
+) -> Tuple[Set[Tuple[str, int, Optional[str], Optional[int]]], List[Dict]]:
+    """Read existing JSONL; return set of completed keys + all rows.
+
+    Key is `_row_key(r)`: (run, step, sampler_tag, rep_idx). Legacy rows
+    written before the sampler/rep fields existed map to (run, step, None, None).
+    """
     if not jsonl_path.exists():
         return set(), []
-    done: Set[Tuple[str, int]] = set()
+    done: Set[Tuple[str, int, Optional[str], Optional[int]]] = set()
     rows: List[Dict] = []
     with open(jsonl_path) as f:
         for line in f:
@@ -201,7 +245,7 @@ def _load_done_set(jsonl_path: Path) -> Tuple[Set[Tuple[str, int]], List[Dict]]:
             except json.JSONDecodeError:
                 continue
             if "error" not in r and "run" in r and "step" in r:
-                done.add((r["run"], int(r["step"])))
+                done.add(_row_key(r))
             rows.append(r)
     return done, rows
 
@@ -261,6 +305,10 @@ def _backfill_from_csv(rows: List[Dict], repo_root: Path) -> int:
             continue
         config_slug = r["config_name"].replace("/", "_")
         output_suffix = f"sweep_{r['run']}_step_{r['step']}"
+        if r.get("sampler_tag"):
+            output_suffix += f"__{r['sampler_tag']}"
+        if r.get("rep_idx") is not None:
+            output_suffix += f"__rep{r['rep_idx']}"
         csv_path = (
             repo_root
             / f"eval_output/{config_slug}_{output_suffix}"
@@ -297,11 +345,13 @@ def consolidate(jsonl_path: Path, output_dir: Path) -> None:
         print("No rows in JSONL yet, skipping consolidation.")
         return
 
-    # Deduplicate: for each (run, step) pair keep only the last non-error entry.
+    # Deduplicate: keep the last non-error entry per (run, step, sampler_tag,
+    # rep_idx). Variance-sweep adds the latter two; legacy rows use Nones for
+    # both, so legacy single-rep entries still collapse to one row each.
     seen_keys: Dict[Tuple, int] = {}
     for i, r in enumerate(rows):
         if "error" not in r and "run" in r and "step" in r:
-            seen_keys[(r["run"], int(r["step"]))] = i
+            seen_keys[_row_key(r)] = i
     rows = [r for i, r in enumerate(rows) if i in seen_keys.values()]
 
     # Backfill _res_ columns from per-checkpoint CSVs for rows that were written
@@ -364,6 +414,9 @@ def run_one_task(
     skip_generation: bool = False,
     ss_reference_pdb_path: Optional[str] = None,
     ss_reference_afdb_path: Optional[str] = None,
+    sampling_mode: Optional[str] = None,
+    sc_scale_noise: Optional[float] = None,
+    rep_idx: Optional[int] = None,
 ) -> None:
     """Run evaluate.main() for one (run_name, step) and append to JSONL."""
     # Lazy import: evaluate pulls in proteinfoundation, which isn't always on
@@ -400,15 +453,24 @@ def run_one_task(
     # plus the shared metric flags from add_metric_args. None values trigger
     # evaluate's resolve_evaluate_defaults so the standalone defaults stay
     # authoritative for evaluate.py.
+    sampler_tag = make_sampler_tag(sampling_mode, sc_scale_noise)
+    suffix_extra = ""
+    if sampler_tag is not None:
+        suffix_extra += f"__{sampler_tag}"
+    if rep_idx is not None:
+        suffix_extra += f"__rep{rep_idx}"
     eval_args = argparse.Namespace(
         config_name=config_name,
         config_subdir=None,
         ckpt_name_override=ckpt_name,
         ckpt_path_override=str(ckpt_path.parent),
-        output_suffix=f"sweep_{run_name}_step_{actual_step}",
+        output_suffix=f"sweep_{run_name}_step_{actual_step}{suffix_extra}",
         skip_generation=skip_generation,
         novelty_tm_threshold=0.5,
         seed=seed,
+        sampling_mode=sampling_mode,
+        sc_scale_noise=sc_scale_noise,
+        rep_idx=rep_idx,
         designability_subset_per_length=designability_subset_per_length,
         designability_lengths=designability_lengths,
         cath_subset=cath_subset,
@@ -436,6 +498,10 @@ def run_one_task(
             "config_name": config_name,
             "ckpt_path": str(ckpt_path),
             "seed": seed,
+            "sampler_tag": sampler_tag,
+            "sampling_mode": sampling_mode,
+            "sc_scale_noise": sc_scale_noise,
+            "rep_idx": rep_idx,
         }
         if isinstance(result_row, dict):
             row.update(
@@ -620,6 +686,14 @@ def main():
         "ss_reference_afdb_path"
     )
 
+    # Sampler-regime overrides for variance / sampler sweep. Profile keys are
+    # intentionally absent — caller passes via CLI or env so profiles stay
+    # reusable across regimes.
+    sampling_mode = getattr(args, "sampling_mode", None)
+    sc_scale_noise = getattr(args, "sc_scale_noise", None)
+    rep_idx = getattr(args, "rep_idx", None)
+    sampler_tag = make_sampler_tag(sampling_mode, sc_scale_noise)
+
     # Foldseek knobs: CLI > profile > script default. Empty target_dbs -> skip.
     foldseek_target_dbs = (
         args.foldseek_target_dbs
@@ -688,7 +762,7 @@ def main():
         ckpt_path = Path(args.ckpt_path)
         actual_step = resolve_step(ckpt_path, None)
         done, _ = _load_done_set(jsonl_path)
-        if (args.ckpt_label, actual_step) in done:
+        if (args.ckpt_label, actual_step, sampler_tag, rep_idx) in done:
             print(f"Already done: run={args.ckpt_label} step={actual_step}, skipping.")
         else:
             run_one_task(
@@ -717,6 +791,9 @@ def main():
                 skip_generation=args.skip_generation,
                 ss_reference_pdb_path=ss_reference_pdb_path,
                 ss_reference_afdb_path=ss_reference_afdb_path,
+                sampling_mode=sampling_mode,
+                sc_scale_noise=sc_scale_noise,
+                rep_idx=rep_idx,
             )
         consolidate(jsonl_path, output_dir)
         return
@@ -776,7 +853,7 @@ def main():
         else:
             actual_step = step or -1
 
-        if (run_name, actual_step) in done:
+        if (run_name, actual_step, sampler_tag, rep_idx) in done:
             print(f"Already done: run={run_name} step={actual_step}, skipping.")
             continue
 
@@ -806,6 +883,9 @@ def main():
             skip_generation=args.skip_generation,
             ss_reference_pdb_path=ss_reference_pdb_path,
             ss_reference_afdb_path=ss_reference_afdb_path,
+            sampling_mode=sampling_mode,
+            sc_scale_noise=sc_scale_noise,
+            rep_idx=rep_idx,
         )
         if not ok:
             failures.append((run_name, actual_step))

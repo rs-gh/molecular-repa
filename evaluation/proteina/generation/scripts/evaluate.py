@@ -937,7 +937,19 @@ def _main_body(
         cfg = OmegaConf.merge(cfg, {"ckpt_path": args.ckpt_path_override})
     if args.seed is not None:
         cfg = OmegaConf.merge(cfg, {"seed": args.seed})
-    logger.info(f"Config: {args.config_name}, seed: {cfg.seed}")
+    if getattr(args, "sampling_mode", None) is not None:
+        cfg = OmegaConf.merge(
+            cfg, {"sampling_caflow": {"sampling_mode": args.sampling_mode}}
+        )
+    if getattr(args, "sc_scale_noise", None) is not None:
+        cfg = OmegaConf.merge(
+            cfg, {"sampling_caflow": {"sc_scale_noise": float(args.sc_scale_noise)}}
+        )
+    logger.info(
+        f"Config: {args.config_name}, seed: {cfg.seed}, "
+        f"sampling_mode={cfg.sampling_caflow.sampling_mode}, "
+        f"sc_scale_noise={cfg.sampling_caflow.sc_scale_noise}"
+    )
 
     # -- Paths (persist across restarts) --
     suffix = f"_{args.output_suffix}" if args.output_suffix else ""
