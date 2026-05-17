@@ -7,7 +7,7 @@ Each point is one checkpoint; lines connect same-run points in step order to
 visualise per-run trajectories. REPA variants should sit above-right of the
 baseline curve (better generation AND better representations).
 
-Output: ``evaluation/proteina/representation/figures/paper/n256_convergence/gen_vs_rep_envelope.{png,pdf}``
+Output: ``evaluation/proteina/joint/figures/paper/n128_convergence/gen_vs_rep_envelope.{png,pdf}``
 """
 
 from __future__ import annotations
@@ -23,44 +23,41 @@ import matplotlib.pyplot as plt
 REPO_ROOT = Path(__file__).resolve().parents[5]
 GEN_RESULTS = REPO_ROOT / "evaluation/proteina/generation/results/paper"
 REP_RESULTS = REPO_ROOT / "evaluation/proteina/representation/results/paper"
-FIG_OUT = (
-    REPO_ROOT / "evaluation/proteina/representation/figures/paper/n256_convergence"
-)
+FIG_OUT = REPO_ROOT / "evaluation/proteina/joint/figures/paper/n128_convergence"
 FIG_OUT.mkdir(parents=True, exist_ok=True)
 
 DATASETS = {
     "PDB": {
-        "gen_jsonl": GEN_RESULTS / "n256_convergence_pdb" / "sweep_results.jsonl",
+        "gen_jsonl": GEN_RESULTS / "n128_convergence_pdb" / "sweep_results.jsonl",
         "rep_csv": REP_RESULTS
-        / "n256_convergence_cath_if_dih_pdb"
+        / "n128_convergence_cath_if_dih_pdb"
         / "pretrained_sweep_results.csv",
     },
     "AFDB": {
-        "gen_jsonl": GEN_RESULTS / "n256_convergence_afdb" / "sweep_results.jsonl",
+        "gen_jsonl": GEN_RESULTS / "n128_convergence_afdb" / "sweep_results.jsonl",
         "rep_csv": REP_RESULTS
-        / "n256_convergence_cath_if_dih_afdb"
+        / "n128_convergence_cath_if_dih_afdb"
         / "pretrained_sweep_results.csv",
     },
 }
 
 RUN_FAMILIES = {
     "PDB": [
-        ("baseline_256_bs24_2gpu", "Baseline (PDB)", "tab:blue", "o"),
-        ("repa_l4_256_per_residue_bs24_2gpu", "REPA L4 GearNet (PDB)", "tab:red", "s"),
+        ("baseline_128_bs80", "Baseline (PDB)", "tab:blue", "o"),
+        ("repa_l4_128_bs80", "REPA L4 GearNet (PDB)", "tab:red", "s"),
         (
-            "repa_l9_256_per_residue_bs24_2gpu",
+            "repa_l9_128_bs80",
             "REPA L9 GearNet (PDB)",
             "tab:orange",
             "s",
         ),
-        ("repa_mpnn_l4_256_per_residue", "REPA L4 MPNN (PDB)", "tab:red", "^"),
+        ("repa_mpnn_l4_128_bs80", "REPA L4 MPNN (PDB)", "tab:red", "^"),
     ],
     "AFDB": [
-        ("baseline_afdb_256", "Baseline (AFDB)", "tab:blue", "o"),
-        ("repa_l4_afdb_256", "REPA L4 GearNet (AFDB)", "tab:red", "s"),
-        ("repa_l9_afdb_256", "REPA L9 GearNet (AFDB)", "tab:orange", "s"),
-        ("repa_mpnn_l4_afdb_256", "REPA L4 MPNN (AFDB)", "tab:red", "^"),
-        ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN (AFDB)", "tab:orange", "^"),
+        ("baseline_afdb_128_bs80", "Baseline (AFDB)", "tab:blue", "o"),
+        ("repa_l4_afdb_128_bs80", "REPA L4 GearNet (AFDB)", "tab:red", "s"),
+        ("repa_mpnn_l4_afdb_128_bs80", "REPA L4 MPNN (AFDB)", "tab:red", "^"),
+        ("repa_mpnn_l9_afdb_128_bs80_2gpu", "REPA L9 MPNN (AFDB)", "tab:orange", "^"),
     ],
 }
 
@@ -157,7 +154,7 @@ def main() -> None:
         ax.grid(True, alpha=0.3)
         ax.legend(loc="best", fontsize=8)
     fig.suptitle(
-        "n=256 — generation vs representation envelope (point size ∝ training step)\n"
+        "n=128 — generation vs representation envelope (point size ∝ training step)\n"
         "Top-right = better on both axes; lines connect same-run checkpoints in step order.",
         fontsize=12,
     )

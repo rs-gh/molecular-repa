@@ -41,10 +41,8 @@ from evaluation.proteina.lib import pretrained_overlay  # noqa: E402
 SHOW_PRETRAINED = True
 GEN_RESULTS = REPO_ROOT / "evaluation/proteina/generation/results/paper"
 REP_RESULTS = REPO_ROOT / "evaluation/proteina/representation/results/paper"
-FIG_OUT = (
-    REPO_ROOT / "evaluation/proteina/representation/figures/paper/n256_convergence"
-)
-TAB_OUT = REPO_ROOT / "evaluation/proteina/representation/results/paper"
+FIG_OUT = REPO_ROOT / "evaluation/proteina/joint/figures/paper/n256_convergence"
+TAB_OUT = REPO_ROOT / "evaluation/proteina/joint/results/paper"
 FIG_OUT.mkdir(parents=True, exist_ok=True)
 
 DATASETS = {

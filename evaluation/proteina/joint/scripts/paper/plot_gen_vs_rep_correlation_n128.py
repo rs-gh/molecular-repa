@@ -32,10 +32,8 @@ from scipy.stats import pearsonr, spearmanr
 REPO_ROOT = Path(__file__).resolve().parents[5]
 GEN_RESULTS = REPO_ROOT / "evaluation/proteina/generation/results/paper"
 REP_RESULTS = REPO_ROOT / "evaluation/proteina/representation/results/paper"
-FIG_OUT = (
-    REPO_ROOT / "evaluation/proteina/representation/figures/paper/n128_convergence"
-)
-TAB_OUT = REPO_ROOT / "evaluation/proteina/representation/results/paper"
+FIG_OUT = REPO_ROOT / "evaluation/proteina/joint/figures/paper/n128_convergence"
+TAB_OUT = REPO_ROOT / "evaluation/proteina/joint/results/paper"
 FIG_OUT.mkdir(parents=True, exist_ok=True)
 
 DATASETS = {
