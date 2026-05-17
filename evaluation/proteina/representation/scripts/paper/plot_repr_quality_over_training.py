@@ -21,6 +21,24 @@ from typing import Dict, List
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter, LogLocator
 
+import sys
+
+_THIS = Path(__file__).resolve()
+sys.path.insert(0, str(_THIS.parents[5]))
+from evaluation.proteina.lib import pretrained_overlay  # noqa: E402
+
+# Overlay pretrained Proteina (NGC 60M, ~1.3M steps) as a horizontal dashed
+# reference line on each probe panel. Not step-comparable. Flip to False to
+# hide.
+SHOW_PRETRAINED = True
+
+# Map (probe_kind, metric_col) → pretrained_overlay rep key. cath panels are
+# handled separately because they need the level (C/A/T) too.
+_PRETRAINED_REP_KEY = {
+    ("inverse_folding", "if_top1_acc"): "if_top1_acc",
+    ("dihedral", "dih_mae_total_deg"): "dih_mae_total_deg",
+}
+
 
 def _humanize(v, _pos=None):
     av = abs(v)
@@ -200,6 +218,29 @@ def main() -> None:
             arrow = " ↑" if hb else " ↓"
             ax.set_title(f"{ds_name} — {title}{arrow}")
             _style_axes(ax)
+            if SHOW_PRETRAINED:
+                # Pick the right pretrained overlay key for this panel.
+                if probe_kind == "cath" and fval in ("C", "A", "T"):
+                    pre_key = f"cath_{fval}_top1"
+                else:
+                    pre_key = _PRETRAINED_REP_KEY.get((probe_kind, metric))
+                pre_val = (
+                    pretrained_overlay.load_rep(ds_name).get(pre_key)
+                    if pre_key
+                    else None
+                )
+                if pre_val is not None:
+                    ax.axhline(
+                        pre_val,
+                        color=pretrained_overlay.PRETRAINED_COLOR,
+                        linestyle="--",
+                        linewidth=1.4,
+                        alpha=0.85,
+                        label=pretrained_overlay.PRETRAINED_LABEL
+                        if col_i == 0
+                        else None,
+                        zorder=1,
+                    )
             if col_i == 0:
                 ax.legend(loc="best", fontsize=7)
 

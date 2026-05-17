@@ -23,6 +23,17 @@ from typing import Dict, List
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter, LogLocator
 
+import sys
+
+_THIS = Path(__file__).resolve()
+sys.path.insert(0, str(_THIS.parents[5]))
+from evaluation.proteina.lib import pretrained_overlay  # noqa: E402
+
+# Overlay pretrained Proteina (NGC 60M, ~1.3M steps) as a horizontal dashed
+# reference line on metrics it was evaluated for. Not step-comparable. Flip
+# to False to hide.
+SHOW_PRETRAINED = True
+
 
 def _humanize(v, _pos=None):
     av = abs(v)
@@ -217,6 +228,20 @@ def main() -> None:
                 arrow = " ↑" if higher_better else " ↓"
             ax.set_title(f"{ds_name} — {title}{arrow}")
             _style_axes(ax)
+            if SHOW_PRETRAINED and isinstance(metric, str):
+                pre_val = pretrained_overlay.load_gen().get(metric)
+                if pre_val is not None:
+                    ax.axhline(
+                        pre_val,
+                        color=pretrained_overlay.PRETRAINED_COLOR,
+                        linestyle="--",
+                        linewidth=1.4,
+                        alpha=0.85,
+                        label=pretrained_overlay.PRETRAINED_LABEL
+                        if col_i == 0
+                        else None,
+                        zorder=1,
+                    )
             if col_i == 0:
                 ax.legend(loc="best", fontsize=7)
 
