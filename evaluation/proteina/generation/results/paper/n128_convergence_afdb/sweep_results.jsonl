@@ -1,0 +1,2 @@
+{"run": "repa_l4_afdb_128_bs80_step400k", "step": 400000, "config_name": "inference/paper/inference_fid_60m_n128_paper", "error": "RuntimeError: DataLoader worker (pid(s) 1207923) exited unexpectedly"}
+{"run": "repa_mpnn_l9_afdb_128_bs80_2gpu_step400k", "step": 400000, "config_name": "inference/paper/inference_fid_60m_n128_paper", "error": "RuntimeError: DataLoader worker (pid(s) 1209489) exited unexpectedly"}
