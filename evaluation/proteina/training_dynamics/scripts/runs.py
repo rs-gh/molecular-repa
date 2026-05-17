@@ -262,58 +262,65 @@ _BASE = {
         "-",
         False,
     ),
-    # n=256 averaging — split runs. Treated as two separate trajectories;
-    # they share a store dir but wandb has them as distinct ids.
-    "proteina_60m_repa_l0_256_per_residue_part1": (
-        "repa L0 256 per_res (part1)",
+    # n=256 averaging — split runs. The 2026-04-17 rename forked each logical
+    # model into two wandb runs: pre-rename id (part1) and canonical id (part2).
+    # Checkpoint continuity is preserved through a physical store-dir rename.
+    "proteina_60m_repa_l0_256_perres": (
+        "repa L0 per_res (part1: pre-rename)",
         "tab:olive",
         "-",
         False,
     ),
-    "proteina_60m_repa_l0_256_per_residue_part2": (
-        "repa L0 256 per_res (part2)",
+    "proteina_60m_repa_l0_256_per_residue": (
+        "repa L0 per_res (part2: post-rename)",
         "tab:olive",
         "--",
         False,
     ),
-    "proteina_60m_repa_l4_256_per_residue_part2": (
-        "repa L4 256 per_res (part2)",
+    "proteina_60m_repa_l4_256": (
+        "repa L4 per_res (part1: pre-rename)",
+        "tab:blue",
+        "-",
+        False,
+    ),
+    "proteina_60m_repa_l4_256_per_residue": (
+        "repa L4 per_res (part2: post-rename)",
         "tab:blue",
         "--",
         False,
     ),
-    "proteina_60m_repa_l9_256_per_residue_part1": (
-        "repa L9 256 per_res (part1)",
+    "proteina_60m_repa_l9_256_perres": (
+        "repa L9 per_res (part1: pre-rename)",
         "tab:cyan",
         "-",
         False,
     ),
-    "proteina_60m_repa_l9_256_per_residue_part2": (
-        "repa L9 256 per_res (part2)",
+    "proteina_60m_repa_l9_256_per_residue": (
+        "repa L9 per_res (part2: post-rename)",
         "tab:cyan",
         "--",
         False,
     ),
     "proteina_60m_repa_l0_256_per_sample": (
-        "repa L0 256 per_sample",
+        "repa L0 per_sample",
         "tab:olive",
         ":",
         False,
     ),
-    "proteina_60m_repa_l4_256_per_sample_part1": (
-        "repa L4 256 per_sample (part1)",
+    "proteina_60m_repa_l4_256_persamp": (
+        "repa L4 per_sample (part1: pre-rename)",
         "tab:blue",
-        "-",
+        "-.",
         False,
     ),
-    "proteina_60m_repa_l4_256_per_sample_part2": (
-        "repa L4 256 per_sample (part2)",
+    "proteina_60m_repa_l4_256_per_sample": (
+        "repa L4 per_sample (part2: post-rename)",
         "tab:blue",
-        "--",
+        ":",
         False,
     ),
     "proteina_60m_repa_l9_256_per_sample": (
-        "repa L9 256 per_sample",
+        "repa L9 per_sample",
         "tab:cyan",
         ":",
         False,
@@ -408,14 +415,16 @@ ABLATIONS: dict[str, list[str]] = {
     ],
     "n256_pdb_averaging": [
         # No baseline launched for this sweep — see ablation doc.
-        "proteina_60m_repa_l0_256_per_residue_part1",
-        "proteina_60m_repa_l0_256_per_residue_part2",
-        "proteina_60m_repa_l4_256_per_residue_part2",
-        "proteina_60m_repa_l9_256_per_residue_part1",
-        "proteina_60m_repa_l9_256_per_residue_part2",
+        # Pre-rename (part1) and canonical (part2) ids per the 2026-04-17 fork.
+        "proteina_60m_repa_l0_256_perres",
+        "proteina_60m_repa_l0_256_per_residue",
+        "proteina_60m_repa_l4_256",
+        "proteina_60m_repa_l4_256_per_residue",
+        "proteina_60m_repa_l9_256_perres",
+        "proteina_60m_repa_l9_256_per_residue",
         "proteina_60m_repa_l0_256_per_sample",
-        "proteina_60m_repa_l4_256_per_sample_part1",
-        "proteina_60m_repa_l4_256_per_sample_part2",
+        "proteina_60m_repa_l4_256_persamp",
+        "proteina_60m_repa_l4_256_per_sample",
         "proteina_60m_repa_l9_256_per_sample",
     ],
 }

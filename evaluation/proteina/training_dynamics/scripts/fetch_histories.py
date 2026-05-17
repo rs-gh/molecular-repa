@@ -30,10 +30,10 @@ from runs import ENTITY_PROJECT, all_run_ids  # noqa: E402
 
 CACHE_DIR = Path(__file__).resolve().parent.parent / "cache"
 
-# wandb's scan_history(keys=...) only returns rows where ALL keys are present.
-# Per-step and per-epoch metrics live on different rows, so we scan each key
-# in its own pass and merge on wandb's row index `_step`. `_runtime` and
-# `_timestamp` are wandb-automatic, present on every row.
+# Use run.history(samples=N) for server-side downsampling — orders of magnitude
+# faster than scan_history for long runs (full scan was >30 min on a 1M-step
+# baseline). N=4000 samples gives ~250-step resolution on a 1M-step run, which
+# is plenty for the smoothed convergence curves we want.
 ALL_KEYS = [
     "train/trans_loss_epoch",
     "train/loss_epoch",
@@ -41,16 +41,7 @@ ALL_KEYS = [
     "trainer/global_step",
     "scaling/nsamples_processed",
 ]
-
-
-def _scan(run, key: str) -> pd.DataFrame:
-    rows = list(run.scan_history(keys=[key, "_runtime", "_timestamp"]))
-    if not rows:
-        return pd.DataFrame()
-    df = pd.DataFrame(rows)
-    # wandb's row index is implicit; reconstruct from the order it returned.
-    # Use _timestamp as the merge key — it's a strict monotonic per-row id.
-    return df
+SAMPLES = 4000
 
 
 def fetch_one(api: wandb.Api, run_id: str) -> pd.DataFrame | None:
@@ -60,30 +51,51 @@ def fetch_one(api: wandb.Api, run_id: str) -> pd.DataFrame | None:
         print(f"  [skip] {run_id}: not found on wandb ({e})")
         return None
 
-    frames = {}
-    for k in ALL_KEYS:
-        df = _scan(run, k)
-        if df.empty:
-            print(f"    {k}: empty")
-            continue
-        print(f"    {k}: {len(df)} rows")
-        frames[k] = df[[k, "_runtime", "_timestamp"]]
-
-    if not frames:
-        print(f"  [skip] {run_id}: no rows for any tracked key")
-        return None
-
-    # Outer-merge on (_runtime, _timestamp). Same wandb-flush event ⇒ same
-    # _timestamp across keys; differing flushes get their own row.
-    out = None
-    for k, f in frames.items():
-        if out is None:
-            out = f.copy()
-        else:
-            out = out.merge(f, on=["_runtime", "_timestamp"], how="outer")
-    out = out.sort_values("_timestamp").reset_index(drop=True)
-    out["run_id"] = run_id
-    return out
+    # Always per-key. The combined call returns the intersection of rows where
+    # every key has a value, which on some runs is dominated by late-training
+    # steps (60-80 rows starting from step 400k+) and silently drops early
+    # convergence — exactly the part we want to plot.
+    if True:
+        frames = []
+        for k in ALL_KEYS:
+            try:
+                f = run.history(keys=[k], samples=SAMPLES, pandas=True, x_axis="_step")
+            except Exception as e:
+                print(f"    {k}: ERR {e}")
+                continue
+            if f is None or f.empty:
+                continue
+            print(f"    {k}: {len(f)} rows")
+            frames.append(
+                f[[c for c in ("_step", "_runtime", "_timestamp", k) if c in f.columns]]
+            )
+        if not frames:
+            print(f"  [skip] {run_id}: no rows for any tracked key")
+            return None
+        out = frames[0]
+        for f in frames[1:]:
+            out = out.merge(f, on="_step", how="outer", suffixes=("", "_dup"))
+            for c in list(out.columns):
+                if c.endswith("_dup"):
+                    base = c[:-4]
+                    if base in out.columns:
+                        out[base] = out[base].combine_first(out[c])
+                    out = out.drop(columns=[c])
+        df = out.sort_values("_step").reset_index(drop=True)
+    # Epoch-cadence losses and step-cadence (trainer/global_step,
+    # scaling/nsamples_processed) live on disjoint `_step` rows after merge.
+    # Forward-fill the step counters so epoch-loss rows carry a usable x value.
+    df = df.sort_values("_step").reset_index(drop=True)
+    for c in (
+        "trainer/global_step",
+        "scaling/nsamples_processed",
+        "_runtime",
+        "_timestamp",
+    ):
+        if c in df.columns:
+            df[c] = df[c].ffill()
+    df["run_id"] = run_id
+    return df
 
 
 def main() -> None:
