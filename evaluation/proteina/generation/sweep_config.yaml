@@ -413,3 +413,23 @@ n256_convergence_afdb:
   runs: "baseline_afdb_256_step100k,baseline_afdb_256_step200k,baseline_afdb_256_step400k,baseline_afdb_256_step700k,baseline_afdb_256_step1000k,baseline_afdb_256_step1300k,baseline_afdb_256_step1600k,repa_l4_afdb_256_step100k,repa_l4_afdb_256_step200k,repa_l4_afdb_256_step400k,repa_l4_afdb_256_step700k,repa_l4_afdb_256_step1000k,repa_mpnn_l4_afdb_256_step100k,repa_mpnn_l4_afdb_256_step200k,repa_mpnn_l4_afdb_256_step400k,repa_mpnn_l4_afdb_256_step700k,repa_mpnn_l4_afdb_256_step1000k,repa_l9_afdb_256_step100k,repa_l9_afdb_256_step200k,repa_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step100k,repa_mpnn_l9_afdb_256_step200k,repa_mpnn_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step700k,repa_mpnn_l9_afdb_256_step1000k,repa_mpnn_l9_afdb_256_step1300k"
   output_dir: results/paper/n256_convergence_afdb
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# ─────────────────────────────────────────────────────────────────────────── #
+# n=256 convergence sweep — EXTENSION (added 2026-05-17). Fills gaps from
+# (a) training that has progressed since the initial sweep and (b) the
+# previously-missing PDB repa_mpnn_l9 config (no periodic ckpts at sweep
+# launch). Adds the L4-random-GearNet PDB control run as a 5th PDB config.
+# Same output_dir as the base profile so all rows merge into one jsonl.
+# ─────────────────────────────────────────────────────────────────────────── #
+
+n256_convergence_pdb_ext:
+  <<: *paper_defaults
+  runs: "baseline_256_bs24_2gpu_step1500k,repa_l4_256_per_residue_bs24_2gpu_step800k,repa_l4_256_per_residue_bs24_2gpu_step900k,repa_l9_256_per_residue_bs24_2gpu_step800k,repa_l9_256_per_residue_bs24_2gpu_step900k,repa_mpnn_l9_256_per_residue_step100k,repa_mpnn_l9_256_per_residue_step200k,repa_mpnn_l9_256_per_residue_step400k,repa_l4_256_per_residue_random_bs24_2gpu_step100k,repa_l4_256_per_residue_random_bs24_2gpu_step200k,repa_l4_256_per_residue_random_bs24_2gpu_step400k,repa_l4_256_per_residue_random_bs24_2gpu_step700k"
+  output_dir: results/paper/n256_convergence_pdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+n256_convergence_afdb_ext:
+  <<: *paper_defaults
+  runs: "repa_l9_afdb_256_step500k,repa_l9_afdb_256_step600k,repa_l4_afdb_256_step1200k,repa_mpnn_l4_afdb_256_step1100k,repa_mpnn_l9_afdb_256_step1400k,repa_mpnn_l9_afdb_256_step1500k"
+  output_dir: results/paper/n256_convergence_afdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"

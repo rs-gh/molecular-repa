@@ -18,6 +18,30 @@ from pathlib import Path
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter, LogLocator
+
+
+def _humanize(v, _pos=None):
+    av = abs(v)
+    if av >= 1e6:
+        return f"{v / 1e6:g}M"
+    if av >= 1e3:
+        return f"{v / 1e3:g}K"
+    if av >= 1:
+        return f"{v:g}"
+    return f"{v:.3g}"
+
+
+def _style_axes(ax, log_y: bool = False) -> None:
+    ax.grid(False)
+    ax.grid(True, axis="y", alpha=0.3, which="both" if log_y else "major")
+    ax.xaxis.set_major_locator(
+        LogLocator(base=10.0, subs=(1.0, 2.0, 4.0, 7.0), numticks=20)
+    )
+    ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs="auto", numticks=20))
+    ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
+    ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
+
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "results/paper"
@@ -26,10 +50,17 @@ FIG_OUT.mkdir(parents=True, exist_ok=True)
 
 JSONL = RESULTS / "n128_paper_afdb" / "sweep_results.jsonl"
 
+# marker encodes encoder family: baseline=square, GearNet=circle, MPNN=triangle
 RUN_FAMILIES = [
-    ("baseline_afdb_128_bs80", "Baseline (AFDB n=128)", "tab:blue", "-"),
-    ("repa_l4_afdb_128_bs80", "REPA L4 GearNet (AFDB n=128, partial)", "tab:red", ":"),
-    ("repa_mpnn_l4_afdb_128_bs80", "REPA L4 MPNN (AFDB n=128)", "tab:red", "--"),
+    ("baseline_afdb_128_bs80", "Baseline (AFDB n=128)", "tab:blue", "-", "s"),
+    (
+        "repa_l4_afdb_128_bs80",
+        "REPA L4 GearNet (AFDB n=128, partial)",
+        "tab:red",
+        ":",
+        "o",
+    ),
+    ("repa_mpnn_l4_afdb_128_bs80", "REPA L4 MPNN (AFDB n=128)", "tab:red", "--", "^"),
 ]
 
 METRICS = [
@@ -65,6 +96,18 @@ METRICS = [
         "JSD (lower = closer)",
         False,
     ),
+    # H/E ratio (designable subset). Tuple-form metric -> derived per-row.
+    (
+        (
+            "H/E",
+            lambda r: (r.get("_res_ss_frac_H_designable") or 0) / e
+            if (e := r.get("_res_ss_frac_E_designable") or 0) > 0
+            else None,
+        ),
+        "H/E ratio (des)",
+        "H/E",
+        True,
+    ),
 ]
 
 
@@ -79,6 +122,10 @@ def load_jsonl(path: Path) -> List[Dict]:
 
 
 def extract(rows, prefix, metric):
+    if isinstance(metric, tuple):
+        _, fn = metric
+    else:
+        fn = lambda r, _m=metric: r.get(_m)  # noqa: E731
     pts = []
     for r in rows:
         run = r.get("run", "")
@@ -86,7 +133,7 @@ def extract(rows, prefix, metric):
             continue
         if r.get("error", "NONE") != "NONE":
             continue
-        v = r.get(metric)
+        v = fn(r)
         s = r.get("step")
         if v is None or s is None:
             continue
@@ -99,27 +146,36 @@ def main() -> None:
     rows = load_jsonl(JSONL)
     fig, axes = plt.subplots(1, len(METRICS), figsize=(4.2 * len(METRICS), 4.0))
     for ax, (metric, title, ylabel, higher) in zip(axes, METRICS):
-        for prefix, label, color, ls in RUN_FAMILIES:
+        for prefix, label, color, ls, marker in RUN_FAMILIES:
             xs, ys = extract(rows, prefix, metric)
             if not xs:
                 continue
             ax.plot(
                 xs,
                 ys,
-                marker="o",
-                markersize=4,
                 linewidth=1.4,
                 color=color,
                 linestyle=ls,
+                alpha=0.35,
+                marker="none",
+            )
+            ax.plot(
+                xs,
+                ys,
+                marker=marker,
+                markersize=6,
+                markeredgewidth=0.8,
+                markeredgecolor="white",
+                linestyle="none",
+                color=color,
                 label=label,
             )
         ax.set_xscale("log")
         ax.set_xlabel("Training step")
         ax.set_ylabel(ylabel)
-        ax.set_title(f"AFDB n=128 — {title}")
-        ax.grid(True, alpha=0.3)
-        if not higher:
-            ax.invert_yaxis()
+        arrow = "" if "H/E" in title else (" ↑" if higher else " ↓")
+        ax.set_title(f"AFDB n=128 — {title}{arrow}")
+        _style_axes(ax)
     axes[0].legend(loc="best", fontsize=7)
     fig.suptitle(
         "n=128 convergence (AFDB) — generation metrics vs training step\n"

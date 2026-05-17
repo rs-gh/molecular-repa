@@ -498,7 +498,10 @@ def compute_diversity_metrics(
             )
             return {}
 
-    if designable_pdbs:
+    if designable_pdbs is not None:
+        # `[]` means "filtering was requested and the designable subset is
+        # empty" — must NOT silently fall back to clustering the full pool
+        # (would emit a bogus cluster count, see fix 2026-05-17).
         designable_set = set(designable_pdbs)
         length_to_pdbs = {
             nres: [p for p in pdbs if p in designable_set]
@@ -603,7 +606,10 @@ def compute_novelty_metrics(
         return {}
 
     candidate_pdbs = list_of_pdbs
-    filtered = bool(designable_pdbs)
+    # `[]` means "filtering was requested and the designable subset is empty" —
+    # must NOT silently fall back to scoring the full pool. Use `is not None`
+    # to distinguish "filter not requested" from "filter requested but empty".
+    filtered = designable_pdbs is not None
     if filtered:
         designable_set = set(designable_pdbs)
         candidate_pdbs = [p for p in list_of_pdbs if p in designable_set]
@@ -1230,11 +1236,19 @@ def _main_body(
     if target_dbs:
         # Default to the designable subset (paper convention). Falls back to
         # all generated PDBs if designability was skipped or returned nothing.
-        fs_queries = (
-            designable_pdbs
-            if (args.foldseek_filter_designable and designable_pdbs)
-            else list_of_pdbs
-        )
+        # When filtering is requested but the designable subset is empty,
+        # produce no novelty rows rather than falling back to the full pool
+        # (would yield meaningless "novelty=1.0 on garbage", see fix 2026-05-17).
+        if args.foldseek_filter_designable and designable_pdbs is not None:
+            fs_queries = list(designable_pdbs)
+        else:
+            fs_queries = list_of_pdbs
+        if not fs_queries:
+            logger.warning(
+                "Foldseek novelty: empty query set (designable filter requested "
+                "but no designable PDBs); skipping all target DBs."
+            )
+            target_dbs = []
         for db_label, db_path in target_dbs:
             try:
                 fs_results = compute_novelty_foldseek(

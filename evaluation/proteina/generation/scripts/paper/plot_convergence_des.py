@@ -1,15 +1,17 @@
-"""Convergence speedup plot — REPA paper Fig 1 analog for proteina.
+"""Convergence plot for designability-family metrics — proteina n=256.
 
-Reads ``sweep_results.jsonl`` from the n256_convergence_{pdb,afdb} sweeps and
-emits a 2 (datasets) x 4 (metrics) panel showing each metric vs training step
-with one line per run. The four metrics are designability, diversity (cluster
-count), novelty (foldseek vs matching DB), and FID (PDB / AFDB).
+Companion to ``plot_convergence_fid.py``. Covers designability, diversity,
+novelty (vs PDB / AFDB-SP foldseek DBs), SS-JSD on the designable subset,
+and the helix/sheet ratio. All metrics restricted to the designable subset
+where applicable (paper App. F protocol).
 
-One curve per run; baseline drawn first (per `feedback_baseline_first.md`),
-REPA variants in red/orange. Latest-by-(run, step) dedup so retry rows don't
-double-count and ERR rows (designability=None) drop out cleanly.
+Layout (2 rows × 7 cols, one row per dataset):
+  Row 1 (PDB):  Des  Div  Nov-PDB  Nov-AFDB  SS-JSD-PDB  SS-JSD-AFDB  H/E
+  Row 2 (AFDB): same
 
-Output: ``evaluation/proteina/generation/figures/paper/n256_convergence/convergence_speedup.{png,pdf}``
+Same RUN_FAMILIES encoding (color = REPA layer depth, linestyle = data flavor,
+marker = encoder family) and faded connecting lines as the other convergence
+plots.
 """
 
 from __future__ import annotations
@@ -23,7 +25,6 @@ from matplotlib.ticker import FuncFormatter, LogLocator
 
 
 def _humanize(v, _pos=None):
-    """Format a number as 50K / 1M / 0.42 — readable for both step counts and metric values."""
     av = abs(v)
     if av >= 1e6:
         return f"{v / 1e6:g}M"
@@ -35,11 +36,8 @@ def _humanize(v, _pos=None):
 
 
 def _style_axes(ax, log_y: bool = False) -> None:
-    """Horizontal-only grid, human-friendly tick labels, denser x ticks on log axis."""
     ax.grid(False)
     ax.grid(True, axis="y", alpha=0.3, which="both" if log_y else "major")
-    # Denser major ticks on the log x-axis: powers of 10 plus 2/4/7 within each decade
-    # (matches the sweep step grid: 100k/200k/400k/700k/1M/1.3M/1.6M).
     ax.xaxis.set_major_locator(
         LogLocator(base=10.0, subs=(1.0, 2.0, 4.0, 7.0), numticks=20)
     )
@@ -48,7 +46,7 @@ def _style_axes(ax, log_y: bool = False) -> None:
     ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
 
 
-ROOT = Path(__file__).resolve().parents[2]  # .../proteina/generation
+ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "results/paper"
 FIG_OUT = ROOT / "figures/paper/n256_convergence"
 FIG_OUT.mkdir(parents=True, exist_ok=True)
@@ -58,12 +56,7 @@ DATASETS = {
     "AFDB": RESULTS / "n256_convergence_afdb" / "sweep_results.jsonl",
 }
 
-# Run families per dataset — match RUN_SCHEDULES labels (without step suffix).
-# baseline first, REPA variants after (per feedback_baseline_first.md).
-# Visual encoding:
-#   color    → REPA layer depth (baseline=blue, L4=red, L9=orange)
-#   linestyle→ same as color group (kept for B/W readability)
-#   marker   → encoder family (baseline=square, GearNet=circle, MPNN=triangle)
+# Mirror plot_convergence_speedup.py — keep in sync by hand.
 RUN_FAMILIES = {
     "PDB": [
         ("baseline_256_bs24_2gpu", "Baseline (PDB)", "tab:blue", "-", "s"),
@@ -83,8 +76,6 @@ RUN_FAMILIES = {
         ),
         ("repa_mpnn_l4_256_per_residue", "REPA L4 MPNN (PDB)", "tab:red", "--", "^"),
         ("repa_mpnn_l9_256_per_residue", "REPA L9 MPNN (PDB)", "tab:orange", "--", "^"),
-        # random-init GearNet control: gray dotted diamond — same depth as L4 GearNet
-        # but encoder weights are random; should regress toward baseline
         (
             "repa_l4_256_per_residue_random_bs24_2gpu",
             "REPA L4 GearNet-rand (PDB, ctrl)",
@@ -102,19 +93,14 @@ RUN_FAMILIES = {
     ],
 }
 
-# Metric column → (panel title, y-axis label, higher_is_better)
+# (metric, panel title, y-axis label, higher_is_better). metric is a column
+# name (str) or (label, fn) for derived metrics (matches convergence_speedup).
 METRICS = [
     ("_res_designability_rate", "Designability", "rate", True),
-    # Raw cluster count (sum across length bins, designable subset). Note:
-    # the rate clusters/n_designable saturates at 1.0 for small n_designable
-    # (each rare designable structure trivially gets its own fold), so we
-    # stick with raw counts here despite the designability confound.
-    (
-        "_res_diversity_clusters_total",
-        "Diversity (clusters)",
-        "# clusters (designable subset)",
-        True,
-    ),
+    # Raw cluster count; rate clusters/n_designable saturates at 1.0 for
+    # small designable sets, so we keep raw counts despite the designability
+    # confound. See plot_convergence_speedup.py for the same note.
+    ("_res_diversity_clusters_total", "Diversity (clusters)", "# clusters (des)", True),
     # Continuous diversity: mean pairwise TM within designable pool. Doesn't
     # saturate at small n the way clusters/n does. Lower = more diverse.
     (
@@ -135,27 +121,8 @@ METRICS = [
         "fraction novel (TM<0.5)",
         True,
     ),
-    ("_res_PDB_FID", "FID (vs PDB)", "FID-50K", False),
-    # SS-JSD on the (H,E)/(H,C) joint distribution restricted to the designable
-    # subset — captures whether the surviving designable structures match the
-    # reference SS distribution; lower = closer to natural proteins.
-    (
-        "_res_ss_jsd_pdb_designable_2d",
-        "SS 2D-JSD vs PDB (des)",
-        "JSD (lower = closer)",
-        False,
-    ),
-    (
-        "_res_ss_jsd_afdb_designable_2d",
-        "SS 2D-JSD vs AFDB (des)",
-        "JSD (lower = closer)",
-        False,
-    ),
-    # Derived metric: helix/sheet ratio (designable subset). Computed as
-    # ss_frac_H / ss_frac_E with a small guard against zero-sheet rows.
-    # Passing a callable instead of a column name routes through the same
-    # extract_curve plumbing; "higher_better" is False but H/E has no natural
-    # "good" direction — we just leave the axis upright so 1.0 stays readable.
+    ("_res_ss_jsd_pdb_designable_2d", "SS 2D-JSD vs PDB (des)", "JSD", False),
+    ("_res_ss_jsd_afdb_designable_2d", "SS 2D-JSD vs AFDB (des)", "JSD", False),
     (
         (
             "H/E",
@@ -165,13 +132,12 @@ METRICS = [
         ),
         "H/E ratio (des)",
         "H/E",
-        True,
+        True,  # arrow suppressed in title for H/E
     ),
 ]
 
 
 def load_jsonl(path: Path) -> List[Dict]:
-    """Load jsonl, deduping by (run, step) keeping the latest row."""
     if not path.exists():
         return []
     rows = [json.loads(line) for line in path.open()]
@@ -181,12 +147,7 @@ def load_jsonl(path: Path) -> List[Dict]:
     return list(dedup.values())
 
 
-def extract_curve(rows: List[Dict], run_prefix: str, metric) -> tuple:
-    """Pull (steps, values) for one run family, dropping rows with errors or
-    missing metric. Sorted by step ascending.
-
-    ``metric`` may be a column name (str) for direct lookup, or a tuple
-    ``(label, fn)`` where fn(row) computes a derived value (e.g. H/E ratio)."""
+def extract_curve(rows, run_prefix, metric):
     if isinstance(metric, tuple):
         _, fn = metric
     else:
@@ -196,7 +157,6 @@ def extract_curve(rows: List[Dict], run_prefix: str, metric) -> tuple:
         run = r.get("run", "")
         if not run.startswith(run_prefix):
             continue
-        # ensure it's a step-suffixed label of the family (not e.g. _per_sample)
         if "_step" not in run.split(run_prefix)[-1] and run != run_prefix:
             continue
         if r.get("error", "NONE") != "NONE":
@@ -217,30 +177,26 @@ def main() -> None:
     fig, axes = plt.subplots(
         nrows=len(DATASETS),
         ncols=len(METRICS),
-        figsize=(4.2 * len(METRICS), 3.6 * len(DATASETS)),
+        figsize=(3.8 * len(METRICS), 3.6 * len(DATASETS)),
         sharex=False,
     )
-
     for row_i, (ds_name, jsonl_path) in enumerate(DATASETS.items()):
         rows = load_jsonl(jsonl_path)
         for col_i, (metric, title, ylabel, higher_better) in enumerate(METRICS):
             ax = axes[row_i, col_i]
-            for prefix, label, color, linestyle, marker in RUN_FAMILIES[ds_name]:
+            for prefix, label, color, ls, marker in RUN_FAMILIES[ds_name]:
                 xs, ys = extract_curve(rows, prefix, metric)
                 if not xs:
                     continue
-                # connecting line at reduced opacity so dense regions read as
-                # markers, not as a tangle of overlapping strokes
                 ax.plot(
                     xs,
                     ys,
                     linewidth=1.4,
                     color=color,
-                    linestyle=linestyle,
+                    linestyle=ls,
                     alpha=0.35,
                     marker="none",
                 )
-                # markers at full opacity carry the legend entry
                 ax.plot(
                     xs,
                     ys,
@@ -255,7 +211,6 @@ def main() -> None:
             ax.set_xscale("log")
             ax.set_xlabel("Training step")
             ax.set_ylabel(ylabel)
-            # H/E ratio has no natural "better" direction — skip arrow.
             if "H/E" in title:
                 arrow = ""
             else:
@@ -266,13 +221,13 @@ def main() -> None:
                 ax.legend(loc="best", fontsize=7)
 
     fig.suptitle(
-        "n=256 convergence — generation metrics vs training step\n"
-        "Direction (higher vs lower better) varies by panel — see ylabel; baseline drawn first.",
+        "n=256 convergence — designability / diversity / novelty / SS metrics\n"
+        "All restricted to the designable subset where applicable; baseline drawn first.",
         fontsize=12,
     )
     fig.tight_layout(rect=[0, 0, 1, 0.96])
-    out_png = FIG_OUT / "convergence_speedup.png"
-    out_pdf = FIG_OUT / "convergence_speedup.pdf"
+    out_png = FIG_OUT / "convergence_des.png"
+    out_pdf = FIG_OUT / "convergence_des.pdf"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
     fig.savefig(out_pdf, bbox_inches="tight")
     print(f"Wrote {out_png}")

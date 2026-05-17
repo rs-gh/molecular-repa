@@ -397,3 +397,23 @@ paper_n256_cath_if_dih_convergence_afdb:
   output_dir: results/paper/n256_convergence_cath_if_dih_afdb
   baseline_trained_noise_run: baseline_afdb_256_ep20
   runs: "baseline_afdb_256_step100k,baseline_afdb_256_step200k,baseline_afdb_256_step400k,baseline_afdb_256_step700k,baseline_afdb_256_step1000k,baseline_afdb_256_step1300k,baseline_afdb_256_step1600k,repa_l4_afdb_256_step100k,repa_l4_afdb_256_step200k,repa_l4_afdb_256_step400k,repa_l4_afdb_256_step700k,repa_l4_afdb_256_step1000k,repa_mpnn_l4_afdb_256_step100k,repa_mpnn_l4_afdb_256_step200k,repa_mpnn_l4_afdb_256_step400k,repa_mpnn_l4_afdb_256_step700k,repa_mpnn_l4_afdb_256_step1000k,repa_l9_afdb_256_step100k,repa_l9_afdb_256_step200k,repa_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step100k,repa_mpnn_l9_afdb_256_step200k,repa_mpnn_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step700k,repa_mpnn_l9_afdb_256_step1000k,repa_mpnn_l9_afdb_256_step1300k"
+
+# ─── n=256 convergence sweep extension (added 2026-05-17) ────────────────────
+# Companion to gen n256_convergence_{pdb,afdb}_ext. Same output_dir as base
+# profiles so all rep shards land in one consolidated CSV.
+
+paper_n256_cath_if_dih_convergence_pdb_ext:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 3190
+  output_dir: results/paper/n256_convergence_cath_if_dih_pdb
+  baseline_trained_noise_run: baseline_256_ep21
+  runs: "baseline_256_bs24_2gpu_step1500k,repa_l4_256_per_residue_bs24_2gpu_step800k,repa_l4_256_per_residue_bs24_2gpu_step900k,repa_l9_256_per_residue_bs24_2gpu_step800k,repa_l9_256_per_residue_bs24_2gpu_step900k,repa_mpnn_l9_256_per_residue_step100k,repa_mpnn_l9_256_per_residue_step200k,repa_mpnn_l9_256_per_residue_step400k,repa_l4_256_per_residue_random_bs24_2gpu_step100k,repa_l4_256_per_residue_random_bs24_2gpu_step200k,repa_l4_256_per_residue_random_bs24_2gpu_step400k,repa_l4_256_per_residue_random_bs24_2gpu_step700k"
+
+paper_n256_cath_if_dih_convergence_afdb_ext:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 4521
+  output_dir: results/paper/n256_convergence_cath_if_dih_afdb
+  baseline_trained_noise_run: baseline_afdb_256_ep20
+  runs: "repa_l9_afdb_256_step500k,repa_l9_afdb_256_step600k,repa_l4_afdb_256_step1200k,repa_mpnn_l4_afdb_256_step1100k,repa_mpnn_l9_afdb_256_step1400k,repa_mpnn_l9_afdb_256_step1500k"

@@ -1,192 +1,283 @@
 {
   "summary": {
-    "cached": 34,
-    "usable": 25,
+    "cached": 0,
+    "usable": 76,
     "pruned": 0,
     "no_dir": 0
   },
   "filled": {
-    "foldseek_run": 25,
+    "foldseek_run": 37,
     "csv_sync": 0,
     "sibling_copy": 0
   },
   "still_pruned_no_sibling": [],
-  "errors": [],
+  "errors": [
+    {
+      "profile": "n256_convergence_pdb",
+      "run": "repa_l9_256_per_residue_bs24_2gpu_step100k",
+      "step": 100000,
+      "error": "no designable PDBs"
+    }
+  ],
   "per_task_wall": [
     {
-      "profile": "n128_paper_bs_lr",
-      "run": "baseline_128_bs24_step200k",
-      "step": 200000,
-      "n_designable": 10,
-      "wall_s": 8.3
+      "profile": "n256_convergence_afdb",
+      "run": "baseline_afdb_256_step700k",
+      "step": 700000,
+      "n_designable": 178,
+      "wall_s": 283.0
     },
     {
-      "profile": "n128_paper_bs_lr",
-      "run": "repa_l4_128_bs80_step200k",
-      "step": 200000,
-      "n_designable": 165,
-      "wall_s": 98.1
+      "profile": "n256_convergence_afdb",
+      "run": "baseline_afdb_256_step1000k",
+      "step": 1000000,
+      "n_designable": 174,
+      "wall_s": 221.3
     },
     {
-      "profile": "n128_paper_bs_lr",
-      "run": "baseline_128_bs24_step400k",
+      "profile": "n256_convergence_afdb",
+      "run": "repa_l4_afdb_256_step400k",
       "step": 400000,
-      "n_designable": 52,
-      "wall_s": 27.2
+      "n_designable": 193,
+      "wall_s": 231.0
     },
     {
-      "profile": "n128_paper_encoder",
-      "run": "repa_l4_128_bs80_step200k",
-      "step": 200000,
-      "n_designable": 165,
-      "wall_s": 93.7
-    },
-    {
-      "profile": "n128_paper_encoder",
-      "run": "repa_l4_128_pw_torsional_step100k",
+      "profile": "n256_convergence_afdb",
+      "run": "repa_mpnn_l4_afdb_256_step100k",
       "step": 100000,
-      "n_designable": 84,
-      "wall_s": 53.5
-    },
-    {
-      "profile": "n128_paper_layer",
-      "run": "repa_l9_128_bs80_steplast",
-      "step": 63000,
-      "n_designable": 11,
-      "wall_s": 8.2
-    },
-    {
-      "profile": "n128_paper_layer",
-      "run": "repa_l4_128_bs80_step200k",
-      "step": 200000,
       "n_designable": 165,
-      "wall_s": 93.2
+      "wall_s": 219.5
     },
     {
-      "profile": "n256_paper_afdb",
-      "run": "repa_l4_afdb_256_ep20",
+      "profile": "n256_convergence_afdb",
+      "run": "repa_l9_afdb_256_step400k",
+      "step": 400000,
+      "n_designable": 181,
+      "wall_s": 199.3
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_mpnn_l9_afdb_256_step100k",
+      "step": 100000,
+      "n_designable": 183,
+      "wall_s": 226.4
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_l4_afdb_256_step200k",
       "step": 200000,
+      "n_designable": 109,
+      "wall_s": 64.7
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_mpnn_l9_afdb_256_step400k",
+      "step": 400000,
+      "n_designable": 180,
+      "wall_s": 210.1
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_mpnn_l4_afdb_256_step700k",
+      "step": 700000,
+      "n_designable": 139,
+      "wall_s": 93.5
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_l9_afdb_256_step100k",
+      "step": 100000,
+      "n_designable": 117,
+      "wall_s": 81.2
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_l4_afdb_256_step100k",
+      "step": 100000,
+      "n_designable": 87,
+      "wall_s": 60.6
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_mpnn_l4_afdb_256_step100k",
+      "step": 100000,
+      "n_designable": 165,
+      "wall_s": 206.9
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "baseline_afdb_256_step100k",
+      "step": 100000,
+      "n_designable": 48,
+      "wall_s": 36.7
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "baseline_afdb_256_step1300k",
+      "step": 1300000,
+      "n_designable": 98,
+      "wall_s": 61.5
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_l4_afdb_256_step400k",
+      "step": 400000,
+      "n_designable": 193,
+      "wall_s": 200.0
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "baseline_afdb_256_step400k",
+      "step": 400000,
+      "n_designable": 192,
+      "wall_s": 224.9
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_l9_afdb_256_step400k",
+      "step": 400000,
+      "n_designable": 181,
+      "wall_s": 185.0
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_mpnn_l4_afdb_256_step400k",
+      "step": 400000,
       "n_designable": 171,
-      "wall_s": 225.1
+      "wall_s": 218.0
     },
     {
-      "profile": "n256_paper_afdb",
-      "run": "baseline_afdb_256_ep20",
+      "profile": "n256_convergence_afdb",
+      "run": "repa_mpnn_l9_afdb_256_step700k",
+      "step": 700000,
+      "n_designable": 195,
+      "wall_s": 214.8
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "baseline_afdb_256_step1600k",
+      "step": 1600000,
+      "n_designable": 181,
+      "wall_s": 215.8
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_l4_afdb_256_step1000k",
+      "step": 1000000,
+      "n_designable": 185,
+      "wall_s": 201.1
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_mpnn_l9_afdb_256_step1300k",
+      "step": 1300000,
+      "n_designable": 194,
+      "wall_s": 203.5
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "baseline_afdb_256_step1300k",
+      "step": 1300000,
+      "n_designable": 98,
+      "wall_s": 56.6
+    },
+    {
+      "profile": "n256_convergence_afdb",
+      "run": "repa_mpnn_l4_afdb_256_step200k",
       "step": 200000,
-      "n_designable": 164,
-      "wall_s": 244.5
+      "n_designable": 133,
+      "wall_s": 99.1
     },
     {
-      "profile": "n256_paper_averaging",
-      "run": "repa_l0_256_ep26",
-      "step": 400000,
-      "n_designable": 21,
-      "wall_s": 25.8
+      "profile": "n256_convergence_afdb",
+      "run": "repa_mpnn_l4_afdb_256_step700k",
+      "step": 700000,
+      "n_designable": 139,
+      "wall_s": 86.3
     },
     {
-      "profile": "n256_paper_averaging",
-      "run": "repa_l4_256_ep22",
+      "profile": "n256_convergence_afdb",
+      "run": "repa_mpnn_l4_afdb_256_step100k",
+      "step": 100000,
+      "n_designable": 165,
+      "wall_s": 203.3
+    },
+    {
+      "profile": "n256_convergence_pdb",
+      "run": "repa_l9_256_per_residue_bs24_2gpu_step700k",
+      "step": 700000,
+      "n_designable": 145,
+      "wall_s": 149.0
+    },
+    {
+      "profile": "n256_convergence_pdb",
+      "run": "repa_mpnn_l4_256_per_residue_step100k",
+      "step": 100000,
+      "n_designable": 8,
+      "wall_s": 6.2
+    },
+    {
+      "profile": "n256_convergence_pdb",
+      "run": "repa_l4_256_per_residue_bs24_2gpu_step100k",
+      "step": 100000,
+      "n_designable": 4,
+      "wall_s": 5.8
+    },
+    {
+      "profile": "n256_convergence_pdb",
+      "run": "repa_mpnn_l4_256_per_residue_step400k",
       "step": 400000,
+      "n_designable": 99,
+      "wall_s": 65.1
+    },
+    {
+      "profile": "n256_convergence_pdb",
+      "run": "repa_l4_256_per_residue_bs24_2gpu_step400k",
+      "step": 400000,
+      "n_designable": 90,
+      "wall_s": 55.5
+    },
+    {
+      "profile": "n256_convergence_pdb",
+      "run": "baseline_256_bs24_2gpu_step700k",
+      "step": 700000,
+      "n_designable": 78,
+      "wall_s": 54.5
+    },
+    {
+      "profile": "n256_convergence_pdb",
+      "run": "baseline_256_bs24_2gpu_step1000k",
+      "step": 1000000,
       "n_designable": 80,
-      "wall_s": 34.3
+      "wall_s": 49.9
     },
     {
-      "profile": "n256_paper_averaging",
-      "run": "repa_l9_256_ep25",
-      "step": 400000,
-      "n_designable": 121,
-      "wall_s": 75.1
+      "profile": "n256_convergence_pdb",
+      "run": "baseline_256_bs24_2gpu_step1300k",
+      "step": 1300000,
+      "n_designable": 92,
+      "wall_s": 39.5
     },
     {
-      "profile": "n256_paper_esm",
-      "run": "baseline_256_ep21",
-      "step": 400000,
-      "n_designable": 31,
-      "wall_s": 31.5
+      "profile": "n256_convergence_pdb",
+      "run": "repa_mpnn_l4_256_per_residue_step1000k",
+      "step": 1000000,
+      "n_designable": 57,
+      "wall_s": 42.1
     },
     {
-      "profile": "n256_paper_esm",
-      "run": "repa_l4_256_ep22",
-      "step": 400000,
-      "n_designable": 80,
-      "wall_s": 32.6
+      "profile": "n256_convergence_pdb",
+      "run": "repa_l9_256_per_residue_bs24_2gpu_step700k",
+      "step": 700000,
+      "n_designable": 145,
+      "wall_s": 145.5
     },
     {
-      "profile": "n256_paper_l4_step300k",
-      "run": "repa_l4_256_ep22",
-      "step": 400000,
-      "n_designable": 80,
-      "wall_s": 32.0
-    },
-    {
-      "profile": "n256_paper_lambda",
-      "run": "repa_l4_256_ep22",
-      "step": 400000,
-      "n_designable": 80,
-      "wall_s": 32.5
-    },
-    {
-      "profile": "n256_paper_mpnn",
-      "run": "baseline_256_ep21",
-      "step": 400000,
-      "n_designable": 31,
-      "wall_s": 30.6
-    },
-    {
-      "profile": "n256_paper_mpnn",
-      "run": "repa_l4_256_ep22",
-      "step": 400000,
-      "n_designable": 80,
-      "wall_s": 32.5
-    },
-    {
-      "profile": "n256_paper_pdb",
-      "run": "repa_l0_256_ep26",
-      "step": 400000,
-      "n_designable": 21,
-      "wall_s": 30.8
-    },
-    {
-      "profile": "n256_paper_pdb",
-      "run": "repa_l9_256_ep25",
-      "step": 400000,
-      "n_designable": 121,
-      "wall_s": 89.8
-    },
-    {
-      "profile": "n256_paper_pdb",
-      "run": "repa_l4_256_ep22",
-      "step": 400000,
-      "n_designable": 80,
-      "wall_s": 41.0
-    },
-    {
-      "profile": "n256_paper_pdb",
-      "run": "baseline_256_ep21",
-      "step": 400000,
-      "n_designable": 31,
-      "wall_s": 38.2
-    },
-    {
-      "profile": "n256_paper_random",
-      "run": "repa_l9_256_ep17",
-      "step": 300000,
-      "n_designable": 10,
-      "wall_s": 22.4
-    },
-    {
-      "profile": "n256_paper_random",
-      "run": "repa_l4_256_random_ep17",
-      "step": 200000,
-      "n_designable": 40,
-      "wall_s": 29.2
-    },
-    {
-      "profile": "n256_paper_random",
-      "run": "baseline_256_ep21",
-      "step": 400000,
-      "n_designable": 31,
-      "wall_s": 38.8
+      "profile": "n256_convergence_pdb",
+      "run": "repa_mpnn_l4_256_per_residue_step700k",
+      "step": 700000,
+      "n_designable": 104,
+      "wall_s": 76.6
     }
   ]
 }

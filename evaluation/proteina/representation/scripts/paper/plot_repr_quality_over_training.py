@@ -1,19 +1,14 @@
-"""Representation quality over training — REPA paper Fig 3a analog.
+"""Representation probe quality over training — n=256 convergence sweep.
 
 Reads the consolidated ``pretrained_sweep_results.csv`` from the
-n256_convergence_cath_if_dih_{pdb,afdb} sweeps and plots probe accuracy vs
-training step. For each (run, step) we take the BEST layer's probe value
-(peak-layer convention, matching the way the n128/n256 paper-struct tables
-report ``best_layer`` for each ckpt).
+n256_convergence_cath_if_dih_{pdb,afdb} sweeps. For each (run, step) we take
+the BEST layer's probe value (max for higher-is-better metrics, min for MAE).
 
-Panel layout: 2 rows (PDB, AFDB) x 3 cols
-    col 0: CATH-T accuracy (most discriminative level)
-    col 1: CATH-C accuracy
-    col 2: Inverse-folding top-1 accuracy
+Panel layout: 2 rows (PDB, AFDB) × 6 cols
+    CATH-C acc ↑   CATH-A acc ↑   CATH-T acc ↑   IF top-1 ↑   IF macro-F1 ↑   Dih MAE (total) ↓
 
-Baseline drawn first. REPA variants below. One line per run family.
-
-Output: ``evaluation/proteina/representation/figures/paper/n256_convergence/repr_quality_over_training.{png,pdf}``
+Same styling as the gen-side convergence plots: per-encoder marker shape,
+faded connecting lines, horizontal-only grid, human-friendly tick labels.
 """
 
 from __future__ import annotations
@@ -21,11 +16,35 @@ from __future__ import annotations
 import csv
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter, LogLocator
 
-ROOT = Path(__file__).resolve().parents[2]  # .../proteina/representation
+
+def _humanize(v, _pos=None):
+    av = abs(v)
+    if av >= 1e6:
+        return f"{v / 1e6:g}M"
+    if av >= 1e3:
+        return f"{v / 1e3:g}K"
+    if av >= 1:
+        return f"{v:g}"
+    return f"{v:.3g}"
+
+
+def _style_axes(ax):
+    ax.grid(False)
+    ax.grid(True, axis="y", alpha=0.3)
+    ax.xaxis.set_major_locator(
+        LogLocator(base=10.0, subs=(1.0, 2.0, 4.0, 7.0), numticks=20)
+    )
+    ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs="auto", numticks=20))
+    ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
+    ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
+
+
+ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "results/paper"
 FIG_OUT = ROOT / "figures/paper/n256_convergence"
 FIG_OUT.mkdir(parents=True, exist_ok=True)
@@ -39,32 +58,59 @@ DATASETS = {
     / "pretrained_sweep_results.csv",
 }
 
+# Mirror the gen-side plots (color, linestyle, marker).
 RUN_FAMILIES = {
     "PDB": [
-        ("baseline_256_bs24_2gpu", "Baseline (PDB)", "tab:blue", "-"),
-        ("repa_l4_256_per_residue_bs24_2gpu", "REPA L4 GearNet (PDB)", "tab:red", "-"),
+        ("baseline_256_bs24_2gpu", "Baseline (PDB)", "tab:blue", "-", "s"),
+        (
+            "repa_l4_256_per_residue_bs24_2gpu",
+            "REPA L4 GearNet (PDB)",
+            "tab:red",
+            "-",
+            "o",
+        ),
         (
             "repa_l9_256_per_residue_bs24_2gpu",
             "REPA L9 GearNet (PDB)",
             "tab:orange",
             "-",
+            "o",
         ),
-        ("repa_mpnn_l4_256_per_residue", "REPA L4 MPNN (PDB)", "tab:red", "--"),
+        ("repa_mpnn_l4_256_per_residue", "REPA L4 MPNN (PDB)", "tab:red", "--", "^"),
+        ("repa_mpnn_l9_256_per_residue", "REPA L9 MPNN (PDB)", "tab:orange", "--", "^"),
+        (
+            "repa_l4_256_per_residue_random_bs24_2gpu",
+            "REPA L4 GearNet-rand (PDB, ctrl)",
+            "tab:gray",
+            ":",
+            "D",
+        ),
     ],
     "AFDB": [
-        ("baseline_afdb_256", "Baseline (AFDB)", "tab:blue", "-"),
-        ("repa_l4_afdb_256", "REPA L4 GearNet (AFDB)", "tab:red", "-"),
-        ("repa_l9_afdb_256", "REPA L9 GearNet (AFDB, partial)", "tab:orange", ":"),
-        ("repa_mpnn_l4_afdb_256", "REPA L4 MPNN (AFDB)", "tab:red", "--"),
-        ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN (AFDB)", "tab:orange", "--"),
+        ("baseline_afdb_256", "Baseline (AFDB)", "tab:blue", "-", "s"),
+        ("repa_l4_afdb_256", "REPA L4 GearNet (AFDB)", "tab:red", "-", "o"),
+        ("repa_l9_afdb_256", "REPA L9 GearNet (AFDB, partial)", "tab:orange", ":", "o"),
+        ("repa_mpnn_l4_afdb_256", "REPA L4 MPNN (AFDB)", "tab:red", "--", "^"),
+        ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN (AFDB)", "tab:orange", "--", "^"),
     ],
 }
 
-# (probe_kind, filter_col, filter_val, metric_col, panel title, y label)
+# (probe_kind, filter_col, filter_val, metric_col, panel title, y label, higher_better)
 PANELS = [
-    ("cath", "cath_level", "T", "cath_accuracy", "CATH-T accuracy", "probe acc"),
-    ("cath", "cath_level", "C", "cath_accuracy", "CATH-C accuracy", "probe acc"),
-    ("inverse_folding", None, None, "if_top1_acc", "IF top-1 acc", "probe acc"),
+    ("cath", "cath_level", "C", "cath_accuracy", "CATH-C accuracy", "probe acc", True),
+    ("cath", "cath_level", "A", "cath_accuracy", "CATH-A accuracy", "probe acc", True),
+    ("cath", "cath_level", "T", "cath_accuracy", "CATH-T accuracy", "probe acc", True),
+    ("inverse_folding", None, None, "if_top1_acc", "IF top-1 acc", "probe acc", True),
+    ("inverse_folding", None, None, "if_macro_f1", "IF macro-F1", "macro F1", True),
+    (
+        "dihedral",
+        None,
+        None,
+        "dih_mae_total_deg",
+        "Dihedral MAE (total)",
+        "MAE (deg)",
+        False,
+    ),
 ]
 
 
@@ -85,15 +131,11 @@ def fnum(x):
 
 
 def best_per_ckpt(
-    rows: List[Dict],
-    run_prefix: str,
-    probe_kind: str,
-    filter_col: str,
-    filter_val: str,
-    metric_col: str,
-) -> Tuple[List[int], List[float]]:
-    """For each step under run_prefix, pick the max metric across layers."""
-    by_step: Dict[int, float] = defaultdict(lambda: float("-inf"))
+    rows, run_prefix, probe_kind, filter_col, filter_val, metric_col, higher_better
+):
+    """Per step under run_prefix: best (max if higher_better else min) across layers."""
+    init = float("-inf") if higher_better else float("inf")
+    by_step: Dict[int, float] = defaultdict(lambda: init)
     for r in rows:
         if r.get("probe_kind") != probe_kind:
             continue
@@ -102,12 +144,11 @@ def best_per_ckpt(
         run = r.get("run", "")
         if not run.startswith(run_prefix):
             continue
-        v = fnum(r.get(metric_col))
-        s = fnum(r.get("step"))
+        v, s = fnum(r.get(metric_col)), fnum(r.get("step"))
         if v is None or s is None:
             continue
         s = int(s)
-        if v > by_step[s]:
+        if (higher_better and v > by_step[s]) or (not higher_better and v < by_step[s]):
             by_step[s] = v
     pts = sorted(by_step.items())
     if not pts:
@@ -120,42 +161,54 @@ def main() -> None:
     fig, axes = plt.subplots(
         nrows=len(DATASETS),
         ncols=len(PANELS),
-        figsize=(4.6 * len(PANELS), 3.8 * len(DATASETS)),
+        figsize=(3.8 * len(PANELS), 3.6 * len(DATASETS)),
         sharex=False,
     )
-
     for row_i, (ds_name, csv_path) in enumerate(DATASETS.items()):
         rows = load_csv(csv_path)
-        for col_i, (probe_kind, fcol, fval, metric, title, ylabel) in enumerate(PANELS):
+        for col_i, (probe_kind, fcol, fval, metric, title, ylabel, hb) in enumerate(
+            PANELS
+        ):
             ax = axes[row_i, col_i]
-            for prefix, label, color, ls in RUN_FAMILIES[ds_name]:
-                xs, ys = best_per_ckpt(rows, prefix, probe_kind, fcol, fval, metric)
+            for prefix, label, color, ls, marker in RUN_FAMILIES[ds_name]:
+                xs, ys = best_per_ckpt(rows, prefix, probe_kind, fcol, fval, metric, hb)
                 if not xs:
                     continue
                 ax.plot(
                     xs,
                     ys,
-                    marker="o",
-                    markersize=4,
                     linewidth=1.4,
                     color=color,
                     linestyle=ls,
+                    alpha=0.35,
+                    marker="none",
+                )
+                ax.plot(
+                    xs,
+                    ys,
+                    marker=marker,
+                    markersize=6,
+                    markeredgewidth=0.8,
+                    markeredgecolor="white",
+                    linestyle="none",
+                    color=color,
                     label=label,
                 )
             ax.set_xscale("log")
             ax.set_xlabel("Training step")
             ax.set_ylabel(ylabel)
-            ax.set_title(f"{ds_name} — {title} (best layer)")
-            ax.grid(True, alpha=0.3)
+            arrow = " ↑" if hb else " ↓"
+            ax.set_title(f"{ds_name} — {title}{arrow}")
+            _style_axes(ax)
             if col_i == 0:
                 ax.legend(loc="best", fontsize=7)
 
     fig.suptitle(
-        "n=256 convergence — representation probe accuracy vs training step\n"
-        "Best layer per checkpoint; t=1.0; baseline drawn first.",
+        "n=256 convergence — representation probe quality vs training step\n"
+        "Best layer per checkpoint (max for ↑ metrics, min for ↓); t=1.0; baseline drawn first.",
         fontsize=12,
     )
-    fig.tight_layout(rect=[0, 0, 1, 0.96])
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
     out_png = FIG_OUT / "repr_quality_over_training.png"
     out_pdf = FIG_OUT / "repr_quality_over_training.pdf"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
