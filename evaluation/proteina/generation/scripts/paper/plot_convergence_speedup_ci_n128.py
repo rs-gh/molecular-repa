@@ -1,15 +1,13 @@
-"""Convergence speedup plot — REPA paper Fig 1 analog for proteina.
+"""Convergence speedup plot with Wilson 95% CIs on rate metrics.
 
-Reads ``sweep_results.jsonl`` from the n128_convergence_{pdb,afdb} sweeps and
-emits a 2 (datasets) x 4 (metrics) panel showing each metric vs training step
-with one line per run. The four metrics are designability, diversity (cluster
-count), novelty (foldseek vs matching DB), and FID (PDB / AFDB).
+Same layout as plot_convergence_speedup.py; error bars added on the
+designability and novelty (foldseek) panels using each row's per-checkpoint
+denominator (designable count for designability; designable-and-evaluated
+count for novelty). CIs are statistical-noise bands for "given these
+samples, where does the true rate lie" — they do NOT include
+sample-from-model variance (would require multi-seed re-eval).
 
-One curve per run; baseline drawn first (per `feedback_baseline_first.md`),
-REPA variants in red/orange. Latest-by-(run, step) dedup so retry rows don't
-double-count and ERR rows (designability=None) drop out cleanly.
-
-Output: ``evaluation/proteina/generation/figures/paper/n128_convergence/convergence_speedup.{png,pdf}``
+Output: ``figures/paper/n128_convergence/convergence_speedup_ci.png``
 """
 
 from __future__ import annotations
@@ -141,6 +139,7 @@ METRICS = [
         True,
     ),
     ("_res_PDB_FID", "FID (vs PDB)", "FID-50K", False),
+    ("_res_AFDB_FID", "FID (vs AFDB)", "FID-50K", False),
     # SS-JSD on the (H,E)/(H,C) joint distribution restricted to the designable
     # subset — captures whether the surviving designable structures match the
     # reference SS distribution; lower = closer to natural proteins.
@@ -175,6 +174,30 @@ METRICS = [
 ]
 
 
+# Metrics that are binomial proportions, mapped to their denominator column.
+# Used to compute Wilson 95% CIs on a per-checkpoint basis.
+BINOMIAL_DENOM = {
+    "_res_designability_rate": "_res_designability_n",
+    "_res_novelty_foldseek_pdb_rate": "_res_novelty_foldseek_pdb_n",
+    "_res_novelty_foldseek_afdb_swissprot_rate": "_res_novelty_foldseek_afdb_swissprot_n",
+}
+Z95 = 1.959963984540054  # qnorm(0.975)
+
+
+def wilson_ci(p: float, n: int, z: float = Z95):
+    """Wilson 95% CI for a binomial proportion. Returns (lo, hi).
+
+    Better than normal-approx near 0/1 and at small n; standard in survey
+    statistics. Falls back to (p, p) when n <= 0.
+    """
+    if n <= 0:
+        return p, p
+    denom = 1.0 + z * z / n
+    center = (p + z * z / (2 * n)) / denom
+    margin = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / denom
+    return max(0.0, center - margin), min(1.0, center + margin)
+
+
 def load_jsonl(path: Path) -> List[Dict]:
     """Load jsonl, deduping by (run, step) keeping the latest row."""
     if not path.exists():
@@ -187,15 +210,19 @@ def load_jsonl(path: Path) -> List[Dict]:
 
 
 def extract_curve(rows: List[Dict], run_prefix: str, metric) -> tuple:
-    """Pull (steps, values) for one run family, dropping rows with errors or
-    missing metric. Sorted by step ascending.
+    """Pull (steps, values, lows, highs) for one run family.
 
-    ``metric`` may be a column name (str) for direct lookup, or a tuple
-    ``(label, fn)`` where fn(row) computes a derived value (e.g. H/E ratio)."""
+    For binomial-rate metrics in BINOMIAL_DENOM, lows/highs hold the Wilson
+    95% CI bounds derived from each row's denominator. For other metrics
+    they're filled with the value itself (zero-width "CI") so callers can
+    treat them uniformly.
+    """
     if isinstance(metric, tuple):
         _, fn = metric
+        denom_col = None
     else:
         fn = lambda r, _m=metric: r.get(_m)  # noqa: E731
+        denom_col = BINOMIAL_DENOM.get(metric)
     pts = []
     for r in rows:
         run = r.get("run", "")
@@ -210,12 +237,22 @@ def extract_curve(rows: List[Dict], run_prefix: str, metric) -> tuple:
         s = r.get("step")
         if v is None or s is None:
             continue
-        pts.append((int(s), float(v)))
+        v = float(v)
+        if denom_col is not None:
+            n = r.get(denom_col)
+            lo, hi = wilson_ci(v, int(n)) if n is not None else (v, v)
+        else:
+            lo, hi = v, v
+        pts.append((int(s), v, lo, hi))
     pts.sort()
     if not pts:
-        return [], []
-    xs, ys = zip(*pts)
-    return list(xs), list(ys)
+        return [], [], [], []
+    xs, ys, los, his = zip(*pts)
+    return list(xs), list(ys), list(los), list(his)
+
+
+def is_binomial(metric) -> bool:
+    return isinstance(metric, str) and metric in BINOMIAL_DENOM
 
 
 def main() -> None:
@@ -231,7 +268,7 @@ def main() -> None:
         for col_i, (metric, title, ylabel, higher_better) in enumerate(METRICS):
             ax = axes[row_i, col_i]
             for prefix, label, color, linestyle, marker in RUN_FAMILIES[ds_name]:
-                xs, ys = extract_curve(rows, prefix, metric)
+                xs, ys, los, his = extract_curve(rows, prefix, metric)
                 if not xs:
                     continue
                 # connecting line at reduced opacity so dense regions read as
@@ -245,6 +282,24 @@ def main() -> None:
                     alpha=0.35,
                     marker="none",
                 )
+                # Wilson 95% CI bars on binomial-rate panels only
+                if is_binomial(metric):
+                    # clip in case of patched rows where y was forced to 0
+                    # but the stored denominator may not match — keep yerr>=0
+                    y_err_lo = [max(0.0, y - lo) for y, lo in zip(ys, los)]
+                    y_err_hi = [max(0.0, hi - y) for y, hi in zip(ys, his)]
+                    ax.errorbar(
+                        xs,
+                        ys,
+                        yerr=[y_err_lo, y_err_hi],
+                        fmt="none",
+                        ecolor=color,
+                        elinewidth=1.0,
+                        capsize=2.5,
+                        capthick=0.8,
+                        alpha=0.55,
+                        zorder=2,
+                    )
                 # markers at full opacity carry the legend entry
                 ax.plot(
                     xs,
@@ -271,17 +326,14 @@ def main() -> None:
                 ax.legend(loc="best", fontsize=7)
 
     fig.suptitle(
-        "n=256 convergence — generation metrics vs training step\n"
-        "Direction (higher vs lower better) varies by panel — see ylabel; baseline drawn first.",
+        "n=256 convergence — generation metrics vs training step (Wilson 95% CIs on rates)\n"
+        "Error bars: statistical CI given the samples drawn; do NOT capture sample-from-model variance.",
         fontsize=12,
     )
     fig.tight_layout(rect=[0, 0, 1, 0.96])
-    out_png = FIG_OUT / "convergence_speedup.png"
-    out_pdf = FIG_OUT / "convergence_speedup.pdf"
+    out_png = FIG_OUT / "convergence_speedup_ci.png"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
     print(f"Wrote {out_png}")
-    print(f"Wrote {out_pdf}")
 
 
 if __name__ == "__main__":
