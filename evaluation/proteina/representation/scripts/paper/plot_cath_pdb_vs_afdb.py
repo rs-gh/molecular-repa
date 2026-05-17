@@ -36,8 +36,12 @@ from plot_cath_results import (  # noqa: E402
     _PALETTE,
     _draw_baselines,
     _split_baselines,
-    pretty_run_label,
     _run_step,
+)
+from evaluation.proteina.lib.plot_labels import (  # noqa: E402
+    block_label_plan,
+    compose_legend_label,
+    compose_title_suffix,
 )
 
 
@@ -107,9 +111,11 @@ def _plot_row(
     show_legend: bool,
 ) -> None:
     ckpt_df, baseline_df = _split_baselines(df)
+    runs_in_block = [run for run, _ in run_labels]
+    _, varying = block_label_plan(runs_in_block)
     for ax, level in zip(axes, ["C", "A", "T"]):
         sub = ckpt_df[ckpt_df.cath_level == level]
-        for run, label in run_labels:
+        for run, variant in run_labels:
             r = sub[sub["run"] == run].sort_values("layer")
             if r.empty:
                 continue
@@ -118,11 +124,11 @@ def _plot_row(
                 r["cath_accuracy"],
                 marker="o",
                 color=colors[run],
-                label=pretty_run_label(
+                label=compose_legend_label(
                     run,
                     step=_run_step(sub, run),
-                    display=label,
-                    allow_missing_step=True,
+                    variant_tag=variant,
+                    varying_fields=varying,
                 ),
                 linewidth=1.5,
                 markersize=5,
@@ -153,8 +159,9 @@ def plot_block_pdb_vs_afdb(
     _plot_row(
         axes[1], df_afdb, run_labels, colors, row_title="AFDB probe", show_legend=True
     )
+    title_suffix = compose_title_suffix([run for run, _ in run_labels])
     fig.suptitle(
-        f"{sweep_label} — {block_name} ablation (PDB vs AFDB probe labels)",
+        f"{sweep_label} — {block_name} ablation{title_suffix} (PDB vs AFDB probe labels)",
         fontsize=12,
         y=1.01,
     )
@@ -172,7 +179,8 @@ def plot_layer_curves_pdb_vs_afdb(
 ) -> None:
     """All-runs overlay; top row PDB probe, bottom row AFDB probe."""
     runs = sorted(set(df_pdb["run"]) | set(df_afdb["run"]))
-    run_labels = [(r, r) for r in runs]
+    # variant_tag=None — legend label comes from RunMeta via compose_legend_label.
+    run_labels = [(r, None) for r in runs]
     colors = {r: _PALETTE[i % len(_PALETTE)] for i, r in enumerate(runs)}
     fig, axes = plt.subplots(2, 3, figsize=(18, 9), sharex=True, sharey="col")
     _plot_row(

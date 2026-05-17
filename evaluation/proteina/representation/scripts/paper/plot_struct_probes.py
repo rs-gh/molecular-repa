@@ -42,7 +42,11 @@ from typing import Dict, List, Tuple
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from evaluation.proteina.lib.plot_labels import pretty_run_label
+from evaluation.proteina.lib.plot_labels import (
+    block_label_plan,
+    compose_legend_label,
+    compose_title_suffix,
+)
 
 
 HERE = Path(__file__).resolve().parent
@@ -106,122 +110,126 @@ PROBE_SPEC: Dict[str, Dict] = {
 
 # ─── Ablation blocks (mirrors plot_cath_results.py + extends with new runs) ─
 
+# Per-paper-table ablation blocks. Entries are ``(run_key, variant_tag)`` where
+# variant_tag is only the within-block sweep delta (e.g. "λ=2.0", "bs80"); the
+# model name + encoder + dataset + step are pulled from RUN_META via
+# compose_legend_label. See evaluation/proteina/lib/plot_labels.py.
 BLOCKS_N128: Dict[str, List[Tuple[str, str]]] = {
     "layer": [
-        ("baseline_128_bs80_step200k", "baseline"),
-        ("repa_l0_128_bs80_step200k", "REPA L0"),
-        ("repa_l4_128_bs80_step200k", "REPA L4"),
-        ("repa_l9_128_bs80_step200k", "REPA L9"),
+        ("baseline_128_bs80_step200k", None),
+        ("repa_l0_128_bs80_step200k", None),
+        ("repa_l4_128_bs80_step200k", None),
+        ("repa_l9_128_bs80_step200k", None),
     ],
     "layer_per_residue_step400k": [
-        ("baseline_128_bs24_step400k", "baseline (bs24, 400k)"),
-        ("repa_l0_128_per_residue_step400k", "REPA L0"),
-        ("repa_l4_128_per_residue_step400k", "REPA L4"),
-        ("repa_l9_128_per_residue_step400k", "REPA L9"),
+        ("baseline_128_bs24_step400k", "bs24"),
+        ("repa_l0_128_per_residue_step400k", "per_residue"),
+        ("repa_l4_128_per_residue_step400k", "per_residue"),
+        ("repa_l9_128_per_residue_step400k", "per_residue"),
     ],
     "encoder": [
-        ("baseline_128_bs80_step200k", "baseline"),
-        ("repa_l4_128_bs80_step200k", "L4 / CA-GearNet"),
-        ("repa_l4_128_random_step200k", "L4 / random init"),
-        ("repa_l4_128_pw_structure_step100k", "L4 / PW-Structure"),
-        ("repa_l4_128_pw_torsional_step100k", "L4 / PW-Torsional"),
-        ("repa_mpnn_l4_128_bs80_step200k", "L4 / ProteinMPNN"),
-        ("repa_esm_l4_128_step200k", "L4 / ESM2"),
+        ("baseline_128_bs80_step200k", None),
+        ("repa_l4_128_bs80_step200k", None),
+        ("repa_l4_128_random_step200k", None),
+        ("repa_l4_128_pw_structure_step100k", None),
+        ("repa_l4_128_pw_torsional_step100k", None),
+        ("repa_mpnn_l4_128_bs80_step200k", None),
+        ("repa_esm_l4_128_step200k", None),
     ],
     "bs_lr": [
-        ("baseline_128_bs24_step200k", "baseline bs24 200k"),
-        ("baseline_128_bs24_step400k", "baseline bs24 400k"),
-        ("baseline_128_bs80_step200k", "baseline bs80 200k"),
-        ("baseline_128_bs80_lr3x_step200k", "baseline bs80 lr3x"),
-        ("repa_l4_128_bs24_step200k", "REPA L4 bs24 200k"),
-        ("repa_l4_128_bs24_step400k", "REPA L4 bs24 400k"),
-        ("repa_l4_128_bs80_step200k", "REPA L4 bs80 200k"),
-        ("repa_l4_128_bs80_lr3x_steplast", "REPA L4 bs80 lr3x"),
+        ("baseline_128_bs24_step200k", "bs24"),
+        ("baseline_128_bs24_step400k", "bs24"),
+        ("baseline_128_bs80_step200k", "bs80"),
+        ("baseline_128_bs80_lr3x_step200k", "bs80 lr3x"),
+        ("repa_l4_128_bs24_step200k", "bs24"),
+        ("repa_l4_128_bs24_step400k", "bs24"),
+        ("repa_l4_128_bs80_step200k", "bs80"),
+        ("repa_l4_128_bs80_lr3x_steplast", "bs80 lr3x"),
     ],
     "lambda_wd": [
-        ("repa_l4_128_bs80_step200k", "REPA L4 λ=0.5 wd_def"),
-        ("repa_l4_128_bs80_lambda025_step200k", "REPA L4 λ=0.25"),
-        ("repa_l4_128_bs80_lambda1_step200k", "REPA L4 λ=1.0"),
-        ("repa_l4_128_bs80_lambda2_steplast", "REPA L4 λ=2.0"),
-        ("repa_l4_128_bs80_wd1e2_step200k", "REPA L4 wd=1e-2"),
+        ("repa_l4_128_bs80_step200k", "λ=0.5 wd_def"),
+        ("repa_l4_128_bs80_lambda025_step200k", "λ=0.25"),
+        ("repa_l4_128_bs80_lambda1_step200k", "λ=1.0"),
+        ("repa_l4_128_bs80_lambda2_steplast", "λ=2.0"),
+        ("repa_l4_128_bs80_wd1e2_step200k", "wd=1e-2"),
     ],
     "afdb": [
-        ("baseline_128_bs80_step200k", "PDB baseline 200k"),
-        ("baseline_afdb_128_bs80_step200k", "AFDB baseline 200k"),
-        ("baseline_afdb_128_bs80_step400k", "AFDB baseline 400k"),
-        ("baseline_afdb_128_bs80_step600k", "AFDB baseline 600k"),
-        ("baseline_afdb_128_bs80_step800k", "AFDB baseline 800k"),
-        ("baseline_afdb_128_bs80_step1000k", "AFDB baseline 1000k"),
-        ("baseline_afdb_128_bs80_step1200k", "AFDB baseline 1200k"),
-        ("repa_l4_128_bs80_step200k", "PDB REPA L4 200k"),
-        ("repa_l4_afdb_128_bs80_step200k", "AFDB REPA L4 200k"),
-        ("repa_l4_afdb_128_bs80_step600k", "AFDB REPA L4 600k"),
-        ("repa_mpnn_l4_128_bs80_step200k", "PDB REPA MPNN L4 200k"),
-        ("repa_mpnn_l4_afdb_128_bs80_step200k", "AFDB REPA MPNN L4 200k"),
-        ("repa_mpnn_l4_afdb_128_bs80_step400k", "AFDB REPA MPNN L4 400k"),
-        ("repa_mpnn_l4_afdb_128_bs80_step600k", "AFDB REPA MPNN L4 600k"),
-        ("repa_mpnn_l4_afdb_128_bs80_step800k", "AFDB REPA MPNN L4 800k"),
-        ("repa_mpnn_l4_afdb_128_bs80_step1000k", "AFDB REPA MPNN L4 1000k"),
+        ("baseline_128_bs80_step200k", None),
+        ("baseline_afdb_128_bs80_step200k", None),
+        ("baseline_afdb_128_bs80_step400k", None),
+        ("baseline_afdb_128_bs80_step600k", None),
+        ("baseline_afdb_128_bs80_step800k", None),
+        ("baseline_afdb_128_bs80_step1000k", None),
+        ("baseline_afdb_128_bs80_step1200k", None),
+        ("repa_l4_128_bs80_step200k", None),
+        ("repa_l4_afdb_128_bs80_step200k", None),
+        ("repa_l4_afdb_128_bs80_step600k", None),
+        ("repa_mpnn_l4_128_bs80_step200k", None),
+        ("repa_mpnn_l4_afdb_128_bs80_step200k", None),
+        ("repa_mpnn_l4_afdb_128_bs80_step400k", None),
+        ("repa_mpnn_l4_afdb_128_bs80_step600k", None),
+        ("repa_mpnn_l4_afdb_128_bs80_step800k", None),
+        ("repa_mpnn_l4_afdb_128_bs80_step1000k", None),
     ],
     "pretrained_vs_ours": [
-        ("baseline_128_bs80_step200k", "ours (10L) baseline"),
-        ("repa_l4_128_bs80_step200k", "ours (10L) REPA L4"),
-        ("pretrained_dfs_60m", "NGC pretrained (12L)"),
+        ("baseline_128_bs80_step200k", "10L"),
+        ("repa_l4_128_bs80_step200k", "10L"),
+        ("pretrained_dfs_60m", "NGC 12L"),
     ],
 }
 
 BLOCKS_N256: Dict[str, List[Tuple[str, str]]] = {
     "layer": [
-        ("baseline_256_ep21", "baseline"),
-        ("repa_l0_256_ep26", "REPA L0"),
-        ("repa_l4_256_ep22", "REPA L4"),
-        ("repa_l9_256_ep25", "REPA L9"),
+        ("baseline_256_ep21", None),
+        ("repa_l0_256_ep26", None),
+        ("repa_l4_256_ep22", None),
+        ("repa_l9_256_ep25", None),
     ],
     "encoder": [
-        ("baseline_256_ep21", "baseline"),
-        ("repa_l4_256_ep22", "L4 / CA-GearNet"),
-        ("repa_l4_256_random_ep17", "L4 / random init"),
-        ("repa_mpnn_l4_256_per_residue_step300k", "L4 / ProteinMPNN"),
-        ("repa_esm_l9_t30_256_steplast", "L9 / ESM2 (≠L4)"),
+        ("baseline_256_ep21", None),
+        ("repa_l4_256_ep22", None),
+        ("repa_l4_256_random_ep17", None),
+        ("repa_mpnn_l4_256_per_residue_step300k", None),
+        ("repa_esm_l9_t30_256_steplast", "≠L4"),
     ],
     "dataset": [
-        ("baseline_256_ep21", "PDB baseline ep21"),
-        ("baseline_afdb_256_ep20", "AFDB baseline ep20"),
-        ("baseline_afdb_256_step400k", "AFDB baseline 400k"),
-        ("baseline_afdb_256_step700k", "AFDB baseline 700k"),
-        ("baseline_afdb_256_step900k", "AFDB baseline 900k"),
-        ("repa_l4_256_ep22", "PDB REPA L4 ep22"),
-        ("repa_l4_afdb_256_ep20", "AFDB REPA L4 ep20"),
-        ("repa_l4_afdb_256_step400k", "AFDB REPA L4 400k"),
-        ("repa_l4_afdb_256_step700k", "AFDB REPA L4 700k"),
-        ("repa_mpnn_l4_afdb_256_step400k", "AFDB REPA MPNN L4 400k"),
-        ("repa_mpnn_l9_afdb_256_step400k", "AFDB REPA MPNN L9 400k"),
-        ("repa_mpnn_l9_afdb_256_step700k", "AFDB REPA MPNN L9 700k"),
+        ("baseline_256_ep21", None),
+        ("baseline_afdb_256_ep20", None),
+        ("baseline_afdb_256_step400k", None),
+        ("baseline_afdb_256_step700k", None),
+        ("baseline_afdb_256_step900k", None),
+        ("repa_l4_256_ep22", None),
+        ("repa_l4_afdb_256_ep20", None),
+        ("repa_l4_afdb_256_step400k", None),
+        ("repa_l4_afdb_256_step700k", None),
+        ("repa_mpnn_l4_afdb_256_step400k", None),
+        ("repa_mpnn_l9_afdb_256_step400k", None),
+        ("repa_mpnn_l9_afdb_256_step700k", None),
     ],
     "averaging": [
-        ("repa_l0_256_ep26", "L0 per_residue"),
-        ("repa_l0_256_per_sample_steplast", "L0 per_sample"),
-        ("repa_l4_256_ep22", "L4 per_residue"),
-        ("repa_l4_256_per_sample_step400k", "L4 per_sample"),
-        ("repa_l9_256_ep25", "L9 per_residue"),
-        ("repa_l9_256_per_sample_steplast", "L9 per_sample"),
+        ("repa_l0_256_ep26", "per_residue"),
+        ("repa_l0_256_per_sample_steplast", "per_sample"),
+        ("repa_l4_256_ep22", "per_residue"),
+        ("repa_l4_256_per_sample_step400k", "per_sample"),
+        ("repa_l9_256_ep25", "per_residue"),
+        ("repa_l9_256_per_sample_steplast", "per_sample"),
     ],
     "lambda": [
-        ("repa_l4_256_ep13_step300k", "λ=0.5 @ 300k"),
-        ("repa_l4_256_per_residue_lambda1_step200k", "λ=1.0 @ 200k"),
-        ("repa_l4_256_per_residue_lambda1_step300k", "λ=1.0 @ 300k"),
-        ("repa_l4_256_per_residue_lambda2_step200k", "λ=2.0 @ 200k"),
-        ("repa_l4_256_per_residue_lambda2_step300k", "λ=2.0 @ 300k"),
+        ("repa_l4_256_ep13_step300k", "λ=0.5"),
+        ("repa_l4_256_per_residue_lambda1_step200k", "λ=1.0"),
+        ("repa_l4_256_per_residue_lambda1_step300k", "λ=1.0"),
+        ("repa_l4_256_per_residue_lambda2_step200k", "λ=2.0"),
+        ("repa_l4_256_per_residue_lambda2_step300k", "λ=2.0"),
     ],
     "step_extension": [
-        ("repa_l4_256_ep13_step300k", "REPA L4 @ 300k"),
-        ("repa_l4_256_ep22", "REPA L4 @ 400k"),
-        ("repa_l4_256_ep31_step500k", "REPA L4 @ 500k"),
+        ("repa_l4_256_ep13_step300k", None),
+        ("repa_l4_256_ep22", None),
+        ("repa_l4_256_ep31_step500k", None),
     ],
     "pretrained_vs_ours": [
-        ("baseline_256_ep21", "ours (10L) baseline"),
-        ("repa_l4_256_ep22", "ours (10L) REPA L4"),
-        ("pretrained_dfs_60m", "NGC pretrained (12L)"),
+        ("baseline_256_ep21", "10L"),
+        ("repa_l4_256_ep22", "10L"),
+        ("pretrained_dfs_60m", "NGC 12L"),
     ],
 }
 
@@ -418,6 +426,8 @@ def plot_layer_curves_one_probe(
     fig, ax = plt.subplots(1, 1, figsize=(10, 6))
     runs = sorted(ckpt_df["run"].unique())
     colors = {r: _PALETTE[i % len(_PALETTE)] for i, r in enumerate(runs)}
+    _, varying = block_label_plan(runs)
+    title_suffix = compose_title_suffix(runs)
     for run in runs:
         r = ckpt_df[ckpt_df["run"] == run].sort_values("layer")
         if r.empty:
@@ -427,8 +437,10 @@ def plot_layer_curves_one_probe(
             r[metric],
             marker="o",
             color=colors[run],
-            label=pretty_run_label(
-                run, step=_run_step(ckpt_df, run), allow_missing_step=True
+            label=compose_legend_label(
+                run,
+                step=_run_step(ckpt_df, run),
+                varying_fields=varying,
             ),
             linewidth=1.5,
             markersize=4,
@@ -442,7 +454,7 @@ def plot_layer_curves_one_probe(
     if spec["ylim"] is not None:
         ax.set_ylim(*spec["ylim"])
     ax.legend(fontsize=6, loc="best", ncol=2)
-    fig.suptitle(title, fontsize=12, y=1.01)
+    fig.suptitle(f"{title}{title_suffix}", fontsize=12, y=1.01)
     fig.tight_layout()
     fig.savefig(outpath, dpi=120, bbox_inches="tight")
     plt.close(fig)
@@ -465,7 +477,10 @@ def plot_block_one_probe(
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 6))
     colors = {run: _PALETTE[i % len(_PALETTE)] for i, (run, _) in enumerate(run_labels)}
-    for run, label in run_labels:
+    runs_in_block = [run for run, _ in run_labels]
+    _, varying = block_label_plan(runs_in_block)
+    title_suffix = compose_title_suffix(runs_in_block)
+    for run, variant in run_labels:
         r = sub[sub["run"] == run].sort_values("layer")
         if r.empty:
             continue
@@ -474,8 +489,11 @@ def plot_block_one_probe(
             r[metric],
             marker="o",
             color=colors[run],
-            label=pretty_run_label(
-                run, step=_run_step(sub, run), display=label, allow_missing_step=True
+            label=compose_legend_label(
+                run,
+                step=_run_step(sub, run),
+                variant_tag=variant,
+                varying_fields=varying,
             ),
             linewidth=1.5,
             markersize=5,
@@ -489,7 +507,11 @@ def plot_block_one_probe(
     if spec["ylim"] is not None:
         ax.set_ylim(*spec["ylim"])
     ax.legend(fontsize=7, loc="best")
-    fig.suptitle(f"{sweep_title}: {probe} — {block_name} ablation", fontsize=12, y=1.01)
+    fig.suptitle(
+        f"{sweep_title}: {probe} — {block_name} ablation{title_suffix}",
+        fontsize=12,
+        y=1.01,
+    )
     fig.tight_layout()
     fig.savefig(outpath, dpi=120, bbox_inches="tight")
     plt.close(fig)
@@ -506,6 +528,8 @@ def plot_distance_buckets(df: pd.DataFrame, outpath: Path, title: str) -> None:
     fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
     runs = sorted(ckpt_df["run"].unique())
     colors = {r: _PALETTE[i % len(_PALETTE)] for i, r in enumerate(runs)}
+    _, varying = block_label_plan(runs)
+    title_suffix = compose_title_suffix(runs)
     bucket_specs = [
         ("dist_mae_short", "short |i−j|<6"),
         ("dist_mae_medium", "medium 6≤|i−j|<24"),
@@ -521,8 +545,10 @@ def plot_distance_buckets(df: pd.DataFrame, outpath: Path, title: str) -> None:
                 r[col],
                 marker="o",
                 color=colors[run],
-                label=pretty_run_label(
-                    run, step=_run_step(ckpt_df, run), allow_missing_step=True
+                label=compose_legend_label(
+                    run,
+                    step=_run_step(ckpt_df, run),
+                    varying_fields=varying,
                 ),
                 linewidth=1.2,
                 markersize=3.5,
@@ -542,7 +568,7 @@ def plot_distance_buckets(df: pd.DataFrame, outpath: Path, title: str) -> None:
         ax.set_ylabel("MAE (Å)")
         ax.grid(alpha=0.3)
     axes[-1].legend(fontsize=6, loc="best", ncol=2)
-    fig.suptitle(title, fontsize=12, y=1.02)
+    fig.suptitle(f"{title}{title_suffix}", fontsize=12, y=1.02)
     fig.tight_layout()
     fig.savefig(outpath, dpi=120, bbox_inches="tight")
     plt.close(fig)

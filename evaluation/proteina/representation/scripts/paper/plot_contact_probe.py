@@ -81,15 +81,18 @@ PREFERRED_RUN: dict[tuple[str, str], str] = {
 N_LABELS = {"n128": "n = 128", "n256": "n = 256", "n512": "n = 512"}
 N_ORDER = ["n128", "n256", "n512"]
 
+# Format mirrors the new compose_legend_label convention:
+#   "<model> / <encoder> (<dataset>)"
+# All our runs in this sweep are PDB-trained; pretrained_dfs_60m is AFDB.
 FAMILY_LABEL = {
-    "baseline": "baseline",
-    "repa_l0": "REPA L0 (GearNet)",
-    "repa_l4": "REPA L4 (GearNet)",
-    "repa_l9": "REPA L9 (GearNet)",
-    "esm_repa_l0": "REPA L0 (ESM2)",
-    "esm_repa_l4": "REPA L4 (ESM2)",
-    "esm_repa_l9": "REPA L9 (ESM2)",
-    "pretrained_dfs_60m": "pretrained DFS-60M (12L)",
+    "baseline": "baseline (PDB)",
+    "repa_l0": "REPA L0 / CA-GearNet (PDB)",
+    "repa_l4": "REPA L4 / CA-GearNet (PDB)",
+    "repa_l9": "REPA L9 / CA-GearNet (PDB)",
+    "esm_repa_l0": "REPA L0 / ESM2 (PDB)",
+    "esm_repa_l4": "REPA L4 / ESM2 (PDB)",
+    "esm_repa_l9": "REPA L9 / ESM2 (PDB)",
+    "pretrained_dfs_60m": "NGC 60M (12L) (AFDB)",
 }
 
 METRIC_LABELS = {
