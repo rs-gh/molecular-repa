@@ -235,8 +235,8 @@ def main() -> None:
                         pre_val,
                         color=pretrained_overlay.PRETRAINED_COLOR,
                         linestyle="--",
-                        linewidth=1.4,
-                        alpha=0.85,
+                        linewidth=2.6,
+                        alpha=0.9,
                         label=pretrained_overlay.PRETRAINED_LABEL
                         if col_i == 0
                         else None,
