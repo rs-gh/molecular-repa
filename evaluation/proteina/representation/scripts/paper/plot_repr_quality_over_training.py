@@ -210,11 +210,8 @@ def main() -> None:
     )
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     out_png = FIG_OUT / "repr_quality_over_training.png"
-    out_pdf = FIG_OUT / "repr_quality_over_training.pdf"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
     print(f"Wrote {out_png}")
-    print(f"Wrote {out_pdf}")
 
 
 if __name__ == "__main__":
