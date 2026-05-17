@@ -198,8 +198,8 @@ def main() -> None:
             ax.set_ylabel("value (lower = closer, log y)")
             ax.set_title(f"{ds_name} — {title} ↓")
             _style_axes(ax, log_y=True)
-            if SHOW_PRETRAINED and suffix == "FID":
-                pre_val = pretrained_overlay.load_gen().get(f"_res_{ds_name}_FID")
+            if SHOW_PRETRAINED:
+                pre_val = pretrained_overlay.load_gen().get(f"_res_{ds_name}_{suffix}")
                 if pre_val is not None:
                     ax.axhline(
                         pre_val,
@@ -227,6 +227,17 @@ def main() -> None:
             ax.set_ylabel("entropy (higher = more coverage)")
             ax.set_title(f"{ds_name} — {title} ↑")
             _style_axes(ax)
+            if SHOW_PRETRAINED:
+                pre_val = pretrained_overlay.load_gen().get(col)
+                if pre_val is not None:
+                    ax.axhline(
+                        pre_val,
+                        color=pretrained_overlay.PRETRAINED_COLOR,
+                        linestyle="--",
+                        linewidth=2.6,
+                        alpha=0.9,
+                        zorder=1,
+                    )
 
     fig.suptitle(
         "n=256 convergence — FID-family distributional metrics\n"

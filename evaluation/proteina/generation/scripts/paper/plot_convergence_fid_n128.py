@@ -26,6 +26,17 @@ from typing import Dict, List
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter
 
+import sys
+
+_THIS = Path(__file__).resolve()
+sys.path.insert(0, str(_THIS.parents[5]))
+from evaluation.proteina.lib import pretrained_overlay  # noqa: E402
+
+# Overlay pretrained Proteina (NGC 60M, ~1.3M steps) as a horizontal dashed
+# reference line where the pretrained model was evaluated. Not step-comparable.
+# Flip to False to hide.
+SHOW_PRETRAINED = True
+
 
 def _humanize(v, _pos=None):
     av = abs(v)
@@ -193,6 +204,22 @@ def main() -> None:
             ax.set_ylabel("value (lower = closer, log y)")
             ax.set_title(f"{ds_name} — {title} ↓")
             _style_axes(ax, log_y=True)
+            if SHOW_PRETRAINED:
+                pre_val = pretrained_overlay.load_gen("n128").get(
+                    f"_res_{ds_name}_{suffix}"
+                )
+                if pre_val is not None:
+                    ax.axhline(
+                        pre_val,
+                        color=pretrained_overlay.PRETRAINED_COLOR,
+                        linestyle="--",
+                        linewidth=2.6,
+                        alpha=0.9,
+                        label=pretrained_overlay.PRETRAINED_LABEL
+                        if col_i == 0
+                        else None,
+                        zorder=1,
+                    )
             if col_i == 0:
                 ax.legend(loc="best", fontsize=7)
         # fS columns — same row's RUN_FAMILIES so comparisons stay within data regime
@@ -208,6 +235,17 @@ def main() -> None:
             ax.set_ylabel("entropy (higher = more coverage)")
             ax.set_title(f"{ds_name} — {title} ↑")
             _style_axes(ax)
+            if SHOW_PRETRAINED:
+                pre_val = pretrained_overlay.load_gen("n128").get(col)
+                if pre_val is not None:
+                    ax.axhline(
+                        pre_val,
+                        color=pretrained_overlay.PRETRAINED_COLOR,
+                        linestyle="--",
+                        linewidth=2.6,
+                        alpha=0.9,
+                        zorder=1,
+                    )
 
     fig.suptitle(
         "n=128 convergence — FID-family distributional metrics\n"
