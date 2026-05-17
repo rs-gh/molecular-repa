@@ -33,7 +33,10 @@ from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
 from matplotlib.patches import Patch
 
-from evaluation.proteina.lib.plot_labels import pretty_run_label
+from evaluation.proteina.lib.plot_labels import (
+    block_label_plan,
+    compose_legend_label,
+)
 
 ROOT = Path(__file__).resolve().parents[2]  # .../proteina/generation
 FIG_ROOT = ROOT / "figures/paper"
@@ -81,6 +84,12 @@ def to_float(x):
 
 
 def collect(rows: list[dict]) -> list[dict]:
+    # Compute the metadata fields that vary across this run set so the legend
+    # only carries deltas (model/encoder/dataset annotated per-run when they
+    # differ between rows). Falls back to pretty_run_label for runs without a
+    # RUN_META entry.
+    all_runs = [row["run"] for row in rows]
+    _, varying = block_label_plan(all_runs)
     pts = []
     for row in rows:
         des = to_float(row.get(DES_COL, ""))
@@ -104,8 +113,11 @@ def collect(rows: list[dict]) -> list[dict]:
             {
                 "run": row["run"],
                 "step": step,
-                "label": pretty_run_label(
-                    row["run"], step=step, allow_missing_step=True
+                "label": compose_legend_label(
+                    row["run"],
+                    step=step,
+                    varying_fields=varying,
+                    fallback_display=row["run"],
                 ),
                 "des_pct": des * 100.0,
                 "fs_t": fs_t,

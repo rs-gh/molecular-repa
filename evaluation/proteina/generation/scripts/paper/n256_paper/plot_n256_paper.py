@@ -37,6 +37,8 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 
 from utils._results_io import load_sweep_rows  # noqa: E402
 
+from evaluation.proteina.lib.plot_labels import compose_title_suffix  # noqa: E402
+
 RESULTS_ROOT = GENERATION_ROOT / "results" / "paper"
 FIGURES_DIR = GENERATION_ROOT / "figures" / "paper" / "n256_paper"
 
@@ -413,7 +415,10 @@ def plot() -> None:
                 )
 
             if pcol == 0:
-                ax.set_ylabel(pcfg["label"], fontsize=9, fontweight="bold")
+                suffix = compose_title_suffix(
+                    [run_name for run_name, _, _, _, _ in runs]
+                )
+                ax.set_ylabel(f"{pcfg['label']}{suffix}", fontsize=9, fontweight="bold")
 
     # Legend: one patch per unique (label, color) across all profiles
     seen: set[tuple[str, str]] = set()

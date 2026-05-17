@@ -18,7 +18,10 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-from evaluation.proteina.lib.plot_labels import pretty_run_label
+from evaluation.proteina.lib.plot_labels import (
+    block_label_plan,
+    compose_legend_label,
+)
 
 ROOT = Path(__file__).resolve().parents[2]  # .../proteina/generation
 FIG_ROOT = ROOT / "figures/paper"
@@ -88,6 +91,8 @@ def short_profile(label: str) -> str:
 
 
 def collect(rows: list[dict]) -> list[dict]:
+    all_runs = [row["run"] for row in rows]
+    _, varying = block_label_plan(all_runs)
     pts = []
     for row in rows:
         des_frac = to_float(row.get(DES_COL, ""))
@@ -106,8 +111,11 @@ def collect(rows: list[dict]) -> list[dict]:
             {
                 "run": row["run"],
                 "step": step,
-                "label": pretty_run_label(
-                    row["run"], step=step, allow_missing_step=True
+                "label": compose_legend_label(
+                    row["run"],
+                    step=step,
+                    varying_fields=varying,
+                    fallback_display=row["run"],
                 ),
                 "block": short_profile(row.get("profile", "(unlabelled)")),
                 "des_pct": des_frac * 100.0,

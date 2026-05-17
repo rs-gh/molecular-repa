@@ -41,6 +41,8 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 
 from utils._results_io import load_sweep_rows  # noqa: E402
 
+from evaluation.proteina.lib.plot_labels import compose_title_suffix  # noqa: E402
+
 RESULTS_ROOT = GENERATION_ROOT / "results" / "paper"
 FIGURES_DIR = GENERATION_ROOT / "figures" / "paper" / "n128_paper"
 
@@ -367,7 +369,11 @@ def plot() -> None:
                 )
 
             if acol == 0:
-                ax.set_ylabel(acfg["label"], fontsize=9, fontweight="bold")
+                # Append shared-metadata suffix (e.g. " (CA-GearNet, PDB)") to
+                # the row title so the reader sees the block-level training
+                # config without it being repeated in every bar label.
+                suffix = compose_title_suffix([run_name for run_name, _, _ in runs])
+                ax.set_ylabel(f"{acfg['label']}{suffix}", fontsize=9, fontweight="bold")
 
     # Legend: one patch per unique (label, color) across all ablations
     seen: set[tuple[str, str]] = set()
