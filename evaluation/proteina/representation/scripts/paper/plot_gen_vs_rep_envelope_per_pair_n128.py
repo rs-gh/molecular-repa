@@ -295,7 +295,7 @@ def plot_metric(metric_key: str, rep_key: str) -> None:
             axes[row, 0].invert_yaxis()
 
     suptitle = (
-        f"n=256 — generation vs representation envelope per baseline–REPA pair\n"
+        f"n=128 — generation vs representation envelope per baseline–REPA pair\n"
         f"y = {y_label}{' (axis inverted; up = better)' if lower_better else ''}; "
         f"x = {x_label} (best layer at t=1.0). "
         f"Bubble size ∝ training step. Dashed arrow: baseline → REPA at the shared step closest to {TARGET_STEP//1000}k."

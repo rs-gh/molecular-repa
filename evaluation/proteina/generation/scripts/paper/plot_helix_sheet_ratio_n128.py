@@ -122,17 +122,14 @@ def main() -> None:
         ax.grid(True, alpha=0.3)
         ax.legend(loc="best", fontsize=7)
     fig.suptitle(
-        "n=256 — Helix/Sheet ratio of designable generations vs training step\n"
+        "n=128 — Helix/Sheet ratio of designable generations vs training step\n"
         "Dotted horizontal line = 1 (equal). Higher = more α-helical bias.",
         fontsize=11,
     )
     fig.tight_layout(rect=[0, 0, 1, 0.93])
     out_png = FIG_OUT / "helix_sheet_ratio.png"
-    out_pdf = FIG_OUT / "helix_sheet_ratio.pdf"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
     print(f"Wrote {out_png}")
-    print(f"Wrote {out_pdf}")
 
 
 if __name__ == "__main__":

@@ -144,17 +144,14 @@ def main() -> None:
         ax.legend(loc="best", fontsize=8, framealpha=0.85)
 
     fig.suptitle(
-        "n=256 — SS 2D-JSD conditional on designability\n"
+        "n=128 — SS 2D-JSD conditional on designability\n"
         "Red points below blue at a given designability ⇒ REPA preserves SS better at that rate.",
         fontsize=12,
     )
     fig.tight_layout(rect=[0, 0, 1, 0.92])
     out_png = FIG_OUT / "ssjsd_vs_des.png"
-    out_pdf = FIG_OUT / "ssjsd_vs_des.pdf"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
     print(f"Wrote {out_png}")
-    print(f"Wrote {out_pdf}")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 """Correlation between representation quality and generation quality.
 
-For each n=256 convergence dataset (PDB, AFDB), joins generation metrics
+For each n=128 convergence dataset (PDB, AFDB), joins generation metrics
 (_res_PDB_FID, _res_designability_rate) with representation probes
 (CATH-T top1 accuracy, inverse-folding top1, dihedral MAE) on (run, step).
 
@@ -291,7 +291,7 @@ def plot_scatter_grid(
             ax.set_ylabel(gen_label)
             ax.grid(True, alpha=0.3)
     fig.suptitle(
-        f"{dataset} (n=256): generation vs representation — all checkpoints\nPoint size ∝ training step",
+        f"{dataset} (n=128): generation vs representation — all checkpoints\nPoint size ∝ training step",
         fontsize=12,
     )
     fig.legend(
@@ -326,7 +326,7 @@ def main() -> None:
     print(f"Wrote {csv_path}")
 
     # Markdown: one block per (dataset, step_filter)
-    lines: List[str] = ["# Gen vs Rep correlations (n=256 convergence)\n"]
+    lines: List[str] = ["# Gen vs Rep correlations (n=128 convergence)\n"]
     lines.append(
         "Rep metrics are reduced across layers per checkpoint (max for accuracies, min for MAE). All rep rows are at t=1.0.\n"
     )

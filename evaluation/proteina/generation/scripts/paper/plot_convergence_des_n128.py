@@ -1,4 +1,4 @@
-"""Convergence plot for designability-family metrics — proteina n=256.
+"""Convergence plot for designability-family metrics — proteina n=128.
 
 Companion to ``plot_convergence_fid.py``. Covers designability, diversity,
 novelty (vs PDB / AFDB-SP foldseek DBs), SS-JSD on the designable subset,
@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter, LogLocator
+from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter
 
 
 def _humanize(v, _pos=None):
@@ -42,6 +42,7 @@ def _style_axes(ax, log_y: bool = False) -> None:
         LogLocator(base=10.0, subs=(1.0, 2.0, 4.0, 7.0), numticks=20)
     )
     ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs="auto", numticks=20))
+    ax.xaxis.set_minor_formatter(NullFormatter())
     ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
     ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
 
@@ -226,17 +227,14 @@ def main() -> None:
                 ax.legend(loc="best", fontsize=7)
 
     fig.suptitle(
-        "n=256 convergence — designability / diversity / novelty / SS metrics\n"
+        "n=128 convergence — designability / diversity / novelty / SS metrics\n"
         "All restricted to the designable subset where applicable; baseline drawn first.",
         fontsize=12,
     )
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     out_png = FIG_OUT / "convergence_des.png"
-    out_pdf = FIG_OUT / "convergence_des.pdf"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
     print(f"Wrote {out_png}")
-    print(f"Wrote {out_pdf}")
 
 
 if __name__ == "__main__":

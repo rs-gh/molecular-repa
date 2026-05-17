@@ -156,17 +156,14 @@ def main() -> None:
         ax.grid(True, alpha=0.3)
         ax.legend(loc="best", fontsize=8)
     fig.suptitle(
-        "n=256 — generation vs representation envelope (point size ∝ training step)\n"
+        "n=128 — generation vs representation envelope (point size ∝ training step)\n"
         "Top-right = better on both axes; lines connect same-run checkpoints in step order.",
         fontsize=12,
     )
     fig.tight_layout(rect=[0, 0, 1, 0.94])
     out_png = FIG_OUT / "gen_vs_rep_envelope.png"
-    out_pdf = FIG_OUT / "gen_vs_rep_envelope.pdf"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
     print(f"Wrote {out_png}")
-    print(f"Wrote {out_pdf}")
 
 
 if __name__ == "__main__":

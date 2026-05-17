@@ -235,17 +235,14 @@ def main() -> None:
                 )
 
     fig.suptitle(
-        "n=256 — Designability trade-offs (right + up = better)\n"
+        "n=128 — Designability trade-offs (right + up = better)\n"
         "Red front above blue → REPA Pareto-dominates baseline on that trade-off.",
         fontsize=12,
     )
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     out_png = FIG_OUT / "pareto_des_div_nov.png"
-    out_pdf = FIG_OUT / "pareto_des_div_nov.pdf"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
     print(f"Wrote {out_png}")
-    print(f"Wrote {out_pdf}")
 
 
 if __name__ == "__main__":

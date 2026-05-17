@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter, LogLocator
+from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter
 
 
 def _humanize(v, _pos=None):
@@ -44,6 +44,7 @@ def _style_axes(ax, log_y: bool = False) -> None:
         LogLocator(base=10.0, subs=(1.0, 2.0, 4.0, 7.0), numticks=20)
     )
     ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs="auto", numticks=20))
+    ax.xaxis.set_minor_formatter(NullFormatter())
     ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
     ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
 
@@ -271,17 +272,14 @@ def main() -> None:
                 ax.legend(loc="best", fontsize=7)
 
     fig.suptitle(
-        "n=256 convergence — generation metrics vs training step\n"
+        "n=128 convergence — generation metrics vs training step\n"
         "Direction (higher vs lower better) varies by panel — see ylabel; baseline drawn first.",
         fontsize=12,
     )
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     out_png = FIG_OUT / "convergence_speedup.png"
-    out_pdf = FIG_OUT / "convergence_speedup.pdf"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
     print(f"Wrote {out_png}")
-    print(f"Wrote {out_pdf}")
 
 
 if __name__ == "__main__":

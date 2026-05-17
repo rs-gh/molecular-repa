@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter, LogLocator
+from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter
 
 
 def _humanize(v, _pos=None):
@@ -37,6 +37,7 @@ def _style_axes(ax, log_y: bool = False) -> None:
         LogLocator(base=10.0, subs=(1.0, 2.0, 4.0, 7.0), numticks=20)
     )
     ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs="auto", numticks=20))
+    ax.xaxis.set_minor_formatter(NullFormatter())
     ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
     ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
 
@@ -268,7 +269,7 @@ def main() -> None:
                 ax.legend(loc="best", fontsize=7)
 
     fig.suptitle(
-        "n=256 convergence — des/div/nov/SS (Wilson 95% CIs on rates)\n"
+        "n=128 convergence — des/div/nov/SS (Wilson 95% CIs on rates)\n"
         "Error bars: statistical CI given the samples drawn; do NOT capture sample-from-model variance.",
         fontsize=12,
     )

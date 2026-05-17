@@ -1,4 +1,4 @@
-"""Representation probe quality over training — n=256 convergence sweep.
+"""Representation probe quality over training — n=128 convergence sweep.
 
 Reads the consolidated ``pretrained_sweep_results.csv`` from the
 n128_convergence_cath_if_dih_{pdb,afdb} sweeps. For each (run, step) we take
@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter, LogLocator
+from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter
 
 
 def _humanize(v, _pos=None):
@@ -40,6 +40,7 @@ def _style_axes(ax):
         LogLocator(base=10.0, subs=(1.0, 2.0, 4.0, 7.0), numticks=20)
     )
     ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs="auto", numticks=20))
+    ax.xaxis.set_minor_formatter(NullFormatter())
     ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
     ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
 
@@ -209,17 +210,14 @@ def main() -> None:
                 ax.legend(loc="best", fontsize=7)
 
     fig.suptitle(
-        "n=256 convergence — representation probe quality vs training step\n"
+        "n=128 convergence — representation probe quality vs training step\n"
         "Best layer per checkpoint (max for ↑ metrics, min for ↓); t=1.0; baseline drawn first.",
         fontsize=12,
     )
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     out_png = FIG_OUT / "repr_quality_over_training.png"
-    out_pdf = FIG_OUT / "repr_quality_over_training.pdf"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
     print(f"Wrote {out_png}")
-    print(f"Wrote {out_pdf}")
 
 
 if __name__ == "__main__":

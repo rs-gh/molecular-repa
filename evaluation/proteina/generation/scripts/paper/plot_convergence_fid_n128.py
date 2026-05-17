@@ -1,4 +1,4 @@
-"""Convergence plot for FID-family distributional metrics — proteina n=256.
+"""Convergence plot for FID-family distributional metrics — proteina n=128.
 
 Companion to ``plot_convergence_speedup.py``. Plots reference-distribution
 metrics that aren't covered there: FID (overall coord-VAE feature dist),
@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter, LogLocator
+from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter
 
 
 def _humanize(v, _pos=None):
@@ -45,6 +45,7 @@ def _style_axes(ax, log_y: bool = False) -> None:
         LogLocator(base=10.0, subs=(1.0, 2.0, 4.0, 7.0), numticks=20)
     )
     ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs="auto", numticks=20))
+    ax.xaxis.set_minor_formatter(NullFormatter())
     ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
     ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
 
@@ -209,17 +210,14 @@ def main() -> None:
             _style_axes(ax)
 
     fig.suptitle(
-        "n=256 convergence — FID-family distributional metrics\n"
+        "n=128 convergence — FID-family distributional metrics\n"
         "FID/fJSD: lower = closer to reference (log y). fS: fold-class entropy (linear, higher = more coverage).",
         fontsize=12,
     )
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     out_png = FIG_OUT / "convergence_fid.png"
-    out_pdf = FIG_OUT / "convergence_fid.pdf"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
     print(f"Wrote {out_png}")
-    print(f"Wrote {out_pdf}")
 
 
 if __name__ == "__main__":
