@@ -56,6 +56,7 @@ export PROTEINMPNN_WEIGHTS_DIR="/rds/user/sr2173/hpc-work/proteina/ProteinMPNN"
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export WANDB_INIT_TIMEOUT=120
+export WANDB_DIR="/rds/user/sr2173/hpc-work/proteina/wandb_runs"
 
 REPA_CONFIG="${1:-training_repa_l4_256_afdb_per_residue}"
 REPA_SUBDIR="${2:-training/256/afdb/gearnet/per_residue}"

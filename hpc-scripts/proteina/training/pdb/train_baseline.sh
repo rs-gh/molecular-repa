@@ -48,6 +48,7 @@ export DATA_PATH="/rds/user/sr2173/hpc-work/proteina/data"
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export WANDB_INIT_TIMEOUT=120
+export WANDB_DIR="/rds/user/sr2173/hpc-work/proteina/wandb_runs"
 
 #! Ensure log directory exists
 mkdir -p /rds/user/sr2173/hpc-work/proteina/logs
