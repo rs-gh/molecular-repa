@@ -5,7 +5,9 @@ One panel per (dataset, REPA variant). Each panel shows:
   - one REPA variant's trajectory (colored, connected in step order)
   - bubble size proportional to training step
   - a dashed arrow from the baseline checkpoint to the REPA checkpoint at the
-    latest training step that exists in both runs, labelled with the improvement
+    shared training step closest to TARGET_STEP (a pre-committed mid-training
+    target — currently 400k, mirroring the REPA paper Fig 3c convention),
+    labelled with the improvement
 
 Two figures are produced per dataset metric pair:
   - gen_vs_rep_envelope_per_pair_fid.png       (y = FID, axis inverted so up=better, matches the REPA paper)
@@ -297,7 +299,7 @@ def plot_metric(metric_key: str, rep_key: str) -> None:
         f"n=256 — generation vs representation envelope per baseline–REPA pair\n"
         f"y = {y_label}{' (axis inverted; up = better)' if lower_better else ''}; "
         f"x = {x_label} (best layer at t=1.0). "
-        f"Bubble size ∝ training step. Dashed arrow: baseline → REPA at the latest shared step."
+        f"Bubble size ∝ training step. Dashed arrow: baseline → REPA at the shared step closest to {TARGET_STEP//1000}k."
     )
     fig.suptitle(suptitle, fontsize=11)
     fig.tight_layout(rect=[0, 0, 1, 0.93])
