@@ -29,7 +29,16 @@ import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr, spearmanr
 
+import sys
+
 REPO_ROOT = Path(__file__).resolve().parents[5]
+sys.path.insert(0, str(REPO_ROOT))
+from evaluation.proteina.lib import pretrained_overlay  # noqa: E402
+
+# Overlay pretrained Proteina (NGC v1.3 60M, ~1.3M steps) on each scatter
+# panel. Not step-comparable — purely an external eyeball baseline. Flip to
+# False to hide.
+SHOW_PRETRAINED = True
 GEN_RESULTS = REPO_ROOT / "evaluation/proteina/generation/results/paper"
 REP_RESULTS = REPO_ROOT / "evaluation/proteina/representation/results/paper"
 FIG_OUT = (
@@ -288,6 +297,24 @@ def plot_scatter_grid(
                 )
             else:
                 ax.set_title(f"{rep_label} vs {gen_label}", fontsize=9)
+            # Optional pretrained overlay (gold ★)
+            if SHOW_PRETRAINED:
+                pre_rep = pretrained_overlay.load_rep(dataset).get(rep_col)
+                pre_gen = pretrained_overlay.load_gen().get(gen_col)
+                if pre_rep is not None and pre_gen is not None:
+                    ax.scatter(
+                        [pre_rep],
+                        [pre_gen],
+                        s=180,
+                        marker=pretrained_overlay.PRETRAINED_MARKER,
+                        color=pretrained_overlay.PRETRAINED_COLOR,
+                        edgecolor="black",
+                        linewidth=0.6,
+                        zorder=5,
+                        label=pretrained_overlay.PRETRAINED_LABEL
+                        if (i == 0 and j == 0)
+                        else None,
+                    )
             ax.set_xlabel(rep_label)
             ax.set_ylabel(gen_label)
             ax.grid(True, alpha=0.3)

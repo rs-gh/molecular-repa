@@ -27,7 +27,16 @@ from typing import Dict, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
+import sys
+
 REPO_ROOT = Path(__file__).resolve().parents[5]
+sys.path.insert(0, str(REPO_ROOT))
+from evaluation.proteina.lib import pretrained_overlay  # noqa: E402
+
+# Overlay the pretrained Proteina (NVIDIA NGC 60M, ~1.3M steps) as an external
+# eyeball baseline. Not step-comparable to our runs — see
+# project_proteina_60m_layer_mismatch.md. Flip to False to hide.
+SHOW_PRETRAINED = True
 GEN_RESULTS = REPO_ROOT / "evaluation/proteina/generation/results/paper"
 REP_RESULTS = REPO_ROOT / "evaluation/proteina/representation/results/paper"
 FIG_OUT = (
@@ -285,19 +294,43 @@ def plot_metric(metric_key: str, rep_key: str) -> None:
                     zorder=5,
                 )
 
+            # Optional: overlay pretrained Proteina (NGC v1.3 60M) as a
+            # gold ★ at its (rep, gen) coordinate. Not step-comparable to our
+            # runs — purely an external eyeball reference.
+            if SHOW_PRETRAINED:
+                # Map our short REP_X_OPTIONS keys to pretrained_overlay's column names.
+                _pretrained_rep_key = {"if_top1": "if_top1_acc"}.get(rep_key, rep_key)
+                pre_rep = pretrained_overlay.load_rep(ds_name).get(_pretrained_rep_key)
+                pre_gen = pretrained_overlay.load_gen().get(gen_col)
+                if pre_rep is not None and pre_gen is not None:
+                    ax.scatter(
+                        [pre_rep],
+                        [pre_gen],
+                        s=260,
+                        marker=pretrained_overlay.PRETRAINED_MARKER,
+                        color=pretrained_overlay.PRETRAINED_COLOR,
+                        edgecolor="black",
+                        linewidth=0.7,
+                        zorder=6,
+                        label=pretrained_overlay.PRETRAINED_LABEL,
+                    )
+
             ax.set_xlabel(f"{x_label} (best layer)")
             ax.set_ylabel(y_label)
             ax.set_title(f"{ds_name}: baseline vs {rep_label}", fontsize=10)
             ax.grid(True, alpha=0.3)
-            ax.legend(loc="lower left", fontsize=7)
+            # Legend in upper-left for FID (good corner is now bottom-right, so
+            # upper-left is the empty quadrant). For designability the good
+            # corner is top-right so lower-left stays empty — pick by metric.
+            ax.legend(loc="upper left" if lower_better else "lower right", fontsize=7)
 
-        if lower_better:
-            # Invert only once per shared-y row (acts on all axes in the row)
-            axes[row, 0].invert_yaxis()
+    # Y-axis orientation: FID stays in its natural direction (lower at bottom,
+    # matches REPA paper Fig 3c — "good corner" is bottom-right). Designability
+    # is left as default (higher at top — "good corner" is top-right).
 
     suptitle = (
         f"n=256 — generation vs representation envelope per baseline–REPA pair\n"
-        f"y = {y_label}{' (axis inverted; up = better)' if lower_better else ''}; "
+        f"y = {y_label}{' (lower = better, matches REPA paper convention)' if lower_better else ''}; "
         f"x = {x_label} (best layer at t=1.0). "
         f"Bubble size ∝ training step. Dashed arrow: baseline → REPA at the shared step closest to {TARGET_STEP//1000}k."
     )
