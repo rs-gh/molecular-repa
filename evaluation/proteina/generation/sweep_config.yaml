@@ -77,11 +77,20 @@ _defaults: &defaults
   # numbers stay comparable -- changing alignment-type or max-seqs invalidates
   # cross-checkpoint comparisons.
   foldseek_target_dbs: "pdb=/rds/user/sr2173/hpc-work/proteina/foldseek_dbs/pdb/db,afdb_swissprot=/rds/user/sr2173/hpc-work/proteina/foldseek_dbs/afdb_swissprot/db"
-  foldseek_alignment_type: 2     # 3Di+TMalign refine. 1=full TMalign, 0=Gotoh-only.
+  foldseek_alignment_type: 1     # 1=full TMalign (correct); 2=3Di+refine inflates novelty when 3Di prefilter misses (see 2026-05-17 audit). 0=Gotoh-only.
   foldseek_max_seqs: 1000        # prefilter survivors per query
   foldseek_sensitivity: 9.5      # Foldseek -s
   foldseek_threads: 0            # 0 = let Foldseek pick all cores
   foldseek_filter_designable: true  # match paper App. F (designable subset only)
+
+  # Secondary-structure (P-SEA) JSD references. With these set, every metric run
+  # emits `_res_ss_*` columns (H/E/C fractions, JSD vs PDB and AFDB, designable
+  # subset variants, 2-D JSD). Reference .pt files built one-off by
+  # evaluation/proteina/generation/scripts/precompute_ss_reference.py. Made a
+  # default 2026-05-17 — previously each profile had to opt in, which led to
+  # convergence sweeps missing SS columns entirely (see drift audit).
+  ss_reference_pdb_path:  /rds/user/sr2173/hpc-work/proteina/data/ss_reference_pdb.pt
+  ss_reference_afdb_path: /rds/user/sr2173/hpc-work/proteina/data/ss_reference_afdb.pt
 
 # n=512: full convergence curve (11-12 log-spaced checkpoints per run)
 n512_convergence:
@@ -147,7 +156,7 @@ _paper_defaults: &paper_defaults
   <<: *defaults
   designability_subset_per_length: 50
   designability_lengths: "50,100,150,200,250"
-  metrics: "fid,designability,diversity,novelty_foldseek"
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
 
 # Main PDB-trained comparison (drop _random; target ~ep24, span ep21-26)
 n256_paper_pdb:
@@ -261,7 +270,7 @@ _paper_n128_defaults: &paper_n128_defaults
   <<: *defaults
   designability_subset_per_length: 50
   designability_lengths: "50,75,100,125"
-  metrics: "fid,designability,diversity,novelty_foldseek"
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
 
 # Ablation 1: layer ablation (4 tasks)
 n128_paper_layer:
@@ -332,7 +341,7 @@ n128_paper_lambda_ext:
   <<: *paper_n128_defaults
   runs: "repa_l4_128_bs80_lambda025_step200k,repa_l4_128_bs80_lambda1_step200k"
   output_dir: results/paper/n128_paper_lambda_ext
-  metrics: "fid,designability,diversity,novelty_foldseek"
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
 
 # n=128 AFDB-Swissprot block: brand-new ablation group (mirrors n256 AFDB).
 # 5 tasks: baseline + l4 + mpnn-l4 @ step=200K; baseline + mpnn-l4 also at
@@ -341,7 +350,7 @@ n128_paper_afdb:
   <<: *paper_n128_defaults
   runs: "baseline_afdb_128_bs80_step200k,baseline_afdb_128_bs80_step400k,repa_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step200k,repa_mpnn_l4_afdb_128_bs80_step400k"
   output_dir: results/paper/n128_paper_afdb
-  metrics: "fid,designability,diversity,novelty_foldseek"
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
 
 # n=128 AFDB extension (2026-05-16): close the 4-way comparison at 600K
 # (max for repa_l4_afdb), then long-tail at 800K/1M for baseline + mpnn-L4
@@ -351,7 +360,7 @@ n128_paper_afdb_ext:
   <<: *paper_n128_defaults
   runs: "baseline_afdb_128_bs80_step600k,baseline_afdb_128_bs80_step800k,baseline_afdb_128_bs80_step1000k,baseline_afdb_128_bs80_step1200k,repa_l4_afdb_128_bs80_step600k,repa_mpnn_l4_afdb_128_bs80_step600k,repa_mpnn_l4_afdb_128_bs80_step800k,repa_mpnn_l4_afdb_128_bs80_step1000k"
   output_dir: results/paper/n128_paper_afdb
-  metrics: "fid,designability,diversity,novelty_foldseek"
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
 
 # n=256 AFDB extension (HIGHEST PRIORITY per user 2026-05-14):
 # step-curve at 400/700/900K for baseline; 400/700K for repa_l4 and
@@ -360,7 +369,7 @@ n256_paper_afdb_ext:
   <<: *paper_defaults
   runs: "baseline_afdb_256_step400k,baseline_afdb_256_step700k,baseline_afdb_256_step900k,repa_l4_afdb_256_step400k,repa_l4_afdb_256_step700k,repa_mpnn_l4_afdb_256_step400k,repa_mpnn_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step700k"
   output_dir: results/paper/n256_paper_afdb_ext
-  metrics: "fid,designability,diversity,novelty_foldseek"
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
 
 # CA-GearNet L9 AFDB-256 step-curve (added 2026-05-16): missing leg of the
 # n=256 AFDB encoder ablation; shortest run (last-EMA 423.5k). 200k, 400k,
@@ -370,7 +379,7 @@ n256_paper_afdb_l9_gn:
   <<: *paper_defaults
   runs: "repa_l9_afdb_256_step200k,repa_l9_afdb_256_step400k,repa_l9_afdb_256_steplast"
   output_dir: results/paper/n256_paper_afdb_ext
-  metrics: "fid,designability,diversity,novelty_foldseek"
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
 
 # n=256 lambda extension: λ=1.0 at step=200K and λ=2.0 at step=300K, paired
 # with the existing _step300k / _step200k anchors so each λ leg now has 2
@@ -379,7 +388,7 @@ n256_paper_lambda_ext:
   <<: *paper_defaults
   runs: "repa_l4_256_per_residue_lambda1_step200k,repa_l4_256_per_residue_lambda2_step300k"
   output_dir: results/paper/n256_paper_lambda_ext
-  metrics: "fid,designability,diversity,novelty_foldseek"
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
 
 # ─────────────────────────────────────────────────────────────────────────── #
 # n=256 convergence sweep (added 2026-05-16) — REPA-paper-style step curves.
@@ -397,10 +406,10 @@ n256_convergence_pdb:
   <<: *paper_defaults
   runs: "baseline_256_bs24_2gpu_step100k,baseline_256_bs24_2gpu_step200k,baseline_256_bs24_2gpu_step400k,baseline_256_bs24_2gpu_step700k,baseline_256_bs24_2gpu_step1000k,baseline_256_bs24_2gpu_step1300k,repa_l4_256_per_residue_bs24_2gpu_step100k,repa_l4_256_per_residue_bs24_2gpu_step200k,repa_l4_256_per_residue_bs24_2gpu_step400k,repa_l4_256_per_residue_bs24_2gpu_step700k,repa_mpnn_l4_256_per_residue_step100k,repa_mpnn_l4_256_per_residue_step200k,repa_mpnn_l4_256_per_residue_step400k,repa_mpnn_l4_256_per_residue_step700k,repa_mpnn_l4_256_per_residue_step1000k,repa_mpnn_l4_256_per_residue_step1300k,repa_mpnn_l4_256_per_residue_step1600k,repa_l9_256_per_residue_bs24_2gpu_step100k,repa_l9_256_per_residue_bs24_2gpu_step200k,repa_l9_256_per_residue_bs24_2gpu_step400k,repa_l9_256_per_residue_bs24_2gpu_step700k"
   output_dir: results/paper/n256_convergence_pdb
-  metrics: "fid,designability,diversity,novelty_foldseek"
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
 
 n256_convergence_afdb:
   <<: *paper_defaults
   runs: "baseline_afdb_256_step100k,baseline_afdb_256_step200k,baseline_afdb_256_step400k,baseline_afdb_256_step700k,baseline_afdb_256_step1000k,baseline_afdb_256_step1300k,baseline_afdb_256_step1600k,repa_l4_afdb_256_step100k,repa_l4_afdb_256_step200k,repa_l4_afdb_256_step400k,repa_l4_afdb_256_step700k,repa_l4_afdb_256_step1000k,repa_mpnn_l4_afdb_256_step100k,repa_mpnn_l4_afdb_256_step200k,repa_mpnn_l4_afdb_256_step400k,repa_mpnn_l4_afdb_256_step700k,repa_mpnn_l4_afdb_256_step1000k,repa_l9_afdb_256_step100k,repa_l9_afdb_256_step200k,repa_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step100k,repa_mpnn_l9_afdb_256_step200k,repa_mpnn_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step700k,repa_mpnn_l9_afdb_256_step1000k,repa_mpnn_l9_afdb_256_step1300k"
   output_dir: results/paper/n256_convergence_afdb
-  metrics: "fid,designability,diversity,novelty_foldseek"
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"

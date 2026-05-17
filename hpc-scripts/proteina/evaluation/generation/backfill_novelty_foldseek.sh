@@ -60,10 +60,13 @@ echo ""
 cd "$REPO_DIR"
 
 START=$(date +%s)
+# Pass-through extra args (e.g. --force-rerun --profile-prefix n256_convergence)
+# All sbatch args after the launcher are forwarded to the Python script.
 python -u evaluation/proteina/generation/scripts/backfill_novelty_foldseek.py \
     --threads 16 \
     --shard "$SHARD" \
-    --num-shards "$NSHARDS"
+    --num-shards "$NSHARDS" \
+    "$@"
 END=$(date +%s)
 echo ""
 echo "=== Shard $SHARD wall: $((END - START))s, $(date) ==="

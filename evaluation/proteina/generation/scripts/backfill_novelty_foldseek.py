@@ -131,7 +131,9 @@ class RowTask:
     error: Optional[str] = None
 
 
-def classify(row: dict, profile: str, jsonl_path: Path, idx: int) -> RowTask:
+def classify(
+    row: dict, profile: str, jsonl_path: Path, idx: int, force_rerun: bool = False
+) -> RowTask:
     eval_dir = eval_dir_for_row(row)
     task = RowTask(
         profile=profile,
@@ -144,7 +146,7 @@ def classify(row: dict, profile: str, jsonl_path: Path, idx: int) -> RowTask:
     if not eval_dir.is_dir():
         return task
     csv_path = find_results_csv(eval_dir)
-    if csv_path is not None:
+    if csv_path is not None and not force_rerun:
         existing = pd.read_csv(csv_path)
         if (
             len(existing) == 1
@@ -290,6 +292,20 @@ def main():
         "Run after all foldseek shards have completed.",
     )
     ap.add_argument(
+        "--force-rerun",
+        action="store_true",
+        help="Bypass the 'cached' bucket — re-run foldseek even for rows whose "
+        "per-ckpt CSV already has foldseek columns. Use this after a foldseek "
+        "config change (e.g. alignment_type 2 -> 1) to overwrite stale values.",
+    )
+    ap.add_argument(
+        "--profile-prefix",
+        type=str,
+        default=None,
+        help="Restrict to jsonl dirs whose name starts with this prefix "
+        "(e.g. 'n256_convergence' to only re-do the convergence sweeps).",
+    )
+    ap.add_argument(
         "--report-path",
         type=str,
         default=str(
@@ -306,15 +322,34 @@ def main():
     logger.remove()
     logger.add(sys.stdout, format="{time:HH:mm:ss} | {level} | {message}")
 
-    # Discover and classify every row.
+    # Discover and classify every row. Glob covers both `n*_paper_*` and
+    # `n*_convergence_*` sweep dirs (the convergence sweep was added 2026-05-16
+    # to mirror REPA Fig 1; same jsonl schema).
     tasks: list[RowTask] = []
-    for jsonl_path in sorted(PAPER_RESULTS_ROOT.glob("n*_paper_*/sweep_results.jsonl")):
+    sweep_globs = [
+        "n*_paper_*/sweep_results.jsonl",
+        "n*_convergence_*/sweep_results.jsonl",
+    ]
+    jsonl_paths = sorted({p for g in sweep_globs for p in PAPER_RESULTS_ROOT.glob(g)})
+    if args.profile_prefix:
+        jsonl_paths = [
+            p for p in jsonl_paths if p.parent.name.startswith(args.profile_prefix)
+        ]
+    for jsonl_path in jsonl_paths:
         profile = jsonl_path.parent.name
         lines = jsonl_path.read_text().splitlines()
         for idx, ln in enumerate(lines):
             if not ln.strip():
                 continue
-            tasks.append(classify(json.loads(ln), profile, jsonl_path, idx))
+            tasks.append(
+                classify(
+                    json.loads(ln),
+                    profile,
+                    jsonl_path,
+                    idx,
+                    force_rerun=args.force_rerun,
+                )
+            )
 
     by_bucket: dict[str, list[RowTask]] = {
         "cached": [],
