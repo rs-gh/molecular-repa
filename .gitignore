@@ -84,6 +84,7 @@ evaluation/results/tabasco/geom/evaluation/*/molecules.sdf
 evaluation/tabasco/generation/results/geom/evaluation/*/molecules.sdf
 
 # Large outputs (not tracked)
+eval_output
 eval_output/
 report/
 evaluation/tabasco/checkpoints/
@@ -103,3 +104,4 @@ evaluation/proteina/representation/scripts/_legacy/
 # Vendored reference repos (frameflow, genie2, ...) — full git clones, never
 # committed in-tree. Add as submodules if a stable revision is needed.
 third_party/
+eval_output.old_*
