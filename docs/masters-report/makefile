@@ -16,10 +16,14 @@ SHELL=/bin/bash
 
 all: report.pdf report-submission.pdf
 
+.PHONY: pdf
+pdf: report-draft.pdf
+
 report-submission.tex: report.tex
 	sed -e 's/^%\(\\submissiontrue\)/\1/' $< >$@
 
 report.pdf: logo-dcst-colour.pdf
+report-draft.pdf: logo-dcst-colour.pdf
 
 # extract number of first and last page of the main chapters from the AUX file
 WORDCOUNT_FILE=report-submission

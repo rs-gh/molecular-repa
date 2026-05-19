@@ -1,0 +1,1053 @@
+% Suggested LaTeX style template for Masters project report submitted at the
+% Department of Computer Science and Technology
+%
+% Markus Kuhn, May 2022
+% (borrowing elements from an earlier template by Steven Hand)
+
+\documentclass[12pt,a4paper,twoside]{report}
+% append option ",openright" after "twoside" if you prefer each chapter
+% to start on a recto (odd-numbered) page in a double-sided printout
+
+\usepackage[pdfborder={0 0 0}]{hyperref}  % turns references into hyperlinks
+\usepackage[vmargin=20mm,hmargin=25mm]{geometry}  % adjust page margins
+\usepackage{graphicx} % allows inclusion of PDF, PNG and JPG images
+\usepackage{parskip}  % separate paragraphs with vertical space
+                      % instead of indenting their first line
+\usepackage{setspace} % for \onehalfspacing
+\usepackage{refcount} % for counting pages
+\usepackage{upquote}  % for correct quotation marks in verbatim text
+
+\newif\ifsubmission % Boolean flag for distinguishing submitted/final version
+
+% Change the following lines to your own project title, name, college, course
+\title{Accelerating Molecular Generation through Representation Alignment}
+\author{Shreyas Ravishankar}
+\date{June 2026}
+\newcommand{\candidatenumber}{TODO}  % TODO: candidate number
+\newcommand{\college}{Hughes Hall}
+%\newcommand{\coursethe}{Computer Science Tripos, Part III}
+%\newcommand{\coursefor}{Part III of the Computer Science Tripos}
+\newcommand{\coursethe}{Master of Philosophy in Advanced Computer Science}
+\newcommand{\coursefor}{the Master of Philosophy in Advanced Computer Science}
+
+% Select which version this is:
+% For the (anonymous) submission (without your name or acknowledgements)
+% uncomment the following line (or let the makefile do this for you)
+%\submissiontrue
+% For the final version (with your name) leave the above commented.
+
+\begin{document}
+
+\begin{sffamily} % use a sans-serif font for the pro-forma cover sheet
+
+\begin{titlepage}
+\makeatletter
+
+% University logo with shield hanging in left margin
+\hspace*{-14mm}\includegraphics[width=65mm]{logo-dcst-colour}
+
+\ifsubmission
+
+% submission proforma cover page for blind marking
+\begin{Large}
+\vspace{20mm}
+Research project report title page
+
+\vspace{35mm}
+Candidate \candidatenumber
+
+\vspace{42mm}
+\textsl{``\@title''}
+
+\end{Large}
+
+\else
+
+% regular cover page
+\begin{center}
+\Huge
+\vspace{\fill}
+
+\@title
+\vspace{\fill}
+
+\@author
+\vspace{10mm}
+
+\Large
+\college
+\vspace{\fill}
+
+\@date
+\vspace{\fill}
+
+\end{center}
+
+\fi
+
+\vspace{\fill}
+\begin{center}
+Submitted in partial fulfillment of the requirements for the\\
+\coursethe
+\end{center}
+
+\makeatother
+\end{titlepage}
+
+\newpage
+
+Total page count: \pageref{lastpage}
+
+% calculate number of pages from
+% \label{firstcontentpage} to \label{lastcontentpage} inclusive
+\makeatletter
+\@tempcnta=\getpagerefnumber{lastcontentpage}\relax%
+\advance\@tempcnta by -\getpagerefnumber{firstcontentpage}%
+\advance\@tempcnta by 1%
+\xdef\contentpages{\the\@tempcnta}%
+\makeatother
+
+Main chapters (excluding front-matter, references and appendix):
+\contentpages~pages
+(pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
+
+Main chapters word count: 467
+
+Methodology used to generate that word count:
+
+[For example:
+
+\begin{quote}
+\begin{verbatim}
+$ make wordcount
+gs -q -dSAFER -sDEVICE=txtwrite -o - \
+   -dFirstPage=6 -dLastPage=11 report-submission.pdf | \
+egrep '[A-Za-z]{3}' | wc -w
+467
+\end{verbatim}
+\end{quote}
+
+]
+
+\end{sffamily}
+
+\vspace{\fill}
+\onehalfspacing
+\textbf{\Huge Declaration}
+\vspace{40pt}
+
+I,
+\makeatletter\ifsubmission
+\candidatenumber,
+\else
+\@author\ of \college,
+\fi\makeatother
+being a candidate for \coursefor, hereby declare that this report and
+the work described in it are my own work, unaided except as may be
+specified below, and that the report does not contain material that
+has already been used to any substantial extent for a comparable
+purpose.
+In preparation of this report, I adhered to the
+\href{https://www.cst.cam.ac.uk/files/ai_policy.pdf}{Department of
+Computer Science and Technology AI Policy}. [The project required
+the approved use of \{insert name of technology\} and such use is
+acknowledged in the text at the relevant sections.] [I am content for
+my report to be made available to the students and staff of the
+University.]
+
+% Remove the [...] sentence or just the brackets, as appropriate.
+% Substitute the {insert name of technology} text above as required.
+
+% Add here things like: Figure X is the work of Y, etc.
+
+\ifsubmission\else
+\bigskip
+\textbf{Signed:}
+\fi
+
+\bigskip
+\textbf{Date:}
+\vspace{\fill}
+
+\chapter*{Abstract}
+
+Write a summary of the whole thing. Make sure it fits on one page.
+
+\ifsubmission\else
+% not included in submission for blind marking:
+
+\chapter*{Acknowledgements}
+
+This project would not have been possible without the wonderful
+support of \ldots [optional]
+
+\fi
+\cleardoublepage % preserve page numbers after missing acknowledgements
+
+\tableofcontents
+%\listoffigures
+%\listoftables
+
+% ==========================================================================
+% WORKING SPINE (v3, negotiated 2026-05-18 -- see memory: thesis-spine.md)
+%
+% High-quality molecular data is scarce, and encoding structural priors
+% directly into model architectures is expensive. The field's response has
+% been to relax those priors and lean on scale -- typically through
+% synthetic data (e.g. the AlphaFold Database) and data augmentation as
+% proxies for ground-truth abundance. But scaling shifts the burden onto
+% the training objective: the flow-matching (or diffusion) loss now has to
+% learn both a high-quality internal representation of the data and the
+% mapping from noise to data, from a single signal. Representation
+% alignment (REPA), originally proposed for image diffusion, offers a
+% cheap, soft alternative: inject structural knowledge through a content-
+% based loss against a frozen pretrained encoder, instead of baking it
+% into the architecture. Whether this substitution transfers across
+% domains is, in our reading, governed not by the domain itself but by an
+% information-geometry condition -- does the encoder carry transferable
+% structural information that the flow-matching objective doesn't already
+% learn cheaply, and does the evaluation surface have headroom for that
+% gain to register? We test this in two regimes (small molecules and
+% proteins), develop an encoder-profiling framework that makes the
+% condition checkable a priori, and argue REPA's transferability is best
+% understood as a statement about representation statistics, not data
+% domain.
+%
+% This is a TARGET claim, not a commitment. Phrase prose at the currently-
+% defensible level; flag load-bearing-on-data sentences with a
+% `% LOAD-BEARING` inline comment.
+% ==========================================================================
+
+\chapter{Introduction}
+
+\label{firstcontentpage} % start page count here
+
+% Q:  Why should anyone care about this work?
+% A:  Generative models for molecular data are bottlenecked by representation
+%     learning; REPA is a candidate solution from the image domain; whether
+%     and why it transfers is an open question worth answering.
+% NotA: We are not solving the representation bottleneck or proposing a new
+%     method -- we characterise an existing technique in a new setting.
+%
+% Target length: ~2-3 pages. Six beats, ~half a page each on average. Beats
+% are planning units, NOT \section commands -- prose should flow as continuous
+% paragraphs. Contributions (Beat 5) is front-and-centre per Shreyas's note.
+%
+% --------------------------------------------------------------------------
+% Beat 1 -- The setup: molecular generation and its cost
+% --------------------------------------------------------------------------
+% Q:  Why does training cost matter for molecular generative models?
+% A:  Two reinforcing factors. (a) Molecular generation is a high-stakes
+%     target: de novo design workflows in drugs, proteins, and materials
+%     traverse vast combinatorial spaces and benefit directly from
+%     learned probability mass over the regions that matter.
+%     [TODO CITE: representative work on generative modelling in
+%      design workflows -- drug design, protein design, materials
+%      design. Track in [[project-research-debt]].]
+%     (b) High-quality experimental data is scarce relative to other
+%     domains where large generative models have flourished -- image
+%     generation being the clearest comparator.
+%     [TODO CITE: a source characterising the data-scale asymmetry
+%      between molecular and image domains.]
+%     The combination raises the value of any tool that lowers training
+%     cost without sacrificing quality.
+% NotA: Not arguing molecular generation is uniquely cost-constrained;
+%     other domains are too. The point is that the combination of
+%     factors makes training-efficiency tools disproportionately valuable
+%     in this regime.
+%
+% --------------------------------------------------------------------------
+% Beat 2 -- The representation bottleneck
+% --------------------------------------------------------------------------
+% Q:  Where, mechanistically, does the cost come from inside the training
+%     objective?
+% A:  From a framing introduced in the REPA paper: a single signal, two
+%     jobs. The flow-matching (or diffusion) loss simultaneously asks the
+%     model to learn (i) a high-quality internal representation of the
+%     data and (ii) the noise-to-data map. The first job is implicit in
+%     the second, but it is a known and significant share of total
+%     training cost. Lifting the representation burden -- by injecting
+%     structural information from elsewhere -- could substantially reduce
+%     that cost.
+% NotA: Not claiming representation learning is the only source of
+%     inefficiency in these models. It's a known and addressable
+%     contributor with a known candidate remedy.
+%
+% --------------------------------------------------------------------------
+% Beat 3 -- Why this regime hurts more than vision
+% --------------------------------------------------------------------------
+% Q:  Why does the representation burden bite harder in molecular
+%     generation than in vision?
+% A:  The dominant factor is the *data gap*. The volume of high-quality
+%     experimental molecular data is small relative to the scale at
+%     which vision-domain generative models converge cleanly (LAION-5B
+%     pairs vs ~230k PDB structures vs ~430k GEOM-drug conformers).
+%     The field's response has been to substitute synthetic data (e.g.
+%     the AlphaFold Database, ~214M predicted structures) and
+%     augmentation -- random rotation as a soft stand-in for SE(3)
+%     equivariance, brought into protein generation by AlphaFold3 and
+%     adopted by Proteina, with the scaling case for augmentation-over-
+%     equivariance made empirically by Brehmer et al. Each of these
+%     substitutions dilutes the signal per training step.
+% NotA: Not claiming the data gap explains everything, or that compute
+%     pressure is irrelevant. The point is that the data gap is the
+%     dominant constraint and the one that representation-alignment
+%     speaks to most directly.
+%
+% --------------------------------------------------------------------------
+% Beat 4 -- REPA, prior molecular work, and the question we ask
+% --------------------------------------------------------------------------
+% Q:  REPA has now been applied to flow-matching molecular generators
+%     (REED, Boltz-REPA). What additional value does this work add?
+% A:  Existing molecular REPA work establishes that the technique can
+%     be applied to flow-matching molecular generators and reports
+%     per-task speedups, but does not ablate over encoder choice, does
+%     not treat evaluation-surface headroom as a first-class moderator,
+%     and does not connect to recent vision-domain findings on what
+%     makes a good encoder target (Singh et al. 2025). This report
+%     focuses on those three under-explored axes in the molecular
+%     setting.
+% NotA: Not claiming priority over REED or Boltz-REPA; we treat them
+%     as adjacent prior art and concurrent work. Not pre-committing in
+%     this introduction to a particular reading of why REPA does or
+%     does not help; that reading is built up over the report.
+%
+% --------------------------------------------------------------------------
+% Beat 5 -- Contributions (FRONT AND CENTRE)
+% --------------------------------------------------------------------------
+% Q:  What does this report deliver concretely?
+% A:  Three contributions.
+%     (i)  An encoder-profiling framework -- Q1 information content,
+%          Q2 reachability, Q3 trainability -- applied to seven candidate
+%          encoders across protein and small-molecule domains. The
+%          framework operationalises encoder quality in domain-agnostic
+%          statistical terms (RankMe, linear probes), complementing but
+%          not duplicating the vision-specific structural metrics
+%          proposed by Singh et al. 2025.
+%     (ii) Paired empirical studies of REPA on two flow-based molecular
+%          generators -- Tabasco (small molecules) and Proteina (protein
+%          backbones) -- with extensive ablations, convergence sweeps,
+%          and seed-variance analysis.
+%     (iii)A characterisation of what governs REPA's effectiveness in
+%          molecular generation, framed through three under-explored
+%          axes: encoder choice (profiled across multiple encoder
+%          families per domain), evaluation-surface headroom (treated
+%          as a first-class moderator), and a domain-general analogue
+%          of the structural encoder-quality argument made for vision
+%          by Singh et al. 2025. We offer this characterisation as a
+%          working framework with encoder-selection heuristics for
+%          future domains.
+% NotA: We do not propose a new model architecture, a new alignment loss,
+%     or a new evaluation metric. We do not establish the information-
+%     geometry conditions as universally necessary or sufficient for
+%     REPA effectiveness -- our two studies amount to one regime in
+%     which the conditions are weak and REPA does not visibly help, and
+%     one in which they are met alongside other favourable factors and
+%     REPA does help. That is consistent with the lens but is not a
+%     controlled experiment over the conditions themselves.
+%
+% --------------------------------------------------------------------------
+% Beat 6 -- Road map
+% --------------------------------------------------------------------------
+% Q:  How is the rest of the report organised?
+% A:  Brief signposting: Ch 2 (Background -- flow matching, REPA, molecular
+%     parameterisations); Ch 3 (Related work -- the scaling-over-priors
+%     trend and REPA-style techniques); Ch 4 (how we evaluate molecular
+%     generation, and the tensions hidden in that question); Ch 5
+%     (encoder profiling, with predictions for the studies that follow);
+%     Ch 6 (REPA on small molecules -- Tabasco); Ch 7 (REPA on protein
+%     backbones -- Proteina); Ch 8 (synthesis and what it means for REPA
+%     more broadly).
+% NotA: n/a -- navigational.
+
+% ==========================================================================
+% PROSE -- first draft, six beats. Phrasing follows the writing principles
+% in memory: spine-as-target, citations throughout, no "first" claims, light
+% preface in Beat 4 with the working hypothesis left for Ch 8.
+% ==========================================================================
+
+The story of generative machine learning in scientific domains has been a dance between data scale, data quality, and structural priors. Our thesis studies a recent addition to this story, alignment to representations coming from an external encoder, and investigates its effectiveness when applied to molecular generation. We study this technique in two regimes, small molecules and protein backbones, and characterise its utility along two axes. First, does the encoder carry transferable structural information that the generator does not learn from the denoising objective? Second, does the evaluation surface have headroom for any gain to register?
+
+In this introduction, we trace the narrative arc of molecular generation to the point that motivates our thesis: a need for data-efficient modelling techniques that preserve generation quality given the shift towards prior-light model architectures.
+
+The dominant ideas in generative modelling are \emph{denoising diffusion} and its offshoot \emph{flow-matching}~\cite{DDPM,FlowMatching}, which found breakthrough success in the realm of image generation. This paradigm has since been adapted for de novo design challenges across scientific fields, such as generating protein backbones~\cite{RFdiffusion,Chroma,Proteina}, inorganic materials~\cite{MatterGen}, and drug-like small molecules~\cite{Tabasco}. Training these models is typically expensive in both data and compute, with state-of-the-art image generators routinely training on billions of training examples~\cite{LAION5B}. However, the corpus of available high-quality molecular data sits orders of magnitude below this. Experimental determination is slow and expensive, which means datasets are correspondingly small. For example, protein structure generators have largely been trained on at most half a million structures~\cite{Proteina}, which may explain why they have not yet matched the maturity of their vision-domain counterparts.
+
+Historically, researchers compensated for the small scale of high-quality molecular data by encoding structural priors directly into model architectures~\cite{BronsteinGDL}. SE(3)-equivariant architectures, for example, enforce the rotational and translational symmetries expected of molecules by construction~\cite{ThomasTFN}. But hard structural priors come with a computational cost, and the operations required to encode geometry are a bottleneck to scaling models.
+
+However, a recent wave of work has moved entirely the other way: drop hard priors, use bare-bones non-equivariant transformer stacks, and rely on data scale and augmentation to teach the model what equivariance buys. This shift fits a broader trend in machine learning, across domains, on leveraging representation instead of model architecture to inject soft inductive biases for structured data. Vision Transformers~\cite{ViT} showed that the spatial-locality and translation-equivariance priors of CNNs can be learned rather than imposed, given sufficient scale. Graph Transformers like TokenGT~\cite{TokenGT} have made the same case for graphs. AlphaFold~3~\cite{AlphaFold3} stripped many of the SE(3)-equivariant biases of AlphaFold~2~\cite{AlphaFold2}, replacing the structure module with a diffusion model operating on raw coordinates. Brehmer et al.~\cite{Brehmer2024} make the empirical scaling case directly: more data through a simpler model beats less data through a richer one. Tabasco~\cite{Tabasco} and Proteina~\cite{Proteina}, which are vanilla transformer-based generators for small-molecules and protein backbones respectively, are explicitly designed to facilitate data and model scale.
+
+Given the difficulty of procuring data in scientific domains, data scale must necessarily come from non-experimental sources, which may be of lower quality. For example, recent efforts in protein generation have leaned on synthetic structures from folding-model predictions~\cite{Proteina,AFDB} to expand training corpora into the tens of millions. However, even these enhanced corpora are arguably insufficient. Metagenomic databases catalogue over two billion natural protein sequences~\cite{MGnify}, and the theoretical sequence space at a median protein length~\cite{BrocchieriKarlin} is hundreds of orders of magnitude greater still. Even at the frontier of the field's data scale, we sample but a sliver of the distribution we wish to model.
+
+In summary, the field has traded hard structural priors for architectural simplicity and curated data for synthetic scale. And yet, this may not be enough. This motivates the need for new techniques that make training still more efficient without sacrificing quality.
+
+But why is training diffusion-transformer architectures expensive in the first place? One answer comes from Yu et al.~\cite{REPA}, who argue that these models suffer from a \emph{representation bottleneck}. During training, the model is implicitly asked to learn two distinct tasks simultaneously: (1) representation, learning a semantically meaningful representation of complex data; and (2) generation, learning how to construct data from that representation. The standard denoising objective alone may not provide sufficient signal for representation learning, leading to slow convergence and the large training budgets we see in practice.
+
+Yu et al.~propose Representation Alignment (REPA) as a remedy. The technique adds a regularisation term that aligns a generator's intermediate hidden states with the embeddings of a frozen pretrained encoder. On image diffusion, they report roughly a $17.5\times$ training speed-up against a strong baseline. REPA has since been extended beyond images to video~\cite{VideoREPA}, audio~\cite{TARO}, and recently to molecular generation~\cite{REED,BoltzREPA}. However, whether REPA's gains transfer to molecular settings, and why, remain uncharacterised.
+
+In this vein, the goal of our report is to contribute methodological insights about representation learning in molecular generative models. The core question we investigate is: \emph{can these models benefit, in terms of training efficiency and generation quality, from representation alignment with pre-trained models?} We aim to characterise when and why this works or does not, including failure modes and limitations. We note that this question is especially intere
+
+The report contributes three pieces of work.
+\begin{itemize}
+  \item[(i)] An encoder-profiling framework characterising candidate
+        encoders along three axes --- information content, reachability,
+        and trainability --- applied to seven candidate encoders across
+        protein and small-molecule domains. The framework operationalises
+        encoder quality in domain-agnostic statistical terms (effective
+        rank, linear-probe recoverability), complementing but not
+        duplicating the vision-specific structural metrics proposed by
+        Singh et al.~\cite{SpatialStructure}.
+  \item[(ii)] Paired empirical studies of REPA on two flow-based
+        molecular generators: Tabasco~\cite{Tabasco} for small molecules,
+        and Proteina~\cite{Proteina} for unconditional protein backbone
+        generation. The studies include ablations over alignment-layer
+        choice, projector depth, averaging mode, loss weight, and
+        combination mode, alongside convergence sweeps and seed-variance
+        analysis.
+  \item[(iii)] A characterisation of what governs REPA's effectiveness
+        in molecular generation, framed through the three under-explored
+        axes identified above --- encoder choice, evaluation-surface
+        headroom, and a domain-general analogue of the structural
+        encoder-quality argument. We offer this characterisation as a
+        working framework with encoder-selection heuristics for future
+        domains.
+\end{itemize}
+
+We do not propose a new model architecture, alignment loss, or
+evaluation metric. We do not establish the conditions under which REPA
+helps as universally necessary or sufficient: our two studies amount to
+one regime in which the conditions are weak and REPA does not visibly
+help, and one in which they are met alongside other favourable factors
+and REPA does help. That is consistent with the framework, but it is
+not a controlled experiment over the conditions themselves.
+
+The remainder of the report is organised as follows. Chapter~2 sets out
+the background needed to read the rest: flow matching, REPA, and the
+parameterisations we use for small molecules and proteins. Chapter~3
+places the work in context, covering the scaling-over-priors trend in
+structural biology and the recent literature on representation
+alignment in and out of vision. Chapter~4 discusses what it means for
+a generation to be ``good'' in each domain, and the tensions that
+question hides. Chapter~5 develops the encoder-profiling framework and
+uses it to predict where REPA should and should not help. Chapters~6
+and~7 present the two paired studies, small molecules first and protein
+backbones second. Chapter~8 brings the evidence together.
+
+\chapter{Background}
+
+% Q:  What does the reader need to know before the rest of the report?
+% A:  Flow matching as a generative paradigm; REPA's loss form and where
+%     it plugs in; how small molecules and proteins are parameterised.
+% NotA: Not a survey of the field; not a full architectural tutorial on
+%     Proteina or Tabasco.
+%
+% Beats:
+%  - 2.1 Flow matching and stochastic interpolants -- the textbook bit.
+%        Objective, sampling (Euler / Heun / few-step solvers),
+%        conditional vs unconditional flows.
+%  - 2.2 Representation alignment -- loss form, projector head, where it
+%        attaches in a diffusion transformer.
+%  - 2.3 Molecular data and parameterisations (SMALL -> LARGE choreography):
+%        - What is a small molecule? Sub-900-Da scale, atom-bond graphs,
+%          3D coordinates, joint discrete/continuous parameterisation.
+%        - What is a protein? Backbone + side chains, residues, why we
+%          model CA-trace only (cost, prior, vs all-atom).
+%  - 2.4 The two model classes we build on -- concise architectural
+%        sketches of Tabasco then Proteina.
+
+\chapter{Related work}
+
+% Q:  Where does this work sit in the current research conversation?
+% A:  At the intersection of (i) the architectural-priors-vs-scale trend
+%     in structural biology, and (ii) representation-alignment training-
+%     efficiency techniques. Existing work doesn't ask the cross-domain
+%     transferability question.
+% NotA: Not claiming priority over REPA or its spatial-structure follow-up;
+%     we build directly on both.
+%
+% Beats:
+%  - 3.1 The scaling story in structural biology. AlphaFold as trendsetter;
+%        SE(3)-equivariant priors -> scalable non-equivariant transformers
+%        (RFdiffusion -> FrameFlow -> Proteina). The engineering case for
+%        "dumb" architectures + lots of data (synthetic + augmented).
+%  - 3.2 Generative models for molecular data. Group by paradigm
+%        (flow-based, diffusion-based, autoregressive). Proteins: Proteina,
+%        RFdiffusion, FrameFlow, Genie. Small molecules: Tabasco,
+%        EQGAT-diff, MiDi.
+%  - 3.3 Representation alignment. The REPA paper; the spatial-structure
+%        follow-up (LOAD-BEARING for our framing -- check whether it
+%        makes the statistical-not-domain-specific argument first; see
+%        TODO below); Diffuse-and-Disperse; REPA-E.
+%  - 3.4 REPA outside images.
+%        TODO RESEARCH: survey what other domains have tried REPA-style
+%        alignment (audio? video? RNA? materials?). Crucial for the
+%        cross-domain positioning.
+%  - 3.5 What's missing. One-paragraph gap statement -> motivates Ch 5-7.
+
+\chapter{Evaluating molecular generation}
+
+% Q:  How do we tell whether a generation is "good," and what tensions
+%     does that question hide?
+% A:  Multiple axes in tension (validity, novelty, diversity, designability).
+%     We adopt the FID/FPSD/FJSD/FOLD suite from Proteina for protein
+%     generation, alongside standard small-molecule metrics. Trade-off
+%     framings (Pareto envelopes) are more honest than aggregated headline
+%     numbers. Two recurring themes: metrics can saturate (preview of Ch 6),
+%     and metrics can trade off (preview of Ch 7).
+% NotA: We are not proposing new metrics, not benchmarking exhaustively,
+%     not arguing for one metric over others.
+%
+% Subsections each have their own Q/A/NotA:
+%
+%  4.1 What we want from generations
+%      Q:  What does "good" mean?
+%      A:  A small set of conflicting axes, not a checklist.
+%      NotA: Not a definition; what matters depends on use case.
+%
+%  4.2 Small-molecule metrics  (SMALL FIRST)
+%      Q:  How do we operationalise quality for small molecules, and what
+%          goes wrong?
+%      A:  Validity, connectivity, PoseBusters, FCD, QED, diversity.
+%          Frequent saturation against strong baselines.
+%      NotA: Saturation is not the same as solved; it's a limit of the
+%          yardstick.
+%
+%  4.3 Protein metrics
+%      Q:  How do we operationalise quality for protein backbones?
+%      A:  Designability (scRMSD via ProteinMPNN + ESMFold), secondary-
+%          structure agreement, Foldseek-based novelty, and the
+%          FID/FPSD/FJSD/FOLD suite introduced by the Proteina paper.
+%      NotA: No single number suffices; each metric has known failure
+%          modes.
+%
+%  4.4 Trade-offs and Pareto framings
+%      Q:  When metrics disagree, how should we read them together?
+%      A:  Frontier analysis is more honest than aggregation.
+%      NotA: Pareto plots don't replace task-specific judgement.
+%
+%  4.5 Bootstrap CIs and seed variance
+%      Q:  How do we know a claimed gain is real?
+%      A:  Bootstrap CIs + seed sweeps; effect sizes matter more than
+%          p-thresholds.
+%      NotA: Statistical significance is not the same as practical
+%          relevance.
+%
+%  4.6 Closing: a question we'll return to
+%      Q:  Is representation quality itself a domain-specific phenomenon
+%          or a statistical one?
+%      A:  Posed here; partial answer in Ch 5; full discussion in Ch 8.
+%      NotA: We don't resolve this finally; we adopt the statistical view
+%          as a working hypothesis.
+
+\chapter{Encoder targets and profiling}
+
+% Q:  What makes a good REPA target, in domain-agnostic terms?
+% A:  A statistical-properties characterisation (Q1 information content,
+%     Q2 reachability, Q3 trainability; RankMe; linear probes) gives
+%     domain-neutral handles. Profiling identifies clear winners and
+%     losers among candidate encoders for proteins and molecules, and
+%     gives us a priori predictions for Ch 6-7.
+% NotA: Not claiming the framework is complete; not claiming statistical
+%     properties are the only thing that matters -- only that they carry
+%     predictive weight.
+%
+% Beats:
+%  - 5.1 What makes a good encoder target?
+%        The spatial-structure hypothesis (REPA follow-up) recast for
+%        molecular domains; the Q1/Q2/Q3 framing; RankMe as a domain-
+%        agnostic stand-in for ImageNet class-prediction.
+%        TODO: confirm whether spatial-structure paper already makes the
+%        statistical-not-domain-specific argument; if so, frame this
+%        chapter as the cross-domain extension of that line.
+%  - 5.2 Molecule encoder zoo  (SMALL FIRST)
+%        CheMeleon, MACE-OFF. The sparsity / conformation-invariance /
+%        saturation problems both encoders exhibit.
+%  - 5.3 Protein encoder zoo
+%        GearNet, ESM-2, ProteinMPNN, ProstT5/SaProt. Rankings, trade-
+%        offs, why GearNet wins despite the lowest RankMe.
+%  - 5.4 What the framework predicts
+%        Explicit predictions for the chapters that follow. (Do NOT
+%        reveal Ch 6/7 results yet -- predictions only.)
+
+\chapter{REPA on small molecules}
+
+% Q:  Does REPA's mechanism, which worked in images, transfer to small-
+%     molecule 3D generation?
+% A:  Not measurably, in our experiments. Two interacting reasons emerge
+%     in diagnosis: the encoders flagged weak by profiling (Ch 5) and
+%     the metric surface is near-saturated for the baseline (Ch 4).
+% NotA: Not claiming REPA cannot help small molecules ever -- only that
+%     under our setup it doesn't, and we offer a diagnostic explanation.
+%     This isn't a negative result; it's a constraint on what cross-
+%     domain claims can responsibly say.
+%
+% FRAMING NOTE: open this chapter as a genuine investigation, NOT
+% pre-committed to the saturation diagnosis. The reader earns the
+% explanation in 6.4.
+%
+% Beats:
+%  - 6.1 The small-molecule regime. ~900 Da cutoff, GEOM-drugs scale,
+%        why this is a fundamentally different data regime from proteins.
+%        Pose the chapter's open question.
+%  - 6.2 Experimental setup. Tabasco baseline, REPA integration,
+%        encoder choices, sweep design.
+%  - 6.3 Results. No significant gains; show saturation honestly; show
+%        seed variance swallows the signal.
+%  - 6.4 Diagnosis. NOW connect to Ch 5 profiling and Ch 4 saturation.
+%        Offer the two-conditions reading as the cleanest explanation.
+%        Forward-reference Ch 7 as the contrasting regime.
+
+\chapter{REPA on protein backbones}
+
+% Q:  What does REPA do to a flow-based protein backbone generator?
+% A:  (currently-defensible form, will harden or soften with data):
+%     - REPA improves representation quality in predictable ways.
+%     - Representation-quality improvements co-move with generation-
+%       quality improvements across encoder choices, validating the
+%       profiling framework's predictive use. *Foundational; LOAD-
+%       BEARING on the scope of paired (rep-quality, gen-quality)
+%       measurements we have.*
+%     - Produces convergence acceleration on at least some quality
+%       metrics (early evidence; phrasing currently couched).
+%     - Plausibly shifts the designability vs secondary-structure-
+%       diversity Pareto envelope (aspirational; LOAD-BEARING on data).
+%     - The gain is stable across most optimisation choices (ablation
+%       evidence).
+% NotA: Not claiming uniform speedup across all metrics or settings; not
+%     yet claiming the Pareto envelope shift is established.
+%
+% FRAMING NOTE: open as "the opposite regime -- what happens?" Not
+% pre-committed to the answer. Let the affirmative case build through
+% the sections.
+%
+% Beats:
+%  - 7.1 Setup. Proteina baseline, REPA integration (alignment-layer
+%        choice, projector, averaging mode, combination mode), evaluation
+%        protocol.
+%  - 7.2 Does REPA improve representation quality?
+%        Alignment loss tracks the intended target; downstream probes
+%        of the REPA hidden states show predictable improvements
+%        relative to the baseline.
+%  - 7.3 Does representation quality predict generation quality?
+%        Foundational sanity check before the more nuanced analyses
+%        that follow -- and the key empirical validation of the
+%        profiling framework's predictive use. For each encoder choice
+%        (and additional REPA configurations we have data for), pair a
+%        representation-quality signal (alignment loss at convergence,
+%        or a downstream probe of the REPA hidden states) with a
+%        generation-quality signal (designability, secondary-structure
+%        agreement, FPSD/FID family). Ask whether they co-move. If they
+%        don't, the profiling framework loses its load-bearing status
+%        and the rest of the chapter (7.4-7.7) is interpreted as
+%        domain-specific behaviour rather than as a test of the
+%        framework's prediction.
+%        LOAD-BEARING ON DATA: needs enough paired measurements across
+%        encoder / configuration choices to show the relationship.
+%        Soften phrasing if scatter dominates the signal.
+%  - 7.4 Convergence and sample efficiency.
+%        Training-iteration to fixed quality threshold; speedup factor
+%        vs baseline; n=128 / n=256 convergence sweeps.
+%  - 7.5 The Pareto envelope: designability vs secondary-structure
+%        diversity. *LOAD-BEARING on data; currently-couched phrasing.*
+%        Baseline frontier vs REPA frontier; address confounders
+%        (sample size, seed variance).
+%  - 7.6 Optimisation dynamics (ablations).
+%        lambda, batch size, LR, weight decay, projector depth, averaging
+%        mode (per-residue vs per-sample), combination mode (additive vs
+%        trade-off), alignment-layer choice. Frame as a stability claim
+%        ("robust to X, sensitive to Y"), not a hyperparameter dump.
+%  - 7.7 Seed variance and scale dependence.
+%        n=128 / n=256 / AFDB regime -- does the effect persist across
+%        data regimes?
+
+\chapter{Conclusions}
+
+% Q:  Tying the two studies together, what have we learned about REPA?
+% A:  The two paired studies, viewed through the profiling framework,
+%     are consistent with REPA's transferability being governed by
+%     representation-information properties rather than data domain.
+%     We distil encoder-selection heuristics for new domains.
+% NotA: Not a universal-claim paper. Two-domain evidence is suggestive;
+%     cross-domain confirmation in a third domain is the natural next
+%     step. Not claiming REPA replaces architectural priors -- only that
+%     it's a viable soft-bias substitute under the two conditions.
+%
+% FRAMING NOTE: this is where the unifying claim earns its keep.
+% Earlier chapters only allude to it; here we make it.
+%
+% Beats:
+%  - 8.1 Headline findings (three-to-four sentences).
+%  - 8.2 An encoder-selection heuristic distilled from the ablations.
+%  - 8.3 Limitations (compute, encoder coverage, dataset scope, no
+%        joint training, no all-atom).
+%  - 8.4 What we'd test next (untried encoders; joint training; a third
+%        domain -- RNA? materials? a different small-molecule regime?).
+%  - 8.5 Closing note: REPA-as-mechanism vs REPA-as-vision-trick.
+
+\label{lastcontentpage} % end page count here
+
+\begin{thebibliography}{99}
+
+% --- Foundational generative methods ---
+
+\bibitem{DDPM}
+Jonathan Ho, Ajay Jain, Pieter Abbeel.
+\textit{Denoising Diffusion Probabilistic Models}. NeurIPS 2020.
+\href{https://arxiv.org/abs/2006.11239}{arXiv:2006.11239}.
+
+\bibitem{FlowMatching}
+Yaron Lipman, Ricky T.~Q.~Chen, Heli Ben-Hamu, Maximilian Nickel, Matt Le.
+\textit{Flow Matching for Generative Modeling}. ICLR 2023.
+\href{https://arxiv.org/abs/2210.02747}{arXiv:2210.02747}.
+
+% --- Representation alignment line ---
+
+\bibitem{REPA}
+Sihyun Yu, Sangkyung Kwak, Huiwon Jang, Jongheon Jeong, Jonathan Huang, Jinwoo Shin, Saining Xie.
+\textit{Representation Alignment for Generation: Training Diffusion Transformers Is Easier Than You Think}. ICLR 2025.
+\href{https://arxiv.org/abs/2410.06940}{arXiv:2410.06940}.
+
+\bibitem{SpatialStructure}
+Jaskirat Singh, Xingjian Leng, Zongze Wu, Liang Zheng, Richard Zhang, Eli Shechtman, Saining Xie.
+\textit{What matters for Representation Alignment: Global Information or Spatial Structure?} 2025.
+\href{https://arxiv.org/abs/2512.10794}{arXiv:2512.10794}.
+
+\bibitem{REED}
+Chenyu Wang, Cai Zhou, Sharut Gupta, Zongyu Lin, Stefanie Jegelka, Stephen Bates, Tommi Jaakkola.
+\textit{Learning Diffusion Models with Flexible Representation Guidance}. 2025.
+\href{https://arxiv.org/abs/2507.08980}{arXiv:2507.08980}.
+
+\bibitem{BoltzREPA}
+Hyosoon Jang, Hyunjin Seo, Yunhui Jang, Seonghyun Park, Sungsoo Ahn.
+\textit{Boltz is a Strong Baseline for Atom-level Representation Learning}. 2026.
+\href{https://arxiv.org/abs/2602.13249}{arXiv:2602.13249}.
+
+\bibitem{VideoREPA}
+Xiangdong Zhang, Jiaqi Liao, Shaofeng Zhang, Fanqing Meng, Xiangpeng Wan, Junchi Yan, Yu Cheng.
+\textit{VideoREPA: Learning Physics for Video Generation through Relational Alignment with Foundation Models}. 2025.
+\href{https://arxiv.org/abs/2505.23656}{arXiv:2505.23656}.
+
+\bibitem{TARO}
+Tri Ton, Jiajing Hong, Chang D.~Yoo.
+\textit{Temporally Aligned Audio for Video with Autoregression}. ICCV 2025.
+\href{https://arxiv.org/abs/2504.05684}{arXiv:2504.05684}.
+
+\bibitem{CrystalREPA}
+Wei Zhang, Shijie Jin, Hangrui Zhang, Yi Li, Yan Wang.
+\textit{CrystalREPA: Element-aware Representation Alignment for Crystal Generation}. 2026.
+\href{https://arxiv.org/abs/2605.08960}{arXiv:2605.08960}.
+
+\bibitem{DiffuseDisperse}
+Runqian Wang and Kaiming He.
+\textit{Diffuse and Disperse: Image Generation with Representation Regularization}. 2025.
+\href{https://arxiv.org/abs/2506.09027}{arXiv:2506.09027}.
+
+% --- Flow matching, models we build on ---
+
+\bibitem{Proteina}
+Tomas Geffner et al.
+\textit{Proteina: Scaling Flow-based Protein Structure Generative Models}. ICLR 2025.
+\href{https://arxiv.org/abs/2503.00710}{arXiv:2503.00710}.
+
+\bibitem{Tabasco}
+C.~Vonessen et al.
+\textit{TABASCO: A Fast, Simplified Model for Molecular Generation with Improved Physical Quality}. 2025.
+\href{https://arxiv.org/abs/2507.00899}{arXiv:2507.00899}.
+
+% --- Generative design across domains ---
+
+\bibitem{REINVENT}
+Marcus Olivecrona, Thomas Blaschke, Ola Engkvist, Hongming Chen.
+``Molecular de-novo design through deep reinforcement learning''.
+\textit{Journal of Cheminformatics} 9:48 (2017).
+\href{https://doi.org/10.1186/s13321-017-0235-x}{doi:10.1186/s13321-017-0235-x}.
+
+\bibitem{GENTRL}
+Alex Zhavoronkov et al.
+``Deep learning enables rapid identification of potent DDR1 kinase inhibitors''.
+\textit{Nature Biotechnology} 37 (2019), pp.~1038--1040.
+\href{https://doi.org/10.1038/s41587-019-0224-x}{doi:10.1038/s41587-019-0224-x}.
+
+\bibitem{RFdiffusion}
+Joseph~L. Watson et al.
+``De novo design of protein structure and function with RFdiffusion''.
+\textit{Nature} 620 (2023), pp.~1089--1100.
+\href{https://doi.org/10.1038/s41586-023-06415-8}{doi:10.1038/s41586-023-06415-8}.
+
+\bibitem{Chroma}
+John~B. Ingraham et al.
+``Illuminating protein space with a programmable generative model''.
+\textit{Nature} 623 (2023), pp.~1070--1078.
+\href{https://doi.org/10.1038/s41586-023-06728-8}{doi:10.1038/s41586-023-06728-8}.
+
+\bibitem{GNoME}
+Amil Merchant et al.
+``Scaling deep learning for materials discovery''.
+\textit{Nature} 624 (2023), pp.~80--85.
+\href{https://doi.org/10.1038/s41586-023-06735-9}{doi:10.1038/s41586-023-06735-9}.
+
+\bibitem{MatterGen}
+Claudio Zeni et al.
+``A generative model for inorganic materials design''.
+\textit{Nature} 639 (2025), pp.~624--632.
+\href{https://doi.org/10.1038/s41586-025-08628-5}{doi:10.1038/s41586-025-08628-5}.
+
+% --- Encoders we use as REPA targets ---
+
+\bibitem{ESM2}
+Zeming Lin et al.
+``Evolutionary-scale prediction of atomic-level protein structure with a language model''.
+\textit{Science} 379.6637 (2023), pp.~1123--1130.
+\href{https://doi.org/10.1126/science.ade2574}{doi:10.1126/science.ade2574}.
+
+\bibitem{ProteinMPNN}
+J.~Dauparas et al.
+``Robust deep learning--based protein sequence design using ProteinMPNN''.
+\textit{Science} 378.6615 (2022), pp.~49--56.
+\href{https://doi.org/10.1126/science.add2187}{doi:10.1126/science.add2187}.
+
+\bibitem{MACE}
+Ilyes Batatia et al.
+``A foundation model for atomistic materials chemistry''.
+\textit{The Journal of Chemical Physics} 163.18 (2024), 184110.
+\href{https://doi.org/10.1063/5.0155322}{doi:10.1063/5.0155322}.
+
+\bibitem{ProstT5}
+Michael Heinzinger et al.
+``Bilingual language model for protein sequence and structure''.
+\textit{NAR Genomics and Bioinformatics} 6.4 (2024), lqae150.
+\href{https://doi.org/10.1093/nargab/lqae150}{doi:10.1093/nargab/lqae150}.
+
+\bibitem{SaProt}
+Jin Su et al.
+``SaProt: Protein Language Modeling with Structure-aware Vocabulary''.
+\textit{bioRxiv} (2023). Preprint.
+\href{https://doi.org/10.1101/2023.10.01.560349}{doi:10.1101/2023.10.01.560349}.
+
+% --- Data sources ---
+
+\bibitem{LAION5B}
+Christoph Schuhmann et al.
+\textit{LAION-5B: An open large-scale dataset for training next generation image-text models}. NeurIPS 2022 Datasets and Benchmarks.
+\href{https://arxiv.org/abs/2210.08402}{arXiv:2210.08402}.
+
+\bibitem{PDB}
+Helen~M. Berman et al.
+``The Protein Data Bank''.
+\textit{Nucleic Acids Research} 28.1 (2000), pp.~235--242. Statistics retrieved Nov 2025, \href{https://www.rcsb.org/stats}{rcsb.org/stats}.
+
+\bibitem{AFDB}
+Mihaly Varadi et al.
+``AlphaFold Protein Structure Database in 2024: providing structure coverage for over 214 million protein sequences''.
+\textit{Nucleic Acids Research} 52 (2024), D368--D375.
+\href{https://doi.org/10.1093/nar/gkad1011}{doi:10.1093/nar/gkad1011}.
+
+\bibitem{GEOMdrugs}
+Simon Axelrod and Rafael G\'omez-Bombarelli.
+``GEOM, energy-annotated molecular conformations for property prediction and molecular generation''.
+\textit{Scientific Data} 9, 185 (2022).
+\href{https://doi.org/10.1038/s41597-022-01288-4}{doi:10.1038/s41597-022-01288-4}.
+
+\bibitem{MGnify}
+Lorna Richardson et al.
+``MGnify: the microbiome sequence data analysis resource in 2023''.
+\textit{Nucleic Acids Research} 51 (2023), D753--D759.
+\href{https://doi.org/10.1093/nar/gkac1080}{doi:10.1093/nar/gkac1080}.
+Release statistics retrieved May 2022 (2.4 billion non-redundant sequences):
+\href{https://www.ebi.ac.uk/about/news/updates-from-data-resources/2-4-billion-sequences-now-available-in-the-latest-mgnify-protein-database-release/}{ebi.ac.uk}.
+
+\bibitem{BrocchieriKarlin}
+Luciano Brocchieri and Samuel Karlin.
+``Protein length in eukaryotic and prokaryotic proteomes''.
+\textit{Nucleic Acids Research} 33.10 (2005), pp.~3390--3400.
+\href{https://doi.org/10.1093/nar/gki615}{doi:10.1093/nar/gki615}.
+
+% --- Inductive bias and the representational shift ---
+
+\bibitem{BronsteinGDL}
+Michael M. Bronstein, Joan Bruna, Taco Cohen, Petar Veli\v{c}kovi\'c.
+\textit{Geometric Deep Learning: Grids, Groups, Graphs, Geodesics, and Gauges}. 2021.
+\href{https://arxiv.org/abs/2104.13478}{arXiv:2104.13478}.
+
+\bibitem{ThomasTFN}
+Nathaniel Thomas, Tess Smidt, Steven Kearnes, Lusann Yang, Li Li, Kai Kohlhoff, Patrick Riley.
+\textit{Tensor Field Networks: Rotation- and Translation-Equivariant Neural Networks for 3D Point Clouds}. 2018.
+\href{https://arxiv.org/abs/1802.08219}{arXiv:1802.08219}.
+
+\bibitem{ViT}
+Alexey Dosovitskiy et al.
+\textit{An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale}. ICLR 2021.
+\href{https://arxiv.org/abs/2010.11929}{arXiv:2010.11929}.
+
+\bibitem{TokenGT}
+Jinwoo Kim, Tien Dat Nguyen, Seonwoo Min, Sungjun Cho, Moontae Lee, Honglak Lee, Seunghoon Hong.
+\textit{Pure Transformers are Powerful Graph Learners}. NeurIPS 2022.
+\href{https://arxiv.org/abs/2207.02505}{arXiv:2207.02505}.
+
+\bibitem{AlphaFold2}
+John Jumper et al.
+``Highly accurate protein structure prediction with AlphaFold''.
+\textit{Nature} 596 (2021), pp.~583--589.
+\href{https://doi.org/10.1038/s41586-021-03819-2}{doi:10.1038/s41586-021-03819-2}.
+
+\bibitem{AlphaFold3}
+Josh Abramson et al.
+``Accurate structure prediction of biomolecular interactions with AlphaFold~3''.
+\textit{Nature} 630 (2024), pp.~493--500.
+\href{https://doi.org/10.1038/s41586-024-07487-w}{doi:10.1038/s41586-024-07487-w}.
+
+\bibitem{Brehmer2024}
+Johann Brehmer et al.
+\textit{Does equivariance matter at scale?} NeurIPS 2024.
+\href{https://arxiv.org/abs/2410.23179}{arXiv:2410.23179}.
+
+\end{thebibliography}
+
+\appendix
+
+\chapter{Technical details}
+
+% TODO: appendices. Candidates from the work so far:
+%   - Full hyperparameter tables for Proteina + Tabasco training runs.
+%   - Encoder profiling protocol (RankMe details, probing setup).
+%   - Evaluation pipeline details (Foldseek thresholds, PoseBusters checks,
+%     bootstrap CI methodology).
+%   - Extra ablation plots that didn't make the main text.
+%   - Compute / wallclock notes.
+
+% The placeholder Lorem-ipsum text has been removed; remove this entire
+% appendix block if the report doesn't end up needing appendices.
+
+\section{Placeholder section}
+
+TODO.
+
+% --- removed: original template's Lorem-ipsum filler ---
+\iffalse
+\section{Lorem ipsum}
+
+% Some traditional fake Latin prose for calibrating words/page
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,
+sed diam voluptua. At vero eos et accusam et justo duo dolores et ea
+rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem
+ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
+sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et
+dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam
+et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea
+takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit
+amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
+invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita
+kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit
+amet.
+
+\section{Homo sapiens non urinat in ventum}
+Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse
+molestie consequat, vel illum dolore eu feugiat nulla facilisis at
+vero eros et accumsan et iusto odio dignissim qui blandit praesent
+luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+volutpat.
+
+Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper
+suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem
+vel eum iriure dolor in hendrerit in vulputate velit esse molestie
+consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et
+accumsan et iusto odio dignissim qui blandit praesent luptatum zzril
+delenit augue duis dolore te feugait nulla facilisi.
+
+Nam liber tempor cum soluta nobis eleifend option congue nihil
+imperdiet doming id quod mazim placerat facer possim assum. Lorem
+ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy
+nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper
+suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+
+Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse
+molestie consequat, vel illum dolore eu feugiat nulla facilisis.
+
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita
+kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit
+amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed
+diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
+erat, sed diam voluptua. At vero eos et accusam et justo duo dolores
+et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est
+Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
+sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo
+eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet
+clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata
+ut vero voluptua. est Lorem ipsum dolor sit amet. Lorem ipsum dolor
+sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
+invidunt ut labore et dolore magna aliquyam erat.
+
+Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
+labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos
+et accusam et justo duo dolores et ea rebum. Stet clita kasd
+gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,
+sed diam voluptua. At vero eos et accusam et justo duo dolores et ea
+rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem
+ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
+sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et
+dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam
+et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea
+takimata sanctus est Lorem ipsum dolor sit amet.
+
+Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse
+molestie consequat, vel illum dolore eu feugiat nulla facilisis at
+vero eros et accumsan et iusto odio dignissim qui blandit praesent
+luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+volutpat.
+
+Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper
+suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem
+vel eum iriure dolor in hendrerit in vulputate velit esse molestie
+consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et
+accumsan et iusto odio dignissim qui blandit praesent luptatum zzril
+delenit augue duis dolore te feugait nulla facilisi.
+
+Nam liber tempor cum soluta nobis eleifend option congue nihil
+imperdiet doming id quod mazim placerat facer possim assum. Lorem
+ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy
+nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper
+suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+
+Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse
+molestie consequat, vel illum dolore eu feugiat nulla facilisis.
+
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita
+kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit
+amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed
+diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
+erat, sed diam voluptua. At vero eos et accusam et justo duo dolores
+et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est
+Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
+sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo
+eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet
+clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata
+ut vero voluptua. est Lorem ipsum dolor sit amet. Lorem ipsum dolor
+sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
+invidunt ut labore et dolore magna aliquyam erat.
+
+Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
+labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos
+et accusam et justo duo dolores et ea rebum. Stet clita kasd
+gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,
+sed diam voluptua. At vero eos et accusam et justo duo dolores et ea
+rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem
+ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
+sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et
+dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam
+et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea
+takimata sanctus est Lorem ipsum dolor sit amet.
+\fi
+
+\label{lastpage}
+\end{document}
