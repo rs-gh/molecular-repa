@@ -18,6 +18,8 @@
 \usepackage{upquote}  % for correct quotation marks in verbatim text
 \usepackage{amsmath}  % for \text{} inside math, aligned environments, etc.
 \usepackage{amssymb}  % for \mathbb{} (e.g. \mathbb{E} expectation symbol)
+\usepackage{tikz}     % for diagrams (e.g. the REPA construction)
+\usetikzlibrary{arrows.meta}
 
 \newif\ifsubmission % Boolean flag for distinguishing submitted/final version
 
@@ -368,9 +370,9 @@ Write a summary of the whole thing. Make sure it fits on one page.
 % preface in Beat 4 with the working hypothesis left for Ch 8.
 % ==========================================================================
 
-The evolution of generative machine learning in scientific domains is defined by the tension between data scale, data quality, and structural priors. Our report examines a recent addition to this story in \emph{representation alignment}. We study this technique in two regimes for de novo molecular generation — small molecules and protein backbones — and characterise its behaviour. In this introduction, we trace the narrative arc of research trends in molecular generation, and highlight the motivation for our work: the emerging need for data-efficient modelling in a world of prior-light models.
+The evolution of generative machine learning in scientific domains is defined by the tension between data scale, data quality, and structural priors. Our report examines a recent addition to this story in \emph{representation alignment}. We study this technique in two regimes for de novo molecular generation --- small molecules and protein backbones --- and characterise its behaviour. In this introduction, we trace the narrative arc of research trends in molecular generation, and highlight the motivation for our work: the emerging need for data-efficient modelling in a world of prior-light models.
 
-The dominant ideas in generative modelling are \emph{denoising diffusion} and its offshoot \emph{flow-matching}~\cite{DDPM,FlowMatching}, which found breakthrough success in the realm of image generation. This paradigm has since been adapted for de novo design challenges across scientific fields, such as generating protein backbones~\cite{RFdiffusion,Chroma,Proteina}, inorganic materials~\cite{MatterGen}, and drug-like small molecules~\cite{Tabasco}. Training these models is typically expensive in both data and compute, with state-of-the-art image generators routinely training on billions of examples~\cite{LAION5B}. However, the corpus of available high-quality molecular data sits orders of magnitude below this. Experimental determination is slow and expensive, which means datasets are correspondingly small. For example, protein structure generators have largely been trained on at most half a million structures~\cite{Proteina}, which may explain why they have not yet matched the maturity of their vision-domain counterparts.
+The dominant ideas in generative modelling are \emph{denoising diffusion} and its offshoot \emph{flow matching}~\cite{DDPM,FlowMatching}, which found breakthrough success in the realm of image generation. This paradigm has since been adapted for de novo design challenges across scientific fields, such as generating protein backbones~\cite{RFdiffusion,Chroma,Proteina}, inorganic materials~\cite{MatterGen}, and drug-like small molecules~\cite{Tabasco}. Training these models is typically expensive in both data and compute, with state-of-the-art image generators routinely training on billions of examples~\cite{LAION5B}. However, the corpus of available high-quality molecular data sits orders of magnitude below this. Experimental determination is slow and expensive, which means datasets are correspondingly small. For example, protein structure generators have largely been trained on at most half a million structures~\cite{Proteina}, which may explain why they have not yet matched the maturity of their vision-domain counterparts.
 
 Historically, researchers compensated for the small scale of high-quality molecular data by encoding structural priors directly into model architectures~\cite{BronsteinGDL}. SE(3)-equivariant architectures, for example, enforce the rotational and translational symmetries expected of molecules by construction~\cite{ThomasTFN}. But hard structural priors come with a computational cost, and the operations required to encode geometry are a bottleneck to scaling models.
 
@@ -669,22 +671,124 @@ In this chapter, we introduce the machinery the rest of our report depends on. W
 
 \section{Flow matching}
 
-At first glance, the term \emph{generative modelling} implies the problem of \emph{creating} new artefacts from scratch. However, it is perhaps more accurately described as the problem of \emph{sampling} new artefacts from a complex data distribution that can only be accessed through a finite training set. A common strategy here is to fix a simple distribution we can sample from cheaply — typically standard Gaussian noise $p_0 = \mathcal{N}(0, I)$ — and learn a mapping from it to the desired data distribution $p_1$.
+At first glance, the term \emph{generative modelling} implies the problem of \emph{creating} new artefacts from scratch. However, it is perhaps more accurately described as the problem of \emph{sampling} new artefacts from a complex data distribution that can only be accessed through a finite training set. A common strategy here is to fix a simple distribution we can sample from cheaply --- typically standard Gaussian noise $p_0 = \mathcal{N}(0, I)$ --- and learn a mapping from it to the desired data distribution $p_1$.
 
-Flow matching realises this mapping as a continuous-time transport. The model designer defines a \emph{probability path} between a noise sample and a data sample — a continuous interpolation between them — and the model learns to carry the noise sample along this path. Concretely, it parameterises a time-dependent \emph{velocity field} $v_\theta(x, t)$ that gives the instantaneous direction of motion at each location $x$ and time $t \in [0, 1]$. At inference, integrating the learned ODE $\dot{x}_t = v_\theta(x_t, t)$ from $t = 0$ to $t = 1$ pushes a fresh noise sample forward into a fresh data sample.
+Flow matching realises this mapping as a continuous-time transport. The model designer defines a \emph{probability path} between a noise sample and a data sample --- a continuous interpolation between them --- and the model learns to carry the noise sample along this path. Concretely, it parameterises a time-dependent \emph{velocity field} $v_\theta(x, t)$ that gives the instantaneous direction of motion at each location $x$ and time $t \in [0, 1]$. At inference, integrating the learned ordinary differential equation (ODE) $\dot{x}_t = v_\theta(x_t, t)$ from $t = 0$ to $t = 1$ pushes a fresh noise sample forward into a fresh data sample.
 
 A common choice of probability path is the linear interpolant, $x_t = (1-t)\, x_0 + t\, x_1$ for $x_0 \sim p_0$ and $x_1 \sim p_1$. The model's target is the \emph{marginal} velocity field at $(x, t)$: the average direction of motion over all noise-data pairs whose paths pass through that point. However, supervising this marginal directly is intractable, since the contributing pairs are not known in advance. Flow matching sidesteps this difficulty with a key observation~\cite{FlowMatching}: although the marginal field may be intractable, the \emph{conditional} velocity along the path of any specific noise-data pair is relatively trivial. Indeed, for the linear interpolant, it is simply $\dot{x}_t = x_1 - x_0$. Regressing the model on these conditional velocities, averaged over many sampled pairs, recovers the marginal field in expectation, and gives the training loss as a mean-squared regression:
 \[
   \mathcal{L}_{\text{FM}} \,=\, \mathbb{E}_{t,\, x_0,\, x_1} \left\| v_\theta(x_t, t) - (x_1 - x_0) \right\|^2.
 \]
+In practice, every training step samples a time $t \in [0,1]$ and a noise-data pair $(x_0, x_1)$, computes the interpolant $x_t$, and takes a gradient step on this squared error.
 
 Flow matching with this linear interpolant generalises score-based diffusion: the variance-preserving Gaussian-path objective of denoising diffusion models~\cite{DDPM} is a special case of the FM family~\cite{FlowMatching,FMGuide}.
 
-Generating samples from a trained flow matching model amounts to integrating the learned velocity field. This is often performed with a standard ODE solver, with Euler steps usually sufficing for stable trajectories. The field also admits stochastic sampling variants — such as those drawing on the connection to score-based SDEs — which inject noise during the integration steps to explore the probability space and improve sample diversity. The models we work with in this report, Tabasco and Proteina, support both deterministic and stochastic samplers.
+Generating samples from a trained flow-matching model amounts to integrating the learned velocity field. This is often performed with a standard ODE solver, with Euler steps usually sufficing for stable trajectories. The field also admits stochastic sampling variants --- such as those drawing on the connection to score-based stochastic differential equations (SDEs) --- which inject noise during the integration steps to explore the probability space and improve sample diversity. The models we work with in this report, Tabasco and Proteina, support both deterministic and stochastic samplers.
 
-Conditional generation augments $v_\theta$ with context tokens — a class label, a sequence length, a structural motif — with conditioning supplied at both training and sampling time. In this report, we focus on unconditional generation only.
+Conditional generation augments $v_\theta$ with context tokens --- such as a class label, a sequence length, or a structural motif --- with conditioning supplied at both training and sampling time. In this report, we focus on unconditional generation only.
 
-For a full pedagogical treatment of flow matching, we refer the reader to~\cite{FlowMatching} for the original presentation, to the MIT 6.S184 lecture notes~\cite{FMIntroLectures}, and to the recent Lipman et al.\ guide~\cite{FMGuide}.
+For a more complete treatment of flow matching, we refer the reader to Lipman et al.~\cite{FlowMatching} for the original presentation, and to the recent Lipman et al.\ guide~\cite{FMGuide}.
+
+% ==========================================================================
+% PROSE -- §2.2 first draft. Mechanics of representation alignment: loss
+% form, projector head, frozen encoder, combined objective, design knobs.
+% The design-knobs list is LOAD-BEARING -- it must stay in sync with the
+% Ch 7 §7.6 ablation list (see scaffold comment on Ch 7).
+% Closes with the NotA scope statement (we adopt REPA in its original
+% additive form; variants deferred to §3).
+% ==========================================================================
+
+\section{Representation alignment}
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+    >={Latex[length=2mm]},
+    block/.style={
+        rectangle, draw, rounded corners=2pt,
+        minimum height=10mm, minimum width=26mm,
+        align=center
+    },
+    small/.style={
+        rectangle, draw, rounded corners=2pt,
+        minimum height=8mm, minimum width=18mm,
+        align=center, font=\small
+    },
+    frozen/.style={fill=gray!18},
+    lbl/.style={font=\itshape, align=center},
+    loss/.style={font=\bfseries, align=center},
+    arr/.style={-{Latex[length=2mm]}, thick}
+]
+% Interpolant inputs (far left). x_1 is shared with the encoder branch;
+% see arrow from x1bot (below) up into interp.
+\node[lbl] (x0) at (-2.6, 0.5) {$x_0$};
+\node[lbl] (tinput) at (-2.6, -0.5) {$t$};
+% Interpolant operation
+\node[small] (interp) at (-0.5, 0) {$(1\!-\!t)x_0 + t\,x_1$};
+% Top row: generator path
+\node[lbl] (xt) at (1.6, 0) {$x_t$};
+\node[block] (vtheta) at (4.3, 0) {Generator $v_\theta$ \\ $\ell_1 \to \ell_2 \to \cdots \to \ell_L$};
+\node[lbl] (vout) at (7.3, 0) {$v_\theta(x_t,t)$};
+\node[loss] (lfm) at (9.4, 0) {$\mathcal{L}_{\text{FM}}$};
+% Projector branch (taps from generator)
+\node[small] (proj) at (4.3, -2.4) {Projector $h_\phi$};
+\node[lbl] (pemb) at (4.3, -3.7) {$h_\phi(z_\ell)$};
+% Bottom row: encoder path
+\node[lbl] (x1bot) at (-0.5, -5.8) {$x_1$};
+\node[block, frozen] (fenc) at (4.3, -5.8) {Encoder $f_{\text{enc}}$ \\ (frozen)};
+\node[lbl] (temb) at (7.3, -5.8) {$f_{\text{enc}}(x_1)$};
+% Convergence: cosine similarity -> REPA loss
+\node[small] (cos) at (7.3, -4.5) {cos sim};
+\node[loss] (lrepa) at (9.4, -4.5) {$\mathcal{L}_{\text{REPA}}$};
+% Combined objective
+\node[draw, rounded corners=2pt, inner sep=5pt, font=\small\bfseries, align=center]
+  (ltotal) at (11.8, -2.25) {$\mathcal{L} = \mathcal{L}_{\text{FM}} + \lambda\, \mathcal{L}_{\text{REPA}}$};
+% Arrows
+\draw[arr] (x0) -- (interp);
+\draw[arr] (tinput) -- (interp);
+\draw[arr] (x1bot) -- (interp);
+\draw[arr] (interp) -- (xt);
+\draw[arr] (xt) -- (vtheta);
+\draw[arr] (vtheta) -- (vout);
+\draw[arr] (vout) -- (lfm);
+\draw[arr] (vtheta) -- (proj) node[midway, right] {\small $z_\ell$};
+\draw[arr] (proj) -- (pemb);
+\draw[arr] (pemb) -| (cos);
+\draw[arr] (x1bot) -- (fenc);
+\draw[arr] (fenc) -- (temb);
+\draw[arr] (temb) -- (cos);
+\draw[arr] (cos) -- (lrepa);
+\draw[arr] (lfm) -| (ltotal);
+\draw[arr] (lrepa) -| (ltotal);
+\end{tikzpicture}
+\caption{The REPA construction. A noised sample $x_t = (1-t)x_0 + t\,x_1$ is constructed at each training step from a noise sample $x_0$, a clean data sample $x_1$, and a sampled timestep $t \in [0,1]$. The generator $v_\theta$ processes $x_t$ through its sequence of layers $\ell_1, \ldots, \ell_L$ to produce the velocity field that feeds the flow-matching loss $\mathcal{L}_{\text{FM}}$. Separately, the clean sample $x_1$ is also passed through a frozen pretrained encoder $f_{\text{enc}}$ (shaded). The generator's hidden state $z_\ell$ at the chosen alignment layer is mapped into the encoder's feature space by a trainable projector $h_\phi$; the REPA loss $\mathcal{L}_{\text{REPA}}$ is the negated cosine similarity between $h_\phi(z_\ell)$ and $f_{\text{enc}}(x_1)$, averaged across tokens. The total training loss $\mathcal{L}$ combines them with weight $\lambda$.}
+\label{fig:repa-construction}
+\end{figure}
+
+Chapter~1 introduced the argument made by Yu et al.~\cite{REPA} about the \emph{representation bottleneck} in diffusion-transformer models. Their analysis applies to flow-matching models as well, given the equivalence between the two training objectives discussed above (\S2.1). The flow-matching objective also implicitly asks a model to learn two things at once: a useful representation of the data, and a noise-to-data velocity field that interprets this representation. This twin burden, they argue, contributes to slow convergence and large training budgets.
+
+Their proposed solution, Representation Alignment (REPA), addresses the first half of this burden by adding a regularisation term to the training loss. Figure~\ref{fig:repa-construction} shows the construction. The regularisation pulls $z_\ell$, the generator's intermediate hidden state at a chosen \emph{alignment layer} $\ell$, towards the embeddings produced by a frozen pretrained encoder $f_{\text{enc}}$ run on the clean data sample $x_1$. $z_\ell$ is a sequence of $N$ token vectors, corresponding to image patches in the original setting, and atoms or residues in the molecular domains we study (\S2.3). A small trainable \emph{projector head} $h_\phi$ --- a three-layer multi-layer perceptron (MLP) in the original paper --- maps $z_\ell$ into the encoder's feature space, so that $h_\phi(z_\ell)$ and $f_{\text{enc}}(x_1)$ can be compared. Crucially, this alignment is asymmetric: gradients update only the generator parameters $\theta$ and the projector $\phi$, never the encoder. Information thus flows one way, from the pretrained encoder into the generator's hidden representations.
+
+We follow the original paper in using cosine similarity --- Yu et al.\ compared cosine and mean-squared error for image diffusion and found cosine more effective, a result we corroborate in the molecular setting (Chapter~7). The alignment loss is then the negated cosine similarity between projected and target embeddings, averaged jointly over training samples and tokens:
+\[
+  \mathcal{L}_{\text{REPA}} \,=\, -\, \mathbb{E}_{t,\, x_0,\, x_1} \left[ \frac{1}{N} \sum_{n=1}^{N} \cos\bigl( h_\phi(z_\ell)_n,\, f_{\text{enc}}(x_1)_n \bigr) \right].
+\]
+In the image setting $N$ is fixed across the dataset, so this inner average is equivalent to averaging across all tokens in the minibatch. For molecular data, where $N$ varies per sample, the two diverge: averaging tokens within each sample first weights every molecule equally, while pooling tokens across the batch gives larger molecules proportionally more influence. We return to this distinction in the design knobs below.
+
+The final training objective is the flow-matching loss from \S2.1 plus this term, scaled by a weight $\lambda$:
+\[
+  \mathcal{L} \,=\, \mathcal{L}_{\text{FM}} \,+\, \lambda\, \mathcal{L}_{\text{REPA}}.
+\]
+
+This construction exposes several design knobs, whose effects we revisit in the ablations of Chapter~7:
+\begin{itemize}
+  \item The choice of encoder $f_{\text{enc}}$, as different encoders may capture distinct aspects of the data distribution.
+  \item The alignment layer $\ell$ at which we attach the projector. The right choice is not obvious a priori. The original REPA paper experimentally determined that mid-network layers work best for image diffusion, and we investigate this in the context of molecular generators.
+  \item The alignment-loss weight $\lambda$, which balances the alignment signal against the generative objective.
+  \item The averaging mode. The equation above is the \emph{per-sample} form: cosine similarities are averaged within each sample (the $1/N$ factor) before the expectation across samples. The alternative \emph{per-token} form weights each token equally across the batch, giving larger molecules more influence.
+\end{itemize}
+
+In this report, we adopt REPA in its original form: cosine similarity, additive combination with the flow-matching loss, and a frozen encoder. A growing family of variants relaxes one or more of these choices --- for example, encoder-free dispersive regularisers~\cite{DiffuseDisperse} that drop the external encoder entirely, or joint-training extensions that fine-tune the encoder alongside the generator. We defer their discussion to Chapter~3.
 
 \chapter{Related work}
 
