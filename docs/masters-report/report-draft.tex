@@ -16,6 +16,8 @@
 \usepackage{setspace} % for \onehalfspacing
 \usepackage{refcount} % for counting pages
 \usepackage{upquote}  % for correct quotation marks in verbatim text
+\usepackage{amsmath}  % for \text{} inside math, aligned environments, etc.
+\usepackage{amssymb}  % for \mathbb{} (e.g. \mathbb{E} expectation symbol)
 
 \newif\ifsubmission % Boolean flag for distinguishing submitted/final version
 
@@ -398,23 +400,291 @@ The remainder of this report is organised as follows. Chapter~2 sets out the bac
 
 % Q:  What does the reader need to know before the rest of the report?
 % A:  Flow matching as a generative paradigm; REPA's loss form and where
-%     it plugs in; how small molecules and proteins are parameterised.
+%     it plugs in; how small molecules and proteins are parameterised;
+%     and concise sketches of the two models we extend (Tabasco, Proteina).
 % NotA: Not a survey of the field; not a full architectural tutorial on
-%     Proteina or Tabasco.
+%     Proteina or Tabasco; not a chemistry / biology primer beyond what
+%     the rest of the report depends on.
 %
-% Beats:
-%  - 2.1 Flow matching and stochastic interpolants -- the textbook bit.
-%        Objective, sampling (Euler / Heun / few-step solvers),
-%        conditional vs unconditional flows.
-%  - 2.2 Representation alignment -- loss form, projector head, where it
-%        attaches in a diffusion transformer.
-%  - 2.3 Molecular data and parameterisations (SMALL -> LARGE choreography):
-%        - What is a small molecule? Sub-900-Da scale, atom-bond graphs,
-%          3D coordinates, joint discrete/continuous parameterisation.
-%        - What is a protein? Backbone + side chains, residues, why we
-%          model CA-trace only (cost, prior, vs all-atom).
-%  - 2.4 The two model classes we build on -- concise architectural
-%        sketches of Tabasco then Proteina.
+% AUDIENCE: ML-fluent but molecular-naive. FM treated as ~1 page of brisk
+% exposition for completeness; REPA + molecular parameterisations get the
+% bulk of the chapter.
+%
+% NotA-AS-PROSE: per writing principle #2, NotA content should also
+% surface in the prose where it gives the reader useful context -- why
+% we don't use SMILES, why we don't go all-atom, what FM / REPA variants
+% we omit. NotA is not just a planning device; it shapes the reader's
+% view of the design space and the choices we made within it.
+%
+% --------------------------------------------------------------------------
+% Section 2.1 -- Flow matching (BRISK, ~1 page)
+% --------------------------------------------------------------------------
+% Q:  What does the reader need to know about flow matching to read Ch 6/7?
+% A:  Three pieces.
+%     (i)   FM learns a time-dependent velocity field v_theta(x, t) that
+%           transports a simple prior (e.g. N(0, I)) to the data
+%           distribution along a continuous path.
+%     (ii)  Training uses a regression objective against *conditional*
+%           velocity fields between noise/data pairs -- this is what makes
+%           the loss tractable in practice.
+%     (iii) Sampling integrates the learned ODE (Euler / Heun / few-step
+%           solvers); conditional generation adds context tokens to
+%           v_theta.
+% NotA: Not a derivation of the FM <-> diffusion equivalence; not a survey
+%     of FM variants (rectified flow, OT-CFM, stochastic interpolants
+%     beyond the linear case we use); not the SDE generalisation. Surface
+%     these NotA points in prose as brief in-line pointers, not deep
+%     dives:
+%       - The FM <-> diffusion equivalence: acknowledge in prose that FM
+%         generalises score-based diffusion (the variance-preserving
+%         Gaussian path of \cite{DDPM} is a special case of the FM
+%         family). Do NOT derive -- cite \cite{FlowMatching} and
+%         \cite{FMGuide} for the formal treatment.
+%       - FM variants and SDE / stochastic interpolants: brief in-prose
+%         pointer to \cite{FMIntroLectures} (Holderrieth & Erives lecture
+%         notes) and \cite{FMGuide} (Lipman et al. Guide and Code) for
+%         the omitted material.
+% Citations: \cite{FlowMatching}, \cite{DDPM} (both in bib);
+%     \cite{FMIntroLectures} and \cite{FMGuide} (now added).
+% LOAD-BEARING: nothing empirical; pure exposition.
+%
+% --------------------------------------------------------------------------
+% Section 2.2 -- Representation alignment (DETAILED, ~1.5 pages)
+% --------------------------------------------------------------------------
+% Q:  What is REPA mechanically -- loss, where it attaches, what trains
+%     and what doesn't?
+% A:  Four pieces.
+%     (i)   A small trainable projector head h_phi maps generator hidden
+%           states at chosen layer ell to encoder feature space.
+%     (ii)  The REPA loss is patchwise / tokenwise cosine similarity
+%           between h_phi(z_ell) and a frozen encoder f_enc(x), with the
+%           encoder typically applied to the (clean) input.
+%     (iii) Combined objective L = L_FM + lambda * L_REPA.
+%     (iv)  Asymmetry: encoder frozen, generator + projector trained
+%           jointly.
+%     The section also walks through the REPA-specific design knobs we
+%     revisit in Ch 7 ablations. This knob list is LOAD-BEARING and must
+%     stay in sync with Ch 7 §7.6:
+%       - lambda (alignment-loss weight);
+%       - ell (alignment-layer choice);
+%       - projector depth;
+%       - averaging mode (per-token vs per-sample);
+%       - what feeds the encoder (clean vs noisy data, timestep
+%         conditioning).
+% NotA: Not a derivation of *why* it speeds training (§5 and the
+%     profiling framework do that); not a survey of REPA variants (§3);
+%     not the joint-training extensions like REPA-E (§3). Surface this
+%     NotA in prose as "we adopt REPA in its original additive form and
+%     defer variants to §3".
+% Citations: \cite{REPA} (Yu et al.); DINOv2 reference as the canonical
+%     encoder choice in the original (TODO add bibitem if we cite it
+%     directly in the prose).
+%
+% --------------------------------------------------------------------------
+% Section 2.3 -- Molecular data and parameterisations (DETAILED, ~2.5 pages,
+% SMALL -> LARGE: small molecules then proteins)
+% --------------------------------------------------------------------------
+% Bumped from ~2 pages to ~2.5 with the §2.3 opener on pipeline context.
+%
+%   §2.3 OPENER -- Why generate? Pipeline context (~0.5 page)
+%   Q:  Why does anyone generate small molecules or protein backbones,
+%       and where does a generative model sit in the broader pipeline?
+%   A:  Generation is one node in a larger discovery workflow. Upstream
+%       sits target / property specification -- a binding site, a fold
+%       class, a structural motif, a length, a drug-likeness profile.
+%       Downstream sits a sequence of filters and validations --
+%       physical plausibility, scoring against the target, structural
+%       verification, and eventually wet-lab synthesis and assay. The
+%       value of a generative model is throughput: producing candidate
+%       pools large enough that downstream filters can prune effectively
+%       toward a handful of synthesis candidates.
+%       Domain-specific pipeline details are folded into §2.3.1 and
+%       §2.3.2 below so each domain's parameterisation is grounded in
+%       the use case it serves.
+%   NotA: Not a survey of drug-discovery or protein-engineering
+%       workflows; not a defence of generative ML as the right tool for
+%       any specific task. Just enough grounding for the reader to know
+%       what generations are *for* -- which in turn motivates many of
+%       the metrics in Ch 4 (validity, designability, PoseBusters, FCD
+%       are downstream-filter proxies, not intrinsic quality scores).
+%   Citations: TODO add canonical pipeline references when prose lands
+%       (Enamine REAL / ZINC for small-molecule libraries; ProteinMPNN +
+%       ESMFold for the protein design loop; one or two flagship
+%       campaign papers as exemplars on each side).
+%
+%   §2.3.1 -- Small molecules
+%   Q:  What is a small molecule, and how is it parameterised here?
+%   A:  Drug-like molecules at the sub-900 Da scale (Lipinski-style
+%       rules). Each molecule is an atom-bond graph (discrete: atom
+%       types, bond types) with an associated 3D conformer (continuous:
+%       per-atom Cartesian coordinates). For FM we need a parameterisation
+%       handling both discrete and continuous variables jointly --
+%       Tabasco's choice (atom-type embeddings + continuous coords, no
+%       explicit bond decoder) is one such point in the design space.
+%   Use case / pipeline (AS PROSE -- ~1 paragraph):
+%       - Upstream: target identification, hit screening, lead-
+%         optimisation goals (improve binding affinity while preserving
+%         drug-likeness; explore new scaffolds for a known binding
+%         pocket).
+%       - Generation scale: typically 10^3-10^6 candidates per design
+%         campaign; ~10^4-10^5 is a common operating point.
+%       - Downstream: validity / drug-likeness / PoseBusters filters,
+%         docking against the target protein, MD or free-energy
+%         refinement on the survivors, prioritisation, synthesis (via
+%         vendor libraries like Enamine REAL or de novo) and in vitro
+%         assay.
+%       - Connection to Ch 4: validity, FCD, QED, PoseBusters all
+%         instrument *downstream filter steps*; reading them as
+%         filter-stage proxies explains why no single metric is
+%         sufficient.
+%   NotA (AS PROSE): give the reader the alternatives they will encounter
+%       elsewhere and explain what each one trades away --
+%         - SMILES / SELFIES (sequence-friendly string-based; lose 3D
+%           conformer information; relevant later when we discuss
+%           encoders trained on SMILES);
+%         - 3D voxel grids / electron-density fields (preserve geometry
+%           but lose graph structure and inflate token count);
+%         - Equivariant point clouds (architecturally heavier; see §3.1
+%           and \cite{HitchhikersGuide} for the broader landscape).
+%       Frame as choices we did NOT make, with a sentence on why.
+%   Citations: \cite{GEOMdrugs} (in bib); pointers to
+%       \cite{MoleculeDiffusionSurvey} (Wang et al. -- placement-pending,
+%       see research-debt) and \cite{HitchhikersGuide} (Duval et al. --
+%       placement-pending, see research-debt) for further reading.
+%
+%   §2.3.2 -- Proteins
+%   Q:  What is a protein backbone, and what does the CA-trace
+%       approximation buy us?
+%   A:  A protein is a chain of amino-acid residues linked by peptide
+%       bonds. Each residue has backbone atoms (N, C_alpha, C, O) and a
+%       side chain that determines its amino-acid identity. The backbone
+%       defines overall fold geometry. The CA-trace -- only C_alpha
+%       coordinates per residue -- is a further compression that
+%       (a) drastically reduces cost vs all-atom,
+%       (b) is sufficient for the designability evaluation pipeline
+%           (ProteinMPNN -> ESMFold -> scRMSD),
+%       (c) is the de facto convention for backbone generators
+%           (RFdiffusion, FrameFlow, Proteina).
+%   Use case / pipeline (AS PROSE -- ~1 paragraph):
+%       - Upstream: target / motif specification (binder for a given
+%         antigen, scaffold for a catalytic site or motif, desired
+%         secondary-structure topology, length, fold class), often with
+%         structural conditioning (fixed motif regions held constant
+%         during sampling).
+%       - Generation scale: typically 10^2-10^5 backbones per design
+%         campaign.
+%       - Downstream: inverse folding (ProteinMPNN -> sequence), folding
+%         verification (ESMFold or AlphaFold -> predicted structure),
+%         designability scoring (scRMSD between the designed backbone
+%         and the re-folded prediction), biophysical characterisation,
+%         expression and assay.
+%       - Connection to Ch 4: designability via scRMSD is the dominant
+%         protein-side metric *precisely because* it instruments the
+%         ProteinMPNN -> folding-check pipeline step; it is a
+%         downstream-filter proxy, not an intrinsic quality measure.
+%   NotA (AS PROSE): give the reader the alternative protein
+%       representations and explain what each one trades away --
+%         - Sequence-only models (ESM-2 lineage): powerful, but blind to
+%           3D structure unless paired with a folder;
+%         - Full-atom modelling: physical realism, but cost and the
+%           additional side-chain placement problem;
+%         - Internal-coordinate parameterisations (torsion angles): used
+%           in Genie / the AlphaFold2 structure module; SE(3)-equivariant
+%           by construction but harder to scale;
+%         - Distogram / contact-map representations: predict structure
+%           indirectly and do not generate coordinates directly.
+%       Again, frame as choices we did NOT make and why.
+%   Citations: \cite{RFdiffusion,Proteina,ProteinMPNN,ESM2,AlphaFold2}
+%       (all in bib); \cite{HitchhikersGuide} pointer for the broader
+%       geometric-DL landscape (placement-pending); \cite{Genie} for the
+%       internal-coord lineage (TODO add bibitem if we keep this pointer
+%       in final prose).
+%
+% --------------------------------------------------------------------------
+% Section 2.4 -- The two model classes (~1.5 pages, SMALL -> LARGE)
+% --------------------------------------------------------------------------
+%
+%   §2.4 SHARED OPENER (one short paragraph before §2.4.1):
+%   Tabasco and Proteina both make the broader move that motivates the
+%   rest of the report -- simple, prior-light transformer architectures
+%   trained on flow matching, designed to scale with data and model size
+%   rather than relying on hand-built structural inductive biases. Both
+%   papers' introductions frame themselves explicitly against the
+%   equivariant lineage they depart from. This shared motivation is why
+%   the two models are useful paired substrates for our REPA study --
+%   the cross-domain comparison varies the data domain while holding
+%   the architectural philosophy approximately fixed.
+%
+%   §2.4.1 -- Tabasco
+%   Q:  What is Tabasco, in just enough detail to read Ch 6?
+%   A:  A non-equivariant transformer flow-matching model for small-
+%       molecule 3D generation. Per-atom token stream with joint
+%       atom-type + position parameterisation. Timestep injected via
+%       adaLN-style conditioning. Trained on GEOM-drugs. Notable for
+%       matching equivariant baselines on physical-quality metrics
+%       despite the prior-light architecture.
+%   NotA (AS PROSE): briefly contrast with the equivariant small-molecule
+%       generators that Tabasco's own introduction distinguishes itself
+%       from -- candidates include EQGAT-diff, MiDi, SemlaFlow. TODO
+%       add bibitems when we pin the comparators in prose.
+%   NotA: not a full architectural reproduction; Tabasco's own ablations
+%       are not our concern; sampling and training tricks are appendix
+%       material.
+%   Citations: \cite{Tabasco,GEOMdrugs}; TODO add bibitems for the
+%       comparator architectures we end up naming.
+%
+%   §2.4.2 -- Proteina
+%   Q:  What is Proteina, in just enough detail to read Ch 7?
+%   A:  A non-equivariant transformer flow-matching model for protein
+%       backbones. Per-residue tokens with continuous CA coordinates.
+%       Augmentation (random rotation) substitutes for SE(3)
+%       equivariance, drawing on the AlphaFold3 lineage. Multi-scale
+%       dataset strategy: trains on PDB and the AFDB at progressively
+%       larger scales. Standard conditioning interfaces (length,
+%       fold-class).
+%   NotA (AS PROSE): briefly contrast with the equivariant / frame-
+%       parameterised protein backbone generators that Proteina's own
+%       introduction distinguishes itself from -- candidates include
+%       RFdiffusion (frame-based, RoseTTAFold backbone equivariance),
+%       FrameFlow (SE(3) flow on frames), Genie (SE(3)-equivariant
+%       diffusion on CA coords). RFdiffusion already in bib; TODO add
+%       bibitems for FrameFlow, Genie when we pin the comparators.
+%   NotA: same caveats as Tabasco -- not reproducing all design choices,
+%       only enough to read the REPA integration in Ch 7.
+%   Citations: \cite{Proteina,AlphaFold3,Brehmer2024,PDB,AFDB,RFdiffusion};
+%       TODO add bibitems for additional comparators (FrameFlow, Genie).
+
+% ==========================================================================
+% PROSE -- Ch 2 chapter opener + §2.1 revised draft.
+% Ch 2 opener: states the chapter's purpose (what the reader needs to know
+% before the rest of the report), outlines §2.1-§2.4, and notes the
+% cursory-by-design treatment.
+% §2.1: now opens with a generative-modelling motivation before introducing
+% "velocity" / "transport"; the supervision-intuition paragraph frames the
+% interpolant as a designer's choice and walks through the marginal-from-
+% conditional move more carefully.
+% ==========================================================================
+
+In this chapter, we introduce the machinery the rest of our report depends on. We outline flow matching (\S2.1), the generative paradigm underlying the models we study, and representation alignment (\S2.2), the regulariser that is our object of study. We then provide some motivating context on small molecules and protein backbones (\S2.3), and discuss how they are typically parameterised for generative machine learning workflows. Finally, we outline Tabasco and Proteina (\S2.4), the two flow-matching backbones we extend in our experiments. The treatment is cursory by design, intended only to guide the reader through this report, and we provide citations for omitted details.
+
+\section{Flow matching}
+
+At first glance, the term \emph{generative modelling} implies the problem of \emph{creating} new artefacts from scratch. However, it is perhaps more accurately described as the problem of \emph{sampling} new artefacts from a complex data distribution that can only be accessed through a finite training set. A common strategy here is to fix a simple distribution we can sample from cheaply — typically standard Gaussian noise $p_0 = \mathcal{N}(0, I)$ — and learn a mapping from it to the desired data distribution $p_1$.
+
+Flow matching realises this mapping as a continuous-time transport. The model designer defines a \emph{probability path} between a noise sample and a data sample — a continuous interpolation between them — and the model learns to carry the noise sample along this path. Concretely, it parameterises a time-dependent \emph{velocity field} $v_\theta(x, t)$ that gives the instantaneous direction of motion at each location $x$ and time $t \in [0, 1]$. At inference, integrating the learned ODE $\dot{x}_t = v_\theta(x_t, t)$ from $t = 0$ to $t = 1$ pushes a fresh noise sample forward into a fresh data sample.
+
+A common choice of probability path is the linear interpolant, $x_t = (1-t)\, x_0 + t\, x_1$ for $x_0 \sim p_0$ and $x_1 \sim p_1$. The model's target is the \emph{marginal} velocity field at $(x, t)$: the average direction of motion over all noise-data pairs whose paths pass through that point. However, supervising this marginal directly is intractable, since the contributing pairs are not known in advance. Flow matching sidesteps this difficulty with a key observation~\cite{FlowMatching}: although the marginal field may be intractable, the \emph{conditional} velocity along the path of any specific noise-data pair is relatively trivial. Indeed, for the linear interpolant, it is simply $\dot{x}_t = x_1 - x_0$. Regressing the model on these conditional velocities, averaged over many sampled pairs, recovers the marginal field in expectation, and gives the training loss as a mean-squared regression:
+\[
+  \mathcal{L}_{\text{FM}} \,=\, \mathbb{E}_{t,\, x_0,\, x_1} \left\| v_\theta(x_t, t) - (x_1 - x_0) \right\|^2.
+\]
+
+Flow matching with this linear interpolant generalises score-based diffusion: the variance-preserving Gaussian-path objective of denoising diffusion models~\cite{DDPM} is a special case of the FM family~\cite{FlowMatching,FMGuide}.
+
+Generating samples from a trained flow matching model amounts to integrating the learned velocity field. This is often performed with a standard ODE solver, with Euler steps usually sufficing for stable trajectories. The field also admits stochastic sampling variants — such as those drawing on the connection to score-based SDEs — which inject noise during the integration steps to explore the probability space and improve sample diversity. The models we work with in this report, Tabasco and Proteina, support both deterministic and stochastic samplers.
+
+Conditional generation augments $v_\theta$ with context tokens — a class label, a sequence length, a structural motif — with conditioning supplied at both training and sampling time. In this report, we focus on unconditional generation only.
+
+For a full pedagogical treatment of flow matching, we refer the reader to~\cite{FlowMatching} for the original presentation, to the MIT 6.S184 lecture notes~\cite{FMIntroLectures}, and to the recent Lipman et al.\ guide~\cite{FMGuide}.
 
 \chapter{Related work}
 
@@ -614,9 +884,12 @@ The remainder of this report is organised as follows. Chapter~2 sets out the bac
 %        (sample size, seed variance).
 %  - 7.6 Optimisation dynamics (ablations).
 %        lambda, batch size, LR, weight decay, projector depth, averaging
-%        mode (per-residue vs per-sample), combination mode (additive vs
-%        trade-off), alignment-layer choice. Frame as a stability claim
-%        ("robust to X, sensitive to Y"), not a hyperparameter dump.
+%        mode (per-residue vs per-sample), alignment-layer choice. Frame
+%        as a stability claim ("robust to X, sensitive to Y"), not a
+%        hyperparameter dump.
+%        DEFERRED 2026-05-20: combination mode (additive vs trade-off) --
+%        revisit if data warrants. Must also stay dropped from §2.2 knob
+%        list to keep the two sections aligned.
 %  - 7.7 Seed variance and scale dependence.
 %        n=128 / n=256 / AFDB regime -- does the effect persist across
 %        data regimes?
@@ -660,6 +933,19 @@ Jonathan Ho, Ajay Jain, Pieter Abbeel.
 Yaron Lipman, Ricky T.~Q.~Chen, Heli Ben-Hamu, Maximilian Nickel, Matt Le.
 \textit{Flow Matching for Generative Modeling}. ICLR 2023.
 \href{https://arxiv.org/abs/2210.02747}{arXiv:2210.02747}.
+
+\bibitem{FMIntroLectures}
+Peter Holderrieth and Ezra Erives.
+\textit{An Introduction to Flow Matching and Diffusion Models}.
+MIT 6.S184 lecture notes, 2025.
+% TODO verify canonical URL / citation form -- placeholder below
+\href{https://diffusion.csail.mit.edu/}{diffusion.csail.mit.edu}.
+
+\bibitem{FMGuide}
+Yaron Lipman, Marton Havasi, Peter Holderrieth, Neta Shaul, Matt Le, Brian Karrer, Ricky T.~Q.~Chen, David Lopez-Paz, Heli Ben-Hamu, Itai Gat.
+\textit{Flow Matching Guide and Code}. 2024.
+% TODO verify arXiv ID -- best guess below
+\href{https://arxiv.org/abs/2412.06264}{arXiv:2412.06264}.
 
 % --- Representation alignment line ---
 
@@ -753,6 +1039,13 @@ Claudio Zeni et al.
 \textit{Nature} 639 (2025), pp.~624--632.
 \href{https://doi.org/10.1038/s41586-025-08628-5}{doi:10.1038/s41586-025-08628-5}.
 
+% --- Surveys ---
+
+\bibitem{MoleculeDiffusionSurvey}
+Liang Wang, Chao Song, Zhiyuan Liu, Yu Rong, Qiang Liu, Shu Wu, Liang Wang.
+\textit{Diffusion Models for Molecules: A Survey of Methods and Tasks}. 2025.
+\href{https://arxiv.org/abs/2502.09511}{arXiv:2502.09511}.
+
 % --- Encoders we use as REPA targets ---
 
 \bibitem{ESM2}
@@ -829,6 +1122,11 @@ Luciano Brocchieri and Samuel Karlin.
 Michael M. Bronstein, Joan Bruna, Taco Cohen, Petar Veli\v{c}kovi\'c.
 \textit{Geometric Deep Learning: Grids, Groups, Graphs, Geodesics, and Gauges}. 2021.
 \href{https://arxiv.org/abs/2104.13478}{arXiv:2104.13478}.
+
+\bibitem{HitchhikersGuide}
+Alexandre Duval, Simon V.~Mathis, Chaitanya K.~Joshi, Victor Schmidt, Santiago Miret, Fragkiskos D.~Malliaros, Taco Cohen, Pietro Li\`o, Yoshua Bengio, Michael Bronstein.
+\textit{A Hitchhiker's Guide to Geometric GNNs for 3D Atomic Systems}. 2024.
+\href{https://arxiv.org/abs/2312.07511}{arXiv:2312.07511}.
 
 \bibitem{ThomasTFN}
 Nathaniel Thomas, Tess Smidt, Steven Kearnes, Lusann Yang, Li Li, Kai Kohlhoff, Patrick Riley.
