@@ -366,71 +366,33 @@ support of \ldots [optional]
 % preface in Beat 4 with the working hypothesis left for Ch 8.
 % ==========================================================================
 
-The story of generative machine learning in scientific domains has been a dance between data scale, data quality, and structural priors. Our thesis studies a recent addition to this story, alignment to representations coming from an external encoder, and investigates its effectiveness when applied to molecular generation. We study this technique in two regimes, small molecules and protein backbones, and characterise its utility along two axes. First, does the encoder carry transferable structural information that the generator does not learn from the denoising objective? Second, does the evaluation surface have headroom for any gain to register?
-
-In this introduction, we trace the narrative arc of molecular generation to the point that motivates our thesis: a need for data-efficient modelling techniques that preserve generation quality given the shift towards prior-light model architectures.
+The story of generative machine learning in scientific domains is that of a dance between data scale, data quality, and structural priors. Our report examines a recent addition to this story: \emph{representation alignment}. We study this technique in two regimes for de novo molecular generation — small molecules and protein backbones — and characterise its behaviour. In this introduction, we trace the narrative arc of research trends in molecular generation, and highlight the motivation for our work: the emerging need for data-efficient modelling in a world of prior-light models.
 
 The dominant ideas in generative modelling are \emph{denoising diffusion} and its offshoot \emph{flow-matching}~\cite{DDPM,FlowMatching}, which found breakthrough success in the realm of image generation. This paradigm has since been adapted for de novo design challenges across scientific fields, such as generating protein backbones~\cite{RFdiffusion,Chroma,Proteina}, inorganic materials~\cite{MatterGen}, and drug-like small molecules~\cite{Tabasco}. Training these models is typically expensive in both data and compute, with state-of-the-art image generators routinely training on billions of training examples~\cite{LAION5B}. However, the corpus of available high-quality molecular data sits orders of magnitude below this. Experimental determination is slow and expensive, which means datasets are correspondingly small. For example, protein structure generators have largely been trained on at most half a million structures~\cite{Proteina}, which may explain why they have not yet matched the maturity of their vision-domain counterparts.
 
 Historically, researchers compensated for the small scale of high-quality molecular data by encoding structural priors directly into model architectures~\cite{BronsteinGDL}. SE(3)-equivariant architectures, for example, enforce the rotational and translational symmetries expected of molecules by construction~\cite{ThomasTFN}. But hard structural priors come with a computational cost, and the operations required to encode geometry are a bottleneck to scaling models.
 
-However, a recent wave of work has moved entirely the other way: drop hard priors, use bare-bones non-equivariant transformer stacks, and rely on data scale and augmentation to teach the model what equivariance buys. This shift fits a broader trend in machine learning, across domains, on leveraging representation instead of model architecture to inject soft inductive biases for structured data. Vision Transformers~\cite{ViT} showed that the spatial-locality and translation-equivariance priors of CNNs can be learned rather than imposed, given sufficient scale. Graph Transformers like TokenGT~\cite{TokenGT} have made the same case for graphs. AlphaFold~3~\cite{AlphaFold3} stripped many of the SE(3)-equivariant biases of AlphaFold~2~\cite{AlphaFold2}, replacing the structure module with a diffusion model operating on raw coordinates. Brehmer et al.~\cite{Brehmer2024} make the empirical scaling case directly: more data through a simpler model beats less data through a richer one. Tabasco~\cite{Tabasco} and Proteina~\cite{Proteina}, which are vanilla transformer-based generators for small-molecules and protein backbones respectively, are explicitly designed to facilitate data and model scale.
+A recent wave of research has moved entirely the other way: drop hard priors, use bare-bones non-equivariant transformer stacks, and rely on data scale and augmentation to teach the model what equivariance buys. This shift fits a broader trend in machine learning on leveraging representation instead of model architecture to inject soft inductive biases for structured data. Vision Transformers~\cite{ViT} showed that the spatial-locality and translation-equivariance priors of convolutional neural nets (CNNs) can be learned rather than imposed, given sufficient scale. Graph Transformers like TokenGT~\cite{TokenGT} have made the same case for graphs. AlphaFold~3~\cite{AlphaFold3} stripped many of the SE(3)-equivariant biases of AlphaFold~2~\cite{AlphaFold2}, replacing the structure module with a diffusion model operating on raw coordinates. Brehmer et al.~\cite{Brehmer2024} make the empirical scaling case directly: more data through a simpler model beats less data through a richer one. In our work, we examine Tabasco~\cite{Tabasco} and Proteina~\cite{Proteina}, which are flow-based generators built on vanilla transformers for small molecules and protein backbones respectively.
 
 Given the difficulty of procuring data in scientific domains, data scale must necessarily come from non-experimental sources, which may be of lower quality. For example, recent efforts in protein generation have leaned on synthetic structures from folding-model predictions~\cite{Proteina,AFDB} to expand training corpora into the tens of millions. However, even these enhanced corpora are arguably insufficient. Metagenomic databases catalogue over two billion natural protein sequences~\cite{MGnify}, and the theoretical sequence space at a median protein length~\cite{BrocchieriKarlin} is hundreds of orders of magnitude greater still. Even at the frontier of the field's data scale, we sample but a sliver of the distribution we wish to model.
 
 In summary, the field has traded hard structural priors for architectural simplicity and curated data for synthetic scale. And yet, this may not be enough. This motivates the need for new techniques that make training still more efficient without sacrificing quality.
 
-But why is training diffusion-transformer architectures expensive in the first place? One answer comes from Yu et al.~\cite{REPA}, who argue that these models suffer from a \emph{representation bottleneck}. During training, the model is implicitly asked to learn two distinct tasks simultaneously: (1) representation, learning a semantically meaningful representation of complex data; and (2) generation, learning how to construct data from that representation. The standard denoising objective alone may not provide sufficient signal for representation learning, leading to slow convergence and the large training budgets we see in practice.
+But why is training diffusion-transformer architectures expensive in the first place? One answer comes from Yu et al.~\cite{REPA}, who argue that these models suffer from a \emph{representation bottleneck}. During training, a model is implicitly asked to learn two distinct tasks simultaneously: (1) representation: extracting semantically meaningful encodings from complex data; and (2) generation: constructing data from these encodings. The standard denoising objective alone may not provide sufficient signal for representation learning, leading to slow convergence and the large training budgets these models require in practice.
 
 Yu et al.~propose Representation Alignment (REPA) as a remedy. The technique adds a regularisation term that aligns a generator's intermediate hidden states with the embeddings of a frozen pretrained encoder. On image diffusion, they report roughly a $17.5\times$ training speed-up against a strong baseline. REPA has since been extended beyond images to video~\cite{VideoREPA}, audio~\cite{TARO}, and recently to molecular generation~\cite{REED,BoltzREPA}. However, whether REPA's gains transfer to molecular settings, and why, remain uncharacterised.
 
-In this vein, the goal of our report is to contribute methodological insights about representation learning in molecular generative models. The core question we investigate is: \emph{can these models benefit, in terms of training efficiency and generation quality, from representation alignment with pre-trained models?} We aim to characterise when and why this works or does not, including failure modes and limitations. We note that this question is especially intere
+In this light, the core question we investigate in this report is: \emph{can prior-light molecular generation models benefit from representation alignment with pre-trained models, in training efficiency and generation quality?} We aim to characterise when and why this works, including failure modes and limitations.
 
-The report contributes three pieces of work.
+Our report documents two lines of enquiry.
 \begin{itemize}
-  \item[(i)] An encoder-profiling framework characterising candidate
-        encoders along three axes --- information content, reachability,
-        and trainability --- applied to seven candidate encoders across
-        protein and small-molecule domains. The framework operationalises
-        encoder quality in domain-agnostic statistical terms (effective
-        rank, linear-probe recoverability), complementing but not
-        duplicating the vision-specific structural metrics proposed by
-        Singh et al.~\cite{SpatialStructure}.
-  \item[(ii)] Paired empirical studies of REPA on two flow-based
-        molecular generators: Tabasco~\cite{Tabasco} for small molecules,
-        and Proteina~\cite{Proteina} for unconditional protein backbone
-        generation. The studies include ablations over alignment-layer
-        choice, projector depth, averaging mode, loss weight, and
-        combination mode, alongside convergence sweeps and seed-variance
-        analysis.
-  \item[(iii)] A characterisation of what governs REPA's effectiveness
-        in molecular generation, framed through the three under-explored
-        axes identified above --- encoder choice, evaluation-surface
-        headroom, and a domain-general analogue of the structural
-        encoder-quality argument. We offer this characterisation as a
-        working framework with encoder-selection heuristics for future
-        domains.
+  \item[(i)] \emph{Does REPA work in this domain?}: We conduct empirical studies on training flow-based molecular generator architectures with REPA in two molecular generation regimes: Tabasco~\cite{Tabasco} for small molecules, and Proteina~\cite{Proteina} for protein backbones. We find that REPA does not measurably improve Tabasco, but it improves training efficiency and advances the generation quality envelope for Proteina.
+  \item[(ii)] \emph{When does REPA work?}: Following Singh et al.~\cite{SpatialStructure} in the realm of image generation, we develop a profiling framework to characterise the suitability of an encoder as a representation target. We measure three properties of an encoder: (1) an upper bound on the structural information it contains (linear-probe recoverability against domain structural labels); (2) a lower bound on what a projector can transfer from that information (projector-based recoverability); (3) the geometric conditioning of its embeddings for the alignment objective (effective rank).
 \end{itemize}
 
-We do not propose a new model architecture, alignment loss, or
-evaluation metric. We do not establish the conditions under which REPA
-helps as universally necessary or sufficient: our two studies amount to
-one regime in which the conditions are weak and REPA does not visibly
-help, and one in which they are met alongside other favourable factors
-and REPA does help. That is consistent with the framework, but it is
-not a controlled experiment over the conditions themselves.
+We do not propose a new architecture, alignment loss, or evaluation metric, and our two studies are not a controlled experiment over the conditions that govern REPA's effectiveness. Instead, they are best read as paired case studies in regimes where those conditions differ.
 
-The remainder of the report is organised as follows. Chapter~2 sets out
-the background needed to read the rest: flow matching, REPA, and the
-parameterisations we use for small molecules and proteins. Chapter~3
-places the work in context, covering the scaling-over-priors trend in
-structural biology and the recent literature on representation
-alignment in and out of vision. Chapter~4 discusses what it means for
-a generation to be ``good'' in each domain, and the tensions that
-question hides. Chapter~5 develops the encoder-profiling framework and
-uses it to predict where REPA should and should not help. Chapters~6
-and~7 present the two paired studies, small molecules first and protein
-backbones second. Chapter~8 brings the evidence together.
+The remainder of the report is organised as follows. Chapter~2 sets out the background needed to read the rest: flow matching, REPA, and the parameterisations we use for small molecules and proteins. Chapter~3 places the work in context, covering the scaling-over-priors trend in structural biology and the recent literature on representation alignment. Chapter~4 discusses what it means for a generative model to be ``good'' in our domain, and the tensions that question hides. Chapter~5 develops the encoder-profiling framework and uses it to predict where REPA should and should not help. Chapters~6 and~7 present the two paired studies, small molecules first and protein backbones second. Finally, we conclude in Chapter~8 with a discussion of whether what we learn generalises beyond molecular generation.
 
 \chapter{Background}
 
