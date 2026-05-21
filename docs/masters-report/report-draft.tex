@@ -780,12 +780,12 @@ The final training objective is the flow-matching loss from \S2.1 plus this term
   \mathcal{L} \,=\, \mathcal{L}_{\text{FM}} \,+\, \lambda\, \mathcal{L}_{\text{REPA}}.
 \]
 
-This construction exposes several design knobs, whose effects we revisit in the ablations of Chapter~7:
+This construction exposes several design choices, whose effects we revisit in the ablations of Chapter~7:
 \begin{itemize}
   \item The choice of encoder $f_{\text{enc}}$. Different encoders capture distinct aspects of the data distribution.
   \item The alignment layer $\ell$ at which we attach the projector. The optimal choice is not obvious a priori. Yu et al. experimentally determined that mid-network layers work best for image diffusion, but this may not hold in the molecular setting.
   \item The alignment-loss weight $\lambda$, which balances the alignment signal against the generative objective.
-  \item The averaging mode. Averaging tokens within each sample first weights every molecule equally, while pooling tokens across the batch gives larger molecules proportionally more influence.
+  \item The averaging mode. Averaging tokens within each sample first weights every molecule equally, while pooling tokens across the batch gives larger molecules proportionally more REPA signal.
   \item The choice of similarity metric $\operatorname{sim}$. Yu et al.\ compared cosine similarity and mean-squared error for image diffusion and found cosine more effective, a result we corroborate in the molecular setting.
 \end{itemize}
 
