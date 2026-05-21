@@ -738,7 +738,7 @@ For a more complete treatment of flow matching, we refer the reader to Lipman et
 \node[block, frozen] (fenc) at (4.3, -5.8) {Encoder $f_{\text{enc}}$ \\ (frozen)};
 \node[lbl] (temb) at (7.3, -5.8) {$f_{\text{enc}}(x_1)$};
 % Convergence: cosine similarity -> REPA loss
-\node[small] (cos) at (7.3, -4.5) {cos sim};
+\node[small] (cos) at (7.3, -4.5) {sim};
 \node[loss] (lrepa) at (9.4, -4.5) {$\mathcal{L}_{\text{REPA}}$};
 % Combined objective
 \node[draw, rounded corners=2pt, inner sep=5pt, font=\small\bfseries, align=center]
@@ -761,19 +761,19 @@ For a more complete treatment of flow matching, we refer the reader to Lipman et
 \draw[arr] (lfm) -| (ltotal);
 \draw[arr] (lrepa) -| (ltotal);
 \end{tikzpicture}
-\caption{The REPA construction. A noised sample $x_t = (1-t)x_0 + t\,x_1$ is constructed at each training step from a noise sample $x_0$, a clean data sample $x_1$, and a sampled timestep $t \in [0,1]$. The generator $v_\theta$ processes $x_t$ through its sequence of layers $\ell_1, \ldots, \ell_L$ to produce the velocity field that feeds the flow-matching loss $\mathcal{L}_{\text{FM}}$. Separately, the clean sample $x_1$ is also passed through a frozen pretrained encoder $f_{\text{enc}}$ (shaded). The generator's hidden state $z_\ell$ at the chosen alignment layer is mapped into the encoder's feature space by a trainable projector $h_\phi$; the REPA loss $\mathcal{L}_{\text{REPA}}$ is the negated cosine similarity between $h_\phi(z_\ell)$ and $f_{\text{enc}}(x_1)$, averaged across tokens. The total training loss $\mathcal{L}$ combines them with weight $\lambda$.}
+\caption{The REPA construction. A noised sample $x_t = (1-t)x_0 + t\,x_1$ is constructed at each training step from a noise sample $x_0$, a clean data sample $x_1$, and a sampled timestep $t \in [0,1]$. The generator $v_\theta$ processes $x_t$ through its sequence of layers $\ell_1, \ldots, \ell_L$ to produce the velocity field that feeds the flow-matching loss $\mathcal{L}_{\text{FM}}$. Separately, the clean sample $x_1$ is also passed through a frozen pretrained encoder $f_{\text{enc}}$ (shaded). The generator's hidden state $z_\ell$ at the chosen alignment layer is mapped into the encoder's feature space by a trainable projector $h_\phi$; the REPA loss $\mathcal{L}_{\text{REPA}}$ is the negated similarity between $h_\phi(z_\ell)$ and $f_{\text{enc}}(x_1)$, averaged across tokens. The total training loss $\mathcal{L}$ combines them with weight $\lambda$.}
 \label{fig:repa-construction}
 \end{figure}
 
 Chapter~1 introduced the argument made by Yu et al.~\cite{REPA} about the \emph{representation bottleneck} in diffusion-transformer models. Their analysis applies to flow-matching models as well, given the equivalence between the two training objectives discussed above (\S2.1). The flow-matching objective also implicitly asks a model to learn two things at once: a useful representation of the data, and a noise-to-data velocity field that interprets this representation. This twin burden, they argue, contributes to slow convergence and large training budgets.
 
-Their proposed solution, Representation Alignment (REPA), addresses the first half of this burden by adding a regularisation term to the training loss. Figure~\ref{fig:repa-construction} shows the construction. The regularisation pulls $z_\ell$, the generator's intermediate hidden state at a chosen \emph{alignment layer} $\ell$, towards the embeddings produced by a frozen pretrained encoder $f_{\text{enc}}$ run on the clean data sample $x_1$. $z_\ell$ is a sequence of $N$ token vectors, corresponding to image patches in the original setting, and atoms or residues in the molecular domains we study (\S2.3). A small trainable \emph{projector head} $h_\phi$ --- a three-layer multi-layer perceptron (MLP) in the original paper --- maps $z_\ell$ into the encoder's feature space, so that $h_\phi(z_\ell)$ and $f_{\text{enc}}(x_1)$ can be compared. Crucially, this alignment is asymmetric: gradients update only the generator parameters $\theta$ and the projector $\phi$, never the encoder. Information thus flows one way, from the pretrained encoder into the generator's hidden representations.
+Their proposed solution, Representation Alignment (REPA), addresses the first half of this burden by adding a regularisation term to the training loss. Figure~\ref{fig:repa-construction} shows the construction. The regularisation pulls $z_\ell$, the generator's intermediate hidden state at a chosen \emph{alignment layer} $\ell$, towards the embeddings produced by a frozen pretrained encoder $f_{\text{enc}}$ run on the clean data sample $x_1$. The hidden state $z_\ell$ is a sequence of $N$ token vectors. In the context of images, each token represents an image patch; in the molecular setting, each token represents an atom or residue that is part of the larger molecule (\S2.3). A small trainable \emph{projector head} $h_\phi$ --- a three-layer multi-layer perceptron (MLP) in the original paper --- maps $z_\ell$ into the encoder's feature space, so that $h_\phi(z_\ell)$ and $f_{\text{enc}}(x_1)$ can be compared. This alignment is asymmetric: gradients update only the generator parameters $\theta$ and the projector $\phi$, while the encoder provides a fixed alignment target throughout training. Information thus flows one way, from the pretrained encoder into the generator's hidden representations.
 
-We follow the original paper in using cosine similarity --- Yu et al.\ compared cosine and mean-squared error for image diffusion and found cosine more effective, a result we corroborate in the molecular setting (Chapter~7). The alignment loss is then the negated cosine similarity between projected and target embeddings, averaged jointly over training samples and tokens:
+The alignment loss is the negated similarity, averaged token-wise between projected and target embeddings:
 \[
-  \mathcal{L}_{\text{REPA}} \,=\, -\, \mathbb{E}_{t,\, x_0,\, x_1} \left[ \frac{1}{N} \sum_{n=1}^{N} \cos\bigl( h_\phi(z_\ell)_n,\, f_{\text{enc}}(x_1)_n \bigr) \right].
+  \mathcal{L}_{\text{REPA}} \,=\, -\, \mathbb{E}_{t,\, x_0,\, x_1} \left[ \frac{1}{N} \sum_{n=1}^{N} \operatorname{sim}\bigl( h_\phi(z_\ell)_n,\, f_{\text{enc}}(x_1)_n \bigr) \right],
 \]
-In the image setting $N$ is fixed across the dataset, so this inner average is equivalent to averaging across all tokens in the minibatch. For molecular data, where $N$ varies per sample, the two diverge: averaging tokens within each sample first weights every molecule equally, while pooling tokens across the batch gives larger molecules proportionally more influence. We return to this distinction in the design knobs below.
+where $n$ indexes the $N$ tokens within a sample. In the image setting, $N$ is constant across the dataset, so this token-wise average is equivalent to averaging similarities once per sample and then across the batch --- the original paper draws no distinction between the two. For molecular data, where $N$ varies per sample, the two diverge. We return to this distinction in the design knobs below.
 
 The final training objective is the flow-matching loss from \S2.1 plus this term, scaled by a weight $\lambda$:
 \[
@@ -782,13 +782,15 @@ The final training objective is the flow-matching loss from \S2.1 plus this term
 
 This construction exposes several design knobs, whose effects we revisit in the ablations of Chapter~7:
 \begin{itemize}
-  \item The choice of encoder $f_{\text{enc}}$, as different encoders may capture distinct aspects of the data distribution.
-  \item The alignment layer $\ell$ at which we attach the projector. The right choice is not obvious a priori. The original REPA paper experimentally determined that mid-network layers work best for image diffusion, and we investigate this in the context of molecular generators.
+  \item The choice of encoder $f_{\text{enc}}$. Different encoders capture distinct aspects of the data distribution.
+  \item The alignment layer $\ell$ at which we attach the projector. The optimal choice is not obvious a priori. Yu et al. experimentally determined that mid-network layers work best for image diffusion, but this may not hold in the molecular setting.
   \item The alignment-loss weight $\lambda$, which balances the alignment signal against the generative objective.
-  \item The averaging mode. The equation above is the \emph{per-sample} form: cosine similarities are averaged within each sample (the $1/N$ factor) before the expectation across samples. The alternative \emph{per-token} form weights each token equally across the batch, giving larger molecules more influence.
+  \item The averaging mode. Averaging tokens within each sample first weights every molecule equally, while pooling tokens across the batch gives larger molecules proportionally more influence.
+  \item The choice of similarity metric $\operatorname{sim}$. Yu et al.\ compared cosine similarity and mean-squared error for image diffusion and found cosine more effective, a result we corroborate in the molecular setting.
 \end{itemize}
 
 In this report, we adopt REPA in its original form: cosine similarity, additive combination with the flow-matching loss, and a frozen encoder. A growing family of variants relaxes one or more of these choices --- for example, encoder-free dispersive regularisers~\cite{DiffuseDisperse} that drop the external encoder entirely, or joint-training extensions that fine-tune the encoder alongside the generator. We defer their discussion to Chapter~3.
+
 
 \chapter{Related work}
 
