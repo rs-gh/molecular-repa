@@ -223,6 +223,7 @@ Write a summary of the whole thing. Make sure it fits on one page.
 % ==========================================================================
 
 \chapter{Introduction}
+\label{ch:intro}
 
 \label{firstcontentpage} % start page count here
 
@@ -372,19 +373,25 @@ Write a summary of the whole thing. Make sure it fits on one page.
 
 The evolution of generative machine learning in scientific domains is defined by the tension between data scale, data quality, and structural priors. Our report examines a recent addition to this story in \emph{representation alignment}. We study this technique in two regimes for de novo molecular generation --- small molecules and protein backbones --- and characterise its behaviour. In this introduction, we trace the narrative arc of research trends in molecular generation, and highlight the motivation for our work: the emerging need for data-efficient modelling in a world of prior-light models.
 
+\section{A history of trade-offs: scale, quality, and priors}
+
 The dominant ideas in generative modelling are \emph{denoising diffusion} and its offshoot \emph{flow matching}~\cite{DDPM,FlowMatching}, which found breakthrough success in the realm of image generation. This paradigm has since been adapted for de novo design challenges across scientific fields, such as generating protein backbones~\cite{RFdiffusion,Chroma,Proteina}, inorganic materials~\cite{MatterGen}, and drug-like small molecules~\cite{Tabasco}. Training these models is typically expensive in both data and compute, with state-of-the-art image generators routinely training on billions of examples~\cite{LAION5B}. However, the corpus of available high-quality molecular data sits orders of magnitude below this. Experimental determination is slow and expensive, which means datasets are correspondingly small. For example, protein structure generators have largely been trained on at most half a million structures~\cite{Proteina}, which may explain why they have not yet matched the maturity of their vision-domain counterparts.
 
 Historically, researchers compensated for the small scale of high-quality molecular data by encoding structural priors directly into model architectures~\cite{BronsteinGDL}. SE(3)-equivariant architectures, for example, enforce the rotational and translational symmetries expected of molecules by construction~\cite{ThomasTFN}. But hard structural priors come with a computational cost, and the operations required to encode geometry are a bottleneck to scaling models.
 
-A recent wave of research has moved entirely the other way: drop hard priors, use bare-bones non-equivariant transformer stacks, and rely on data scale and augmentation to teach the model what equivariance buys. This shift fits a broader trend in machine learning on leveraging representation instead of model architecture to inject soft inductive biases for structured data. Vision Transformers~\cite{ViT} showed that the spatial-locality and translation-equivariance priors of convolutional neural nets (CNNs) can be learned rather than imposed, given sufficient scale. Graph Transformers like TokenGT~\cite{TokenGT} have made the same case for graphs. AlphaFold~3~\cite{AlphaFold3} stripped many of the SE(3)-equivariant biases of AlphaFold~2~\cite{AlphaFold2}, replacing the structure module with a diffusion model operating on raw coordinates. Brehmer et al.~\cite{Brehmer2024} make the empirical scaling case directly: more data through a simpler model beats less data through a richer one. In our work, we examine Tabasco~\cite{Tabasco} and Proteina~\cite{Proteina}, which are flow-based generators built on vanilla transformers for small molecules and protein backbones respectively.
+A recent wave of research has moved entirely the other way: drop hard priors, use bare-bones non-equivariant transformer stacks, and rely on data scale and augmentation to teach the model what equivariance buys. This shift fits a broader trend in machine learning on leveraging representation instead of model architecture to inject soft inductive biases for structured data. Vision Transformers~\cite{ViT} showed that the spatial-locality and translation-equivariance priors of convolutional neural nets (CNNs) can be learned rather than imposed, given sufficient scale. Graph Transformers like TokenGT~\cite{TokenGT} have made the same case for graphs. AlphaFold~3~\cite{AlphaFold3} stripped many of the SE(3)-equivariant biases of AlphaFold~2~\cite{AlphaFold2}, replacing the structure module with a diffusion model operating on raw coordinates. Brehmer et al.~\cite{Brehmer2024} make the empirical scaling case directly: more data through a simpler model beats less data through a richer one. In our work, we examine Tabasco~\cite{Tabasco} and Proteina~\cite{Proteina}, which are flow-based generators built on largely vanilla transformers for small molecules and protein backbones respectively.
 
 Given the difficulty of procuring data in scientific domains, data scale must necessarily come from non-experimental sources, which may be of lower quality. For example, recent efforts in protein generation have leaned on synthetic structures from folding-model predictions~\cite{Proteina,AFDB} to expand training datasets into the tens of millions. However, even these enhanced corpora are arguably insufficient. Metagenomic databases catalogue over two billion natural protein sequences~\cite{MGnify}, and the theoretical sequence space at a median protein length~\cite{BrocchieriKarlin} is hundreds of orders of magnitude greater still. Even at the frontier of the field's data scale, we sample but a sliver of the distribution we wish to model.
 
 In summary, the field has traded hard structural priors for architectural simplicity, and curated data for synthetic scale. However, this trade-off dilutes the structural signal available to a model. Furthermore, even our best attempts at creating large datasets may not be large enough. These twin challenges amplify the need for techniques that make training still more efficient without sacrificing quality.
 
+\section{Representation alignment}
+
 But why is training diffusion-transformer architectures expensive in the first place? One answer comes from Yu et al.~\cite{REPA}, who argue that these models suffer from a \emph{representation bottleneck}. During training, a model is implicitly asked to learn two distinct tasks simultaneously: (1) representation: extracting semantically meaningful encodings from complex data; and (2) generation: constructing data from these encodings. The standard denoising objective alone may not provide sufficient signal for representation learning, leading to slow convergence and the large training budgets these models require in practice. In the context of molecular generation, this representation burden is compounded by the twin challenges outlined above. Models are now forced to encode complex structural geometry from data that is vastly smaller than the true underlying distribution, all while operating without the aid of architectural priors.
 
 Yu et al.~propose Representation Alignment (REPA) as a remedy. The technique adds a regularisation term that aligns a generator's intermediate hidden states with the embeddings of a frozen pretrained encoder. On image diffusion, they report roughly a $17.5\times$ training speed-up against a strong baseline. REPA has since been extended beyond images to video~\cite{VideoREPA}, audio~\cite{TARO}, and recently to molecular generation~\cite{REED,BoltzREPA}. However, whether REPA's gains transfer to molecular settings, and why, remain uncharacterised.
+
+\section{Contributions}
 
 In this light, the core question we investigate in this report is: \emph{can prior-light molecular generation models benefit from representation alignment with pre-trained models, in training efficiency and generation quality?} We aim to characterise when and why this works, including failure modes and limitations.
 
@@ -394,11 +401,12 @@ Our report documents two lines of enquiry.
   \item[(ii)] \emph{When does REPA work?}: Following Singh et al.~\cite{SpatialStructure} in the realm of image generation, we develop a profiling framework to characterise the suitability of an encoder as a representation target. We measure three properties of an encoder: (1) an upper bound on the structural information it contains (linear-probe recoverability against domain structural labels); (2) a lower bound on what a projector can transfer from that information (projector-based recoverability); (3) the geometric conditioning of its embeddings for the alignment objective (effective rank).
 \end{itemize}
 
-We do not propose a new architecture, alignment loss, or evaluation metric, and our two studies are not a controlled experiment over the conditions that govern REPA's effectiveness. Instead, they are best read as paired case studies in regimes where those conditions differ.
+We do not propose a new architecture or alignment loss, and our two studies are not a controlled experiment over the conditions that govern REPA's effectiveness. Instead, they are best read as paired case studies in regimes where those conditions differ.
 
-The remainder of this report is organised as follows. Chapter~2 sets out the background needed to read the rest: flow matching, REPA, and the parameterisations we use for small molecules and proteins. Chapter~3 places the work in context, covering the scaling-over-priors trend in structural biology and the recent literature on representation alignment. Chapter~4 discusses what it means for a generative model to be ``good'' in our domain, and the tensions that question hides. Chapter~5 develops the encoder-profiling framework and uses it to predict where REPA may and may not help. Chapters~6 and~7 present the two paired studies, small molecules first and protein backbones second. Finally, we conclude in Chapter~8 with a discussion of whether what we learn generalises beyond molecular generation.
+The remainder of this report is organised as follows. Chapter~\ref{ch:background} sets out the background and context needed to read the rest: flow matching, REPA, molecular generation. Chapter~\ref{ch:evaluation} discusses what it means for a generative model to be ``good'' in our domain, and the tensions that question hides. Chapter~\ref{ch:profiling} develops the encoder-profiling framework and uses it to predict where REPA may and may not help. Chapters~\ref{ch:tabasco-study} and~\ref{ch:proteina-study} present the two paired studies, small molecules first and protein backbones second. Finally, we conclude in Chapter~\ref{ch:conclusions} with a discussion of whether what we learn generalises beyond molecular generation.
 
-\chapter{Background}
+\chapter{Background and Related Work}
+\label{ch:background}
 
 % Q:  What does the reader need to know before the rest of the report?
 % A:  Flow matching as a generative paradigm; REPA's loss form and where
@@ -602,64 +610,15 @@ The remainder of this report is organised as follows. Chapter~2 sets out the bac
 %       internal-coord lineage (TODO add bibitem if we keep this pointer
 %       in final prose).
 %
-% --------------------------------------------------------------------------
-% Section 2.4 -- The two model classes (~1.5 pages, SMALL -> LARGE)
-% --------------------------------------------------------------------------
-%
-%   §2.4 SHARED OPENER (one short paragraph before §2.4.1):
-%   Tabasco and Proteina both make the broader move that motivates the
-%   rest of the report -- simple, prior-light transformer architectures
-%   trained on flow matching, designed to scale with data and model size
-%   rather than relying on hand-built structural inductive biases. Both
-%   papers' introductions frame themselves explicitly against the
-%   equivariant lineage they depart from. This shared motivation is why
-%   the two models are useful paired substrates for our REPA study --
-%   the cross-domain comparison varies the data domain while holding
-%   the architectural philosophy approximately fixed.
-%
-%   §2.4.1 -- Tabasco
-%   Q:  What is Tabasco, in just enough detail to read Ch 6?
-%   A:  A non-equivariant transformer flow-matching model for small-
-%       molecule 3D generation. Per-atom token stream with joint
-%       atom-type + position parameterisation. Timestep injected via
-%       adaLN-style conditioning. Trained on GEOM-drugs. Notable for
-%       matching equivariant baselines on physical-quality metrics
-%       despite the prior-light architecture.
-%   NotA (AS PROSE): briefly contrast with the equivariant small-molecule
-%       generators that Tabasco's own introduction distinguishes itself
-%       from -- candidates include EQGAT-diff, MiDi, SemlaFlow. TODO
-%       add bibitems when we pin the comparators in prose.
-%   NotA: not a full architectural reproduction; Tabasco's own ablations
-%       are not our concern; sampling and training tricks are appendix
-%       material.
-%   Citations: \cite{Tabasco,GEOMdrugs}; TODO add bibitems for the
-%       comparator architectures we end up naming.
-%
-%   §2.4.2 -- Proteina
-%   Q:  What is Proteina, in just enough detail to read Ch 7?
-%   A:  A non-equivariant transformer flow-matching model for protein
-%       backbones. Per-residue tokens with continuous CA coordinates.
-%       Augmentation (random rotation) substitutes for SE(3)
-%       equivariance, drawing on the AlphaFold3 lineage. Multi-scale
-%       dataset strategy: trains on PDB and the AFDB at progressively
-%       larger scales. Standard conditioning interfaces (length,
-%       fold-class).
-%   NotA (AS PROSE): briefly contrast with the equivariant / frame-
-%       parameterised protein backbone generators that Proteina's own
-%       introduction distinguishes itself from -- candidates include
-%       RFdiffusion (frame-based, RoseTTAFold backbone equivariance),
-%       FrameFlow (SE(3) flow on frames), Genie (SE(3)-equivariant
-%       diffusion on CA coords). RFdiffusion already in bib; TODO add
-%       bibitems for FrameFlow, Genie when we pin the comparators.
-%   NotA: same caveats as Tabasco -- not reproducing all design choices,
-%       only enough to read the REPA integration in Ch 7.
-%   Citations: \cite{Proteina,AlphaFold3,Brehmer2024,PDB,AFDB,RFdiffusion};
-%       TODO add bibitems for additional comparators (FrameFlow, Genie).
+% Section 2.4 (Tabasco + Proteina model classes) was folded into §2.3.1
+% and §2.3.2 on 2026-05-21. Tabasco's architecture paragraph lives in
+% §2.3.1; Proteina's architecture paragraph lives in §2.3.2; the shared
+% "paired substrates" framing is the closing paragraph of the §2.3 opener.
 
 % ==========================================================================
 % PROSE -- Ch 2 chapter opener + §2.1 revised draft.
 % Ch 2 opener: states the chapter's purpose (what the reader needs to know
-% before the rest of the report), outlines §2.1-§2.4, and notes the
+% before the rest of the report), outlines §2.1-§2.3, and notes the
 % cursory-by-design treatment.
 % §2.1: now opens with a generative-modelling motivation before introducing
 % "velocity" / "transport"; the supervision-intuition paragraph frames the
@@ -667,13 +626,14 @@ The remainder of this report is organised as follows. Chapter~2 sets out the bac
 % conditional move more carefully.
 % ==========================================================================
 
-In this chapter, we introduce the machinery the rest of our report depends on. We outline flow matching (\S2.1), the generative paradigm underlying the models we study, and representation alignment (\S2.2), the regulariser that is our object of study. We then provide some motivating context on small molecules and protein backbones (\S2.3), and discuss how they are typically parameterised for generative machine learning workflows. Finally, we outline Tabasco and Proteina (\S2.4), the two flow-matching backbones we extend in our experiments. The treatment is cursory by design, intended only to guide the reader through this report, and we provide citations for omitted details.
+In this chapter, we introduce the machinery the rest of our report depends on. We outline flow matching (\S\ref{sec:flow-matching}), the generative paradigm underlying the models we study, and representation alignment (\S\ref{sec:repa}), the regulariser that is our object of study. We then provide background on the two molecular domains we work in, small molecules and protein backbones, together with the flow-matching models we extend in our experiments, Tabasco and Proteina (\S\ref{sec:primer}). The treatment is cursory by design. We intend only to guide the reader through this report, and we provide citations for omitted details.
 
 \section{Flow matching}
+\label{sec:flow-matching}
 
 At first glance, the term \emph{generative modelling} implies the problem of \emph{creating} new artefacts from scratch. However, it is perhaps more accurately described as the problem of \emph{sampling} new artefacts from a complex data distribution that can only be accessed through a finite training set. A common strategy here is to fix a simple distribution we can sample from cheaply --- typically standard Gaussian noise $p_0 = \mathcal{N}(0, I)$ --- and learn a mapping from it to the desired data distribution $p_1$.
 
-Flow matching realises this mapping as a continuous-time transport. The model designer defines a \emph{probability path} between a noise sample and a data sample --- a continuous interpolation between them --- and the model learns to carry the noise sample along this path. Concretely, it parameterises a time-dependent \emph{velocity field} $v_\theta(x, t)$ that gives the instantaneous direction of motion at each location $x$ and time $t \in [0, 1]$. At inference, integrating the learned ordinary differential equation (ODE) $\dot{x}_t = v_\theta(x_t, t)$ from $t = 0$ to $t = 1$ pushes a fresh noise sample forward into a fresh data sample.
+Flow matching (FM) realises this mapping as a continuous-time transport. The model designer defines a \emph{probability path} between a noise sample and a data sample --- a continuous interpolation between them --- and the model learns to carry the noise sample along this path. Concretely, it parameterises a time-dependent \emph{velocity field} $v_\theta(x, t)$ that gives the instantaneous direction of motion at each location $x$ and time $t \in [0, 1]$. At inference, integrating the learned ordinary differential equation (ODE) $\dot{x}_t = v_\theta(x_t, t)$ from $t = 0$ to $t = 1$ pushes a fresh noise sample forward into a fresh data sample.
 
 A common choice of probability path is the linear interpolant, $x_t = (1-t)\, x_0 + t\, x_1$ for $x_0 \sim p_0$ and $x_1 \sim p_1$. The model's target is the \emph{marginal} velocity field at $(x, t)$: the average direction of motion over all noise-data pairs whose paths pass through that point. However, supervising this marginal directly is intractable, since the contributing pairs are not known in advance. Flow matching sidesteps this difficulty with a key observation~\cite{FlowMatching}: although the marginal field may be intractable, the \emph{conditional} velocity along the path of any specific noise-data pair is relatively trivial. Indeed, for the linear interpolant, it is simply $\dot{x}_t = x_1 - x_0$. Regressing the model on these conditional velocities, averaged over many sampled pairs, recovers the marginal field in expectation, and gives the training loss as a mean-squared regression:
 \[
@@ -699,6 +659,7 @@ For a more complete treatment of flow matching, we refer the reader to Lipman et
 % ==========================================================================
 
 \section{Representation alignment}
+\label{sec:repa}
 
 \begin{figure}[!t]
 \centering
@@ -765,9 +726,9 @@ For a more complete treatment of flow matching, we refer the reader to Lipman et
 \label{fig:repa-construction}
 \end{figure}
 
-Chapter~1 introduced the argument made by Yu et al.~\cite{REPA} about the \emph{representation bottleneck} in diffusion-transformer models. Their analysis applies to flow-matching models as well, given the equivalence between the two training objectives discussed above (\S2.1). The flow-matching objective also implicitly asks a model to learn two things at once: a useful representation of the data, and a noise-to-data velocity field that interprets this representation. This twin burden, they argue, contributes to slow convergence and large training budgets.
+Chapter~\ref{ch:intro} introduced the argument made by Yu et al.~\cite{REPA} about the \emph{representation bottleneck} in diffusion-transformer models. Their analysis applies to flow-matching models as well, given the equivalence between the two training objectives discussed above (\S\ref{sec:flow-matching}). The flow-matching objective also implicitly asks a model to learn two things at once: a useful representation of the data, and a noise-to-data velocity field that interprets this representation. This twin burden, they argue, contributes to slow convergence and large training budgets.
 
-Their proposed solution, Representation Alignment (REPA), addresses the first half of this burden by adding a regularisation term to the training loss. Figure~\ref{fig:repa-construction} shows the construction. The regularisation pulls $z_\ell$, the generator's intermediate hidden state at a chosen \emph{alignment layer} $\ell$, towards the embeddings produced by a frozen pretrained encoder $f_{\text{enc}}$ run on the clean data sample $x_1$. The hidden state $z_\ell$ is a sequence of $N$ token vectors. In the context of images, each token represents an image patch; in the molecular setting, each token represents an atom or residue that is part of the larger molecule (\S2.3). A small trainable \emph{projector head} $h_\phi$ --- a three-layer multi-layer perceptron (MLP) in the original paper --- maps $z_\ell$ into the encoder's feature space, so that $h_\phi(z_\ell)$ and $f_{\text{enc}}(x_1)$ can be compared. This alignment is asymmetric: gradients update only the generator parameters $\theta$ and the projector $\phi$, while the encoder provides a fixed alignment target throughout training. Information thus flows one way, from the pretrained encoder into the generator's hidden representations.
+Their proposed solution, Representation Alignment (REPA), addresses the first half of this burden by adding a regularisation term to the training loss. Figure~\ref{fig:repa-construction} shows the construction. The regularisation pulls $z_\ell$, the generator's intermediate hidden state at a chosen \emph{alignment layer} $\ell$, towards the embeddings produced by a frozen pretrained encoder $f_{\text{enc}}$ run on the clean data sample $x_1$. The hidden state $z_\ell$ is a sequence of $N$ token vectors. In the context of images, each token represents an image patch; in the molecular setting, each token represents an atom or residue that is part of the larger molecule (\S\ref{sec:primer}). A small trainable \emph{projector head} $h_\phi$ --- a three-layer multi-layer perceptron (MLP) in the original paper --- maps $z_\ell$ into the encoder's feature space, so that $h_\phi(z_\ell)$ and $f_{\text{enc}}(x_1)$ can be compared. This alignment is asymmetric: gradients update only the generator parameters $\theta$ and the projector $\phi$, while the encoder provides a fixed alignment target throughout training. Information thus flows one way, from the pretrained encoder into the generator's hidden representations.
 
 The alignment loss is the negated similarity, averaged token-wise between projected and target embeddings:
 \[
@@ -775,24 +736,108 @@ The alignment loss is the negated similarity, averaged token-wise between projec
 \]
 where $n$ indexes the $N$ tokens within a sample. In the image setting, $N$ is constant across the dataset, so this token-wise average is equivalent to averaging similarities once per sample and then across the batch --- the original paper draws no distinction between the two. For molecular data, where $N$ varies per sample, the two diverge. We return to this distinction in the design knobs below.
 
-The final training objective is the flow-matching loss from \S2.1 plus this term, scaled by a weight $\lambda$:
+The final training objective is the flow-matching loss from \S\ref{sec:flow-matching} plus this term, scaled by a weight $\lambda$:
 \[
   \mathcal{L} \,=\, \mathcal{L}_{\text{FM}} \,+\, \lambda\, \mathcal{L}_{\text{REPA}}.
 \]
 
-This construction exposes several design choices, whose effects we revisit in the ablations of Chapter~7:
+This construction exposes several design choices, some of whose effects we revisit in the ablations of Chapter~\ref{ch:proteina-study}:
 \begin{itemize}
-  \item The choice of encoder $f_{\text{enc}}$. Different encoders capture distinct aspects of the data distribution.
-  \item The alignment layer $\ell$ at which we attach the projector. The optimal choice is not obvious a priori. Yu et al. experimentally determined that mid-network layers work best for image diffusion, but this may not hold in the molecular setting.
-  \item The alignment-loss weight $\lambda$, which balances the alignment signal against the generative objective.
+  \item The choice of encoder $f_{\text{enc}}$. Different encoders may capture distinct aspects of the data distribution.
+  \item The alignment layer $\ell$ at which we attach the projector. Yu et al. experimentally determined that mid-network layers work best for image diffusion, but the optimal choice is not obvious a priori.
+  \item The alignment-loss weight $\lambda$, which balances the alignment signal against the generative objective. Once again, Yu et al. experimentally determined an optimal value of $0.5$ for image diffusion, but this may not hold universally.
+  \item The choice of similarity metric $\operatorname{sim}$. Yu et al.\ compared cosine similarity and mean-squared error for image diffusion, and found the former more effective. We adopt cosine similarity in this report as well.
   \item The averaging mode. Averaging tokens within each sample first weights every molecule equally, while pooling tokens across the batch gives larger molecules proportionally more REPA signal.
-  \item The choice of similarity metric $\operatorname{sim}$. Yu et al.\ compared cosine similarity and mean-squared error for image diffusion and found cosine more effective, a result we corroborate in the molecular setting.
 \end{itemize}
 
-In this report, we adopt REPA in its original form: cosine similarity, additive combination with the flow-matching loss, and a frozen encoder. A growing family of variants relaxes one or more of these choices --- for example, encoder-free dispersive regularisers~\cite{DiffuseDisperse} that drop the external encoder entirely, or joint-training extensions that fine-tune the encoder alongside the generator. We defer their discussion to Chapter~3.
+We adopt the core REPA construction as is from Yu et al., but we note that a growing family of variants, such as encoder-free dispersive regularisers~\cite{DiffuseDisperse}, offer alternative approaches. We defer exploration of these variants to future work.
 
+% ==========================================================================
+% PROSE -- §2.3 opener draft. Pipeline-context framing: generation as one
+% node in a discovery workflow with downstream filtering. LOAD-BEARING for
+% Ch 4 -- this sets up the "metrics as filter-stage proxies" reading.
+% Subsections §2.3.1 (small molecules) and §2.3.2 (proteins) to follow.
+% ==========================================================================
+
+\section{A primer on molecular generation}
+\label{sec:primer}
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[
+    >={Latex[length=2mm]},
+    block/.style={
+        rectangle, draw, rounded corners=2pt,
+        minimum height=22mm, minimum width=30mm,
+        align=center, font=\small
+    },
+    lbl/.style={font=\itshape\small, align=center},
+    arr/.style={-{Latex[length=2mm]}, thick}
+]
+% Four stages of the design cycle
+\node[block] (spec) at (0, 0) {\textbf{Specification}\\\footnotesize{target, motif,}\\\footnotesize{fold class,}\\\footnotesize{drug-likeness}};
+\node[block] (gen) at (4.2, 0) {\textbf{Generation}\\\footnotesize{Tabasco /}\\\footnotesize{Proteina}\\\footnotesize{($\sim 10^3$+)}};
+\node[block] (filt) at (8.4, 0) {\textbf{In silico filters}\\\footnotesize{validity,}\\\footnotesize{diversity,}\\\footnotesize{designability}};
+\node[block] (lab) at (12.6, 0) {\textbf{Wet-lab assay}\\\footnotesize{synthesis or}\\\footnotesize{expression,}\\\footnotesize{in vitro/vivo}};
+% Forward arrows
+\draw[arr] (spec) -- (gen);
+\draw[arr] (gen) -- (filt);
+\draw[arr] (filt) -- (lab);
+% Feedback loop curving below
+\draw[arr] (lab.south) .. controls (12.6, -2.6) and (0, -2.6) .. (spec.south);
+\node[lbl] at (6.3, -2.4) {feedback (next round)};
+\end{tikzpicture}
+\caption{The de novo molecular design cycle. An upstream specification drives a generative model to produce a candidate pool, which is funnelled through in silico filters and then synthesised (or expressed) and assayed in the wet lab. Experimental results feed back into the next round of generation. Typical generation-step pool sizes are in the thousands to tens of thousands of candidates per round~\cite{RFdiffusion}.}
+\label{fig:design-cycle}
+\end{figure}
+
+To contextualise our report, we provide a brief primer on the role generative models play within the broader de novo molecular design pipeline. Generative models are rarely intended to produce ready-to-use artefacts. Instead, they act as high-throughput in silico proposal engines in an iterative process of refinement and selection. This process, often called a \emph{design campaign}~\cite{Schneider2018}, is summarised in Figure~\ref{fig:design-cycle}.
+
+An upstream specification --- such as a target binding site, a motif to scaffold, a fold class, or a drug-likeness profile --- drives a generative model to produce a candidate pool: typically thousands to tens of thousands of candidates per round, in both small-molecule and protein-backbone domains~\cite{RFdiffusion}. (We offer an introduction to small molecules and proteins in \S\ref{sec:small-mol} and \S\ref{sec:protein} respectively.) The pool is funnelled through in silico filters: for small molecules these typically include structural validity and physical plausibility~\cite{PoseBusters}, drug-likeness~\cite{QED}, and target docking; for protein backbones, designability and structural diversity are the dominant considerations~\cite{Proteina}. The select few survivors are synthesised in the laboratory or procured from vendor libraries (small molecules), or expressed in genetically engineered cell lines (proteins), and evaluated using in vitro or in vivo assays. Experimental results feed back into the next round of generation.
+
+This pipeline framing is relevant to our discussion of evaluation metrics in Chapter~\ref{ch:evaluation}. Several of the metrics we adopt --- such as structural validity and designability --- are not measures of intrinsic molecular quality, but proxies for specific in silico filter steps.
+
+\section{Paired substrates: Tabasco and Proteina}
+\label{sec:paired-substrates}
+
+The two models we study --- Tabasco~\cite{Tabasco} for small molecules and Proteina~\cite{Proteina} for protein backbones --- are both non-equivariant transformer flow-matching generators. They are explicitly designed to scale with data and model size, rather than relying on structural priors imposed by model architecture. The rotational and translational symmetries expected of 3D molecules are intended to be learned from data and augmentation rather than imposed by construction.
+
+Tabasco is motivated explicitly by the recent success of similar architectures in protein-structure generation like Proteina, setting it apart from equivariant message-passing small-molecule generators such as EQGAT-diff~\cite{EQGATdiff}, MiDi~\cite{MiDi}, and SemlaFlow~\cite{SemlaFlow}. In turn, Proteina is motivated by the pair-bias attention mechanism introduced in AlphaFold~3~\cite{AlphaFold3}, which distinguishes it from SE(3)-equivariant backbone generators such as RFdiffusion~\cite{RFdiffusion}, FrameFlow~\cite{FrameFlow}, and Genie~\cite{Genie}. Despite this architectural minimalism, both achieve performance comparable to equivariant baselines on standard structural-quality evaluations.
+
+% ==========================================================================
+% PROSE -- §2.3.1 first draft. Three beats: definition + Tabasco
+% parameterisation (with GEOM-drugs); use-case/pipeline as prose;
+% alternatives (SMILES/SELFIES, voxels, equivariant point clouds).
+% ==========================================================================
+
+\subsection{Small molecules and Tabasco}
+\label{sec:small-mol}
+
+In medicinal chemistry, a \emph{small molecule} is a drug-like compound at the sub-900-Dalton scale~\cite{NIHSmallMolGuide}. In silico, its structure is typically represented using two coupled features: a discrete \emph{molecular graph} of typed atoms connected by typed bonds, and a continuous \emph{conformer} placing those atoms in 3D Cartesian space. A flow-matching parameterisation must therefore handle both jointly.
+
+Tabasco~\cite{Tabasco} represents each molecule as a sequence of per-atom tokens, each carrying an atom-type embedding and a 3D coordinate, but with no explicit bond decoder. This treats the molecule as a point cloud of typed atoms rather than a graph, sidestepping edge modelling at the cost of having to recover bond structure post hoc from interatomic distances. Tabasco is trained on GEOM-drugs~\cite{GEOMdrugs}, a public dataset of drug-like conformers.
+
+This point-cloud-of-atoms parameterisation is one of several options in the literature, and each makes a different trade-off. \emph{SMILES} and \emph{SELFIES} are string encodings that work well with autoregressive models but discard the 3D conformer entirely; we encounter them later as the substrate for some candidate encoders we evaluate in Chapter~\ref{ch:profiling}. \emph{3D voxel grids} preserve geometry, but lose the discrete graph and inflate the token count by an order of magnitude or more. \emph{Equivariant point clouds}, used by generators such as EQGAT-diff~\cite{EQGATdiff}, MiDi~\cite{MiDi}, and SemlaFlow~\cite{SemlaFlow}, keep both graph and geometry, but pay the computational cost associated with SE(3)-equivariant layers. We refer the reader to Duval et al. \cite{HitchhikersGuide} and Wang et al.\cite{MoleculeDiffusionSurvey} for broader surveys in this space.
+
+% ==========================================================================
+% PROSE -- §2.3.2 first draft. Three beats: definition + CA-trace +
+% Proteina parameterisation (PDB + AFDB); use-case/pipeline (designability
+% via ProteinMPNN -> ESMFold/AlphaFold -> scRMSD); alternatives (sequence-
+% only, full-atom, internal-coordinate, distogram). FrameFlow / Genie cited
+% with placeholder keys -- bibitems still TODO per session-state.
+% ==========================================================================
+
+\subsection{Protein backbones and Proteina}
+\label{sec:protein}
+
+A \emph{protein} is a chain of amino-acid residues, ranging from around 50 to tens of thousands in length~\cite{BritannicaProtein}. (Shorter chains are typically classified as \emph{peptides} instead.) Each amino-acid residue contributes four \emph{backbone} atoms (N, C$_\alpha$, C, O) whose interactions determine the chain's \emph{fold} geometry — which becomes more challenging to model as chain length increases, because the energetic interactions become more complex — and a \emph{side chain} that determines its amino-acid identity.
+
+For the structure-generation problem we study, it is customary to only model the backbone, with sequence identity recovered downstream using a separate \emph{inverse-folding} model such as ProteinMPNN~\cite{ProteinMPNN}. A further compression is the \emph{CA-trace}, which uses only the set of C$_\alpha$ coordinates for every residue to represent the entire protein. This parameterisation retains enough information to recover fold topology and reduces computational cost relative to the more complete representation, which is typically referred to as \emph{all-atom} modelling. Proteina~\cite{Proteina} adops this C$_\alpha$ parameterisation, representing each backbone as a sequence of per-residue tokens carrying continuous C$_\alpha$ Cartesian coordinates. The models reported by Geffner et al. are trained largely on high-confidence synthetic structures from the AlphaFold Database (AFDB)~\cite{AFDB}.
+
+Once again, the CA-trace parameterisation is one of several techniques used in the literature to parameterise proteins in silico. \emph{Sequence-only} models, such as the ESM lineage~\cite{ESM2} and SaProt~\cite{SaProt}, operate on amino-acid identity strings. These models capture rich functional priors, but encode far less infomation on 3D structure. \emph{Full-atom} representations close the gap to physical realism, but add substantial compute cost. \emph{Internal-coordinate} parameterisations, such as torsion angles and oriented residue frames, are SE(3)-equivariant by construction, and form the standard basis for the equivariant generators noted above. However, these architectures have historically bottlenecked scaling. We refer the reader to Notin et al.\cite{NotinProteinDesign} for a broader survey of machine-learning approaches to protein design.
 
 \chapter{Related work}
+\label{ch:related-work}
 
 % Q:  Where does this work sit in the current research conversation?
 % A:  At the intersection of (i) the architectural-priors-vs-scale trend
@@ -822,6 +867,7 @@ In this report, we adopt REPA in its original form: cosine similarity, additive 
 %  - 3.5 What's missing. One-paragraph gap statement -> motivates Ch 5-7.
 
 \chapter{Evaluating molecular generation}
+\label{ch:evaluation}
 
 % Q:  How do we tell whether a generation is "good," and what tensions
 %     does that question hide?
@@ -877,6 +923,7 @@ In this report, we adopt REPA in its original form: cosine similarity, additive 
 %          as a working hypothesis.
 
 \chapter{Encoder targets and profiling}
+\label{ch:profiling}
 
 % Q:  What makes a good REPA target, in domain-agnostic terms?
 % A:  A statistical-properties characterisation (Q1 information content,
@@ -907,6 +954,7 @@ In this report, we adopt REPA in its original form: cosine similarity, additive 
 %        reveal Ch 6/7 results yet -- predictions only.)
 
 \chapter{REPA on small molecules}
+\label{ch:tabasco-study}
 
 % Q:  Does REPA's mechanism, which worked in images, transfer to small-
 %     molecule 3D generation?
@@ -935,6 +983,7 @@ In this report, we adopt REPA in its original form: cosine similarity, additive 
 %        Forward-reference Ch 7 as the contrasting regime.
 
 \chapter{REPA on protein backbones}
+\label{ch:proteina-study}
 
 % Q:  What does REPA do to a flow-based protein backbone generator?
 % A:  (currently-defensible form, will harden or soften with data):
@@ -1001,6 +1050,7 @@ In this report, we adopt REPA in its original form: cosine similarity, additive 
 %        data regimes?
 
 \chapter{Conclusions}
+\label{ch:conclusions}
 
 % Q:  Tying the two studies together, what have we learned about REPA?
 % A:  The two paired studies, viewed through the profiling framework,
@@ -1265,6 +1315,65 @@ Josh Abramson et al.
 Johann Brehmer et al.
 \textit{Does equivariance matter at scale?} NeurIPS 2024.
 \href{https://arxiv.org/abs/2410.23179}{arXiv:2410.23179}.
+
+\bibitem{FrameFlow}
+Jason Yim et al.
+\textit{Fast protein backbone generation with SE(3) flow matching}. 2023.
+\href{https://arxiv.org/abs/2310.05297}{arXiv:2310.05297}.
+
+\bibitem{Genie}
+Yeqing Lin and Mohammed AlQuraishi.
+\textit{Generating Novel, Designable, and Diverse Protein Structures by Equivariantly Diffusing Oriented Residue Clouds}. ICML 2023.
+\href{https://arxiv.org/abs/2301.12485}{arXiv:2301.12485}.
+
+\bibitem{EQGATdiff}
+Tuan Le et al.
+\textit{Navigating the design space of equivariant diffusion-based generative models for de novo 3D molecule generation}. ICLR 2024.
+\href{https://arxiv.org/abs/2309.17296}{arXiv:2309.17296}.
+
+\bibitem{MiDi}
+Clement Vignac et al.
+\textit{MiDi: Mixed Graph and 3D Denoising Diffusion for Molecule Generation}. ECML PKDD 2023.
+\href{https://arxiv.org/abs/2302.09048}{arXiv:2302.09048}.
+
+\bibitem{SemlaFlow}
+Ross Irwin et al.
+\textit{Efficient 3D Molecular Generation with Flow Matching and Scale Optimal Transport}. 2024.
+\href{https://arxiv.org/abs/2406.07266}{arXiv:2406.07266}.
+
+\bibitem{NIHSmallMolGuide}
+National Institutes of Health.
+\textit{Regulatory Knowledge Guide for Small Molecules}. NIH SEED, 2024.
+\href{https://seed.nih.gov/sites/default/files/2024-03/Regulatory-Knowledge-Guide-for-Small-Molecules.pdf}{seed.nih.gov}.
+
+\bibitem{BritannicaProtein}
+Encyclopaedia Britannica.
+\textit{What is the difference between a peptide and a protein?}
+\href{https://www.britannica.com/story/what-is-the-difference-between-a-peptide-and-a-protein}{britannica.com}.
+
+\bibitem{Schneider2018}
+Gisbert Schneider.
+``Automating drug discovery''.
+\textit{Nature Reviews Drug Discovery} 17 (2018), pp.~97--113.
+\href{https://doi.org/10.1038/nrd.2017.232}{doi:10.1038/nrd.2017.232}.
+
+\bibitem{PoseBusters}
+Martin Buttenschoen, Garrett M.~Morris, and Charlotte M.~Deane.
+``PoseBusters: AI-based docking methods fail to generate physically valid poses or generalise to novel sequences''.
+\textit{Chemical Science} 15 (2024), pp.~3130--3139.
+\href{https://arxiv.org/abs/2308.05777}{arXiv:2308.05777}.
+
+\bibitem{QED}
+G.~Richard Bickerton et al.
+``Quantifying the chemical beauty of drugs''.
+\textit{Nature Chemistry} 4 (2012), pp.~90--98.
+\href{https://doi.org/10.1038/nchem.1243}{doi:10.1038/nchem.1243}.
+
+\bibitem{NotinProteinDesign}
+Pascal Notin et al.
+``Machine learning for functional protein design''.
+\textit{Nature Biotechnology} 42 (2024), pp.~216--228.
+\href{https://doi.org/10.1038/s41587-024-02127-0}{doi:10.1038/s41587-024-02127-0}.
 
 \end{thebibliography}
 
