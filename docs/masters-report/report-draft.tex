@@ -115,23 +115,19 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 467
+Main chapters word count: 3840
 
 Methodology used to generate that word count:
-
-[For example:
 
 \begin{quote}
 \begin{verbatim}
 $ make wordcount
 gs -q -dSAFER -sDEVICE=txtwrite -o - \
-   -dFirstPage=6 -dLastPage=11 report-submission.pdf | \
+   -dFirstPage=6 -dLastPage=20 report-draft.pdf | \
 egrep '[A-Za-z]{3}' | wc -w
-467
+3840
 \end{verbatim}
 \end{quote}
-
-]
 
 \end{sffamily}
 
