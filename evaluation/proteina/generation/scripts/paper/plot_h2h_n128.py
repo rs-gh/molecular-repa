@@ -80,6 +80,15 @@ COMPARISONS = [
     {
         "name": "baseline_vs_gearnet_l4",
         "title": "Baseline vs REPA L4 GearNet",
+        "dataset": "PDB",
+        "results_subdir": "n128_convergence_pdb",
+        "fid_suffix": "PDB",
+        "reps_note": _PDB_REPS_NOTE,
+        "families": [_PDB_BASELINE, _PDB_GEAR_L4],
+    },
+    {
+        "name": "baseline_vs_gearnet_l4",
+        "title": "Baseline vs REPA L4 GearNet",
         "dataset": "AFDB",
         "results_subdir": "n128_convergence_afdb",
         "fid_suffix": "AFDB",

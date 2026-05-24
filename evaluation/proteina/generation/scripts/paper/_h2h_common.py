@@ -194,44 +194,66 @@ def _plot_des(rows, comp, fig_out, *, n_label, pretrained_key):
 def _plot_fid(rows, comp, fig_out, *, n_label, pretrained_key):
     ds = comp["dataset"]
     fid_suffix = comp["fid_suffix"]
+    # Cross-dataset reference: every run computes FID/fJSD against BOTH the
+    # PDB and AFDB GearNet feature banks ([inference_fid_60m_baseline.yaml]).
+    # ``fid_suffix`` selects the in-distribution side; ``cross_suffix`` is the
+    # other one. Labelling distinguishes "vs PDB ref" / "vs AFDB ref" so it's
+    # clear which reference each panel is computed against, independent of the
+    # training dataset.
+    cross_suffix = "AFDB" if fid_suffix == "PDB" else "PDB"
     families = comp["families"]
-    n_cols = len(FID_DATASET_METRICS) + len(FS_METRICS)
+    n_cols = max(len(FID_DATASET_METRICS), len(FS_METRICS))
     fig, axes = plt.subplots(
-        nrows=1, ncols=n_cols, figsize=(3.8 * n_cols, 3.8), sharex=False
+        nrows=3, ncols=n_cols, figsize=(3.8 * n_cols, 3.6 * 3), sharex=False
     )
-    for col_i, (suffix, title) in enumerate(FID_DATASET_METRICS):
-        ax = axes[col_i]
-        col = f"_res_{fid_suffix}_{suffix}"
-        for prefix, label, color, ls, marker in families:
-            xs, mu, lo, hi, _ = extract_bands(rows, prefix, col)
-            plot_band(ax, xs, mu, lo, hi, color, ls, marker, label)
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-        ax.set_xlabel("Training step")
-        ax.set_ylabel("value (lower = closer, log y)")
-        ax.set_title(f"{ds} — {title} ↓")
-        style_axes(ax, log_y=True)
-        _overlay_pretrained(ax, col, first_col=(col_i == 0), n_label=pretrained_key)
-        ax.invert_yaxis()  # up = better (FID/fJSD natural direction is lower)
+
+    def _render_fid_row(row_axes, suffix):
+        for col_i, (metric_suffix, title) in enumerate(FID_DATASET_METRICS):
+            ax = row_axes[col_i]
+            col = f"_res_{suffix}_{metric_suffix}"
+            for prefix, label, color, ls, marker in families:
+                xs, mu, lo, hi, _ = extract_bands(rows, prefix, col)
+                plot_band(ax, xs, mu, lo, hi, color, ls, marker, label)
+            ax.set_xscale("log")
+            ax.set_yscale("log")
+            ax.set_xlabel("Training step")
+            ax.set_ylabel("value (lower = closer, log y)")
+            ax.set_title(f"vs {suffix} — {title} ↓")
+            style_axes(ax, log_y=True)
+            _overlay_pretrained(ax, col, first_col=(col_i == 0), n_label=pretrained_key)
+            ax.invert_yaxis()
+        for j in range(len(FID_DATASET_METRICS), len(row_axes)):
+            row_axes[j].set_visible(False)
+
+    _render_fid_row(axes[0], fid_suffix)
+    _render_fid_row(axes[1], cross_suffix)
+
+    # Row 3: fS metrics (encoder-agnostic, no dataset suffix).
     for j, (col, title) in enumerate(FS_METRICS):
-        ax = axes[len(FID_DATASET_METRICS) + j]
+        ax = axes[2][j]
         for prefix, label, color, ls, marker in families:
             xs, mu, lo, hi, _ = extract_bands(rows, prefix, col)
             plot_band(ax, xs, mu, lo, hi, color, ls, marker, label)
         ax.set_xscale("log")
         ax.set_xlabel("Training step")
         ax.set_ylabel("entropy (higher = more coverage)")
-        ax.set_title(f"{ds} — {title} ↑")
+        ax.set_title(f"{title} ↑")
         style_axes(ax)
-        _overlay_pretrained(ax, col, first_col=False, n_label=pretrained_key)
+        _overlay_pretrained(ax, col, first_col=(j == 0), n_label=pretrained_key)
+    for j in range(len(FS_METRICS), n_cols):
+        axes[2][j].set_visible(False)
+
     fig.suptitle(
-        f"{n_label} {ds} head-to-head — {comp['title']} (FID / fJSD / fS)\n"
+        f"{n_label} {ds}-trained head-to-head — {comp['title']} (FID / fJSD / fS)\n"
+        f"Row 1: vs {fid_suffix} reference (in-distribution). "
+        f"Row 2: vs {cross_suffix} reference (cross-dataset generalization). "
+        f"Row 3: fS coverage. "
         f"Line = mean across reps; band = min/max envelope. {comp['reps_note']}. "
         "FID/fJSD: lower = closer (log y, axis inverted ⇒ up = better). fS: linear, higher = more coverage.",
         fontsize=12,
     )
-    _figure_legend(fig, axes)
-    fig.tight_layout(rect=[0, 0.07, 1, 0.93])
+    _figure_legend(fig, axes.flatten())
+    fig.tight_layout(rect=[0, 0.04, 1, 0.94])
     out_png = fig_out / "h2h_fid.png"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
     plt.close(fig)
