@@ -57,15 +57,15 @@ RUN_STYLE = {
     # PDB
     "baseline_256_bs24_2gpu": ("tab:blue", "s"),
     "repa_l4_256_per_residue_bs24_2gpu": ("tab:red", "o"),
-    "repa_l9_256_per_residue_bs24_2gpu": ("tab:orange", "o"),
+    "repa_l9_256_per_residue_bs24_2gpu": ("tab:green", "o"),
     "repa_mpnn_l4_256_per_residue": ("tab:red", "^"),
-    "repa_mpnn_l9_256_per_residue": ("tab:orange", "^"),
+    "repa_mpnn_l9_256_per_residue": ("tab:green", "^"),
     # AFDB
     "baseline_afdb_256": ("tab:blue", "s"),
     "repa_l4_afdb_256": ("tab:red", "o"),
-    "repa_l9_afdb_256": ("tab:orange", "o"),
+    "repa_l9_afdb_256": ("tab:green", "o"),
     "repa_mpnn_l4_afdb_256": ("tab:red", "^"),
-    "repa_mpnn_l9_afdb_256": ("tab:orange", "^"),
+    "repa_mpnn_l9_afdb_256": ("tab:green", "^"),
 }
 
 # (x_col_template, x_label, x_higher_better). y is always designability.

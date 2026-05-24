@@ -55,7 +55,7 @@ RUN_FAMILIES = {
             "-",
         ),
         ("repa_mpnn_l4_128_bs80", "REPA L4 MPNN (PDB)", "tab:red", "--"),
-        ("repa_mpnn_l9_128_bs80_2gpu", "REPA L9 MPNN (PDB)", "tab:orange", "--"),
+        ("repa_mpnn_l9_128_bs80_2gpu", "REPA L9 MPNN (PDB)", "tab:green", "--"),
         (
             "repa_l4_128_random",
             "REPA L4 random-GN (PDB)",
@@ -67,7 +67,7 @@ RUN_FAMILIES = {
         ("baseline_afdb_128_bs80", "Baseline (AFDB)", "tab:blue", "-"),
         ("repa_l4_afdb_128_bs80", "REPA L4 GearNet (AFDB)", "tab:red", "-"),
         ("repa_mpnn_l4_afdb_128_bs80", "REPA L4 MPNN (AFDB)", "tab:red", "--"),
-        ("repa_mpnn_l9_afdb_128_bs80_2gpu", "REPA L9 MPNN (AFDB)", "tab:orange", "--"),
+        ("repa_mpnn_l9_afdb_128_bs80_2gpu", "REPA L9 MPNN (AFDB)", "tab:green", "--"),
     ],
 }
 
@@ -136,6 +136,7 @@ def main() -> None:
         ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
         ax.set_xlabel("Training step")
         ax.set_ylabel("H/E ratio (designable)")
+        ax.invert_yaxis()  # closer to 1 = better; flip log axis so 1 sits nearer the top
         ax.set_title(f"{ds_name}: helix/sheet ratio over training")
         ax.grid(True, alpha=0.3)
         ax.legend(loc="best", fontsize=7)

@@ -53,7 +53,7 @@ def _style_axes(ax, log_y: bool = False) -> None:
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "results/paper"
-FIG_OUT = ROOT / "figures/paper/n256_convergence"
+FIG_OUT = ROOT / "figures/paper/n256_convergence/single_seed_42"
 FIG_OUT.mkdir(parents=True, exist_ok=True)
 
 DATASETS = {
@@ -61,7 +61,6 @@ DATASETS = {
     "AFDB": RESULTS / "n256_convergence_afdb" / "sweep_results.jsonl",
 }
 
-# Mirror plot_convergence_speedup.py — keep in sync by hand.
 RUN_FAMILIES = {
     "PDB": [
         ("baseline_256_bs24_2gpu", "Baseline (PDB)", "tab:blue", "-", "s"),
@@ -80,7 +79,7 @@ RUN_FAMILIES = {
             "o",
         ),
         ("repa_mpnn_l4_256_per_residue", "REPA L4 MPNN (PDB)", "tab:red", "--", "^"),
-        ("repa_mpnn_l9_256_per_residue", "REPA L9 MPNN (PDB)", "tab:orange", "--", "^"),
+        ("repa_mpnn_l9_256_per_residue", "REPA L9 MPNN (PDB)", "tab:green", "--", "^"),
         (
             "repa_l4_256_per_residue_random_bs24_2gpu",
             "REPA L4 GearNet-rand (PDB, ctrl)",
@@ -92,19 +91,19 @@ RUN_FAMILIES = {
     "AFDB": [
         ("baseline_afdb_256", "Baseline (AFDB)", "tab:blue", "-", "s"),
         ("repa_l4_afdb_256", "REPA L4 GearNet (AFDB)", "tab:red", "-", "o"),
-        ("repa_l9_afdb_256", "REPA L9 GearNet (AFDB, partial)", "tab:orange", ":", "o"),
+        ("repa_l9_afdb_256", "REPA L9 GearNet (AFDB, partial)", "tab:green", ":", "o"),
         ("repa_mpnn_l4_afdb_256", "REPA L4 MPNN (AFDB)", "tab:red", "--", "^"),
-        ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN (AFDB)", "tab:orange", "--", "^"),
+        ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN (AFDB)", "tab:green", "--", "^"),
     ],
 }
 
 # (metric, panel title, y-axis label, higher_is_better). metric is a column
-# name (str) or (label, fn) for derived metrics (matches convergence_speedup).
+# name (str) or (label, fn) for derived metrics (matches convergence_des).
 METRICS = [
     ("_res_designability_rate", "Designability", "rate", True),
     # Raw cluster count; rate clusters/n_designable saturates at 1.0 for
     # small designable sets, so we keep raw counts despite the designability
-    # confound. See plot_convergence_speedup.py for the same note.
+    # confound. See plot_convergence_des.py for the same note.
     ("_res_diversity_clusters_total", "Diversity (clusters)", "# clusters (des)", True),
     # Continuous diversity: mean pairwise TM within designable pool. Doesn't
     # saturate at small n the way clusters/n does. Lower = more diverse.
@@ -136,10 +135,16 @@ METRICS = [
             else None,
         ),
         "H/E ratio (des)",
-        "H/E",
-        True,  # arrow suppressed in title for H/E
+        "H/E (log y)",
+        True,  # arrow suppressed in title for H/E; y-axis is log because at
+        # early steps E≈0 (pure-helix warmup) makes the ratio span ~0.3-250.
     ),
+    # Decomposed view of the same SS story: H and E plotted separately so the
+    # near-zero-E warmup that dominates the ratio panel doesn't hide them.
+    ("_res_ss_frac_H_designable", "Helix fraction (des)", "frac H", True),
+    ("_res_ss_frac_E_designable", "Sheet fraction (des)", "frac E", True),
 ]
+_LOG_Y_TITLES = {"H/E ratio (des)"}
 
 
 # Binomial-rate metric -> denominator column (used for Wilson CIs).
@@ -261,6 +266,9 @@ def main() -> None:
                     label=label,
                 )
             ax.set_xscale("log")
+            log_y = title in _LOG_Y_TITLES
+            if log_y:
+                ax.set_yscale("log")
             ax.set_xlabel("Training step")
             ax.set_ylabel(ylabel)
             if "H/E" in title:
@@ -268,7 +276,9 @@ def main() -> None:
             else:
                 arrow = " ↑" if higher_better else " ↓"
             ax.set_title(f"{ds_name} — {title}{arrow}")
-            _style_axes(ax)
+            if "H/E" in title or not higher_better:
+                ax.invert_yaxis()  # up = better
+            _style_axes(ax, log_y=log_y)
             if SHOW_PRETRAINED and isinstance(metric, str):
                 pre_val = pretrained_overlay.load_gen().get(metric)
                 if pre_val is not None:
@@ -283,15 +293,32 @@ def main() -> None:
                         else None,
                         zorder=1,
                     )
-            if col_i == 0:
-                ax.legend(loc="best", fontsize=7)
 
     fig.suptitle(
         "n=256 convergence — des/div/nov/SS (Wilson 95% CIs on rates)\n"
         "Error bars: statistical CI given the samples drawn; do NOT capture sample-from-model variance.",
         fontsize=12,
     )
-    fig.tight_layout(rect=[0, 0, 1, 0.96])
+    # Figure-level legend at bottom; de-dup labels across axes.
+    handles, labels = [], []
+    seen = set()
+    for ax in axes.flat:
+        for h, lab in zip(*ax.get_legend_handles_labels()):
+            if lab in seen:
+                continue
+            seen.add(lab)
+            handles.append(h)
+            labels.append(lab)
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        ncol=min(len(labels), 6),
+        bbox_to_anchor=(0.5, -0.01),
+        fontsize=8,
+        frameon=False,
+    )
+    fig.tight_layout(rect=[0, 0.05, 1, 0.96])
     out_png = FIG_OUT / "convergence_des_ci.png"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
     print(f"Wrote {out_png}")

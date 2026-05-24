@@ -194,7 +194,8 @@ def plot_one(n: int, tsv: Path, out: Path):
                 zorder=2,
             )
 
-        ax.set_xlabel(title)
+        ax.set_xlabel(title + " ↓")
+        ax.invert_xaxis()  # right = better (FPSD/fJSD natural direction is lower)
         ax.grid(True, alpha=0.3)
     axes[0].set_ylabel("Designability (%) ↑")
     fig.suptitle(f"n={n} — Designability vs FPSD (with paper Table 1 baselines)")

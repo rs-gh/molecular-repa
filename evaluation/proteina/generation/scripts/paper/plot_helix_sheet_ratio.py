@@ -42,7 +42,7 @@ RUN_FAMILIES = {
             "-",
         ),
         ("repa_mpnn_l4_256_per_residue", "REPA L4 MPNN (PDB)", "tab:red", "--"),
-        ("repa_mpnn_l9_256_per_residue", "REPA L9 MPNN (PDB)", "tab:orange", "--"),
+        ("repa_mpnn_l9_256_per_residue", "REPA L9 MPNN (PDB)", "tab:green", "--"),
         (
             "repa_l4_256_per_residue_random_bs24_2gpu",
             "REPA L4 random-GN (PDB)",
@@ -53,9 +53,9 @@ RUN_FAMILIES = {
     "AFDB": [
         ("baseline_afdb_256", "Baseline (AFDB)", "tab:blue", "-"),
         ("repa_l4_afdb_256", "REPA L4 GearNet (AFDB)", "tab:red", "-"),
-        ("repa_l9_afdb_256", "REPA L9 GearNet (AFDB, partial)", "tab:orange", ":"),
+        ("repa_l9_afdb_256", "REPA L9 GearNet (AFDB, partial)", "tab:green", ":"),
         ("repa_mpnn_l4_afdb_256", "REPA L4 MPNN (AFDB)", "tab:red", "--"),
-        ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN (AFDB)", "tab:orange", "--"),
+        ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN (AFDB)", "tab:green", "--"),
     ],
 }
 
@@ -119,6 +119,7 @@ def main() -> None:
         ax.set_xscale("log")
         ax.set_xlabel("Training step")
         ax.set_ylabel("H/E ratio (designable)")
+        ax.invert_yaxis()  # closer to 1 = better; flip log axis so 1 sits nearer the top
         ax.set_title(f"{ds_name}: helix/sheet ratio over training")
         ax.grid(True, alpha=0.3)
         ax.legend(loc="best", fontsize=7)

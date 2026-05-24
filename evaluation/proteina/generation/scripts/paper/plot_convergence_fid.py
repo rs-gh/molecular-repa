@@ -1,6 +1,6 @@
 """Convergence plot for FID-family distributional metrics — proteina n=256.
 
-Companion to ``plot_convergence_speedup.py``. Plots reference-distribution
+Companion to ``plot_convergence_des.py``. Plots reference-distribution
 metrics that aren't covered there: FID (overall coord-VAE feature dist),
 fJSD (CATH fold-class JSD at C/A/T levels), and fS (CATH fold-class
 Shannon entropy). All "lower-closer-to-reference" for fJSD; fS has no
@@ -14,7 +14,7 @@ fS is dataset-agnostic at the column level but plotted within each data-regime
 row so comparisons stay within {baseline vs REPA on PDB} or {... on AFDB}.
 
 Reads the same two ``sweep_results.jsonl`` files and uses the same
-RUN_FAMILIES color/linestyle/marker convention as the speedup plot.
+RUN_FAMILIES color/linestyle/marker convention as plot_convergence_des.
 """
 
 from __future__ import annotations
@@ -62,7 +62,7 @@ def _style_axes(ax, log_y: bool = False) -> None:
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "results/paper"
-FIG_OUT = ROOT / "figures/paper/n256_convergence"
+FIG_OUT = ROOT / "figures/paper/n256_convergence/single_seed_42"
 FIG_OUT.mkdir(parents=True, exist_ok=True)
 
 DATASETS = {
@@ -70,7 +70,7 @@ DATASETS = {
     "AFDB": RESULTS / "n256_convergence_afdb" / "sweep_results.jsonl",
 }
 
-# Mirror plot_convergence_speedup.py — same encoding, kept in sync by hand.
+# Mirror plot_convergence_des.py — same encoding, kept in sync by hand.
 RUN_FAMILIES = {
     "PDB": [
         ("baseline_256_bs24_2gpu", "Baseline (PDB)", "tab:blue", "-", "s"),
@@ -89,7 +89,7 @@ RUN_FAMILIES = {
             "o",
         ),
         ("repa_mpnn_l4_256_per_residue", "REPA L4 MPNN (PDB)", "tab:red", "--", "^"),
-        ("repa_mpnn_l9_256_per_residue", "REPA L9 MPNN (PDB)", "tab:orange", "--", "^"),
+        ("repa_mpnn_l9_256_per_residue", "REPA L9 MPNN (PDB)", "tab:green", "--", "^"),
         (
             "repa_l4_256_per_residue_random_bs24_2gpu",
             "REPA L4 GearNet-rand (PDB, ctrl)",
@@ -101,9 +101,9 @@ RUN_FAMILIES = {
     "AFDB": [
         ("baseline_afdb_256", "Baseline (AFDB)", "tab:blue", "-", "s"),
         ("repa_l4_afdb_256", "REPA L4 GearNet (AFDB)", "tab:red", "-", "o"),
-        ("repa_l9_afdb_256", "REPA L9 GearNet (AFDB, partial)", "tab:orange", ":", "o"),
+        ("repa_l9_afdb_256", "REPA L9 GearNet (AFDB, partial)", "tab:green", ":", "o"),
         ("repa_mpnn_l4_afdb_256", "REPA L4 MPNN (AFDB)", "tab:red", "--", "^"),
-        ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN (AFDB)", "tab:orange", "--", "^"),
+        ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN (AFDB)", "tab:green", "--", "^"),
     ],
 }
 
@@ -197,6 +197,7 @@ def main() -> None:
             ax.set_xlabel("Training step")
             ax.set_ylabel("value (lower = closer, log y)")
             ax.set_title(f"{ds_name} — {title} ↓")
+            ax.invert_yaxis()  # up = better
             _style_axes(ax, log_y=True)
             if SHOW_PRETRAINED:
                 pre_val = pretrained_overlay.load_gen().get(f"_res_{ds_name}_{suffix}")
@@ -212,8 +213,6 @@ def main() -> None:
                         else None,
                         zorder=1,
                     )
-            if col_i == 0:
-                ax.legend(loc="best", fontsize=7)
         # fS columns — same row's RUN_FAMILIES so comparisons stay within data regime
         for j, (col, title) in enumerate(FS_METRICS):
             ax = axes[row_i, len(DATASET_METRICS) + j]
@@ -244,7 +243,26 @@ def main() -> None:
         "FID/fJSD: lower = closer to reference (log y). fS: fold-class entropy (linear, higher = more coverage).",
         fontsize=12,
     )
-    fig.tight_layout(rect=[0, 0, 1, 0.96])
+    # Figure-level legend at bottom; de-dup labels across axes.
+    handles, labels = [], []
+    seen = set()
+    for ax in axes.flat:
+        for h, lab in zip(*ax.get_legend_handles_labels()):
+            if lab in seen:
+                continue
+            seen.add(lab)
+            handles.append(h)
+            labels.append(lab)
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        ncol=min(len(labels), 6),
+        bbox_to_anchor=(0.5, -0.01),
+        fontsize=8,
+        frameon=False,
+    )
+    fig.tight_layout(rect=[0, 0.05, 1, 0.96])
     out_png = FIG_OUT / "convergence_fid.png"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
     print(f"Wrote {out_png}")

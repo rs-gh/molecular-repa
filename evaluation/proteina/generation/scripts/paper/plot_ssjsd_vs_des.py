@@ -137,6 +137,7 @@ def main() -> None:
 
         ax.set_xlabel("Designability rate ↑")
         ax.set_ylabel(f"SS 2D-JSD vs {ds} (designable) ↓")
+        ax.invert_yaxis()  # up = better
         ax.set_title(f"{ds} — does REPA preserve SS at matched designability?")
         ax.grid(False)
         ax.grid(True, axis="both", alpha=0.25)

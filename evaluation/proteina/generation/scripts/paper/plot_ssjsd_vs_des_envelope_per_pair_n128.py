@@ -40,7 +40,7 @@ DATASETS = {
         "baseline": ("baseline_128_bs80", "Baseline (PDB)"),
         "repa_variants": [
             ("repa_l4_128_bs80", "REPA L4 GearNet", "tab:red", "s"),
-            ("repa_l9_128_bs80", "REPA L9 GearNet", "tab:orange", "s"),
+            ("repa_l9_128_bs80", "REPA L9 GearNet", "tab:green", "s"),
             ("repa_mpnn_l4_128_bs80", "REPA L4 MPNN", "tab:green", "^"),
             ("repa_mpnn_l9_128_bs80_2gpu", "REPA L9 MPNN", "tab:purple", "^"),
         ],

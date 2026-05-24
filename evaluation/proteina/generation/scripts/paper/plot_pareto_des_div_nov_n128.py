@@ -56,14 +56,14 @@ RUN_STYLE = {
     # PDB
     "baseline_128_bs80": ("tab:blue", "s"),
     "repa_l4_128_bs80": ("tab:red", "o"),
-    "repa_l9_128_bs80": ("tab:orange", "o"),
+    "repa_l9_128_bs80": ("tab:green", "o"),
     "repa_mpnn_l4_128_bs80": ("tab:red", "^"),
-    "repa_mpnn_l9_128_bs80_2gpu": ("tab:orange", "^"),
+    "repa_mpnn_l9_128_bs80_2gpu": ("tab:green", "^"),
     # AFDB
     "baseline_afdb_128_bs80": ("tab:blue", "s"),
     "repa_l4_afdb_128_bs80": ("tab:red", "o"),
     "repa_mpnn_l4_afdb_128_bs80": ("tab:red", "^"),
-    "repa_mpnn_l9_afdb_128_bs80_2gpu": ("tab:orange", "^"),
+    "repa_mpnn_l9_afdb_128_bs80_2gpu": ("tab:green", "^"),
 }
 
 # (x_col_template, x_label, x_higher_better). y is always designability.

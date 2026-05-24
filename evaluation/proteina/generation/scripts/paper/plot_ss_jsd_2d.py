@@ -94,9 +94,11 @@ def plot_one(rows, n_label: str, out: Path):
                 color="dimgray",
             )
 
-        ax.set_xlabel(f"3-bin JSD vs {title} (centroid only)")
-        ax.set_ylabel(f"2D-bin JSD vs {title} (5x5 on f_H × f_E)")
+        ax.set_xlabel(f"3-bin JSD vs {title} (centroid only) ↓")
+        ax.set_ylabel(f"2D-bin JSD vs {title} (5x5 on f_H × f_E) ↓")
         ax.set_title(f"n={n_label} — SS JSD: 3-bin vs 2D ({title})")
+        ax.invert_xaxis()  # right = lower JSD = better
+        ax.invert_yaxis()  # up = lower JSD = better
         ax.grid(True, alpha=0.3)
 
     fig.suptitle(

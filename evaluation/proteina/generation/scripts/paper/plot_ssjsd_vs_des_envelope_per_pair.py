@@ -43,7 +43,7 @@ DATASETS = {
         "baseline": ("baseline_256_bs24_2gpu", "Baseline (PDB)"),
         "repa_variants": [
             ("repa_l4_256_per_residue_bs24_2gpu", "REPA L4 GearNet", "tab:red", "s"),
-            ("repa_l9_256_per_residue_bs24_2gpu", "REPA L9 GearNet", "tab:orange", "s"),
+            ("repa_l9_256_per_residue_bs24_2gpu", "REPA L9 GearNet", "tab:green", "s"),
             ("repa_mpnn_l4_256_per_residue", "REPA L4 MPNN", "tab:green", "^"),
             ("repa_mpnn_l9_256_per_residue", "REPA L9 MPNN", "tab:purple", "^"),
         ],
@@ -53,7 +53,7 @@ DATASETS = {
         "baseline": ("baseline_afdb_256", "Baseline (AFDB)"),
         "repa_variants": [
             ("repa_l4_afdb_256", "REPA L4 GearNet", "tab:red", "s"),
-            ("repa_l9_afdb_256", "REPA L9 GearNet", "tab:orange", "s"),
+            ("repa_l9_afdb_256", "REPA L9 GearNet", "tab:green", "s"),
             ("repa_mpnn_l4_afdb_256", "REPA L4 MPNN", "tab:green", "^"),
             ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN", "tab:purple", "^"),
         ],
