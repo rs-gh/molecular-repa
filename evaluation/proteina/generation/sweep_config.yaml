@@ -471,3 +471,24 @@ n128_convergence_afdb_retry:
   runs: "repa_l4_afdb_128_bs80_step400k,repa_mpnn_l9_afdb_128_bs80_2gpu_step400k"
   output_dir: results/paper/n128_convergence_afdb
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# 2026-05-25: n=256 + n=128 convergence extension 2 — past-horizon ckpts only.
+# Multi-seed via submit_variance_sweep.sh --axis A --reps 3. Same output dirs
+# as the main convergence sweeps so rows merge.
+n256_convergence_pdb_ext2:
+  <<: *paper_defaults
+  runs: "repa_l4_256_per_residue_bs24_2gpu_step1000k,repa_l9_256_per_residue_bs24_2gpu_step1000k,repa_l9_256_per_residue_bs24_2gpu_step1100k,repa_mpnn_l9_256_per_residue_step800k,repa_mpnn_l9_256_per_residue_step900k,repa_mpnn_l9_256_per_residue_step1000k,repa_mpnn_l9_256_per_residue_step1100k,repa_mpnn_l9_256_per_residue_step1200k"
+  output_dir: results/paper/n256_convergence_pdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+n256_convergence_afdb_ext2:
+  <<: *paper_defaults
+  runs: "repa_l9_afdb_256_step700k,repa_l9_afdb_256_step800k"
+  output_dir: results/paper/n256_convergence_afdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+n128_convergence_pdb_ext2:
+  <<: *paper_defaults
+  runs: "repa_l4_128_bs80_step600k,repa_l4_128_random_step500k,repa_l4_128_random_step600k,repa_l9_128_bs80_step500k,repa_mpnn_l9_128_bs80_2gpu_step600k,repa_mpnn_l9_128_bs80_2gpu_step700k"
+  output_dir: results/paper/n128_convergence_pdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"

@@ -1249,6 +1249,104 @@ RUN_SCHEDULES = {
         9,
         [1500000],
     ),
+    # ── n=256 convergence extension 2 (added 2026-05-25) — past-horizon ckpts ──
+    "repa_l4_256_per_residue_bs24_2gpu_step1000k": (
+        "proteina_60m_repa_l4_256_per_residue_bs24_2gpu",
+        True,
+        4,
+        [1000000],
+    ),
+    "repa_l9_256_per_residue_bs24_2gpu_step1000k": (
+        "proteina_60m_repa_l9_256_per_residue_bs24_2gpu",
+        True,
+        9,
+        [1000000],
+    ),
+    "repa_l9_256_per_residue_bs24_2gpu_step1100k": (
+        "proteina_60m_repa_l9_256_per_residue_bs24_2gpu",
+        True,
+        9,
+        [1100000],
+    ),
+    "repa_mpnn_l9_256_per_residue_step800k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [800000],
+    ),
+    "repa_mpnn_l9_256_per_residue_step900k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [900000],
+    ),
+    "repa_mpnn_l9_256_per_residue_step1000k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [1000000],
+    ),
+    "repa_mpnn_l9_256_per_residue_step1100k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [1100000],
+    ),
+    "repa_mpnn_l9_256_per_residue_step1200k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [1200000],
+    ),
+    "repa_l9_afdb_256_step700k": (
+        "proteina_60m_repa_l9_256_afdb_per_residue",
+        True,
+        9,
+        [700000],
+    ),
+    "repa_l9_afdb_256_step800k": (
+        "proteina_60m_repa_l9_256_afdb_per_residue",
+        True,
+        9,
+        [800000],
+    ),
+    # ── n=128 PDB convergence extension (added 2026-05-25) — past-horizon ─── #
+    "repa_l4_128_bs80_step600k": (
+        "proteina_60m_repa_l4_128_per_residue_bs80",
+        True,
+        4,
+        [600000],
+    ),
+    "repa_l4_128_random_step500k": (
+        "proteina_60m_repa_l4_128_per_residue_random",
+        True,
+        4,
+        [500000],
+    ),
+    "repa_l4_128_random_step600k": (
+        "proteina_60m_repa_l4_128_per_residue_random",
+        True,
+        4,
+        [600000],
+    ),
+    "repa_l9_128_bs80_step500k": (
+        "proteina_60m_repa_l9_128_per_residue_bs80",
+        True,
+        9,
+        [500000],
+    ),
+    "repa_mpnn_l9_128_bs80_2gpu_step600k": (
+        "proteina_60m_repa_mpnn_l9_128_per_residue_bs80_2gpu",
+        True,
+        9,
+        [600000],
+    ),
+    "repa_mpnn_l9_128_bs80_2gpu_step700k": (
+        "proteina_60m_repa_mpnn_l9_128_per_residue_bs80_2gpu",
+        True,
+        9,
+        [700000],
+    ),
 }
 
 
@@ -1459,6 +1557,24 @@ GEN_RUN_CONFIGS = {
     "repa_mpnn_l4_afdb_256_step1100k": "inference/paper/inference_fid_60m_paper",
     "repa_mpnn_l9_afdb_256_step1400k": "inference/paper/inference_fid_60m_paper",
     "repa_mpnn_l9_afdb_256_step1500k": "inference/paper/inference_fid_60m_paper",
+    # ── n=256 convergence extension 2 (added 2026-05-25) ─────────────────── #
+    "repa_l4_256_per_residue_bs24_2gpu_step1000k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_per_residue_bs24_2gpu_step1000k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_per_residue_bs24_2gpu_step1100k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step800k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step900k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step1000k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step1100k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step1200k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_afdb_256_step700k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_afdb_256_step800k": "inference/paper/inference_fid_60m_paper",
+    # ── n=128 PDB convergence extension (added 2026-05-25) ───────────────── #
+    "repa_l4_128_bs80_step600k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_random_step500k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_128_random_step600k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l9_128_bs80_step500k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l9_128_bs80_2gpu_step600k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l9_128_bs80_2gpu_step700k": "inference/paper/inference_fid_60m_n128_paper",
 }
 
 
