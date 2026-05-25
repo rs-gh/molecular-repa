@@ -1,0 +1,239 @@
+easy-search pdb_train_le256.fasta afdb_train_le256.fasta pdb_vs_afdb_le256.m8 tmp_pdb_vs_afdb_le256 --min-seq-id 0.3 -c 0.8 --cov-mode 0 --threads 4 --format-output query,target,pident,evalue
+
+MMseqs Version:                        	92d8cc375ea4cc4784e17150d10e0f9dc8004491
+Substitution matrix                    	aa:blosum62.out,nucl:nucleotide.out
+Add backtrace                          	false
+Alignment mode                         	3
+Alignment mode                         	0
+Allow wrapped scoring                  	false
+E-value threshold                      	0.001
+Seq. id. threshold                     	0.3
+Min alignment length                   	0
+Seq. id. mode                          	0
+Alternative alignments                 	0
+Coverage threshold                     	0.8
+Coverage mode                          	0
+Max sequence length                    	65535
+Compositional bias                     	1
+Compositional bias                     	1
+Max reject                             	2147483647
+Max accept                             	2147483647
+Include identical seq. id.             	false
+Preload mode                           	0
+Pseudo count a                         	substitution:1.100,context:1.400
+Pseudo count b                         	substitution:4.100,context:5.800
+Score bias                             	0
+Realign hits                           	false
+Realign score bias                     	-0.2
+Realign max seqs                       	2147483647
+Correlation score weight               	0
+Gap open cost                          	aa:11,nucl:5
+Gap extension cost                     	aa:1,nucl:2
+Zdrop                                  	40
+Threads                                	4
+Compressed                             	0
+Verbosity                              	3
+Seed substitution matrix               	aa:VTML80.out,nucl:nucleotide.out
+Sensitivity                            	5.7
+k-mer length                           	0
+k-score                                	seq:2147483647,prof:2147483647
+Alphabet size                          	aa:21,nucl:5
+Max results per query                  	300
+Split database                         	0
+Split mode                             	2
+Split memory limit                     	0
+Diagonal scoring                       	true
+Exact k-mer matching                   	0
+Mask residues                          	1
+Mask residues probability              	0.9
+Mask lower case residues               	0
+Minimum diagonal score                 	15
+Selected taxa
+Spaced k-mers                          	1
+Spaced k-mer pattern
+Local temporary path
+Rescore mode                           	0
+Remove hits by seq. id. and coverage   	false
+Sort results                           	0
+Mask profile                           	1
+Profile E-value threshold              	0.001
+Global sequence weighting              	false
+Allow deletions                        	false
+Filter MSA                             	1
+Use filter only at N seqs              	0
+Maximum seq. id. threshold             	0.9
+Minimum seq. id.                       	0.0
+Minimum score per column               	-20
+Minimum coverage                       	0
+Select N most diverse seqs             	1000
+Pseudo count mode                      	0
+Min codons in orf                      	30
+Max codons in length                   	32734
+Max orf gaps                           	2147483647
+Contig start mode                      	2
+Contig end mode                        	2
+Orf start mode                         	1
+Forward frames                         	1,2,3
+Reverse frames                         	1,2,3
+Translation table                      	1
+Translate orf                          	0
+Use all table starts                   	false
+Offset of numeric ids                  	0
+Create lookup                          	0
+Add orf stop                           	false
+Overlap between sequences              	0
+Sequence split mode                    	1
+Header split mode                      	0
+Chain overlapping alignments           	0
+Merge query                            	1
+Search type                            	0
+Search iterations                      	1
+Start sensitivity                      	4
+Search steps                           	1
+Exhaustive search mode                 	false
+Filter results during exhaustive search	0
+Strand selection                       	1
+LCA search mode                        	false
+Disk space limit                       	0
+MPI runner
+Force restart with latest tmp          	false
+Remove temporary files                 	true
+Alignment format                       	0
+Format alignment output                	query,target,pident,evalue
+Database output                        	false
+Overlap threshold                      	0
+Database type                          	0
+Shuffle input database                 	true
+Createdb mode                          	0
+Write lookup file                      	0
+Greedy best hits                       	false
+
+createdb pdb_train_le256.fasta tmp_pdb_vs_afdb_le256/15641929463453753520/query --dbtype 0 --shuffle 1 --createdb-mode 0 --write-lookup 0 --id-offset 0 --compressed 0 -v 3
+
+Converting sequences
+[===========================
+Time for merging to query_h: 0h 0m 1s 173ms
+Time for merging to query: 0h 0m 2s 46ms
+Database type: Aminoacid
+Time for processing: 0h 0m 11s 820ms
+createdb afdb_train_le256.fasta tmp_pdb_vs_afdb_le256/15641929463453753520/target --dbtype 0 --shuffle 1 --createdb-mode 0 --write-lookup 0 --id-offset 0 --compressed 0 -v 3
+
+Converting sequences
+[======================
+Time for merging to target_h: 0h 0m 0s 986ms
+Time for merging to target: 0h 0m 1s 907ms
+Database type: Aminoacid
+Time for processing: 0h 0m 11s 684ms
+Create directory tmp_pdb_vs_afdb_le256/15641929463453753520/search_tmp
+search tmp_pdb_vs_afdb_le256/15641929463453753520/query tmp_pdb_vs_afdb_le256/15641929463453753520/target tmp_pdb_vs_afdb_le256/15641929463453753520/result tmp_pdb_vs_afdb_le256/15641929463453753520/search_tmp --alignment-mode 3 --min-seq-id 0.3 -c 0.8 --cov-mode 0 --threads 4 -s 5.7 --remove-tmp-files 1
+
+prefilter tmp_pdb_vs_afdb_le256/15641929463453753520/query tmp_pdb_vs_afdb_le256/15641929463453753520/target tmp_pdb_vs_afdb_le256/15641929463453753520/search_tmp/10595275312788261739/pref_0 --sub-mat 'aa:blosum62.out,nucl:nucleotide.out' --seed-sub-mat 'aa:VTML80.out,nucl:nucleotide.out' -k 0 --k-score seq:2147483647,prof:2147483647 --alph-size aa:21,nucl:5 --max-seq-len 65535 --max-seqs 300 --split 0 --split-mode 2 --split-memory-limit 0 -c 0.8 --cov-mode 0 --comp-bias-corr 1 --comp-bias-corr-scale 1 --diag-score 1 --exact-kmer-matching 0 --mask 1 --mask-prob 0.9 --mask-lower-case 0 --min-ungapped-score 15 --add-self-matches 0 --spaced-kmer-mode 1 --db-load-mode 0 --pca substitution:1.100,context:1.400 --pcb substitution:4.100,context:5.800 --threads 4 --compressed 0 -v 3 -s 5.7
+
+Query database size: 273771 type: Aminoacid
+Estimated memory consumption: 1G
+Target database size: 229670 type: Aminoacid
+Index table k-mer threshold: 112 at k-mer size 6
+Index table: counting k-mers
+[=================================================================] 229.67K 1s 651ms
+Index table: Masked residues: 300112
+Index table: fill
+[=================================================================] 229.67K 2s 239ms
+Index statistics
+Entries:          32777261
+DB size:          675 MB
+Avg k-mer size:   0.512145
+Top 10 k-mers
+    GGVDGV	884
+    YIGGLQ	833
+    TPKNLR	830
+    RVDPRY	823
+    TPPNRP	738
+    NGRPRR	704
+    KKNAKV	685
+    PQRVRV	668
+    LMNKTV	659
+    NSLKRV	625
+Time for index table init: 0h 0m 4s 481ms
+Process prefiltering step 1 of 1
+
+k-mer similarity threshold: 112
+Starting prefiltering scores calculation (step 1 of 1)
+Query db start 1 to 273771
+Target db start 1 to 229670
+[=================================================================] 273.77K 1m 57s 317ms
+
+325.885106 k-mers per position
+25200 DB matches per sequence
+0 overflows
+225 sequences passed prefiltering per query sequence
+271 median result list length
+730 sequences with 0 size result lists
+Time for merging to pref_0: 0h 0m 0s 214ms
+Time for processing: 0h 2m 3s 642ms
+align tmp_pdb_vs_afdb_le256/15641929463453753520/query tmp_pdb_vs_afdb_le256/15641929463453753520/target tmp_pdb_vs_afdb_le256/15641929463453753520/search_tmp/10595275312788261739/pref_0 tmp_pdb_vs_afdb_le256/15641929463453753520/result --sub-mat 'aa:blosum62.out,nucl:nucleotide.out' -a 0 --alignment-mode 3 --alignment-output-mode 0 --wrapped-scoring 0 -e 0.001 --min-seq-id 0.3 --min-aln-len 0 --seq-id-mode 0 --alt-ali 0 -c 0.8 --cov-mode 0 --max-seq-len 65535 --comp-bias-corr 1 --comp-bias-corr-scale 1 --max-rejected 2147483647 --max-accept 2147483647 --add-self-matches 0 --db-load-mode 0 --pca substitution:1.100,context:1.400 --pcb substitution:4.100,context:5.800 --score-bias 0 --realign 0 --realign-score-bias -0.2 --realign-max-seqs 2147483647 --corr-score-weight 0 --gap-open aa:11,nucl:5 --gap-extend aa:1,nucl:2 --zdrop 40 --threads 4 --compressed 0 -v 3
+
+Compute score, coverage and sequence identity
+Query database size: 273771 type: Aminoacid
+Target database size: 229670 type: Aminoacid
+Calculation of alignments
+[=================================================================] 273.77K 4m 20s 947ms
+Time for merging to result: 0h 0m 0s 249ms
+31060302 alignments calculated
+10649401 sequence pairs passed the thresholds (0.342862 of overall calculated)
+38.898937 hits per query sequence
+Time for processing: 0h 4m 22s 314ms
+rmdb tmp_pdb_vs_afdb_le256/15641929463453753520/search_tmp/10595275312788261739/pref_0 -v 3
+
+Time for processing: 0h 0m 0s 95ms
+rmdb tmp_pdb_vs_afdb_le256/15641929463453753520/search_tmp/10595275312788261739/aln_0 -v 3
+
+Time for processing: 0h 0m 0s 1ms
+rmdb tmp_pdb_vs_afdb_le256/15641929463453753520/search_tmp/10595275312788261739/input_0 -v 3
+
+Time for processing: 0h 0m 0s 1ms
+rmdb tmp_pdb_vs_afdb_le256/15641929463453753520/search_tmp/10595275312788261739/aln_merge -v 3
+
+Time for processing: 0h 0m 0s 1ms
+convertalis tmp_pdb_vs_afdb_le256/15641929463453753520/query tmp_pdb_vs_afdb_le256/15641929463453753520/target tmp_pdb_vs_afdb_le256/15641929463453753520/result pdb_vs_afdb_le256.m8 --sub-mat 'aa:blosum62.out,nucl:nucleotide.out' --format-mode 0 --format-output query,target,pident,evalue --translation-table 1 --gap-open aa:11,nucl:5 --gap-extend aa:1,nucl:2 --db-output 0 --db-load-mode 0 --search-type 0 --threads 4 --compressed 0 -v 3
+
+[=================================================================] 273.77K 12s 244ms
+Time for merging to pdb_vs_afdb_le256.m8: 0h 0m 7s 801ms
+Time for processing: 0h 0m 21s 128ms
+rmdb tmp_pdb_vs_afdb_le256/15641929463453753520/result -v 3
+
+Time for processing: 0h 0m 0s 75ms
+rmdb tmp_pdb_vs_afdb_le256/15641929463453753520/target -v 3
+
+Time for processing: 0h 0m 0s 29ms
+rmdb tmp_pdb_vs_afdb_le256/15641929463453753520/target_h -v 3
+
+Time for processing: 0h 0m 0s 9ms
+rmdb tmp_pdb_vs_afdb_le256/15641929463453753520/query -v 3
+
+Time for processing: 0h 0m 0s 36ms
+rmdb tmp_pdb_vs_afdb_le256/15641929463453753520/query_h -v 3
+
+Time for processing: 0h 0m 0s 8ms
+	Command being timed: "/usr/local/software/mmseqs2/mmseqs/bin/mmseqs easy-search pdb_train_le256.fasta afdb_train_le256.fasta pdb_vs_afdb_le256.m8 tmp_pdb_vs_afdb_le256 --min-seq-id 0.3 -c 0.8 --cov-mode 0 --threads 4 --format-output query,target,pident,evalue"
+	User time (seconds): 1438.12
+	System time (seconds): 4.87
+	Percent of CPU this job got: 334%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 7:11.09
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1318164
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 17821
+	Minor (reclaiming a frame) page faults: 506134
+	Voluntary context switches: 41407
+	Involuntary context switches: 549548
+	Swaps: 0
+	File system inputs: 3296072
+	File system outputs: 4363352
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

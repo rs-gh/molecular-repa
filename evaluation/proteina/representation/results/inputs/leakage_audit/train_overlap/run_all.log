@@ -1,0 +1,9 @@
+===> pdb_vs_afdb_le128 : Q=pdb_train_le128.fasta T=afdb_train_le128.fasta
+===> pdb_vs_afdb_le128 DONE rows=3353170
+===> afdb_vs_pdb_le128 : Q=afdb_train_le128.fasta T=pdb_train_le128.fasta
+===> afdb_vs_pdb_le128 DONE rows=3807843
+===> pdb_vs_afdb_le256 : Q=pdb_train_le256.fasta T=afdb_train_le256.fasta
+===> pdb_vs_afdb_le256 DONE rows=10649401
+===> afdb_vs_pdb_le256 : Q=afdb_train_le256.fasta T=pdb_train_le256.fasta
+===> afdb_vs_pdb_le256 DONE rows=11190069
+ALL_DONE
