@@ -179,7 +179,8 @@ def _plot_des(rows, comp, fig_out, *, n_label, pretrained_key):
         ax.set_ylabel(ylabel)
         arrow = "" if "H/E" in title else (" ↑" if higher else " ↓")
         ax.set_title(f"{ds} — {title}{arrow}")
-        style_axes(ax, log_y=log_y)
+        is_pct = isinstance(metric, str) and metric in RATE_KEYS
+        style_axes(ax, log_y=log_y, percent=is_pct)
         _overlay_pretrained(ax, metric, first_col=(col_i == 0), n_label=pretrained_key)
         # Up-is-better axis flip: invert y for lower-is-better metrics; H/E
         # ratio also inverted so "closer to 1" sits nearer the top.

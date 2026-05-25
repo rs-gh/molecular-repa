@@ -135,7 +135,11 @@ def plot_one(n, fig_subdir, datasets):
             ax.set_title(f"{ds_name} — {title}{arrow}")
             if "H/E" in title or not higher:
                 ax.invert_yaxis()  # up = better
-            style_axes(ax, log_y=log_y)
+            style_axes(
+                ax,
+                log_y=log_y,
+                percent=isinstance(metric, str) and metric in RATE_KEYS,
+            )
             if SHOW_PRETRAINED and isinstance(metric, str):
                 pre_val = pretrained_overlay.load_gen().get(metric)
                 if pre_val is not None:

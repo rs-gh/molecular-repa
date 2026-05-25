@@ -46,10 +46,16 @@ def humanize(v, _pos=None):
         return f"{v / 1e3:g}K"
     if av >= 1:
         return f"{v:g}"
-    return f"{v:.3g}"
+    # <1: 2 significant figures keeps tick labels short (0.0641 → 0.064).
+    return f"{v:.2g}"
 
 
-def style_axes(ax, log_y: bool = False) -> None:
+def humanize_pct(v, _pos=None):
+    """Y-axis formatter for rate metrics already scaled to [0,100]."""
+    return f"{humanize(v)}%"
+
+
+def style_axes(ax, log_y: bool = False, percent: bool = False) -> None:
     ax.grid(False)
     ax.grid(True, axis="y", alpha=0.3, which="both" if log_y else "major")
     # Fixed ticks at the canonical sweep step grid — using LogLocator subs
@@ -61,7 +67,13 @@ def style_axes(ax, log_y: bool = False) -> None:
     )
     ax.xaxis.set_minor_locator(NullLocator())
     ax.xaxis.set_major_formatter(FuncFormatter(humanize))
-    ax.yaxis.set_major_formatter(FuncFormatter(humanize))
+    y_fmt = FuncFormatter(humanize_pct if percent else humanize)
+    ax.yaxis.set_major_formatter(y_fmt)
+    # On log y, matplotlib's default LogFormatterSciNotation labels minor
+    # ticks (3×10², 4×10², …) — override so the humanized style applies to
+    # both major and minor ticks.
+    if log_y:
+        ax.yaxis.set_minor_formatter(y_fmt)
     for lbl in ax.get_xticklabels(which="both"):
         lbl.set_rotation(0)
         lbl.set_ha("center")
@@ -183,6 +195,7 @@ def plot_band(ax, xs, means, mins, maxs, color, ls, marker, label):
 __all__ = [
     "plt",
     "humanize",
+    "humanize_pct",
     "style_axes",
     "load_jsonl_with_reps",
     "extract_bands",
