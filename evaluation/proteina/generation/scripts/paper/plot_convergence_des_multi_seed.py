@@ -183,7 +183,7 @@ def plot_one(n, fig_subdir, datasets):
     )
     fig.tight_layout(rect=[0, 0.04, 1, 0.94])
     out_png = fig_out / "convergence_des.png"
-    fig.savefig(out_png, dpi=160, bbox_inches="tight")
+    fig.savefig(out_png, dpi=130, bbox_inches="tight")
     plt.close(fig)
     print(f"Wrote {out_png}")
 
