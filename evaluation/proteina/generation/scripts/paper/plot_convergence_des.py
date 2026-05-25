@@ -34,6 +34,12 @@ from evaluation.proteina.lib import pretrained_overlay  # noqa: E402
 # to False to hide.
 SHOW_PRETRAINED = True
 
+RATE_KEYS = {
+    "_res_designability_rate",
+    "_res_novelty_foldseek_pdb_rate",
+    "_res_novelty_foldseek_afdb_swissprot_rate",
+}
+
 
 def _humanize(v, _pos=None):
     av = abs(v)
@@ -106,7 +112,7 @@ RUN_FAMILIES = {
 # (metric, panel title, y-axis label, higher_is_better). metric is a column
 # name (str) or (label, fn) for derived metrics (matches convergence_des).
 METRICS = [
-    ("_res_designability_rate", "Designability", "rate", True),
+    ("_res_designability_rate", "Designability", "%", True),
     # Raw cluster count; rate clusters/n_designable saturates at 1.0 for
     # small designable sets, so we keep raw counts despite the designability
     # confound. See plot_convergence_des.py for the same note.
@@ -122,13 +128,13 @@ METRICS = [
     (
         "_res_novelty_foldseek_pdb_rate",
         "Novelty vs PDB",
-        "fraction novel (TM<0.5)",
+        "% novel (TM<0.5)",
         True,
     ),
     (
         "_res_novelty_foldseek_afdb_swissprot_rate",
         "Novelty vs AFDB-SP",
-        "fraction novel (TM<0.5)",
+        "% novel (TM<0.5)",
         True,
     ),
     ("_res_ss_jsd_pdb_designable_2d", "SS 2D-JSD vs PDB (des)", "JSD", False),
@@ -204,6 +210,8 @@ def main() -> None:
                 xs, ys = extract_curve(rows, prefix, metric)
                 if not xs:
                     continue
+                if isinstance(metric, str) and metric in RATE_KEYS:
+                    ys = [v * 100.0 for v in ys]
                 ax.plot(
                     xs,
                     ys,
@@ -241,6 +249,8 @@ def main() -> None:
             if SHOW_PRETRAINED and isinstance(metric, str):
                 pre_val = pretrained_overlay.load_gen().get(metric)
                 if pre_val is not None:
+                    if metric in RATE_KEYS:
+                        pre_val = pre_val * 100.0
                     ax.axhline(
                         pre_val,
                         color=pretrained_overlay.PRETRAINED_COLOR,

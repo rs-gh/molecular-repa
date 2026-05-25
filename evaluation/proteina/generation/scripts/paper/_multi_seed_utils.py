@@ -8,10 +8,11 @@ with min/max envelope bands across reps. Legacy single-seed rows
 markers without a shaded band.
 
 PDB has full 3-rep coverage (rep_idx 0/1/2 → seeds 42/1042/2042) on
-both n=128 and n=256. AFDB has 3-rep coverage only on the n=128 ext-
+both n=128 and n=256. AFDB n=128 has 3-rep coverage only on the ext-
 sweep ckpts (2026-05-23): baseline 800/900/1100/1200k and mpnn-L4
-800/900/1100k. Earlier AFDB points and all n=256 AFDB points are
-single-seed and appear as bare markers on the multi-seed plots.
+800/900/1100k. AFDB n=256 has 3-rep coverage on baseline, GearNet L4,
+and MPNN L9 across the full convergence sweep (added 2026-05-24);
+GearNet L9 and MPNN L4 on AFDB n=256 remain seed 42 only.
 """
 
 from __future__ import annotations
@@ -22,6 +23,19 @@ from typing import Callable, Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator
+
+
+# Rate metrics stored in JSONL/TSV as 0–1 fractions; multiplied by 100 only at
+# plot/display time so units read as percent without rewriting source data.
+RATE_KEYS = {
+    "_res_designability_rate",
+    "_res_novelty_foldseek_pdb_rate",
+    "_res_novelty_foldseek_afdb_swissprot_rate",
+}
+
+
+def _rate_to_pct(values, key):
+    return [v * 100.0 for v in values] if key in RATE_KEYS else values
 
 
 def humanize(v, _pos=None):
@@ -173,4 +187,6 @@ __all__ = [
     "load_jsonl_with_reps",
     "extract_bands",
     "plot_band",
+    "RATE_KEYS",
+    "_rate_to_pct",
 ]

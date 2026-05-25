@@ -107,7 +107,7 @@ RUN_FAMILIES = {
 # (metric, panel title, y-axis label, higher_is_better). metric is a column
 # name (str) or (label, fn) for derived metrics (matches convergence_des).
 METRICS = [
-    ("_res_designability_rate", "Designability", "rate", True),
+    ("_res_designability_rate", "Designability", "%", True),
     # Raw cluster count; rate clusters/n_designable saturates at 1.0 for
     # small designable sets, so we keep raw counts despite the designability
     # confound. See plot_convergence_des.py for the same note.
@@ -237,6 +237,10 @@ def main() -> None:
                 xs, ys, los, his = extract_curve(rows, prefix, metric)
                 if not xs:
                     continue
+                if is_binomial(metric):
+                    ys = [v * 100.0 for v in ys]
+                    los = [v * 100.0 for v in los]
+                    his = [v * 100.0 for v in his]
                 ax.plot(
                     xs,
                     ys,
@@ -289,6 +293,8 @@ def main() -> None:
             if SHOW_PRETRAINED and isinstance(metric, str):
                 pre_val = pretrained_overlay.load_gen("n128").get(metric)
                 if pre_val is not None:
+                    if is_binomial(metric):
+                        pre_val = pre_val * 100.0
                     ax.axhline(
                         pre_val,
                         color=pretrained_overlay.PRETRAINED_COLOR,

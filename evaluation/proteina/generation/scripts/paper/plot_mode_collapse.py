@@ -32,11 +32,24 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
 from matplotlib.patches import Patch
+from matplotlib.ticker import FuncFormatter
 
 from evaluation.proteina.lib.plot_labels import (
     block_label_plan,
     compose_legend_label,
 )
+
+
+def _humanize(v, _pos=None):
+    av = abs(v)
+    if av >= 1e6:
+        return f"{v / 1e6:g}M"
+    if av >= 1e3:
+        return f"{v / 1e3:g}K"
+    if av >= 1:
+        return f"{v:g}"
+    return f"{v:.3g}"
+
 
 ROOT = Path(__file__).resolve().parents[2]  # .../proteina/generation
 FIG_ROOT = ROOT / "figures/paper"
@@ -189,6 +202,8 @@ def plot_one(n: int, tsv: Path, out: Path):
         "Des vs fS_T  —  color = SS JSD on designable subset (low/yellow = closer to natural)"
     )
     ax_sc1.grid(True, alpha=0.3)
+    ax_sc1.xaxis.set_major_formatter(FuncFormatter(_humanize))
+    ax_sc1.yaxis.set_major_formatter(FuncFormatter(_humanize))
 
     if norm1 is not None:
         sm1 = ScalarMappable(norm=norm1, cmap=cmap1)
@@ -303,6 +318,8 @@ def plot_one(n: int, tsv: Path, out: Path):
         "Helix-bias of designability filter  —  red: filter selects helix; blue: filter selects sheet"
     )
     ax_sc2.grid(True, alpha=0.3)
+    ax_sc2.xaxis.set_major_formatter(FuncFormatter(_humanize))
+    ax_sc2.yaxis.set_major_formatter(FuncFormatter(_humanize))
     ax_sc2.set_xlim(0, 1)
     ax_sc2.set_ylim(0, 1)
 
@@ -430,6 +447,8 @@ def plot_one(n: int, tsv: Path, out: Path):
 
     ax_bar.set_xlim(-0.04, 1.0)
     ax_bar.set_xlabel("Secondary-structure fraction")
+    ax_bar.xaxis.set_major_formatter(FuncFormatter(_humanize))
+    ax_bar.yaxis.set_major_formatter(FuncFormatter(_humanize))
     ax_bar.set_title(
         "SS distribution per run: overall (faded) vs designable (solid). "
         "Sorted ascending by Δ%H = des − overall  (top = most helix-biased by filter)"

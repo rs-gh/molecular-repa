@@ -72,10 +72,16 @@ PANELS = [
     ("_res_ss_jsd_{ds_lower}_designable_2d", "SS 2D-JSD vs {ds} (designable)", False),
     (
         "_res_novelty_foldseek_{nov_ref}_rate",
-        "Novelty vs {nov_ref_label} (fraction novel)",
+        "Novelty vs {nov_ref_label} (%, TM<0.5)",
         True,
     ),
 ]
+# Rate columns shown as percentages (0–100) instead of fractions (0–1).
+_RATE_KEYS = {
+    "_res_designability_rate",
+    "_res_novelty_foldseek_pdb_rate",
+    "_res_novelty_foldseek_afdb_swissprot_rate",
+}
 # Map each regime to its matching novelty target DB.
 NOV_REFS = {"PDB": ("pdb", "PDB"), "AFDB": ("afdb_swissprot", "AFDB-SP")}
 
@@ -96,7 +102,11 @@ def load_jsonl(path: Path) -> List[Dict]:
 
 
 def points_for(rows, prefixes, xcol, ycol):
-    """Return list of (step, x, y) for any row whose run starts with one of prefixes."""
+    """Return list of (step, x, y, run) for any row whose run starts with one of prefixes.
+
+    Rate columns (designability/novelty) scaled ×100 so axes read in %."""
+    x_scale = 100.0 if xcol in _RATE_KEYS else 1.0
+    y_scale = 100.0 if ycol in _RATE_KEYS else 1.0
     pts = []
     for r in rows:
         run = r.get("run", "")
@@ -105,7 +115,7 @@ def points_for(rows, prefixes, xcol, ycol):
         x, y, s = r.get(xcol), r.get(ycol), r.get("step")
         if x is None or y is None or s is None:
             continue
-        pts.append((int(s), float(x), float(y), run))
+        pts.append((int(s), float(x) * x_scale, float(y) * y_scale, run))
     return pts
 
 
@@ -208,7 +218,7 @@ def main() -> None:
 
             arrow = " ↓" if not x_higher_better else " ↑"
             ax.set_xlabel(xl + arrow)
-            ax.set_ylabel("Designability rate ↑")
+            ax.set_ylabel("Designability (%) ↑")
             ax.set_title(f"{ds} — Designability vs {xl.split(' vs ')[0]}")
             if not x_higher_better:
                 ax.invert_xaxis()  # right = better

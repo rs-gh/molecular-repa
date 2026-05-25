@@ -13,8 +13,21 @@ import csv
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 
 from evaluation.proteina.lib.plot_labels import pretty_run_label
+
+
+def _humanize(v, _pos=None):
+    av = abs(v)
+    if av >= 1e6:
+        return f"{v / 1e6:g}M"
+    if av >= 1e3:
+        return f"{v / 1e3:g}K"
+    if av >= 1:
+        return f"{v:g}"
+    return f"{v:.3g}"
+
 
 ROOT = Path(__file__).resolve().parents[2]
 FIG_ROOT = ROOT / "figures/paper"
@@ -100,6 +113,8 @@ def plot_one(rows, n_label: str, out: Path):
         ax.invert_xaxis()  # right = lower JSD = better
         ax.invert_yaxis()  # up = lower JSD = better
         ax.grid(True, alpha=0.3)
+        ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
+        ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
 
     fig.suptitle(
         f"n={n_label} — Distribution-shape sensitivity. "

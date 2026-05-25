@@ -134,6 +134,8 @@ def main() -> None:
         )
         ax.xaxis.set_minor_formatter(NullFormatter())
         ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
+        ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
+        ax.yaxis.set_minor_formatter(NullFormatter())
         ax.set_xlabel("Training step")
         ax.set_ylabel("H/E ratio (designable)")
         ax.invert_yaxis()  # closer to 1 = better; flip log axis so 1 sits nearer the top

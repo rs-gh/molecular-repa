@@ -22,6 +22,19 @@ from typing import Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.ticker import FuncFormatter
+
+
+def _humanize(v, _pos=None):
+    av = abs(v)
+    if av >= 1e6:
+        return f"{v / 1e6:g}M"
+    if av >= 1e3:
+        return f"{v / 1e3:g}K"
+    if av >= 1:
+        return f"{v:g}"
+    return f"{v:.3g}"
+
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
 sys.path.insert(0, str(REPO_ROOT))
@@ -65,7 +78,8 @@ Y_METRICS = {
     "afdb": ("_res_ss_jsd_afdb_designable_2d", "SS 2D-JSD vs AFDB (designable)"),
 }
 X_COL = "_res_designability_rate"
-X_LABEL = "Designability rate"
+X_LABEL = "Designability (%)"
+X_SCALE = 100.0  # _res_designability_rate is a 0–1 fraction; show as 0–100 %.
 
 
 def fnum(x) -> Optional[float]:
@@ -99,7 +113,7 @@ def load_gen(path: Path, y_col: str) -> Dict[Tuple[str, int], Tuple[float, float
         y = fnum(r.get(y_col))
         if x is None or y is None:
             continue
-        out[(run, step)] = (x, y)
+        out[(run, step)] = (x * X_SCALE, y)
     return out
 
 
@@ -221,6 +235,8 @@ def plot_one(ref: str) -> None:
             if SHOW_PRETRAINED:
                 pre = pretrained_overlay.load_gen("n256")
                 px, py = pre.get(X_COL), pre.get(y_col)
+                if px is not None:
+                    px = px * X_SCALE
                 if px is not None and py is not None:
                     ax.scatter(
                         [px],
@@ -238,6 +254,8 @@ def plot_one(ref: str) -> None:
             ax.set_ylabel(y_label)
             ax.set_title(f"{ds_name}: baseline vs {rep_label}", fontsize=10)
             ax.grid(True, alpha=0.3)
+            ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
+            ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
             # Good corner = bottom-right; legend in upper-left empty quadrant.
             ax.legend(loc="upper left", fontsize=7)
 

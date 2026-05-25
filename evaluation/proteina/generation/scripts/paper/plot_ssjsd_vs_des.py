@@ -104,6 +104,9 @@ def main() -> None:
         xcol = "_res_designability_rate"
         base = pts_for(rows, BASELINES[ds], xcol, ycol)
         repa = pts_for(rows, REPA[ds], xcol, ycol)
+        # _res_designability_rate is 0–1 → show as 0–100 %.
+        base = [(x * 100.0, y) for x, y in base]
+        repa = [(x * 100.0, y) for x, y in repa]
         ax = axes[col_i]
 
         if base:
@@ -135,7 +138,7 @@ def main() -> None:
                 label=f"REPA (all variants, n={len(repa)})",
             )
 
-        ax.set_xlabel("Designability rate ↑")
+        ax.set_xlabel("Designability (%) ↑")
         ax.set_ylabel(f"SS 2D-JSD vs {ds} (designable) ↓")
         ax.invert_yaxis()  # up = better
         ax.set_title(f"{ds} — does REPA preserve SS at matched designability?")

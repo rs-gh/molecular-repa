@@ -19,6 +19,8 @@ from evaluation.proteina.generation.scripts.paper._multi_seed_utils import (  # 
     load_jsonl_with_reps,
     extract_bands,
     plot_band,
+    RATE_KEYS,
+    _rate_to_pct,
 )
 from evaluation.proteina.lib import pretrained_overlay  # noqa: E402
 
@@ -32,7 +34,7 @@ SHOW_PRETRAINED = True
 #   linestyle = solid everywhere; markers carry the encoder distinction.
 
 DES_METRICS = [
-    ("_res_designability_rate", "Designability", "rate", True),
+    ("_res_designability_rate", "Designability", "%", True),
     ("_res_diversity_clusters_total", "Diversity (clusters)", "# clusters (des)", True),
     (
         "_res_diversity_pairwise_tm_mean",
@@ -43,13 +45,13 @@ DES_METRICS = [
     (
         "_res_novelty_foldseek_pdb_rate",
         "Novelty vs PDB",
-        "fraction novel (TM<0.5)",
+        "% novel (TM<0.5)",
         True,
     ),
     (
         "_res_novelty_foldseek_afdb_swissprot_rate",
         "Novelty vs AFDB-SP",
-        "fraction novel (TM<0.5)",
+        "% novel (TM<0.5)",
         True,
     ),
     ("_res_ss_jsd_pdb_designable_2d", "SS 2D-JSD vs PDB (des)", "JSD", False),
@@ -141,6 +143,8 @@ def _overlay_pretrained(ax, metric_key, *, first_col, n_label):
     pre_val = pre.get(metric_key)
     if pre_val is None:
         return
+    if metric_key in RATE_KEYS:
+        pre_val = pre_val * 100.0
     ax.axhline(
         pre_val,
         color=pretrained_overlay.PRETRAINED_COLOR,
@@ -163,6 +167,9 @@ def _plot_des(rows, comp, fig_out, *, n_label, pretrained_key):
         ax = axes[col_i]
         for prefix, label, color, ls, marker in families:
             xs, mu, lo, hi, _ = extract_bands(rows, prefix, metric)
+            mu = _rate_to_pct(mu, metric)
+            lo = _rate_to_pct(lo, metric)
+            hi = _rate_to_pct(hi, metric)
             plot_band(ax, xs, mu, lo, hi, color, ls, marker, label)
         ax.set_xscale("log")
         log_y = title in _LOG_Y_DES

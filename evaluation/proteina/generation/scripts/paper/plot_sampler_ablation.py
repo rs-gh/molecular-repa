@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter, LogLocator
+from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter
 
 
 def _humanize(v, _pos=None):
@@ -45,23 +45,55 @@ def _style_axes(ax, log_y: bool = False) -> None:
     )
     ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs="auto", numticks=20))
     ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
+    ax.xaxis.set_minor_formatter(NullFormatter())
     ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
+    ax.yaxis.set_minor_formatter(NullFormatter())
 
 
 ROOT = Path(__file__).resolve().parents[2]
-JSONL = ROOT / "results/variance/n256_sampler_ablation/sweep_results.jsonl"
-# Paper-operating-point overlay: γ=0.45 (sc_scale_noise=0.45) rows from the
-# convergence sweep. Same model checkpoints, paper-default SDE noise scale.
-JSONL_PAPER = ROOT / "results/paper/n256_convergence_pdb/sweep_results.jsonl"
-FIG_OUT = ROOT / "figures/paper/n256_sampler_ablation"
-FIG_OUT.mkdir(parents=True, exist_ok=True)
 
-# (run-id, row title)
-# Within each panel we plot baseline vs REPA L9 head-to-head. Color = model.
-MODEL_RUNS = [
-    ("baseline_256_bs24_2gpu", "Baseline", "tab:blue", "s"),
-    ("repa_l9_256_per_residue_bs24_2gpu", "REPA L9 (GearNet)", "tab:red", "o"),
-]
+# Per-dataset configuration. Selected via --dataset CLI flag (default: pdb).
+# Each entry pins the ablation jsonl, the γ=0.45 overlay (multi-rep convergence
+# sweep), the two model runs to compare head-to-head, and the fig output dir.
+# Color/marker follow the report-wide convention: baseline=blue/square,
+# L4=red, L9=green; GearNet=circle, MPNN=triangle.
+DATASET_CONFIGS = {
+    "pdb": {
+        "jsonl": ROOT / "results/variance/n256_sampler_ablation/sweep_results.jsonl",
+        "jsonl_paper": ROOT
+        / "results/paper/n256_convergence_pdb/sweep_results.clean.jsonl",
+        "fig_out": ROOT / "figures/paper/n256_sampler_ablation/pdb",
+        "models": [
+            ("baseline_256_bs24_2gpu", "Baseline", "tab:blue", "s"),
+            (
+                "repa_l9_256_per_residue_bs24_2gpu",
+                "REPA L9 (GearNet)",
+                "tab:green",
+                "o",
+            ),
+        ],
+        "label": "PDB",
+    },
+    "afdb": {
+        "jsonl": ROOT
+        / "results/variance/n256_afdb_sampler_ablation/sweep_results.jsonl",
+        "jsonl_paper": ROOT
+        / "results/paper/n256_convergence_afdb/sweep_results.clean.jsonl",
+        "fig_out": ROOT / "figures/paper/n256_sampler_ablation/afdb",
+        "models": [
+            ("baseline_afdb_256", "Baseline (AFDB)", "tab:blue", "s"),
+            ("repa_l4_afdb_256", "REPA L4 GearNet (AFDB)", "tab:red", "o"),
+        ],
+        "label": "AFDB",
+    },
+}
+
+# Module-level placeholders filled in main() based on CLI dataset choice.
+JSONL = None
+JSONL_PAPER = None
+FIG_OUT = None
+MODEL_RUNS = None
+DATASET_LABEL = None
 
 # One row per sampler config. Ordered by injected noise, least → most.
 SAMPLERS = [
@@ -99,7 +131,7 @@ def _he_ratio(r):
 
 
 DES_METRICS = [
-    ("_res_designability_rate", "Designability", "rate", False, True),
+    ("_res_designability_rate", "Designability", "%", False, True),
     ("_res_scRMSD_mean", "scRMSD (mean)", "Å", False, False),
     ("_res_scRMSD_median", "scRMSD (median)", "Å", False, False),
     ("_res_plddt_mean", "pLDDT (mean)", "pLDDT", False, True),
@@ -127,7 +159,7 @@ DES_METRICS = [
     (
         "_res_novelty_foldseek_pdb_rate",
         "Novelty vs PDB",
-        "frac novel (TM<0.5)",
+        "% novel (TM<0.5)",
         False,
         True,
     ),
@@ -141,7 +173,7 @@ DES_METRICS = [
     (
         "_res_novelty_foldseek_afdb_swissprot_rate",
         "Novelty vs AFDB-SP",
-        "frac novel (TM<0.5)",
+        "% novel (TM<0.5)",
         False,
         True,
     ),
@@ -181,11 +213,14 @@ def load_paper_overlay(path: Path) -> List[Dict]:
 
 
 def extract(rows, run_prefix, sampler_tag, metric):
+    """Per (run-prefix, sampler_tag, step), aggregate reps → (steps, means,
+    mins, maxs). Single-rep configs collapse to mn==mx so the band fill is
+    empty and plot_band renders just the line+markers."""
     if isinstance(metric, tuple) and callable(metric[1]):
         fn = metric[1]
     else:
         fn = lambda r, _m=metric: r.get(_m)  # noqa: E731
-    pts = []
+    by_step: Dict[int, List[float]] = {}
     for r in rows:
         run = r.get("run", "")
         if not run.startswith(run_prefix):
@@ -200,21 +235,54 @@ def extract(rows, run_prefix, sampler_tag, metric):
         s = r.get("step")
         if v is None or s is None:
             continue
-        pts.append((int(s), float(v)))
-    pts.sort()
-    if not pts:
-        return [], []
-    xs, ys = zip(*pts)
-    return list(xs), list(ys)
+        by_step.setdefault(int(s), []).append(float(v))
+    steps = sorted(by_step)
+    if not steps:
+        return [], [], [], []
+    means = [sum(by_step[s]) / len(by_step[s]) for s in steps]
+    mins = [min(by_step[s]) for s in steps]
+    maxs = [max(by_step[s]) for s in steps]
+    return steps, means, mins, maxs
 
 
-def plot_curve(ax, xs, ys, color, marker, label):
-    ax.plot(
-        xs, ys, linewidth=1.4, color=color, linestyle="-", alpha=0.35, marker="none"
-    )
+def plot_band(ax, xs, means, mins, maxs, color, marker, label):
+    """Mean line + min/max envelope. Mirrors _multi_seed_utils.plot_band:
+    multi-rep → faded line + min/max fill; single-rep ≥3 pts → opaque line,
+    no fill; <3 pts → markers only."""
+    if not xs:
+        return
+    has_variance = any(mn != mx for mn, mx in zip(mins, maxs))
+    too_few_for_trend = len(xs) < 3
+    if too_few_for_trend:
+        ax.plot(
+            xs,
+            means,
+            marker=marker,
+            markersize=9,
+            markeredgewidth=1.0,
+            markeredgecolor="white",
+            linestyle="none",
+            color=color,
+            label=label,
+        )
+        if has_variance:
+            ax.fill_between(xs, mins, maxs, color=color, alpha=0.18, linewidth=0)
+        return
+    line_alpha = 0.45 if has_variance else 0.85
+    line_width = 1.4 if has_variance else 1.7
     ax.plot(
         xs,
-        ys,
+        means,
+        linewidth=line_width,
+        color=color,
+        linestyle="-",
+        alpha=line_alpha,
+        marker="none",
+    )
+    ax.fill_between(xs, mins, maxs, color=color, alpha=0.18, linewidth=0)
+    ax.plot(
+        xs,
+        means,
         marker=marker,
         markersize=6,
         markeredgewidth=0.8,
@@ -225,7 +293,28 @@ def plot_curve(ax, xs, ys, color, marker, label):
     )
 
 
-def _plot_figure(rows, columns, suptitle, out_name):
+def extract_des_rate(rows, run_prefix, sampler_tag):
+    """Per training step, mean designability rate across reps. Used to
+    annotate SS panels so the reader can spot small-N noise (esp. baseline at
+    γ=1.0). Rate handles the mixed-N case (250 vs 100 samples per rep)."""
+    by_step: Dict[int, List[float]] = {}
+    for r in rows:
+        run = r.get("run", "")
+        if not run.startswith(run_prefix):
+            continue
+        if run != run_prefix and "_step" not in run.split(run_prefix)[-1]:
+            continue
+        if r.get("sampler_tag") != sampler_tag:
+            continue
+        rate = r.get("_res_designability_rate")
+        s = r.get("step")
+        if rate is None or s is None:
+            continue
+        by_step.setdefault(int(s), []).append(float(rate))
+    return {s: sum(v) / len(v) for s, v in by_step.items()}
+
+
+def _plot_figure(rows, columns, suptitle, out_name, annotate_n=False):
     ncols = len(columns)
     fig, axes = plt.subplots(
         nrows=len(SAMPLERS),
@@ -238,10 +327,30 @@ def _plot_figure(rows, columns, suptitle, out_name):
         for col_i, (metric, title, log_y, hib) in enumerate(columns):
             ax = axes[row_i, col_i]
             for run_prefix, model_label, color, marker in MODEL_RUNS:
-                xs, ys = extract(rows, run_prefix, sampler_tag, metric)
+                xs, means, mins, maxs = extract(rows, run_prefix, sampler_tag, metric)
                 if not xs:
                     continue
-                plot_curve(ax, xs, ys, color, marker, model_label)
+                # Rate columns are 0–1 fractions → render as 0–100 %.
+                if isinstance(metric, str) and metric.endswith("_rate"):
+                    means = [v * 100.0 for v in means]
+                    mins = [v * 100.0 for v in mins]
+                    maxs = [v * 100.0 for v in maxs]
+                plot_band(ax, xs, means, mins, maxs, color, marker, model_label)
+                if annotate_n:
+                    rate_by_step = extract_des_rate(rows, run_prefix, sampler_tag)
+                    for x, y in zip(xs, means):
+                        rate = rate_by_step.get(x)
+                        if rate is None:
+                            continue
+                        ax.annotate(
+                            f"{rate * 100:.1f}%",
+                            (x, y),
+                            xytext=(4, 4),
+                            textcoords="offset points",
+                            fontsize=6,
+                            color=color,
+                            alpha=0.85,
+                        )
             ax.set_xscale("log")
             if log_y:
                 ax.set_yscale("log")
@@ -283,6 +392,21 @@ def _plot_figure(rows, columns, suptitle, out_name):
 
 
 def main() -> None:
+    import argparse
+
+    p = argparse.ArgumentParser()
+    p.add_argument("--dataset", choices=list(DATASET_CONFIGS), default="pdb")
+    args = p.parse_args()
+
+    cfg = DATASET_CONFIGS[args.dataset]
+    global JSONL, JSONL_PAPER, FIG_OUT, MODEL_RUNS, DATASET_LABEL
+    JSONL = cfg["jsonl"]
+    JSONL_PAPER = cfg["jsonl_paper"]
+    FIG_OUT = cfg["fig_out"]
+    MODEL_RUNS = cfg["models"]
+    DATASET_LABEL = cfg["label"]
+    FIG_OUT.mkdir(parents=True, exist_ok=True)
+
     rows = load_jsonl(JSONL) + load_paper_overlay(JSONL_PAPER)
 
     fid_cols = [
@@ -311,8 +435,8 @@ def main() -> None:
         rows,
         fid_cols,
         suptitle=(
-            "n=256 sampler ablation — FID-family distributional metrics across training steps\n"
-            "Rows = sampler config. Baseline (blue) vs REPA L9 GearNet per_residue (red), head-to-head per regime. Single seed (42)."
+            f"n=256 {DATASET_LABEL} sampler ablation — FID-family distributional metrics across training steps\n"
+            "Rows = sampler config. Baseline (blue) vs REPA (red/green) head-to-head per regime. γ=0.45 plotted as mean+min/max envelope; other γ are single seed 42."
         ),
         out_name="sampler_ablation_fid.png",
     )
@@ -320,8 +444,8 @@ def main() -> None:
         rows,
         des_quality,
         suptitle=(
-            "n=256 sampler ablation — designability / sample-quality / diversity (designable subset)\n"
-            "Rows = sampler config. Baseline (blue) vs REPA L9 GearNet per_residue (red), head-to-head per regime. Single seed (42)."
+            f"n=256 {DATASET_LABEL} sampler ablation — designability / sample-quality / diversity (designable subset)\n"
+            "Rows = sampler config. Baseline (blue) vs REPA (red/green) head-to-head per regime. γ=0.45 plotted as mean+min/max envelope; other γ are single seed 42."
         ),
         out_name="sampler_ablation_des_quality.png",
     )
@@ -329,8 +453,8 @@ def main() -> None:
         rows,
         des_dist,
         suptitle=(
-            "n=256 sampler ablation — novelty / SS-distribution match (designable subset)\n"
-            "Rows = sampler config. Baseline (blue) vs REPA L9 GearNet per_residue (red), head-to-head per regime. Single seed (42)."
+            f"n=256 {DATASET_LABEL} sampler ablation — novelty / SS-distribution match (designable subset)\n"
+            "Rows = sampler config. Baseline (blue) vs REPA (red/green) head-to-head per regime. γ=0.45 plotted as mean+min/max envelope; other γ are single seed 42."
         ),
         out_name="sampler_ablation_des_dist.png",
     )
@@ -349,10 +473,11 @@ def main() -> None:
         rows,
         ss_cols,
         suptitle=(
-            "n=256 sampler ablation — secondary-structure focus (designable subset)\n"
-            "Does REPA shift SS diversity (H frac, E frac, H/E, SS-2D-JSD) under different sampling regimes? Rows = sampler. Single seed (42)."
+            f"n=256 {DATASET_LABEL} sampler ablation — secondary-structure focus (designable subset)\n"
+            "Does REPA shift SS diversity (H frac, E frac, H/E, SS-2D-JSD) under different sampling regimes? Rows = sampler. γ=0.45 plotted as mean+min/max over 3 reps (seeds 42/1042/2042); other γ are single seed 42. Inline % is the designability rate at that ckpt (small % → SS computed over few samples → noisy)."
         ),
         out_name="sampler_ablation_ss.png",
+        annotate_n=True,
     )
 
 

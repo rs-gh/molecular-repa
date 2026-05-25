@@ -21,6 +21,8 @@ from evaluation.proteina.generation.scripts.paper._multi_seed_utils import (  # 
     load_jsonl_with_reps,
     extract_bands,
     plot_band,
+    RATE_KEYS,
+    _rate_to_pct,
 )
 from evaluation.proteina.generation.scripts.paper.plot_convergence_fid_multi_seed import (  # noqa: E402
     RUN_FAMILIES_N128,
@@ -53,7 +55,7 @@ CONFIGS = [
 ]
 
 METRICS = [
-    ("_res_designability_rate", "Designability", "rate", True),
+    ("_res_designability_rate", "Designability", "%", True),
     ("_res_diversity_clusters_total", "Diversity (clusters)", "# clusters (des)", True),
     (
         "_res_diversity_pairwise_tm_mean",
@@ -64,13 +66,13 @@ METRICS = [
     (
         "_res_novelty_foldseek_pdb_rate",
         "Novelty vs PDB",
-        "fraction novel (TM<0.5)",
+        "% novel (TM<0.5)",
         True,
     ),
     (
         "_res_novelty_foldseek_afdb_swissprot_rate",
         "Novelty vs AFDB-SP",
-        "fraction novel (TM<0.5)",
+        "% novel (TM<0.5)",
         True,
     ),
     ("_res_ss_jsd_pdb_designable_2d", "SS 2D-JSD vs PDB (des)", "JSD", False),
@@ -119,6 +121,9 @@ def plot_one(n, fig_subdir, datasets):
             ax = axes[row_i, col_i]
             for prefix, label, color, ls, marker in families:
                 xs, mu, lo, hi, _ = extract_bands(rows, prefix, metric)
+                mu = _rate_to_pct(mu, metric)
+                lo = _rate_to_pct(lo, metric)
+                hi = _rate_to_pct(hi, metric)
                 plot_band(ax, xs, mu, lo, hi, color, ls, marker, label)
             ax.set_xscale("log")
             log_y = title in _LOG_Y_TITLES
@@ -134,6 +139,8 @@ def plot_one(n, fig_subdir, datasets):
             if SHOW_PRETRAINED and isinstance(metric, str):
                 pre_val = pretrained_overlay.load_gen().get(metric)
                 if pre_val is not None:
+                    if metric in RATE_KEYS:
+                        pre_val = pre_val * 100.0
                     ax.axhline(
                         pre_val,
                         color=pretrained_overlay.PRETRAINED_COLOR,

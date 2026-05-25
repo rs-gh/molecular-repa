@@ -20,6 +20,19 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter, NullFormatter
+
+
+def _humanize(v, _pos=None):
+    av = abs(v)
+    if av >= 1e6:
+        return f"{v / 1e6:g}M"
+    if av >= 1e3:
+        return f"{v / 1e3:g}K"
+    if av >= 1:
+        return f"{v:g}"
+    return f"{v:.3g}"
+
 
 ROOT = Path(__file__).resolve().parents[2]  # .../proteina/generation
 RESULTS = ROOT / "results/paper"
@@ -120,6 +133,10 @@ def main() -> None:
         ax.set_xlabel("Training step")
         ax.set_ylabel("H/E ratio (designable)")
         ax.invert_yaxis()  # closer to 1 = better; flip log axis so 1 sits nearer the top
+        ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
+        ax.xaxis.set_minor_formatter(NullFormatter())
+        ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
+        ax.yaxis.set_minor_formatter(NullFormatter())
         ax.set_title(f"{ds_name}: helix/sheet ratio over training")
         ax.grid(True, alpha=0.3)
         ax.legend(loc="best", fontsize=7)

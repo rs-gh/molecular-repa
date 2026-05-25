@@ -17,11 +17,24 @@ import csv
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 
 from evaluation.proteina.lib.plot_labels import (
     block_label_plan,
     compose_legend_label,
 )
+
+
+def _humanize(v, _pos=None):
+    av = abs(v)
+    if av >= 1e6:
+        return f"{v / 1e6:g}M"
+    if av >= 1e3:
+        return f"{v / 1e3:g}K"
+    if av >= 1:
+        return f"{v:g}"
+    return f"{v:.3g}"
+
 
 ROOT = Path(__file__).resolve().parents[2]  # .../proteina/generation
 FIG_ROOT = ROOT / "figures/paper"
@@ -197,6 +210,8 @@ def plot_one(n: int, tsv: Path, out: Path):
         ax.set_xlabel(title + " ↓")
         ax.invert_xaxis()  # right = better (FPSD/fJSD natural direction is lower)
         ax.grid(True, alpha=0.3)
+        ax.xaxis.set_major_formatter(FuncFormatter(_humanize))
+        ax.yaxis.set_major_formatter(FuncFormatter(_humanize))
     axes[0].set_ylabel("Designability (%) ↑")
     fig.suptitle(f"n={n} — Designability vs FPSD (with paper Table 1 baselines)")
 
