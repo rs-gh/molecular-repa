@@ -451,3 +451,115 @@ paper_n128_cath_if_dih_convergence_pdb_retry:
   output_dir: results/paper/n128_convergence_cath_if_dih_pdb
   baseline_trained_noise_run: baseline_128_bs80_step200k
   runs: "baseline_128_bs80_step200k,repa_l4_128_bs80_step200k,repa_l4_128_bs80_step300k,repa_l4_128_bs80_step400k"
+
+# ─────────────────────────────────────────────────────────────────────────── #
+# ext2 (2026-05-26) — new-checkpoint extension across all three regimes
+# (dirty / cleantrain / xclean) at the paper-final n_train=5000.
+#
+# Manifests:
+#   dirty       — train_v1 (5000), eval_v1
+#   cleantrain  — train_clean_v2 (5000, PDB train minus PDB-val ≥30% homologs)
+#   xclean      — train_v2 (5000, uniform sample of cross-DB train) +
+#                 eval_clean_v2 (doubly-cleaned val: filtered against both
+#                 train sets at 30% identity)
+#
+# v2 manifests built by scripts/paper/build_clean_manifests_v2.py on
+# 2026-05-26. The original v1 manifests (n=1000) remain in each results dir
+# for backward compatibility; v2 lives alongside them.
+#
+# Run lists cover only checkpoints newer than what already lives in the
+# v1 dirs (audited 2026-05-26). Same output_dir as the base/_ext profiles so
+# shards consolidate in place.
+# ─────────────────────────────────────────────────────────────────────────── #
+
+# --- n=256 PDB (13 new ckpts × 3 regimes) ---
+
+paper_n256_cath_if_dih_convergence_pdb_ext2:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 3190
+  output_dir: results/paper/n256_convergence_cath_if_dih_pdb
+  baseline_trained_noise_run: baseline_256_ep21
+  runs: "baseline_256_bs24_2gpu_step1600k,baseline_256_bs24_2gpu_step1700k,repa_l4_256_per_residue_bs24_2gpu_step1000k,repa_l9_256_per_residue_bs24_2gpu_step1000k,repa_l9_256_per_residue_bs24_2gpu_step1100k,repa_l9_256_per_residue_bs24_2gpu_step1200k,repa_l4_256_per_residue_random_bs24_2gpu_step800k,repa_mpnn_l9_256_per_residue_step800k,repa_mpnn_l9_256_per_residue_step900k,repa_mpnn_l9_256_per_residue_step1000k,repa_mpnn_l9_256_per_residue_step1100k,repa_mpnn_l9_256_per_residue_step1200k,repa_mpnn_l9_256_per_residue_step1300k"
+
+paper_n256_cath_if_dih_cleantrain_pdb_ext2:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 3190
+  train_manifest_version: train_clean_v2
+  eval_manifest_version: eval_v1
+  output_dir: results/paper/n256_convergence_cleantrain_pdb
+  baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
+  runs: "baseline_256_bs24_2gpu_step1600k,baseline_256_bs24_2gpu_step1700k,repa_l4_256_per_residue_bs24_2gpu_step1000k,repa_l9_256_per_residue_bs24_2gpu_step1000k,repa_l9_256_per_residue_bs24_2gpu_step1100k,repa_l9_256_per_residue_bs24_2gpu_step1200k,repa_l4_256_per_residue_random_bs24_2gpu_step800k,repa_mpnn_l9_256_per_residue_step800k,repa_mpnn_l9_256_per_residue_step900k,repa_mpnn_l9_256_per_residue_step1000k,repa_mpnn_l9_256_per_residue_step1100k,repa_mpnn_l9_256_per_residue_step1200k,repa_mpnn_l9_256_per_residue_step1300k"
+
+paper_n256_cath_if_dih_xclean_afdb_pdb_ext2:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 325
+  train_manifest_version: train_v2
+  eval_manifest_version: eval_clean_v2
+  output_dir: results/paper/n256_xclean_afdb_pdb
+  baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
+  runs: "baseline_256_bs24_2gpu_step1600k,baseline_256_bs24_2gpu_step1700k,repa_l4_256_per_residue_bs24_2gpu_step1000k,repa_l9_256_per_residue_bs24_2gpu_step1000k,repa_l9_256_per_residue_bs24_2gpu_step1100k,repa_l9_256_per_residue_bs24_2gpu_step1200k,repa_l4_256_per_residue_random_bs24_2gpu_step800k,repa_mpnn_l9_256_per_residue_step800k,repa_mpnn_l9_256_per_residue_step900k,repa_mpnn_l9_256_per_residue_step1000k,repa_mpnn_l9_256_per_residue_step1100k,repa_mpnn_l9_256_per_residue_step1200k,repa_mpnn_l9_256_per_residue_step1300k"
+
+# --- n=256 AFDB (6 new ckpts × 2 regimes; cleantrain skipped — manifest pool
+#     would need AFDB-train minus AFDB-val homologs, not built yet) ---
+
+paper_n256_cath_if_dih_convergence_afdb_ext2:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 4521
+  output_dir: results/paper/n256_convergence_cath_if_dih_afdb
+  baseline_trained_noise_run: baseline_afdb_256_ep20
+  runs: "baseline_afdb_256_step1700k,baseline_afdb_256_step1800k,repa_l4_afdb_256_step1300k,repa_l9_afdb_256_step700k,repa_l9_afdb_256_step800k,repa_l9_afdb_256_step900k"
+
+paper_n256_cath_if_dih_xclean_pdb_afdb_ext2:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 62
+  train_manifest_version: train_v2
+  eval_manifest_version: eval_clean_v2
+  output_dir: results/paper/n256_xclean_pdb_afdb
+  baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
+  runs: "baseline_afdb_256_step1700k,baseline_afdb_256_step1800k,repa_l4_afdb_256_step1300k,repa_l9_afdb_256_step700k,repa_l9_afdb_256_step800k,repa_l9_afdb_256_step900k"
+
+# --- n=128 PDB (6 new ckpts × 3 regimes) ---
+
+paper_n128_cath_if_dih_convergence_pdb_ext2:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 128
+  n_eval: 1237
+  output_dir: results/paper/n128_convergence_cath_if_dih_pdb
+  baseline_trained_noise_run: baseline_128_bs80_step200k
+  runs: "repa_l4_128_bs80_step600k,repa_l9_128_bs80_step500k,repa_l4_128_random_step500k,repa_l4_128_random_step600k,repa_mpnn_l9_128_bs80_2gpu_step600k,repa_mpnn_l9_128_bs80_2gpu_step700k"
+
+paper_n128_cath_if_dih_cleantrain_pdb_ext2:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 128
+  n_eval: 1237
+  train_manifest_version: train_clean_v2
+  eval_manifest_version: eval_v1
+  output_dir: results/paper/n128_convergence_cleantrain_pdb
+  baseline_trained_noise_run: baseline_128_bs80_step200k
+  runs: "repa_l4_128_bs80_step600k,repa_l9_128_bs80_step500k,repa_l4_128_random_step500k,repa_l4_128_random_step600k,repa_mpnn_l9_128_bs80_2gpu_step600k,repa_mpnn_l9_128_bs80_2gpu_step700k"
+
+paper_n128_cath_if_dih_xclean_afdb_pdb_ext2:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 128
+  n_eval: 154
+  train_manifest_version: train_v2
+  eval_manifest_version: eval_clean_v2
+  output_dir: results/paper/n128_xclean_afdb_pdb
+  baseline_trained_noise_run: baseline_128_bs80_step200k
+  runs: "repa_l4_128_bs80_step600k,repa_l9_128_bs80_step500k,repa_l4_128_random_step500k,repa_l4_128_random_step600k,repa_mpnn_l9_128_bs80_2gpu_step600k,repa_mpnn_l9_128_bs80_2gpu_step700k"
+
+# --- n=128 AFDB (2 new ckpts × 1 regime; xclean+cleantrain manifests don't
+#     exist for this bucket yet) ---
+
+paper_n128_cath_if_dih_convergence_afdb_ext2:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 128
+  n_eval: 1586
+  output_dir: results/paper/n128_convergence_cath_if_dih_afdb
+  baseline_trained_noise_run: baseline_afdb_128_bs80_step200k
+  runs: "baseline_afdb_128_bs80_step1100k,baseline_afdb_128_bs80_step1200k"
