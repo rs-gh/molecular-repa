@@ -1,0 +1,11 @@
+# Cached intermediate features and frozen batches are large (~1 GB total)
+# and trivially regenerated from the pipeline scripts. Don't track in git.
+*.pt
+encoder_features/
+model_features/
+
+# Keep the headline artifacts under version control:
+#   cknna_matrix.jsonl
+#   figures/*.png
+!cknna_matrix.jsonl
+!figures/
