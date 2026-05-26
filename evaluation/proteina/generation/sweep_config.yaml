@@ -492,3 +492,40 @@ n128_convergence_pdb_ext2:
   runs: "repa_l4_128_bs80_step600k,repa_l4_128_random_step500k,repa_l4_128_random_step600k,repa_l9_128_bs80_step500k,repa_mpnn_l9_128_bs80_2gpu_step600k,repa_mpnn_l9_128_bs80_2gpu_step700k"
   output_dir: results/paper/n128_convergence_pdb
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# 2026-05-25: n=256 convergence extension 3 — past-horizon ckpts only. Extends
+# the curve for runs that trained past their last-evaluated step. Intermediate
+# gaps intentionally left out. Multi-seed via
+# submit_variance_sweep.sh --axis A --reps 3. Same output dirs as base.
+n256_convergence_pdb_ext3:
+  <<: *paper_defaults
+  runs: "baseline_256_bs24_2gpu_step1600k"
+  output_dir: results/paper/n256_convergence_pdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+n256_convergence_afdb_ext3:
+  <<: *paper_defaults
+  runs: "baseline_afdb_256_step1700k,repa_l9_afdb_256_step900k"
+  output_dir: results/paper/n256_convergence_afdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+n128_convergence_afdb_ext3:
+  <<: *paper_defaults
+  runs: "baseline_afdb_128_bs80_step1100k,baseline_afdb_128_bs80_step1200k,repa_l4_afdb_128_bs80_step500k,repa_l4_afdb_128_bs80_step600k,repa_mpnn_l4_afdb_128_bs80_step1100k,repa_mpnn_l9_afdb_128_bs80_2gpu_step500k,repa_mpnn_l9_afdb_128_bs80_2gpu_step600k"
+  output_dir: results/paper/n128_convergence_afdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+
+# 2026-05-26: n=256 convergence extension 4 — past-horizon ckpts that landed
+# while ext3 was running. Multi-seed via submit_variance_sweep.sh --axis A.
+n256_convergence_pdb_ext4:
+  <<: *paper_defaults
+  runs: "baseline_256_bs24_2gpu_step1700k,repa_l9_256_per_residue_bs24_2gpu_step1200k,repa_mpnn_l9_256_per_residue_step1300k,repa_l4_256_per_residue_random_bs24_2gpu_step800k"
+  output_dir: results/paper/n256_convergence_pdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+n256_convergence_afdb_ext4:
+  <<: *paper_defaults
+  runs: "baseline_afdb_256_step1800k,repa_l4_afdb_256_step1300k"
+  output_dir: results/paper/n256_convergence_afdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"

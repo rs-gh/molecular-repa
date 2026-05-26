@@ -1347,6 +1347,99 @@ RUN_SCHEDULES = {
         9,
         [700000],
     ),
+    # ── n=256 convergence extension 3 (added 2026-05-25) ────────────────────
+    # Past-horizon ckpts only: runs that have trained beyond their previously-
+    # evaluated max step. Intermediate gaps deliberately left out — we extend
+    # the curve, not densify it.
+    "baseline_256_bs24_2gpu_step1600k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [1600000],
+    ),
+    "baseline_afdb_256_step1700k": (
+        "proteina_60m_baseline_afdb_swissprot_256",
+        False,
+        4,
+        [1700000],
+    ),
+    "repa_l9_afdb_256_step900k": (
+        "proteina_60m_repa_l9_256_afdb_per_residue",
+        True,
+        9,
+        [900000],
+    ),
+    # ── n=128 AFDB convergence extension 3 (added 2026-05-25) ───────────────
+    # Past-horizon ckpts for AFDB-128 runs that trained beyond ext2 horizon.
+    "baseline_afdb_128_bs80_step1100k": (
+        "proteina_60m_baseline_afdb_128_bs80_2gpu",
+        False,
+        4,
+        [1100000],
+    ),
+    "repa_l4_afdb_128_bs80_step500k": (
+        "proteina_60m_repa_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [500000],
+    ),
+    "repa_mpnn_l4_afdb_128_bs80_step1100k": (
+        "proteina_60m_repa_mpnn_l4_128_afdb_per_residue_bs80_2gpu",
+        True,
+        4,
+        [1100000],
+    ),
+    "repa_mpnn_l9_afdb_128_bs80_2gpu_step500k": (
+        "proteina_60m_repa_mpnn_l9_128_afdb_per_residue_bs80_2gpu",
+        True,
+        9,
+        [500000],
+    ),
+    "repa_mpnn_l9_afdb_128_bs80_2gpu_step600k": (
+        "proteina_60m_repa_mpnn_l9_128_afdb_per_residue_bs80_2gpu",
+        True,
+        9,
+        [600000],
+    ),
+    # ── n=256 convergence extension 4 (added 2026-05-26) ────────────────────
+    # Past-horizon ckpts that landed while ext3 was evaluating — the
+    # currently-training jobs ticked over their next 100k boundary.
+    "baseline_256_bs24_2gpu_step1700k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [1700000],
+    ),
+    "repa_l9_256_per_residue_bs24_2gpu_step1200k": (
+        "proteina_60m_repa_l9_256_per_residue_bs24_2gpu",
+        True,
+        9,
+        [1200000],
+    ),
+    "repa_mpnn_l9_256_per_residue_step1300k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [1300000],
+    ),
+    "repa_l4_256_per_residue_random_bs24_2gpu_step800k": (
+        "proteina_60m_repa_l4_256_per_residue_random_bs24_2gpu",
+        True,
+        4,
+        [800000],
+    ),
+    "baseline_afdb_256_step1800k": (
+        "proteina_60m_baseline_afdb_swissprot_256",
+        False,
+        4,
+        [1800000],
+    ),
+    "repa_l4_afdb_256_step1300k": (
+        "proteina_60m_repa_l4_256_afdb_per_residue",
+        True,
+        4,
+        [1300000],
+    ),
 }
 
 
@@ -1575,6 +1668,23 @@ GEN_RUN_CONFIGS = {
     "repa_l9_128_bs80_step500k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_mpnn_l9_128_bs80_2gpu_step600k": "inference/paper/inference_fid_60m_n128_paper",
     "repa_mpnn_l9_128_bs80_2gpu_step700k": "inference/paper/inference_fid_60m_n128_paper",
+    # ── n=256 convergence extension 3 (added 2026-05-25) ─────────────────── #
+    "baseline_256_bs24_2gpu_step1600k": "inference/paper/inference_fid_60m_paper",
+    "baseline_afdb_256_step1700k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_afdb_256_step900k": "inference/paper/inference_fid_60m_paper",
+    # ── n=128 AFDB convergence extension 3 (added 2026-05-25) ────────────── #
+    "baseline_afdb_128_bs80_step1100k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_l4_afdb_128_bs80_step500k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l4_afdb_128_bs80_step1100k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l9_afdb_128_bs80_2gpu_step500k": "inference/paper/inference_fid_60m_n128_paper",
+    "repa_mpnn_l9_afdb_128_bs80_2gpu_step600k": "inference/paper/inference_fid_60m_n128_paper",
+    # ── n=256 convergence extension 4 (added 2026-05-26) ─────────────────── #
+    "baseline_256_bs24_2gpu_step1700k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_per_residue_bs24_2gpu_step1200k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step1300k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_random_bs24_2gpu_step800k": "inference/paper/inference_fid_60m_paper",
+    "baseline_afdb_256_step1800k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_afdb_256_step1300k": "inference/paper/inference_fid_60m_paper",
 }
 
 
