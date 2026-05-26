@@ -16,7 +16,7 @@ import csv
 import json
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
 
@@ -85,9 +85,9 @@ def fnum(x):
         return None
 
 
-def load_gen(path: Path) -> Dict[Tuple[str, int], float]:
-    """Return {(run, step): designability_rate} for rows without errors."""
-    out: Dict[Tuple[str, int], float] = {}
+def load_gen(path: Path) -> Dict[Tuple[str, int], dict]:
+    """Return {(run, step): {designability, fid_pdb, fid_afdb}} for ok rows."""
+    out: Dict[Tuple[str, int], dict] = {}
     if not path.exists():
         return out
     for line in path.open():
@@ -96,17 +96,31 @@ def load_gen(path: Path) -> Dict[Tuple[str, int], float]:
             continue
         run = r.get("run")
         step = r.get("step")
-        des = r.get("_res_designability_rate")
-        if run is None or step is None or des is None:
+        if run is None or step is None:
             continue
-        out[(run, int(step))] = float(des)
+        out[(run, int(step))] = {
+            "designability": fnum(r.get("_res_designability_rate")),
+            "fid_pdb": fnum(r.get("_res_PDB_FID")),
+            "fid_afdb": fnum(r.get("_res_AFDB_FID")),
+        }
     return out
+
+
+# Pair each gen dataset with its matched FID column (PDB-gen → FID vs PDB,
+# AFDB-gen → FID vs AFDB).
+FID_COL_BY_DS = {"PDB": ("fid_pdb", "FID vs PDB"), "AFDB": ("fid_afdb", "FID vs AFDB")}
+
+# X-axis rep proxies: (key, label, probe_kind, cath_level, metric_col).
+X_METRICS = [
+    ("cath_A", "CATH-A top1 acc (best layer)", "cath", "A", "cath_accuracy"),
+    ("if", "IF top1 acc (best layer)", "inverse_folding", None, "if_top1_acc"),
+]
 
 
 def load_rep_best(
     path: Path,
     probe_kind: str = "cath",
-    cath_level: str = "T",
+    cath_level: Optional[str] = "A",
     metric_col: str = "cath_accuracy",
 ) -> Dict[Tuple[str, int], float]:
     """Return {(run, step): max-over-layers metric}."""
@@ -130,52 +144,80 @@ def load_rep_best(
     return dict(out)
 
 
+Y_METRICS = [
+    ("designability", "Designability rate", False),
+    ("fid", "FID (matched to dataset)", True),
+]
+
+
 def _plot_variant(variant: str, datasets: Dict[str, dict]) -> None:
     fig_out = FIG_BASE / variant
     fig_out.mkdir(parents=True, exist_ok=True)
     n_ds = len(datasets)
+    n_x = len(X_METRICS)
+    n_y = len(Y_METRICS)
+    n_rows = n_ds * n_x
     fig, axes = plt.subplots(
-        1, n_ds, figsize=(5.5 * n_ds, 5), sharex=False, sharey=False, squeeze=False
+        n_rows, n_y, figsize=(5.5 * n_y, 4.6 * n_rows), squeeze=False
     )
-    axes = axes[0]
-    for ax, (ds_name, paths) in zip(axes, datasets.items()):
+    for ds_idx, (ds_name, paths) in enumerate(datasets.items()):
         gen_map = load_gen(paths["gen_jsonl"])
-        rep_map = load_rep_best(paths["rep_csv"])
-        for prefix, label, color, marker in RUN_FAMILIES[ds_name]:
-            pts = []
-            for (run, step), des in gen_map.items():
-                if not run.startswith(prefix):
-                    continue
-                acc = rep_map.get((run, step))
-                if acc is None or acc == float("-inf"):
-                    continue
-                pts.append((step, acc, des))
-            if not pts:
-                continue
-            pts.sort()  # by step
-            xs = [p[1] for p in pts]
-            ys = [p[2] for p in pts]
-            sizes = [20 + 0.00006 * p[0] for p in pts]  # marker grows with step
-            ax.plot(xs, ys, linewidth=1.0, color=color, alpha=0.6)
-            ax.scatter(
-                xs,
-                ys,
-                s=sizes,
-                color=color,
-                marker=marker,
-                edgecolor="black",
-                linewidth=0.4,
-                label=label,
-                zorder=3,
+        fid_key, fid_label = FID_COL_BY_DS[ds_name]
+        for x_idx, (x_key, x_label, probe_kind, cath_level, metric_col) in enumerate(
+            X_METRICS
+        ):
+            rep_map = load_rep_best(
+                paths["rep_csv"],
+                probe_kind=probe_kind,
+                cath_level=cath_level,
+                metric_col=metric_col,
             )
-        ax.set_xlabel("CATH-T probe accuracy (best layer)")
-        ax.set_ylabel("Designability rate")
-        ax.set_title(f"{ds_name}: generation vs representation envelope")
-        ax.grid(True, alpha=0.3)
-        ax.legend(loc="best", fontsize=8)
+            row = ds_idx * n_x + x_idx
+            for col, (y_key, y_label, lower_better) in enumerate(Y_METRICS):
+                ax = axes[row, col]
+                gen_col = fid_key if y_key == "fid" else y_key
+                y_axis_label = fid_label if y_key == "fid" else y_label
+                for prefix, label, color, marker in RUN_FAMILIES[ds_name]:
+                    pts = []
+                    for (run, step), gen_vals in gen_map.items():
+                        if not run.startswith(prefix):
+                            continue
+                        acc = rep_map.get((run, step))
+                        yv = gen_vals.get(gen_col)
+                        if acc is None or acc == float("-inf") or yv is None:
+                            continue
+                        pts.append((step, acc, yv))
+                    if not pts:
+                        continue
+                    pts.sort()
+                    xs = [p[1] for p in pts]
+                    ys = [p[2] for p in pts]
+                    sizes = [20 + 0.00006 * p[0] for p in pts]
+                    ax.plot(xs, ys, linewidth=1.0, color=color, alpha=0.6)
+                    ax.scatter(
+                        xs,
+                        ys,
+                        s=sizes,
+                        color=color,
+                        marker=marker,
+                        edgecolor="black",
+                        linewidth=0.4,
+                        label=label if col == 0 else None,
+                        zorder=3,
+                    )
+                ax.set_xlabel(x_label)
+                ax.set_ylabel(
+                    y_axis_label
+                    + (" (axis inverted; up = better)" if lower_better else "")
+                )
+                ax.set_title(f"{ds_name} / {x_key}: {y_axis_label}")
+                ax.grid(True, alpha=0.3)
+                if lower_better:
+                    ax.invert_yaxis()
+            axes[row, 0].legend(loc="best", fontsize=8)
     fig.suptitle(
         f"n=128 (rep={variant}) — generation vs representation envelope (point size ∝ training step)\n"
-        "Top-right = better on both axes; lines connect same-run checkpoints in step order.",
+        f"Up-right = better on both axes; lines connect same-run checkpoints in step order.",
         fontsize=12,
     )
     fig.tight_layout(rect=[0, 0, 1, 0.94])
