@@ -115,7 +115,7 @@ RUN_FAMILIES = {
 
 # Per-dataset metrics (FID + fJSD at each CATH level). lower_is_better=True.
 DATASET_METRICS = [
-    ("FID", "FID-50K"),
+    ("FID", "FID-500"),
     ("fJSD_A", "fJSD (Architecture)"),
     ("fJSD_C", "fJSD (Class)"),
     ("fJSD_T", "fJSD (Topology)"),

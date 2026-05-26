@@ -108,11 +108,11 @@ SAMPLERS = [
 # FID-family columns: (dataset, suffix, title, log_y, higher_better)
 # Mirrors plot_convergence_fid.DATASET_METRICS + FS_METRICS.
 FID_METRICS = [
-    ("PDB", "FID", "PDB FID-50K", True, False),
+    ("PDB", "FID", "PDB FID-1.1K", True, False),
     ("PDB", "fJSD_C", "PDB fJSD (Class)", True, False),
     ("PDB", "fJSD_A", "PDB fJSD (Arch)", True, False),
     ("PDB", "fJSD_T", "PDB fJSD (Topology)", True, False),
-    ("AFDB", "FID", "AFDB FID-50K", True, False),
+    ("AFDB", "FID", "AFDB FID-1.1K", True, False),
     ("AFDB", "fJSD_C", "AFDB fJSD (Class)", True, False),
 ]
 FS_METRICS = [

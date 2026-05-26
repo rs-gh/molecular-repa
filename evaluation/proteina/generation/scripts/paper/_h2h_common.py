@@ -75,12 +75,26 @@ DES_METRICS = [
 ]
 _LOG_Y_DES = {"H/E ratio (des)"}
 
+# FID-N labels are filled in per-call via ``_fid_label`` so they reflect the
+# actual sample budget (n=128 → 500 PDBs, n=256 → 1125 PDBs), not the
+# image-generation FID-50K convention.
 FID_DATASET_METRICS = [
-    ("FID", "FID-50K"),
+    ("FID", "FID"),
     ("fJSD_A", "fJSD (Architecture)"),
     ("fJSD_C", "fJSD (Class)"),
     ("fJSD_T", "fJSD (Topology)"),
 ]
+
+
+def _fid_label(n_label: str) -> str:
+    """Map figure n_label (e.g. ``"n=128"``, ``"n=256"``) → FID-<samples>."""
+    if "128" in n_label:
+        return "FID-500"
+    if "256" in n_label:
+        return "FID-1.1K"
+    return "FID"
+
+
 FS_METRICS = [
     ("_res_fS_C", "fS (Class)"),
     ("_res_fS_A", "fS (Architecture)"),
@@ -215,6 +229,8 @@ def _plot_fid(rows, comp, fig_out, *, n_label, pretrained_key):
         nrows=3, ncols=n_cols, figsize=(3.8 * n_cols, 3.6 * 3), sharex=False
     )
 
+    fid_label = _fid_label(n_label)
+
     def _render_fid_row(row_axes, suffix):
         for col_i, (metric_suffix, title) in enumerate(FID_DATASET_METRICS):
             ax = row_axes[col_i]
@@ -226,7 +242,8 @@ def _plot_fid(rows, comp, fig_out, *, n_label, pretrained_key):
             ax.set_yscale("log")
             ax.set_xlabel("Training step")
             ax.set_ylabel("value (lower = closer, log y)")
-            ax.set_title(f"vs {suffix} — {title} ↓")
+            display_title = fid_label if title == "FID" else title
+            ax.set_title(f"vs {suffix} — {display_title} ↓")
             style_axes(ax, log_y=True)
             _overlay_pretrained(ax, col, first_col=(col_i == 0), n_label=pretrained_key)
             ax.invert_yaxis()

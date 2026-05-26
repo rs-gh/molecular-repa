@@ -120,11 +120,20 @@ CONFIGS = [
 ]
 
 DATASET_METRICS = [
-    ("FID", "FID-50K"),
+    # FID title is filled in per-call with the actual sample budget:
+    # n=128 → 500 PDBs, n=256 → 1125 PDBs. The image-generation "FID-50K"
+    # convention doesn't apply here.
+    ("FID", "FID"),
     ("fJSD_A", "fJSD (Architecture)"),
     ("fJSD_C", "fJSD (Class)"),
     ("fJSD_T", "fJSD (Topology)"),
 ]
+
+
+def _fid_label(n: int) -> str:
+    return {128: "FID-500", 256: "FID-1.1K"}.get(n, "FID")
+
+
 FS_METRICS = [
     ("_res_fS_C", "fS (Class)"),
     ("_res_fS_A", "fS (Architecture)"),
@@ -162,7 +171,8 @@ def plot_one(n: int, fig_subdir: str, datasets) -> None:
             ax.set_yscale("log")
             ax.set_xlabel("Training step")
             ax.set_ylabel("value (lower = closer, log y)")
-            ax.set_title(f"{ds_name} — {title} ↓")
+            display_title = _fid_label(n) if title == "FID" else title
+            ax.set_title(f"{ds_name} — {display_title} ↓")
             ax.invert_yaxis()  # up = better
             style_axes(ax, log_y=True)
             if SHOW_PRETRAINED:
