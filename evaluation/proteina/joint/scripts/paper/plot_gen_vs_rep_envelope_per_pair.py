@@ -23,52 +23,61 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[5]
 GEN_RESULTS = REPO_ROOT / "evaluation/proteina/generation/results/paper"
 REP_RESULTS = REPO_ROOT / "evaluation/proteina/representation/results/paper"
-FIG_OUT = REPO_ROOT / "evaluation/proteina/joint/figures/paper/n256_convergence"
-FIG_OUT.mkdir(parents=True, exist_ok=True)
+FIG_BASE = (
+    REPO_ROOT / "evaluation/proteina/joint/figures/paper/n256_convergence/envelope"
+)
 
-# Rep CSV source depends on probe (cleaner-protocol switch, 2026-05-26):
-#   - CATH probes: cleantrain (probe-side cleaned PDB val) for PDB-trained
-#     models; cath_if_dih_afdb for AFDB-trained models (no cleantrain_afdb
-#     dir exists, see project_repa_evidence_framing.md).
-#   - IF probe: xclean (doubly-clean cross-DB val) for both.
-DATASETS = {
-    "PDB": {
-        "gen_jsonl": GEN_RESULTS / "n256_convergence_pdb" / "sweep_results.jsonl",
-        "rep_csv_cath": REP_RESULTS
-        / "n256_convergence_cleantrain_pdb"
-        / "pretrained_sweep_results.csv",
-        "rep_csv_if": REP_RESULTS
-        / "n256_xclean_afdb_pdb"
-        / "pretrained_sweep_results.csv",
-        "baseline": ("baseline_256_bs24_2gpu", "Baseline (PDB)"),
-        "repa_variants": [
-            ("repa_l4_256_per_residue_bs24_2gpu", "REPA L4 GearNet", "tab:red", "o"),
-            ("repa_l9_256_per_residue_bs24_2gpu", "REPA L9 GearNet", "tab:green", "o"),
-            ("repa_mpnn_l4_256_per_residue", "REPA L4 MPNN", "tab:red", "^"),
-            ("repa_mpnn_l9_256_per_residue", "REPA L9 MPNN", "tab:green", "^"),
-        ],
-    },
-    "AFDB": {
-        "gen_jsonl": GEN_RESULTS / "n256_convergence_afdb" / "sweep_results.jsonl",
-        "rep_csv_cath": REP_RESULTS
-        / "n256_convergence_cath_if_dih_afdb"
-        / "pretrained_sweep_results.csv",
-        "rep_csv_if": REP_RESULTS
-        / "n256_xclean_pdb_afdb"
-        / "pretrained_sweep_results.csv",
-        "baseline": ("baseline_afdb_256", "Baseline (AFDB)"),
-        "repa_variants": [
-            ("repa_l4_afdb_256", "REPA L4 GearNet", "tab:red", "o"),
-            ("repa_l9_afdb_256", "REPA L9 GearNet", "tab:green", "o"),
-            ("repa_mpnn_l4_afdb_256", "REPA L4 MPNN", "tab:red", "^"),
-            ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN", "tab:green", "^"),
-        ],
-    },
+GEN_PDB = GEN_RESULTS / "n256_convergence_pdb" / "sweep_results.jsonl"
+GEN_AFDB = GEN_RESULTS / "n256_convergence_afdb" / "sweep_results.jsonl"
+
+
+def _rep(dirname: str) -> Path:
+    return REP_RESULTS / dirname / "pretrained_sweep_results.csv"
+
+
+_PDB_RUNS = {
+    "baseline": ("baseline_256_bs24_2gpu", "Baseline (PDB)"),
+    "repa_variants": [
+        ("repa_l4_256_per_residue_bs24_2gpu", "REPA L4 GearNet", "tab:red", "o"),
+        ("repa_l9_256_per_residue_bs24_2gpu", "REPA L9 GearNet", "tab:green", "o"),
+        ("repa_mpnn_l4_256_per_residue", "REPA L4 MPNN", "tab:red", "^"),
+        ("repa_mpnn_l9_256_per_residue", "REPA L9 MPNN", "tab:green", "^"),
+    ],
+}
+_AFDB_RUNS = {
+    "baseline": ("baseline_afdb_256", "Baseline (AFDB)"),
+    "repa_variants": [
+        ("repa_l4_afdb_256", "REPA L4 GearNet", "tab:red", "o"),
+        ("repa_l9_afdb_256", "REPA L9 GearNet", "tab:green", "o"),
+        ("repa_mpnn_l4_afdb_256", "REPA L4 MPNN", "tab:red", "^"),
+        ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN", "tab:green", "^"),
+    ],
 }
 
 
-def rep_csv_for(ds_cfg: dict, rep_key: str) -> Path:
-    return ds_cfg["rep_csv_if"] if rep_key == "if_top1" else ds_cfg["rep_csv_cath"]
+def _pdb(rep_dir: str) -> dict:
+    return {"gen_jsonl": GEN_PDB, "rep_csv": _rep(rep_dir), **_PDB_RUNS}
+
+
+def _afdb(rep_dir: str) -> dict:
+    return {"gen_jsonl": GEN_AFDB, "rep_csv": _rep(rep_dir), **_AFDB_RUNS}
+
+
+# One per_pair envelope set per variant. Each variant's CSV supplies both
+# CATH and IF probes for the same set of checkpoints.
+VARIANTS: Dict[str, Dict[str, dict]] = {
+    "cath_if_dih": {
+        "PDB": _pdb("n256_convergence_cath_if_dih_pdb"),
+        "AFDB": _afdb("n256_convergence_cath_if_dih_afdb"),
+    },
+    "cleantrain": {
+        "PDB": _pdb("n256_convergence_cleantrain_pdb"),
+    },
+    "xclean": {
+        "PDB": _pdb("n256_xclean_afdb_pdb"),
+        "AFDB": _afdb("n256_xclean_pdb_afdb"),
+    },
+}
 
 
 GEN_METRICS = {
@@ -187,15 +196,21 @@ def _draw_run(ax, pts, color, marker, label):
         )
 
 
-def plot_metric(metric_key: str, rep_key: str) -> None:
+def plot_metric(
+    metric_key: str,
+    rep_key: str,
+    variant: str,
+    datasets: Dict[str, dict],
+    fig_out: Path,
+) -> None:
     meta = GEN_METRICS[metric_key]
     gen_col = meta["col"]
     y_label = meta["label"]
     lower_better = meta["lower_better"]
     x_label = REP_X_OPTIONS[rep_key][0]
 
-    n_rows = len(DATASETS)
-    n_cols = max(len(d["repa_variants"]) for d in DATASETS.values())
+    n_rows = len(datasets)
+    n_cols = max(len(d["repa_variants"]) for d in datasets.values())
     fig, axes = plt.subplots(
         n_rows,
         n_cols,
@@ -204,9 +219,9 @@ def plot_metric(metric_key: str, rep_key: str) -> None:
         sharey="row",
     )
 
-    for row, (ds_name, ds_cfg) in enumerate(DATASETS.items()):
+    for row, (ds_name, ds_cfg) in enumerate(datasets.items()):
         gen_map = load_gen(ds_cfg["gen_jsonl"])
-        rep_map = load_rep_best(rep_csv_for(ds_cfg, rep_key), rep_key)
+        rep_map = load_rep_best(ds_cfg["rep_csv"], rep_key)
 
         base_prefix, base_label = ds_cfg["baseline"]
         base_keys = runs_for_prefix(base_prefix, gen_map.keys())
@@ -258,29 +273,27 @@ def plot_metric(metric_key: str, rep_key: str) -> None:
         frameon=True,
     )
 
-    rep_source = (
-        "xclean (cross-DB clean)"
-        if rep_key == "if_top1"
-        else "cleantrain (PDB) / cath_if_dih (AFDB)"
-    )
     suptitle = (
-        f"n=256 — generation vs representation envelope per baseline–REPA pair\n"
+        f"n=256 (rep={variant}) — generation vs representation envelope per baseline–REPA pair\n"
         f"y = {y_label}{' (axis inverted; up = better)' if lower_better else ''}; "
-        f"x = {x_label} (best layer at t=1.0; rep source: {rep_source}). "
+        f"x = {x_label} (best layer at t=1.0). "
         f"Bubble size ∝ step; tiny gray label = step in k."
     )
     fig.suptitle(suptitle, fontsize=11)
     fig.tight_layout(rect=[0, 0, 0.88, 0.92])
-    out = FIG_OUT / f"gen_vs_rep_envelope_per_pair_{rep_key}_vs_{metric_key}.png"
+    out = fig_out / f"gen_vs_rep_envelope_per_pair_{rep_key}_vs_{metric_key}.png"
     fig.savefig(out, dpi=160, bbox_inches="tight")
     plt.close(fig)
     print(f"Wrote {out}")
 
 
 def main() -> None:
-    for rep_key in REP_X_OPTIONS:
-        for gen_key in GEN_METRICS:
-            plot_metric(gen_key, rep_key)
+    for variant, datasets in VARIANTS.items():
+        fig_out = FIG_BASE / variant
+        fig_out.mkdir(parents=True, exist_ok=True)
+        for rep_key in REP_X_OPTIONS:
+            for gen_key in GEN_METRICS:
+                plot_metric(gen_key, rep_key, variant, datasets, fig_out)
 
 
 if __name__ == "__main__":

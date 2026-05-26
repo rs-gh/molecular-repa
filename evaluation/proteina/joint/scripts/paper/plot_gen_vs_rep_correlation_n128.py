@@ -32,22 +32,43 @@ from scipy.stats import pearsonr, spearmanr
 REPO_ROOT = Path(__file__).resolve().parents[5]
 GEN_RESULTS = REPO_ROOT / "evaluation/proteina/generation/results/paper"
 REP_RESULTS = REPO_ROOT / "evaluation/proteina/representation/results/paper"
-FIG_OUT = REPO_ROOT / "evaluation/proteina/joint/figures/paper/n128_convergence"
+FIG_BASE = (
+    REPO_ROOT / "evaluation/proteina/joint/figures/paper/n128_convergence/correlation"
+)
 TAB_OUT = REPO_ROOT / "evaluation/proteina/joint/results/paper"
-FIG_OUT.mkdir(parents=True, exist_ok=True)
 
-DATASETS = {
-    "PDB": {
-        "gen_jsonl": GEN_RESULTS / "n128_convergence_pdb" / "sweep_results.jsonl",
-        "rep_csv": REP_RESULTS
-        / "n128_convergence_cath_if_dih_pdb"
-        / "pretrained_sweep_results.csv",
+GEN_PDB = GEN_RESULTS / "n128_convergence_pdb" / "sweep_results.jsonl"
+GEN_AFDB = GEN_RESULTS / "n128_convergence_afdb" / "sweep_results.jsonl"
+
+
+def _rep(dirname: str) -> Path:
+    return REP_RESULTS / dirname / "pretrained_sweep_results.csv"
+
+
+# Each variant defines which rep-probe source backs each gen dataset.
+# - cath_if_dih: original PDB-val / AFDB-val probes (leaky baseline view).
+# - cleantrain : probe-side cleaned PDB val (high-n rank-order; PDB only).
+# - xclean     : doubly-clean cross-DB val (PDB only at n=128;
+#                no n128_xclean_pdb_afdb dir exists for AFDB-trained models).
+VARIANTS: Dict[str, Dict[str, Dict[str, Path]]] = {
+    "cath_if_dih": {
+        "PDB": {
+            "gen_jsonl": GEN_PDB,
+            "rep_csv": _rep("n128_convergence_cath_if_dih_pdb"),
+        },
+        "AFDB": {
+            "gen_jsonl": GEN_AFDB,
+            "rep_csv": _rep("n128_convergence_cath_if_dih_afdb"),
+        },
     },
-    "AFDB": {
-        "gen_jsonl": GEN_RESULTS / "n128_convergence_afdb" / "sweep_results.jsonl",
-        "rep_csv": REP_RESULTS
-        / "n128_convergence_cath_if_dih_afdb"
-        / "pretrained_sweep_results.csv",
+    "cleantrain": {
+        "PDB": {
+            "gen_jsonl": GEN_PDB,
+            "rep_csv": _rep("n128_convergence_cleantrain_pdb"),
+        },
+    },
+    "xclean": {
+        "PDB": {"gen_jsonl": GEN_PDB, "rep_csv": _rep("n128_xclean_afdb_pdb")},
     },
 }
 
@@ -247,7 +268,12 @@ def compute_correlations(
 
 
 def plot_scatter_grid(
-    df: pd.DataFrame, dataset: str, families: List[Tuple[str, str, str]]
+    df: pd.DataFrame,
+    dataset: str,
+    families: List[Tuple[str, str, str]],
+    fig_out: Path,
+    variant: str,
+    n_label: str,
 ):
     fig, axes = plt.subplots(
         len(REP_METRICS),
@@ -289,41 +315,59 @@ def plot_scatter_grid(
             ax.set_ylabel(gen_label)
             ax.grid(True, alpha=0.3)
     fig.suptitle(
-        f"{dataset} (n=128): generation vs representation — all checkpoints\nPoint size ∝ training step",
+        f"{dataset} ({n_label}, rep={variant}): generation vs representation — all checkpoints\nPoint size ∝ training step",
         fontsize=12,
     )
     fig.legend(
         loc="lower center", ncol=len(families), bbox_to_anchor=(0.5, -0.02), fontsize=9
     )
     fig.tight_layout(rect=[0, 0.04, 1, 0.95])
-    out = FIG_OUT / f"gen_vs_rep_correlation_{dataset.lower()}.png"
+    out = fig_out / f"gen_vs_rep_correlation_{dataset.lower()}.png"
     fig.savefig(out, dpi=160, bbox_inches="tight")
     plt.close(fig)
     print(f"Wrote {out}")
 
 
-def main() -> None:
+def _run_variant(
+    variant: str, datasets: Dict[str, Dict[str, Path]], n_label: str
+) -> List[dict]:
+    fig_out = FIG_BASE / variant
+    fig_out.mkdir(parents=True, exist_ok=True)
     all_corr: List[dict] = []
-    for ds_name, paths in DATASETS.items():
+    for ds_name, paths in datasets.items():
         gen_df = load_gen(paths["gen_jsonl"])
         rep_df = load_rep(paths["rep_csv"])
         joined = pd.merge(gen_df, rep_df, on=["run", "step"], how="inner")
         print(
-            f"[{ds_name}] gen rows={len(gen_df)}, rep rows={len(rep_df)}, joined={len(joined)}"
+            f"[{variant}/{ds_name}] gen rows={len(gen_df)}, rep rows={len(rep_df)}, joined={len(joined)}"
         )
         if joined.empty:
             continue
-        plot_scatter_grid(joined, ds_name, RUN_FAMILIES[ds_name])
+        plot_scatter_grid(
+            joined, ds_name, RUN_FAMILIES[ds_name], fig_out, variant, n_label
+        )
         for sf in (None, 200_000):
-            all_corr.extend(compute_correlations(joined, ds_name, sf))
+            for row in compute_correlations(joined, ds_name, sf):
+                row["variant"] = variant
+                all_corr.append(row)
+    return all_corr
+
+
+def main() -> None:
+    all_corr: List[dict] = []
+    for variant, datasets in VARIANTS.items():
+        all_corr.extend(_run_variant(variant, datasets, "n=128"))
 
     corr_df = pd.DataFrame(all_corr)
     csv_path = TAB_OUT / "n128_convergence_gen_vs_rep_correlation.csv"
     md_path = TAB_OUT / "n128_convergence_gen_vs_rep_correlation.md"
+    if "variant" in corr_df.columns:
+        cols = ["variant"] + [c for c in corr_df.columns if c != "variant"]
+        corr_df = corr_df[cols]
     corr_df.to_csv(csv_path, index=False)
     print(f"Wrote {csv_path}")
 
-    # Markdown: one block per (dataset, step_filter)
+    # Markdown: one block per (variant, dataset, step_filter)
     lines: List[str] = ["# Gen vs Rep correlations (n=128 convergence)\n"]
     lines.append(
         "Rep metrics are reduced across layers per checkpoint (max for accuracies, min for MAE). All rep rows are at t=1.0.\n"
@@ -331,9 +375,12 @@ def main() -> None:
     lines.append(
         "`partial_spearman_*_ctrl_step` is the Spearman partial correlation controlling for training step.\n"
     )
-    for (ds, sf), g in corr_df.groupby(["dataset", "step_filter"]):
+    lines.append(
+        "Variants: `cath_if_dih` = original (leaky) probe sweep; `cleantrain` = probe-side cleaned PDB val (high-n); `xclean` = doubly-clean cross-DB val.\n"
+    )
+    for (var, ds, sf), g in corr_df.groupby(["variant", "dataset", "step_filter"]):
         tag = "all checkpoints" if sf == 0 else f"step >= {sf}"
-        lines.append(f"\n## {ds} — {tag}\n")
+        lines.append(f"\n## {var} / {ds} — {tag}\n")
         cols = [
             "rep_metric",
             "gen_metric",

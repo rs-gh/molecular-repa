@@ -23,24 +23,39 @@ import matplotlib.pyplot as plt
 REPO_ROOT = Path(__file__).resolve().parents[5]
 GEN_RESULTS = REPO_ROOT / "evaluation/proteina/generation/results/paper"
 REP_RESULTS = REPO_ROOT / "evaluation/proteina/representation/results/paper"
-FIG_OUT = REPO_ROOT / "evaluation/proteina/joint/figures/paper/n128_convergence"
-FIG_OUT.mkdir(parents=True, exist_ok=True)
+FIG_BASE = (
+    REPO_ROOT / "evaluation/proteina/joint/figures/paper/n128_convergence/envelope"
+)
 
-# CATH probe uses cleantrain (probe-side cleaned PDB val) for PDB-trained
-# models; AFDB-trained models stay on cath_if_dih_afdb (no cleantrain_afdb
-# dir exists). See project_repa_evidence_framing.md.
-DATASETS = {
-    "PDB": {
-        "gen_jsonl": GEN_RESULTS / "n128_convergence_pdb" / "sweep_results.jsonl",
-        "rep_csv": REP_RESULTS
-        / "n128_convergence_cleantrain_pdb"
-        / "pretrained_sweep_results.csv",
+GEN_PDB = GEN_RESULTS / "n128_convergence_pdb" / "sweep_results.jsonl"
+GEN_AFDB = GEN_RESULTS / "n128_convergence_afdb" / "sweep_results.jsonl"
+
+
+def _rep(dirname: str) -> Path:
+    return REP_RESULTS / dirname / "pretrained_sweep_results.csv"
+
+
+# One envelope figure per variant. n=128 has no xclean_pdb_afdb dir, so the
+# xclean variant skips AFDB.
+VARIANTS: Dict[str, Dict[str, dict]] = {
+    "cath_if_dih": {
+        "PDB": {
+            "gen_jsonl": GEN_PDB,
+            "rep_csv": _rep("n128_convergence_cath_if_dih_pdb"),
+        },
+        "AFDB": {
+            "gen_jsonl": GEN_AFDB,
+            "rep_csv": _rep("n128_convergence_cath_if_dih_afdb"),
+        },
     },
-    "AFDB": {
-        "gen_jsonl": GEN_RESULTS / "n128_convergence_afdb" / "sweep_results.jsonl",
-        "rep_csv": REP_RESULTS
-        / "n128_convergence_cath_if_dih_afdb"
-        / "pretrained_sweep_results.csv",
+    "cleantrain": {
+        "PDB": {
+            "gen_jsonl": GEN_PDB,
+            "rep_csv": _rep("n128_convergence_cleantrain_pdb"),
+        },
+    },
+    "xclean": {
+        "PDB": {"gen_jsonl": GEN_PDB, "rep_csv": _rep("n128_xclean_afdb_pdb")},
     },
 }
 
@@ -115,9 +130,15 @@ def load_rep_best(
     return dict(out)
 
 
-def main() -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(11, 5), sharex=False, sharey=False)
-    for ax, (ds_name, paths) in zip(axes, DATASETS.items()):
+def _plot_variant(variant: str, datasets: Dict[str, dict]) -> None:
+    fig_out = FIG_BASE / variant
+    fig_out.mkdir(parents=True, exist_ok=True)
+    n_ds = len(datasets)
+    fig, axes = plt.subplots(
+        1, n_ds, figsize=(5.5 * n_ds, 5), sharex=False, sharey=False, squeeze=False
+    )
+    axes = axes[0]
+    for ax, (ds_name, paths) in zip(axes, datasets.items()):
         gen_map = load_gen(paths["gen_jsonl"])
         rep_map = load_rep_best(paths["rep_csv"])
         for prefix, label, color, marker in RUN_FAMILIES[ds_name]:
@@ -153,14 +174,20 @@ def main() -> None:
         ax.grid(True, alpha=0.3)
         ax.legend(loc="best", fontsize=8)
     fig.suptitle(
-        "n=128 — generation vs representation envelope (point size ∝ training step)\n"
+        f"n=128 (rep={variant}) — generation vs representation envelope (point size ∝ training step)\n"
         "Top-right = better on both axes; lines connect same-run checkpoints in step order.",
         fontsize=12,
     )
     fig.tight_layout(rect=[0, 0, 1, 0.94])
-    out_png = FIG_OUT / "gen_vs_rep_envelope.png"
+    out_png = fig_out / "gen_vs_rep_envelope.png"
     fig.savefig(out_png, dpi=160, bbox_inches="tight")
+    plt.close(fig)
     print(f"Wrote {out_png}")
+
+
+def main() -> None:
+    for variant, datasets in VARIANTS.items():
+        _plot_variant(variant, datasets)
 
 
 if __name__ == "__main__":
