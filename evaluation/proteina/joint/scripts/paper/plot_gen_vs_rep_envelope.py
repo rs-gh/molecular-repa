@@ -26,11 +26,14 @@ REP_RESULTS = REPO_ROOT / "evaluation/proteina/representation/results/paper"
 FIG_OUT = REPO_ROOT / "evaluation/proteina/joint/figures/paper/n256_convergence"
 FIG_OUT.mkdir(parents=True, exist_ok=True)
 
+# CATH probe uses cleantrain (probe-side cleaned PDB val) for PDB-trained
+# models; AFDB-trained models stay on cath_if_dih_afdb (no cleantrain_afdb
+# dir exists). See project_repa_evidence_framing.md.
 DATASETS = {
     "PDB": {
         "gen_jsonl": GEN_RESULTS / "n256_convergence_pdb" / "sweep_results.jsonl",
         "rep_csv": REP_RESULTS
-        / "n256_convergence_cath_if_dih_pdb"
+        / "n256_convergence_cleantrain_pdb"
         / "pretrained_sweep_results.csv",
     },
     "AFDB": {
@@ -44,21 +47,22 @@ DATASETS = {
 RUN_FAMILIES = {
     "PDB": [
         ("baseline_256_bs24_2gpu", "Baseline (PDB)", "tab:blue", "o"),
-        ("repa_l4_256_per_residue_bs24_2gpu", "REPA L4 GearNet (PDB)", "tab:red", "s"),
+        ("repa_l4_256_per_residue_bs24_2gpu", "REPA L4 GearNet (PDB)", "tab:red", "o"),
         (
             "repa_l9_256_per_residue_bs24_2gpu",
             "REPA L9 GearNet (PDB)",
-            "tab:orange",
-            "s",
+            "tab:green",
+            "o",
         ),
         ("repa_mpnn_l4_256_per_residue", "REPA L4 MPNN (PDB)", "tab:red", "^"),
+        ("repa_mpnn_l9_256_per_residue", "REPA L9 MPNN (PDB)", "tab:green", "^"),
     ],
     "AFDB": [
         ("baseline_afdb_256", "Baseline (AFDB)", "tab:blue", "o"),
-        ("repa_l4_afdb_256", "REPA L4 GearNet (AFDB)", "tab:red", "s"),
-        ("repa_l9_afdb_256", "REPA L9 GearNet (AFDB)", "tab:orange", "s"),
+        ("repa_l4_afdb_256", "REPA L4 GearNet (AFDB)", "tab:red", "o"),
+        ("repa_l9_afdb_256", "REPA L9 GearNet (AFDB)", "tab:green", "o"),
         ("repa_mpnn_l4_afdb_256", "REPA L4 MPNN (AFDB)", "tab:red", "^"),
-        ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN (AFDB)", "tab:orange", "^"),
+        ("repa_mpnn_l9_afdb_256", "REPA L9 MPNN (AFDB)", "tab:green", "^"),
     ],
 }
 

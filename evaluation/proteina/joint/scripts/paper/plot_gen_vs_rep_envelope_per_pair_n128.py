@@ -3,17 +3,10 @@
 One panel per (dataset, REPA variant). Each panel shows:
   - the dataset's baseline trajectory (blue, connected in step order)
   - one REPA variant's trajectory (colored, connected in step order)
-  - bubble size proportional to training step
-  - a dashed arrow from the baseline checkpoint to the REPA checkpoint at the
-    shared training step closest to TARGET_STEP (a pre-committed mid-training
-    target — currently 400k, mirroring the REPA paper Fig 3c convention),
-    labelled with the improvement
+  - bubble size proportional to training step, with a tiny step label per bubble
 
-Two figures are produced per dataset metric pair:
-  - gen_vs_rep_envelope_per_pair_fid.png       (y = FID, axis inverted so up=better, matches the REPA paper)
-  - gen_vs_rep_envelope_per_pair_designability.png  (y = designability rate)
-
-X axis is best-layer CATH-T top1 accuracy at t=1.0.
+Figures: y ∈ {FID-PDB, FID-AFDB, designability}, x ∈ {CATH-{C,A,T} top1, IF top1}.
+FID y-axis is inverted so "up and to the right = better" in every panel.
 """
 
 from __future__ import annotations
@@ -33,39 +26,51 @@ REP_RESULTS = REPO_ROOT / "evaluation/proteina/representation/results/paper"
 FIG_OUT = REPO_ROOT / "evaluation/proteina/joint/figures/paper/n128_convergence"
 FIG_OUT.mkdir(parents=True, exist_ok=True)
 
+# Rep CSV source depends on probe (cleaner-protocol switch, 2026-05-26):
+#   - CATH probes: cleantrain (probe-side cleaned PDB val) for PDB-trained
+#     models; cath_if_dih_afdb for AFDB-trained models (no cleantrain_afdb
+#     dir exists, see project_repa_evidence_framing.md).
+#   - IF probe: xclean for PDB-trained models (n128_xclean_afdb_pdb).
+#     No n128_xclean_pdb_afdb exists, so AFDB-trained models fall back to
+#     cath_if_dih_afdb for IF too.
 DATASETS = {
     "PDB": {
         "gen_jsonl": GEN_RESULTS / "n128_convergence_pdb" / "sweep_results.jsonl",
-        "rep_csv": REP_RESULTS
-        / "n128_convergence_cath_if_dih_pdb"
+        "rep_csv_cath": REP_RESULTS
+        / "n128_convergence_cleantrain_pdb"
+        / "pretrained_sweep_results.csv",
+        "rep_csv_if": REP_RESULTS
+        / "n128_xclean_afdb_pdb"
         / "pretrained_sweep_results.csv",
         "baseline": ("baseline_128_bs80", "Baseline (PDB)"),
         "repa_variants": [
-            ("repa_l4_128_bs80", "REPA L4 GearNet", "tab:red", "s"),
-            ("repa_l9_128_bs80", "REPA L9 GearNet", "tab:orange", "s"),
-            ("repa_mpnn_l4_128_bs80", "REPA L4 MPNN", "tab:green", "^"),
-            ("repa_mpnn_l9_128_bs80_2gpu", "REPA L9 MPNN", "tab:purple", "^"),
+            ("repa_l4_128_bs80", "REPA L4 GearNet", "tab:red", "o"),
+            ("repa_l9_128_bs80", "REPA L9 GearNet", "tab:green", "o"),
+            ("repa_mpnn_l4_128_bs80", "REPA L4 MPNN", "tab:red", "^"),
+            ("repa_mpnn_l9_128_bs80_2gpu", "REPA L9 MPNN", "tab:green", "^"),
         ],
     },
     "AFDB": {
         "gen_jsonl": GEN_RESULTS / "n128_convergence_afdb" / "sweep_results.jsonl",
-        "rep_csv": REP_RESULTS
+        "rep_csv_cath": REP_RESULTS
+        / "n128_convergence_cath_if_dih_afdb"
+        / "pretrained_sweep_results.csv",
+        "rep_csv_if": REP_RESULTS
         / "n128_convergence_cath_if_dih_afdb"
         / "pretrained_sweep_results.csv",
         "baseline": ("baseline_afdb_128_bs80", "Baseline (AFDB)"),
         "repa_variants": [
-            ("repa_l4_afdb_128_bs80", "REPA L4 GearNet", "tab:red", "s"),
-            ("repa_mpnn_l4_afdb_128_bs80", "REPA L4 MPNN", "tab:green", "^"),
-            ("repa_mpnn_l9_afdb_128_bs80_2gpu", "REPA L9 MPNN", "tab:purple", "^"),
+            ("repa_l4_afdb_128_bs80", "REPA L4 GearNet", "tab:red", "o"),
+            ("repa_mpnn_l4_afdb_128_bs80", "REPA L4 MPNN", "tab:red", "^"),
+            ("repa_mpnn_l9_afdb_128_bs80_2gpu", "REPA L9 MPNN", "tab:green", "^"),
         ],
     },
 }
 
-# Pre-committed step at which to draw the baseline → REPA arrow. We pick the
-# shared step closest to this target. 400k is early enough that both methods
-# are out of the "designability ≈ 0" noise floor on PDB but the gap hasn't
-# closed yet, mirroring the REPA paper's mid-training Fig 3c convention.
-TARGET_STEP = 400_000
+
+def rep_csv_for(ds_cfg: dict, rep_key: str) -> Path:
+    return ds_cfg["rep_csv_if"] if rep_key == "if_top1" else ds_cfg["rep_csv_cath"]
+
 
 GEN_METRICS = {
     "fid_pdb": {"col": "_res_PDB_FID", "label": "FID vs PDB", "lower_better": True},
@@ -148,6 +153,39 @@ def runs_for_prefix(prefix: str, keys) -> List[Tuple[str, int]]:
     return sorted([k for k in keys if k[0].startswith(prefix)], key=lambda k: k[1])
 
 
+def _draw_run(ax, pts, color, marker, label):
+    """Plot a single run's trajectory: line + bubbles + tiny per-step labels."""
+    if not pts:
+        return
+    xs = [p[1] for p in pts]
+    ys = [p[2] for p in pts]
+    sizes = [25 + 0.00007 * p[0] for p in pts]
+    ax.plot(xs, ys, "-", color=color, alpha=0.55, linewidth=1.2, zorder=2)
+    ax.scatter(
+        xs,
+        ys,
+        s=sizes,
+        color=color,
+        marker=marker,
+        edgecolor="black",
+        linewidth=0.4,
+        alpha=0.9,
+        label=label,
+        zorder=3,
+    )
+    for step, x, y in pts:
+        ax.annotate(
+            f"{step // 1000}k",
+            xy=(x, y),
+            xytext=(4, 4),
+            textcoords="offset points",
+            fontsize=5.5,
+            color="dimgray",
+            alpha=0.9,
+            zorder=4,
+        )
+
+
 def plot_metric(metric_key: str, rep_key: str) -> None:
     meta = GEN_METRICS[metric_key]
     gen_col = meta["col"]
@@ -167,7 +205,7 @@ def plot_metric(metric_key: str, rep_key: str) -> None:
 
     for row, (ds_name, ds_cfg) in enumerate(DATASETS.items()):
         gen_map = load_gen(ds_cfg["gen_jsonl"])
-        rep_map = load_rep_best(ds_cfg["rep_csv"], rep_key)
+        rep_map = load_rep_best(rep_csv_for(ds_cfg, rep_key), rep_key)
 
         base_prefix, base_label = ds_cfg["baseline"]
         base_keys = runs_for_prefix(base_prefix, gen_map.keys())
@@ -192,114 +230,45 @@ def plot_metric(metric_key: str, rep_key: str) -> None:
                     continue
                 rep_pts.append((k[1], cath, y))
 
-            # baseline
-            if base_pts:
-                xs = [p[1] for p in base_pts]
-                ys = [p[2] for p in base_pts]
-                sizes = [25 + 0.00007 * p[0] for p in base_pts]
-                ax.plot(
-                    xs, ys, "-", color="tab:blue", alpha=0.55, linewidth=1.2, zorder=2
-                )
-                ax.scatter(
-                    xs,
-                    ys,
-                    s=sizes,
-                    color="tab:blue",
-                    marker="o",
-                    edgecolor="black",
-                    linewidth=0.4,
-                    alpha=0.9,
-                    label=base_label,
-                    zorder=3,
-                )
-
-            # repa variant
-            if rep_pts:
-                xs = [p[1] for p in rep_pts]
-                ys = [p[2] for p in rep_pts]
-                sizes = [25 + 0.00007 * p[0] for p in rep_pts]
-                ax.plot(
-                    xs, ys, "-", color=rep_color, alpha=0.55, linewidth=1.2, zorder=2
-                )
-                ax.scatter(
-                    xs,
-                    ys,
-                    s=sizes,
-                    color=rep_color,
-                    marker=rep_marker,
-                    edgecolor="black",
-                    linewidth=0.4,
-                    alpha=0.9,
-                    label=rep_label,
-                    zorder=3,
-                )
-
-            # step-matched arrow at the shared step closest to TARGET_STEP
-            # (pre-committed target, not data-dependent; mirrors the REPA-paper
-            # convention of highlighting a mid-training gap rather than the
-            # converged endpoint or the biggest win)
-            base_steps = {p[0]: (p[1], p[2]) for p in base_pts}
-            rep_steps = {p[0]: (p[1], p[2]) for p in rep_pts}
-            shared = sorted(set(base_steps) & set(rep_steps))
-            if shared:
-                s_match = min(shared, key=lambda s: abs(s - TARGET_STEP))
-                bx, by = base_steps[s_match]
-                rx, ry = rep_steps[s_match]
-                ax.annotate(
-                    "",
-                    xy=(rx, ry),
-                    xytext=(bx, by),
-                    arrowprops=dict(
-                        arrowstyle="->",
-                        linestyle="--",
-                        color="black",
-                        linewidth=1.4,
-                        alpha=0.85,
-                    ),
-                    zorder=4,
-                )
-                dx = rx - bx
-                dy = ry - by
-                direction_ok = (dx > 0) and ((dy < 0) if lower_better else (dy > 0))
-                txt = f"step {s_match // 1000}k\nΔ{x_label}={dx:+.2f}\nΔ{y_label}={dy:+.2f}"
-                # anchor in upper-right of axes (in axes-fraction coords) to
-                # avoid colliding with data points
-                ax.text(
-                    0.97,
-                    0.97,
-                    txt,
-                    transform=ax.transAxes,
-                    fontsize=7.5,
-                    ha="right",
-                    va="top",
-                    bbox=dict(
-                        boxstyle="round,pad=0.3",
-                        facecolor=("#e6ffe6" if direction_ok else "#fff0f0"),
-                        edgecolor="black",
-                        linewidth=0.4,
-                        alpha=0.92,
-                    ),
-                    zorder=5,
-                )
+            _draw_run(ax, base_pts, "tab:blue", "o", base_label)
+            _draw_run(ax, rep_pts, rep_color, rep_marker, rep_label)
 
             ax.set_xlabel(f"{x_label} (best layer)")
             ax.set_ylabel(y_label)
             ax.set_title(f"{ds_name}: baseline vs {rep_label}", fontsize=10)
             ax.grid(True, alpha=0.3)
-            ax.legend(loc="lower left", fontsize=7)
 
         if lower_better:
             # Invert only once per shared-y row (acts on all axes in the row)
             axes[row, 0].invert_yaxis()
 
+    # One shared figure-level legend on the right (deduplicated across axes).
+    handles_by_label: Dict[str, object] = {}
+    for ax in axes.ravel():
+        for h, lbl in zip(*ax.get_legend_handles_labels()):
+            handles_by_label.setdefault(lbl, h)
+    fig.legend(
+        handles_by_label.values(),
+        handles_by_label.keys(),
+        loc="center left",
+        bbox_to_anchor=(1.005, 0.5),
+        fontsize=8,
+        frameon=True,
+    )
+
+    rep_source = (
+        "xclean (cross-DB clean; AFDB fallback: cath_if_dih_afdb)"
+        if rep_key == "if_top1"
+        else "cleantrain (PDB) / cath_if_dih (AFDB)"
+    )
     suptitle = (
         f"n=128 — generation vs representation envelope per baseline–REPA pair\n"
         f"y = {y_label}{' (axis inverted; up = better)' if lower_better else ''}; "
-        f"x = {x_label} (best layer at t=1.0). "
-        f"Bubble size ∝ training step. Dashed arrow: baseline → REPA at the shared step closest to {TARGET_STEP // 1000}k."
+        f"x = {x_label} (best layer at t=1.0; rep source: {rep_source}). "
+        f"Bubble size ∝ step; tiny gray label = step in k."
     )
     fig.suptitle(suptitle, fontsize=11)
-    fig.tight_layout(rect=[0, 0, 1, 0.93])
+    fig.tight_layout(rect=[0, 0, 0.88, 0.92])
     out = FIG_OUT / f"gen_vs_rep_envelope_per_pair_{rep_key}_vs_{metric_key}.png"
     fig.savefig(out, dpi=160, bbox_inches="tight")
     plt.close(fig)
