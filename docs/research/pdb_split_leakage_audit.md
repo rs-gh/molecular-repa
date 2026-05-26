@@ -208,6 +208,19 @@ declared.
    runs, so consistent. The best layer varies by run — this is itself part
    of what the per-layer curves show.
 
+6. **Mixed n_train along the cleantrain / xclean curves (2026-05-26 ext2).**
+   The original cleantrain and xclean v1 sweeps were run at probe-fit
+   `n_train=1000`; the dirty regime was always at `n_train=5000`. The
+   ext2 extension (2026-05-26) added new latest checkpoints at `n_train=5000`
+   across all three regimes for parity with dirty. To keep compute bounded
+   we did not re-evaluate the legacy v1 checkpoints at n=5000, so each
+   cleantrain/xclean curve is `n=1000` for early/mid steps and `n=5000` at
+   the highest steps (no checkpoint overlaps). Expect a ~1-3pp upward
+   shift at the v1→v2 boundary (more probe-fit data → tighter linear head);
+   trend direction is unaffected. The dirty regime is uniformly `n=5000`.
+   A paper-final rerun of legacy ckpts at n=5000 (~20-25 GPU-h) would
+   remove the discontinuity.
+
 ## Same-model cross-DB cross-table (last-checkpoint, n=256)
 
 For each model flavour at its latest checkpoint, the four-cell table:
