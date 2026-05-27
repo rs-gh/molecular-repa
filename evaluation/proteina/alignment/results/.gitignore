@@ -4,8 +4,15 @@
 encoder_features/
 model_features/
 
-# Keep the headline artifacts under version control:
-#   cknna_matrix.jsonl
+# Duplicate of frozen_batch_n10k.json written by build_or_load_manifest; the
+# friendly-named copy is the one we track.
+batch_manifest_cknna_n10k_v1.json
+
+# Tracked headline artifacts:
+#   cknna_matrix_{per_residue,per_protein}.jsonl  — the two matrices
+#   frozen_batch_n10k.json                        — exact protein sample (repro)
 #   figures/*.png
-!cknna_matrix.jsonl
+!cknna_matrix_per_residue.jsonl
+!cknna_matrix_per_protein.jsonl
+!frozen_batch_n10k.json
 !figures/
