@@ -1,22 +1,22 @@
 #!/bin/bash
 #! SLURM job script for the proteina CKNNA representation-alignment study.
-#! End-to-end: builds frozen batch (idempotent), extracts features for
-#! 3 model rows + 3 encoder columns, computes the CKNNA matrix, and plots.
+#! End-to-end at N=10,000 proteins: builds frozen batch (idempotent), extracts
+#! per-protein + per-residue features for 5 model rows + 3 encoder columns,
+#! computes both CKNNA matrices, and plots.
 #!
 #! Usage:
 #!   sbatch hpc-scripts/proteina/evaluation/alignment/run_cknna.sh
 #!
-#! Estimated wall: ~30-45 minutes (ESM-650M download on first run dominates;
-#! actual compute is ~10-15 minutes).
+#! Estimated wall: ~2-2.5 hours (5 proteina forwards ~50 min + ESM2-150M ~5 min
+#! + GearNet/MPNN ~15 min + 300 CKNNA cells ~60 min + plots). Budgeting 4 h.
 
 #SBATCH -A LIO-CHARM-SL2-GPU
-#SBATCH --qos=intr
 #SBATCH --job-name=cknna-matrix
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=01:00:00
+#SBATCH --time=04:00:00
 #SBATCH --output=/rds/user/sr2173/hpc-work/proteina/logs/cknna-%j.out
 #SBATCH --error=/rds/user/sr2173/hpc-work/proteina/logs/cknna-%j.err
 #SBATCH -p ampere

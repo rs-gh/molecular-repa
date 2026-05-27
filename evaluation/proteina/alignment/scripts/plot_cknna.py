@@ -1,9 +1,13 @@
-"""Plot the CKNNA matrix as per-encoder layer curves.
+"""Plot per-residue and per-protein CKNNA matrices as layer-wise curves.
 
-3 panels (one per encoder column), x = proteina layer index (0–9),
-y = CKNNA, one line per model row (baseline, REPA-L4, REPA-L9),
-shaded band = 5–95% bootstrap CI. Vertical dotted lines mark the REPA
-injection layers (L4 and L9).
+Renders two figures:
+    figures/cknna_n10k_per_residue.png
+    figures/cknna_n10k_per_protein.png
+
+Each is a 1x3 grid (one panel per encoder column), with one line per model
+row coloured/markered per project convention:
+  blue = baseline, red = L4, green = L9
+  circle = CA-GearNet target, triangle = ProteinMPNN target
 
 Run:
     source .venv/bin/activate
@@ -20,8 +24,8 @@ import matplotlib.pyplot as plt
 
 HERE = Path(__file__).resolve().parent
 ALIGN_ROOT = HERE.parent
-MATRIX_PATH = ALIGN_ROOT / "results" / "cknna_matrix.jsonl"
-OUT_PATH = ALIGN_ROOT / "results" / "figures" / "cknna_n256_pdb.png"
+RESULTS = ALIGN_ROOT / "results"
+FIG_DIR = RESULTS / "figures"
 
 MODEL_ROWS = [
     "baseline",
@@ -41,11 +45,8 @@ MODEL_DISPLAY = {
 ENCODER_DISPLAY = {
     "gearnet": "CA-GearNet",
     "mpnn": "ProteinMPNN",
-    "esm2": "ESM-2 (650M)",
+    "esm2": "ESM-2",
 }
-# Project-wide convention: blue = baseline, red = REPA-L4, green = REPA-L9;
-# circle marker = CA-GearNet target, triangle = ProteinMPNN target.
-# Current rows are all L9 → both REPA rows use green, marker differentiates target.
 COLORS = {
     "baseline": "#1f77b4",
     "repa_gearnet_l4": "#d62728",
@@ -62,16 +63,23 @@ MARKERS = {
 }
 
 
-def main() -> None:
+def _plot(mode: str) -> None:
+    matrix_path = RESULTS / f"cknna_matrix_{mode}.jsonl"
+    out_path = FIG_DIR / f"cknna_n10k_{mode}.png"
+    if not matrix_path.exists():
+        print(f"  [skip] {matrix_path} not found")
+        return
+
     rows = []
-    with open(MATRIX_PATH) as f:
+    with open(matrix_path) as f:
         for line in f:
             line = line.strip()
             if line:
                 rows.append(json.loads(line))
-    print(f"Loaded {len(rows)} cells from {MATRIX_PATH}")
+    print(f"Loaded {len(rows)} cells from {matrix_path.name}")
+    if not rows:
+        return
 
-    # Bucket: (encoder, model) -> sorted list of (layer, val, lo, hi)
     by_panel: dict = defaultdict(list)
     for r in rows:
         by_panel[(r["encoder"], r["model"])].append(
@@ -100,7 +108,6 @@ def main() -> None:
                 markersize=6,
             )
             ax.fill_between(xs, lo, hi, alpha=0.18, color=COLORS[model], lw=0)
-        # Injection-layer markers for L4 and L9
         for inj in (4, 9):
             ax.axvline(inj, color="black", lw=0.6, ls=":", alpha=0.45)
         ax.set_title(f"vs {ENCODER_DISPLAY[enc]}", fontsize=11)
@@ -109,15 +116,25 @@ def main() -> None:
         ax.set_xticks(range(10))
     axes[0].set_ylabel("CKNNA (k=10)")
     axes[0].legend(loc="best", fontsize=9, frameon=False)
+    mode_pretty = (
+        "per-residue" if mode == "per_residue" else "per-protein (mean-pooled)"
+    )
     fig.suptitle(
-        "Per-layer CKNNA: proteina hidden states (n=256 PDB, t=1.0 clean, step=1000k) vs frozen encoders",
+        f"Per-layer CKNNA ({mode_pretty}): proteina hidden states "
+        f"(n=256 PDB, t=1.0 clean, step=1000k, N=10,000) vs frozen encoders",
         y=1.02,
         fontsize=12,
     )
     fig.tight_layout()
-    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT_PATH, dpi=140, bbox_inches="tight")
-    print(f"Wrote {OUT_PATH}")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=140, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  wrote {out_path}")
+
+
+def main() -> None:
+    for mode in ("per_protein", "per_residue"):
+        _plot(mode)
 
 
 if __name__ == "__main__":
