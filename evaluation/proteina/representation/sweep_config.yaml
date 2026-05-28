@@ -563,3 +563,60 @@ paper_n128_cath_if_dih_convergence_afdb_ext2:
   output_dir: results/paper/n128_convergence_cath_if_dih_afdb
   baseline_trained_noise_run: baseline_afdb_128_bs80_step200k
   runs: "baseline_afdb_128_bs80_step1100k,baseline_afdb_128_bs80_step1200k"
+
+# ─────────────────────────────────────────────────────────────────────────── #
+# ext3 (2026-05-26) — newest 100k-boundary ckpts that arrived after ext2 was
+# submitted. Same n_train=5000 manifests as ext2; same output dirs so rows
+# merge. PDB models get 3 regimes (dirty / cleantrain / xclean_afdb_pdb);
+# AFDB model gets 2 (dirty / xclean_pdb_afdb) — no cleantrain_afdb pool yet.
+# ─────────────────────────────────────────────────────────────────────────── #
+
+# --- n=256 PDB (2 new ckpts × 3 regimes) ---
+
+paper_n256_cath_if_dih_convergence_pdb_ext3:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 3190
+  output_dir: results/paper/n256_convergence_cath_if_dih_pdb
+  baseline_trained_noise_run: baseline_256_ep21
+  runs: "baseline_256_bs24_2gpu_step1800k,repa_mpnn_l9_256_per_residue_step1400k"
+
+paper_n256_cath_if_dih_cleantrain_pdb_ext3:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 3190
+  train_manifest_version: train_clean_v2
+  eval_manifest_version: eval_v1
+  output_dir: results/paper/n256_convergence_cleantrain_pdb
+  baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
+  runs: "baseline_256_bs24_2gpu_step1800k,repa_mpnn_l9_256_per_residue_step1400k"
+
+paper_n256_cath_if_dih_xclean_afdb_pdb_ext3:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 325
+  train_manifest_version: train_v2
+  eval_manifest_version: eval_clean_v2
+  output_dir: results/paper/n256_xclean_afdb_pdb
+  baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
+  runs: "baseline_256_bs24_2gpu_step1800k,repa_mpnn_l9_256_per_residue_step1400k"
+
+# --- n=256 AFDB (1 new ckpt × 2 regimes; cleantrain_afdb pool not built) ---
+
+paper_n256_cath_if_dih_convergence_afdb_ext3:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 4521
+  output_dir: results/paper/n256_convergence_cath_if_dih_afdb
+  baseline_trained_noise_run: baseline_afdb_256_ep20
+  runs: "repa_l9_afdb_256_step1000k,repa_l4_afdb_256_random_step100k"
+
+paper_n256_cath_if_dih_xclean_pdb_afdb_ext3:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 62
+  train_manifest_version: train_v2
+  eval_manifest_version: eval_clean_v2
+  output_dir: results/paper/n256_xclean_pdb_afdb
+  baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
+  runs: "repa_l9_afdb_256_step1000k,repa_l4_afdb_256_random_step100k"
