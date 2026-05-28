@@ -1,0 +1,530 @@
+[
+  {
+    "case": "pdb_baseline_700K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 60,
+    "pwtm_weighted": 0.1538731534901913,
+    "n_samples": 63,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_baseline_700K",
+    "bin": "10-25",
+    "n_clusters_total": 74,
+    "pwtm_weighted": 0.21617330712791033,
+    "n_samples": 78,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_baseline_700K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 31,
+    "pwtm_weighted": 0.4955180730386214,
+    "n_samples": 74,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_baseline_1.0M",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 88,
+    "pwtm_weighted": 0.15407760569916604,
+    "n_samples": 94,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_baseline_1.0M",
+    "bin": "10-25",
+    "n_clusters_total": 131,
+    "pwtm_weighted": 0.22796377019435926,
+    "n_samples": 142,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_baseline_1.0M",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 35,
+    "pwtm_weighted": 0.13493105136467787,
+    "n_samples": 39,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_baseline_1.5M",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 41,
+    "pwtm_weighted": 0.14481691767344254,
+    "n_samples": 45,
+    "n_lengths": 7
+  },
+  {
+    "case": "pdb_baseline_1.5M",
+    "bin": "10-25",
+    "n_clusters_total": 74,
+    "pwtm_weighted": 0.2290940962789716,
+    "n_samples": 76,
+    "n_lengths": 9
+  },
+  {
+    "case": "pdb_baseline_1.5M",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 11,
+    "pwtm_weighted": 0.13150436768165003,
+    "n_samples": 11,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_baseline_1.6M",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 104,
+    "pwtm_weighted": 0.14468931392274856,
+    "n_samples": 140,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_baseline_1.6M",
+    "bin": "10-25",
+    "n_clusters_total": 221,
+    "pwtm_weighted": 0.24731724728142376,
+    "n_samples": 284,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_baseline_1.6M",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 75,
+    "pwtm_weighted": 0.1344054983405816,
+    "n_samples": 81,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_REPA_L9_GN_700K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 112,
+    "pwtm_weighted": 0.15600405354217378,
+    "n_samples": 127,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L9_GN_700K",
+    "bin": "10-25",
+    "n_clusters_total": 74,
+    "pwtm_weighted": 0.2720579965768972,
+    "n_samples": 103,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L9_GN_700K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 22,
+    "pwtm_weighted": 0.7317005630920211,
+    "n_samples": 75,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L9_GN_900K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 21,
+    "pwtm_weighted": 0.16230651831626894,
+    "n_samples": 22,
+    "n_lengths": 8
+  },
+  {
+    "case": "pdb_REPA_L9_GN_900K",
+    "bin": "10-25",
+    "n_clusters_total": 38,
+    "pwtm_weighted": 0.23846563519483635,
+    "n_samples": 43,
+    "n_lengths": 9
+  },
+  {
+    "case": "pdb_REPA_L9_GN_900K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 15,
+    "pwtm_weighted": 0.6698420448766815,
+    "n_samples": 45,
+    "n_lengths": 7
+  },
+  {
+    "case": "pdb_REPA_L9_GN_1000K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 93,
+    "pwtm_weighted": 0.14257442846611432,
+    "n_samples": 101,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L9_GN_1000K",
+    "bin": "10-25",
+    "n_clusters_total": 78,
+    "pwtm_weighted": 0.23705542603955085,
+    "n_samples": 97,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L9_GN_1000K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 26,
+    "pwtm_weighted": 0.8701123470376698,
+    "n_samples": 144,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L4_GN_700K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 84,
+    "pwtm_weighted": 0.16142553940796156,
+    "n_samples": 101,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L4_GN_700K",
+    "bin": "10-25",
+    "n_clusters_total": 55,
+    "pwtm_weighted": 0.4195263920318808,
+    "n_samples": 106,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_REPA_L4_GN_700K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 26,
+    "pwtm_weighted": 0.8397268895569371,
+    "n_samples": 118,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_REPA_L9_MPNN_700K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 162,
+    "pwtm_weighted": 0.15852818772126484,
+    "n_samples": 166,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L9_MPNN_700K",
+    "bin": "10-25",
+    "n_clusters_total": 143,
+    "pwtm_weighted": 0.2115137583905706,
+    "n_samples": 145,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L9_MPNN_700K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 20,
+    "pwtm_weighted": 0.6704027032326405,
+    "n_samples": 71,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_REPA_L9_MPNN_1000K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 86,
+    "pwtm_weighted": 0.2613746549560626,
+    "n_samples": 141,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L9_MPNN_1000K",
+    "bin": "10-25",
+    "n_clusters_total": 77,
+    "pwtm_weighted": 0.22206895113648134,
+    "n_samples": 89,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_REPA_L9_MPNN_1000K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 14,
+    "pwtm_weighted": 0.6705422972674476,
+    "n_samples": 99,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L4_MPNN_400K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 61,
+    "pwtm_weighted": 0.1939359637491451,
+    "n_samples": 69,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_REPA_L4_MPNN_400K",
+    "bin": "10-25",
+    "n_clusters_total": 80,
+    "pwtm_weighted": 0.2161003826514366,
+    "n_samples": 88,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_REPA_L4_MPNN_400K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 43,
+    "pwtm_weighted": 0.6580549233382258,
+    "n_samples": 121,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_REPA_L4_MPNN_700K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 68,
+    "pwtm_weighted": 0.1954389087243632,
+    "n_samples": 89,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L4_MPNN_700K",
+    "bin": "10-25",
+    "n_clusters_total": 77,
+    "pwtm_weighted": 0.2580815348823865,
+    "n_samples": 105,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L4_MPNN_700K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 23,
+    "pwtm_weighted": 0.8628168366198672,
+    "n_samples": 109,
+    "n_lengths": 4
+  },
+  {
+    "case": "pdb_REPA_L4_MPNN_1000K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 56,
+    "pwtm_weighted": 0.13013498297981596,
+    "n_samples": 56,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L4_MPNN_1000K",
+    "bin": "10-25",
+    "n_clusters_total": 48,
+    "pwtm_weighted": 0.3776757321044592,
+    "n_samples": 75,
+    "n_lengths": 5
+  },
+  {
+    "case": "pdb_REPA_L4_MPNN_1000K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 7,
+    "pwtm_weighted": 0.6996378447928212,
+    "n_samples": 31,
+    "n_lengths": 4
+  },
+  {
+    "case": "afdb_baseline_700K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 62,
+    "pwtm_weighted": 0.1432193905301177,
+    "n_samples": 65,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_baseline_700K",
+    "bin": "10-25",
+    "n_clusters_total": 157,
+    "pwtm_weighted": 0.28513380974907765,
+    "n_samples": 271,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_baseline_700K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 24,
+    "pwtm_weighted": 0.16631947847648904,
+    "n_samples": 26,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_baseline_1.0M",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 88,
+    "pwtm_weighted": 0.15661971299139466,
+    "n_samples": 93,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_baseline_1.0M",
+    "bin": "10-25",
+    "n_clusters_total": 154,
+    "pwtm_weighted": 0.2608407259534054,
+    "n_samples": 260,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_baseline_1.0M",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 14,
+    "pwtm_weighted": 0.15128941411063784,
+    "n_samples": 15,
+    "n_lengths": 4
+  },
+  {
+    "case": "afdb_baseline_1.6M",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 93,
+    "pwtm_weighted": 0.12180876264028496,
+    "n_samples": 105,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_baseline_1.6M",
+    "bin": "10-25",
+    "n_clusters_total": 167,
+    "pwtm_weighted": 0.24852315104223385,
+    "n_samples": 252,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_baseline_1.6M",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 13,
+    "pwtm_weighted": 0.1856493270556132,
+    "n_samples": 14,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L4_GN_700K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 63,
+    "pwtm_weighted": 0.27062365994120463,
+    "n_samples": 111,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L4_GN_700K",
+    "bin": "10-25",
+    "n_clusters_total": 82,
+    "pwtm_weighted": 0.33293142223900524,
+    "n_samples": 239,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L4_GN_700K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 24,
+    "pwtm_weighted": 0.2509723007087166,
+    "n_samples": 35,
+    "n_lengths": 4
+  },
+  {
+    "case": "afdb_REPA_L4_GN_1.0M",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 43,
+    "pwtm_weighted": 0.3682068748702637,
+    "n_samples": 82,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L4_GN_1.0M",
+    "bin": "10-25",
+    "n_clusters_total": 102,
+    "pwtm_weighted": 0.2563787084800314,
+    "n_samples": 241,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L4_GN_1.0M",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 21,
+    "pwtm_weighted": 0.31446260236740115,
+    "n_samples": 38,
+    "n_lengths": 4
+  },
+  {
+    "case": "afdb_REPA_L9_GN_700K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 45,
+    "pwtm_weighted": 0.36553376155583905,
+    "n_samples": 92,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L9_GN_700K",
+    "bin": "10-25",
+    "n_clusters_total": 117,
+    "pwtm_weighted": 0.3103821047234231,
+    "n_samples": 346,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L9_GN_700K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 28,
+    "pwtm_weighted": 0.8184553354895288,
+    "n_samples": 112,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L9_GN_900K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 45,
+    "pwtm_weighted": 0.39981218728311396,
+    "n_samples": 95,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L9_GN_900K",
+    "bin": "10-25",
+    "n_clusters_total": 116,
+    "pwtm_weighted": 0.3162376910020324,
+    "n_samples": 322,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L9_GN_900K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 27,
+    "pwtm_weighted": 0.7635292238010221,
+    "n_samples": 129,
+    "n_lengths": 4
+  },
+  {
+    "case": "afdb_REPA_L9_MPNN_700K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 127,
+    "pwtm_weighted": 0.15071271952751225,
+    "n_samples": 143,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L9_MPNN_700K",
+    "bin": "10-25",
+    "n_clusters_total": 137,
+    "pwtm_weighted": 0.27362008694117823,
+    "n_samples": 228,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L9_MPNN_700K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 12,
+    "pwtm_weighted": 0.11259626905123393,
+    "n_samples": 12,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L9_MPNN_1.0M",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 124,
+    "pwtm_weighted": 0.15445034485543788,
+    "n_samples": 148,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L9_MPNN_1.0M",
+    "bin": "10-25",
+    "n_clusters_total": 130,
+    "pwtm_weighted": 0.2407361341139373,
+    "n_samples": 195,
+    "n_lengths": 5
+  },
+  {
+    "case": "afdb_REPA_L9_MPNN_1.0M",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 11,
+    "pwtm_weighted": 0.14753041386604313,
+    "n_samples": 11,
+    "n_lengths": 5
+  }
+]

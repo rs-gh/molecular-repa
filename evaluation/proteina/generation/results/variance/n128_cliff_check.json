@@ -1,0 +1,376 @@
+{
+  "pdb": {
+    "baseline_128_bs80": {
+      "n_points": 9,
+      "trajectory": [
+        [
+          100000,
+          28.2
+        ],
+        [
+          200000,
+          34.6
+        ],
+        [
+          300000,
+          23
+        ],
+        [
+          400000,
+          25.4
+        ],
+        [
+          500000,
+          13.8
+        ],
+        [
+          600000,
+          19.4
+        ],
+        [
+          700000,
+          16.4
+        ],
+        [
+          800000,
+          20.4
+        ],
+        [
+          900000,
+          24.4
+        ]
+      ],
+      "peak_step": 200000,
+      "peak_clust": 34.6,
+      "trough_step": 500000,
+      "trough_clust": 13.8,
+      "drop_abs": 20.8,
+      "drop_rel": 0.6,
+      "post_trough_recovery": 24.4,
+      "verdict": "soft_decline"
+    },
+    "repa_l4_128_bs80": {
+      "n_points": 6,
+      "trajectory": [
+        [
+          100000,
+          26.7
+        ],
+        [
+          200000,
+          35
+        ],
+        [
+          300000,
+          6.3
+        ],
+        [
+          400000,
+          13.3
+        ],
+        [
+          500000,
+          13.3
+        ],
+        [
+          600000,
+          10.7
+        ]
+      ],
+      "peak_step": 200000,
+      "peak_clust": 35,
+      "trough_step": 300000,
+      "trough_clust": 6.3,
+      "drop_abs": 28.7,
+      "drop_rel": 0.82,
+      "post_trough_recovery": 13.3,
+      "verdict": "cliff"
+    },
+    "repa_l4_128_random": {
+      "n_points": 6,
+      "trajectory": [
+        [
+          100000,
+          31.3
+        ],
+        [
+          200000,
+          63.3
+        ],
+        [
+          300000,
+          40
+        ],
+        [
+          400000,
+          15.7
+        ],
+        [
+          500000,
+          32.3
+        ],
+        [
+          600000,
+          41
+        ]
+      ],
+      "peak_step": 200000,
+      "peak_clust": 63.3,
+      "trough_step": 400000,
+      "trough_clust": 15.7,
+      "drop_abs": 47.7,
+      "drop_rel": 0.75,
+      "post_trough_recovery": 41,
+      "verdict": "soft_decline"
+    },
+    "repa_l9_128_bs80": {
+      "n_points": 5,
+      "trajectory": [
+        [
+          100000,
+          36
+        ],
+        [
+          200000,
+          39.3
+        ],
+        [
+          300000,
+          27
+        ],
+        [
+          400000,
+          18.7
+        ],
+        [
+          500000,
+          32.3
+        ]
+      ],
+      "peak_step": 200000,
+      "peak_clust": 39.3,
+      "trough_step": 400000,
+      "trough_clust": 18.7,
+      "drop_abs": 20.7,
+      "drop_rel": 0.53,
+      "post_trough_recovery": 32.3,
+      "verdict": "soft_decline"
+    },
+    "repa_mpnn_l4_128_bs80": {
+      "n_points": 4,
+      "trajectory": [
+        [
+          100000,
+          29
+        ],
+        [
+          200000,
+          44.5
+        ],
+        [
+          300000,
+          41.7
+        ],
+        [
+          400000,
+          32.3
+        ]
+      ],
+      "peak_step": 200000,
+      "peak_clust": 44.5,
+      "trough_step": 400000,
+      "trough_clust": 32.3,
+      "drop_abs": 12.2,
+      "drop_rel": 0.27,
+      "post_trough_recovery": 32.3,
+      "verdict": "soft_decline"
+    },
+    "repa_mpnn_l9_128_bs80_2gpu": {
+      "n_points": 7,
+      "trajectory": [
+        [
+          100000,
+          40.8
+        ],
+        [
+          200000,
+          75.4
+        ],
+        [
+          300000,
+          67
+        ],
+        [
+          400000,
+          60.2
+        ],
+        [
+          500000,
+          49.6
+        ],
+        [
+          600000,
+          46
+        ],
+        [
+          700000,
+          55
+        ]
+      ],
+      "peak_step": 200000,
+      "peak_clust": 75.4,
+      "trough_step": 600000,
+      "trough_clust": 46,
+      "drop_abs": 29.4,
+      "drop_rel": 0.39,
+      "post_trough_recovery": 55,
+      "verdict": "soft_decline"
+    }
+  },
+  "afdb": {
+    "baseline_afdb_128_bs80": {
+      "n_points": 7,
+      "trajectory": [
+        [
+          100000,
+          54
+        ],
+        [
+          200000,
+          58
+        ],
+        [
+          400000,
+          53
+        ],
+        [
+          700000,
+          37
+        ],
+        [
+          1000000,
+          40
+        ],
+        [
+          1100000,
+          35
+        ],
+        [
+          1200000,
+          38
+        ]
+      ],
+      "peak_step": 200000,
+      "peak_clust": 58,
+      "trough_step": 1100000,
+      "trough_clust": 35,
+      "drop_abs": 23,
+      "drop_rel": 0.4,
+      "post_trough_recovery": 38,
+      "verdict": "soft_decline"
+    },
+    "repa_l4_afdb_128_bs80": {
+      "n_points": 5,
+      "trajectory": [
+        [
+          100000,
+          46
+        ],
+        [
+          200000,
+          49
+        ],
+        [
+          400000,
+          47
+        ],
+        [
+          500000,
+          40.7
+        ],
+        [
+          600000,
+          40.7
+        ]
+      ],
+      "peak_step": 200000,
+      "peak_clust": 49,
+      "trough_step": 500000,
+      "trough_clust": 40.7,
+      "drop_abs": 8.3,
+      "drop_rel": 0.17,
+      "post_trough_recovery": 40.7,
+      "verdict": "stable"
+    },
+    "repa_mpnn_l4_afdb_128_bs80": {
+      "n_points": 6,
+      "trajectory": [
+        [
+          100000,
+          46
+        ],
+        [
+          200000,
+          60
+        ],
+        [
+          400000,
+          46
+        ],
+        [
+          700000,
+          44
+        ],
+        [
+          1000000,
+          30
+        ],
+        [
+          1100000,
+          25
+        ]
+      ],
+      "peak_step": 200000,
+      "peak_clust": 60,
+      "trough_step": 1100000,
+      "trough_clust": 25,
+      "drop_abs": 35,
+      "drop_rel": 0.58,
+      "post_trough_recovery": 25,
+      "verdict": "cliff"
+    },
+    "repa_mpnn_l9_afdb_128_bs80_2gpu": {
+      "n_points": 5,
+      "trajectory": [
+        [
+          100000,
+          39
+        ],
+        [
+          200000,
+          29
+        ],
+        [
+          400000,
+          32
+        ],
+        [
+          500000,
+          22.7
+        ],
+        [
+          600000,
+          23.7
+        ]
+      ],
+      "peak_step": 100000,
+      "peak_clust": 39,
+      "trough_step": 500000,
+      "trough_clust": 22.7,
+      "drop_abs": 16.3,
+      "drop_rel": 0.42,
+      "post_trough_recovery": 23.7,
+      "verdict": "cliff"
+    }
+  }
+}
