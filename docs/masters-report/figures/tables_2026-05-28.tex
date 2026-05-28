@@ -41,18 +41,18 @@ Variant
 \midrule
 \multicolumn{11}{l}{\textit{PDB-trained, $n{=}256$, 700K, 3 seeds; FID is FID-PDB (in-distribution).}}\\
 Baseline       & 0.46 & 437   & 1.11 & 5.48 & 0.22 & 77   & 0.27 & 0.35 & 0.40 & 0.22 \\
-REPA L4-random & $-$0.08 & +34  & $-$0.55 & +0.05 & $-$0.05 & $-$23 & $-$0.10 & $-$0.13 & $-$0.01 & $-$0.11 \\
+REPA L4-random & $-$0.08 & +34  & $-$0.55 & +0.05 & \textbf{$-$0.05} & $-$23 & \textbf{$-$0.10} & $-$0.13 & $-$0.01 & $-$0.11 \\
 REPA L4-GN     & \textbf{+0.24} & +71  & $-$0.38 & +1.63 & +0.13 & +1  & +0.11 & \textbf{$-$0.21} & $-$0.12 & +0.00 \\
-REPA L9-GN     & +0.14 & \textbf{$-$118} & \textbf{$-$0.57} & \textbf{+2.31} & \textbf{$-$0.03} & +27 & \textbf{$-$0.02} & $-$0.19 & $-$0.10 & $-$0.04 \\
-REPA L4-MPNN   & +0.18 & $-$88  & $-$0.13 & +0.48 & +0.05 & $-$4  & +0.08 & $-$0.16 & \textbf{$-$0.14} & +0.01 \\
-REPA L9-MPNN   & +0.05 & $-$19  & $-$0.32 & +0.37 & $-$0.01 & \textbf{+33} & $-$0.01 & $-$0.14 & $-$0.11 & \textbf{$-$0.07} \\
+REPA L9-GN     & +0.14 & \textbf{$-$118} & \textbf{$-$0.57} & \textbf{+2.31} & $-$0.03 & +27 & $-$0.02 & $-$0.19 & $-$0.10 & $-$0.04 \\
+REPA L4-MPNN   & +0.18 & $-$88  & $-$0.13 & +0.48 & +0.05 & $-$4  & +0.08 & $-$0.16 & \textbf{$-$0.14} & \textbf{+0.01} \\
+REPA L9-MPNN   & +0.05 & $-$19  & $-$0.32 & +0.37 & $-$0.01 & \textbf{+33} & $-$0.01 & $-$0.14 & $-$0.11 & $-$0.07 \\
 \midrule
 \multicolumn{11}{l}{\textit{AFDB-trained, $n{=}256$, 700K, 3 seeds (MPNN-L4: 1 seed); FID is FID-AFDB.}}\\
 Baseline       & 0.72 & 494 & 2.45 & 4.59 & 0.20 & 128  & 0.22 & 0.15 & 0.16 & 0.15 \\
-REPA L4-GN     & \textbf{+0.05} & \textbf{$-$195} & \textbf{$-$1.56} & +2.27 & \textbf{+0.00} & $-$35 & \textbf{+0.04} & \textbf{$-$0.11} & \textbf{$-$0.07} & $-$0.02 \\
-REPA L9-GN     & +0.01 & $-$172 & $-$1.29 & \textbf{+2.76} & +0.01 & $-$50 & +0.11 & $-$0.12 & $-$0.06 & +0.04 \\
-REPA L4-MPNN   & $-$0.03 & $-$22 & $-$0.39 & +0.03 & ---   & $-$1  & $-$0.07 & $-$0.02 & +0.05 & $-$0.01 \\
-REPA L9-MPNN   & \textbf{+0.05} & $-$139 & $-$0.93 & +0.31 & $-$0.03 & \textbf{+21} & $-$0.03 & +0.01 & +0.02 & \textbf{$-$0.04} \\
+REPA L4-GN     & \textbf{+0.05} & \textbf{$-$195} & \textbf{$-$1.56} & +2.27 & +0.00 & $-$35 & $-$0.04 & $-$0.11 & \textbf{$-$0.07} & $-$0.02 \\
+REPA L9-GN     & +0.01 & $-$172 & $-$1.29 & \textbf{+2.76} & +0.01 & $-$50 & +0.11 & \textbf{$-$0.12} & $-$0.06 & \textbf{+0.04} \\
+REPA L4-MPNN   & $-$0.03 & $-$22 & $-$0.39 & +0.03 & ---   & $-$1  & \textbf{$-$0.07} & $-$0.02 & +0.05 & $-$0.01 \\
+REPA L9-MPNN   & \textbf{+0.05} & $-$139 & $-$0.93 & +0.31 & \textbf{$-$0.03} & \textbf{+21} & $-$0.03 & +0.01 & +0.02 & $-$0.04 \\
 \bottomrule
 \end{tabular}}
 \caption{\textbf{The encoder-routing pattern at one fixed step.} GearNet
@@ -93,18 +93,18 @@ Variant
 \midrule
 \multicolumn{11}{l}{\textit{PDB-trained, $n{=}256$, 1.0M, 3 seeds; FID is FID-PDB.}}\\
 Baseline       & 0.54 & 467 & 0.95 & 5.67 & 0.17 & 114 & 0.16 & 0.32 & 0.39 & 0.15 \\
-REPA L4-GN     & $-$0.09 & \textbf{$-$35} & \textbf{$-$0.41} & \textbf{+1.68} & \textbf{+0.00} & $-$27 & \textbf{+0.01} & \textbf{$-$0.16} & +0.00 & $-$0.07 \\
-REPA L9-GN     & $-$0.02 & $-$130 & +0.06 & +0.92 & +0.06 & $-$44 & +0.13 & $-$0.19 & \textbf{$-$0.13} & +0.09 \\
-REPA L4-MPNN   & $-$0.20 & +27 & +0.10 & $-$0.27 & +0.00 & $-$62 & +0.07 & $-$0.26 & $-$0.26 & +0.02 \\
-REPA L9-MPNN   & \textbf{+0.01} & $-$81 & $-$0.05 & +0.29 & +0.07 & \textbf{$-$51} & +0.15 & $-$0.15 & $-$0.08 & \textbf{+0.04} \\
+REPA L4-GN     & $-$0.09 & $-$35 & \textbf{$-$0.41} & \textbf{+1.68} & \textbf{+0.00} & \textbf{$-$27} & \textbf{+0.01} & $-$0.16 & +0.00 & $-$0.07 \\
+REPA L9-GN     & $-$0.02 & \textbf{$-$130} & +0.06 & +0.92 & +0.06 & $-$44 & +0.13 & \textbf{$-$0.19} & $-$0.13 & \textbf{+0.09} \\
+REPA L4-MPNN   & $-$0.20 & +27 & +0.10 & $-$0.27 & +0.00 & $-$62 & +0.07 & $-$0.26 & \textbf{$-$0.26} & +0.02 \\
+REPA L9-MPNN   & \textbf{+0.01} & $-$81 & $-$0.05 & +0.29 & +0.07 & $-$51 & +0.15 & $-$0.15 & $-$0.08 & +0.04 \\
 REPA L4-random & --- & --- & --- & --- & --- & --- & --- & --- & --- & --- \\
 \midrule
 \multicolumn{11}{l}{\textit{AFDB-trained, $n{=}256$, 1.0M, 3 seeds (MPNN-L4: 1 seed); FID is FID-AFDB.}}\\
 Baseline       & 0.72 & 534 & 2.23 & 4.35 & 0.20 & 133 & 0.21 & 0.16 & 0.18 & 0.14 \\
-REPA L4-GN     & \textbf{+0.01} & \textbf{$-$228} & \textbf{$-$1.43} & \textbf{+3.68} & \textbf{$-$0.00} & $-$39 & \textbf{+0.03} & \textbf{$-$0.12} & \textbf{$-$0.09} & \textbf{+0.01} \\
+REPA L4-GN     & \textbf{+0.01} & \textbf{$-$228} & \textbf{$-$1.43} & \textbf{+3.68} & $-$0.00 & $-$39 & +0.03 & \textbf{$-$0.12} & \textbf{$-$0.09} & +0.01 \\
 REPA L9-GN     & --- & --- & --- & --- & --- & --- & --- & --- & --- & --- \\
-REPA L4-MPNN   & $-$0.18 & $-$118 & $-$0.57 & +1.20 & --- & $-$29 & $-$0.06 & $-$0.06 & +0.09 & +0.02 \\
-REPA L9-MPNN   & $-$0.01 & $-$101 & $-$0.74 & +0.44 & $-$0.04 & \textbf{+6} & $-$0.02 & +0.02 & +0.01 & $-$0.03 \\
+REPA L4-MPNN   & $-$0.18 & $-$118 & $-$0.57 & +1.20 & --- & $-$29 & \textbf{$-$0.06} & $-$0.06 & +0.09 & \textbf{+0.02} \\
+REPA L9-MPNN   & $-$0.01 & $-$101 & $-$0.74 & +0.44 & \textbf{$-$0.04} & \textbf{+6} & $-$0.02 & +0.02 & +0.01 & $-$0.03 \\
 \bottomrule
 \end{tabular}}
 \caption{\textbf{Post-trade-off: every PDB REPA variant now loses on T-D
@@ -167,10 +167,10 @@ level. Sign reflects effect direction; for ``lower-is-better'' metrics
 $\Delta$ (REPA $-$ baseline) & ODE & $\gamma=0$ & $\gamma=0.35$ & $\gamma=0.45$ & $\gamma=0.5$ & $\gamma=1.0$ \\
 \midrule
 \multicolumn{7}{l}{\textit{PDB --- REPA L9-MPNN vs Baseline (step-matched cells; baseline rows for $\gamma{=}0.35,0.5$ recovered from older clean.jsonl).}}\\
-Des $\uparrow$         & +0.06 & +0.07 & \textbf{+0.16} & +0.18 & +0.15 & +0.04 \\
+Des $\uparrow$         & +0.06 & +0.07 & +0.16 & \textbf{+0.18} & +0.15 & +0.04 \\
 FID $\downarrow$        & $-$22   & \textbf{$-$1225} & $-$78   & $-$77   & $-$89   & $-$131 \\
 fJSD-A $\downarrow$     & $-$0.13 & +0.18 & +0.21 & $-$0.06 & +0.07 & \textbf{$-$0.30} \\
-ssJSD2D $\downarrow$    & $-$0.11 & +0.08 & $-$0.01 & $-$0.03 & $-$0.00 & \textbf{$-$0.10} \\
+ssJSD2D $\downarrow$    & \textbf{$-$0.11} & +0.08 & $-$0.01 & $-$0.03 & $-$0.00 & $-$0.10 \\
 \#Clust $\uparrow$      & +9    & +8    & $-$7    & +4    & \textbf{+12}   & +2  \\
 \midrule
 \multicolumn{7}{l}{\textit{AFDB --- REPA L4-GearNet vs Baseline (step-matched cells).}}\\
