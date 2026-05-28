@@ -576,3 +576,26 @@ n256_pdb_sampler_ablation_ext:
   runs: "repa_l4_256_per_residue_bs24_2gpu_step100k,repa_l4_256_per_residue_bs24_2gpu_step200k,repa_l4_256_per_residue_bs24_2gpu_step400k,repa_l4_256_per_residue_bs24_2gpu_step700k,repa_l4_256_per_residue_bs24_2gpu_step1000k,repa_l9_256_per_residue_bs24_2gpu_step1000k,repa_l4_256_per_residue_random_bs24_2gpu_step100k,repa_l4_256_per_residue_random_bs24_2gpu_step200k,repa_l4_256_per_residue_random_bs24_2gpu_step400k,repa_l4_256_per_residue_random_bs24_2gpu_step700k,repa_mpnn_l4_256_per_residue_step100k,repa_mpnn_l4_256_per_residue_step200k,repa_mpnn_l4_256_per_residue_step400k,repa_mpnn_l4_256_per_residue_step700k,repa_mpnn_l4_256_per_residue_step1000k,repa_mpnn_l4_256_per_residue_step1300k,repa_mpnn_l9_256_per_residue_step100k,repa_mpnn_l9_256_per_residue_step200k,repa_mpnn_l9_256_per_residue_step400k,repa_mpnn_l9_256_per_residue_step1000k,repa_mpnn_l9_256_per_residue_step1300k"
   output_dir: results/variance/n256_sampler_ablation
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# 2026-05-28: PDB convergence extension 6 — L9-GN stopped at 1.4M, MPNN-L9
+# trained to 1.7M. Cheap variant (1 seed × 7 tasks). Same output_dir as base.
+n256_convergence_pdb_ext6:
+  <<: *paper_defaults
+  runs: "repa_l9_256_per_residue_bs24_2gpu_step1300k,repa_l9_256_per_residue_bs24_2gpu_step1400k,repa_mpnn_l9_256_per_residue_step1500k,repa_mpnn_l9_256_per_residue_step1600k,repa_mpnn_l9_256_per_residue_step1700k"
+  output_dir: results/paper/n256_convergence_pdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# 2026-05-28: PDB sampler-ablation baseline backfill — missing gamma in
+# {0.35, 0.5} for baseline_256_bs24_2gpu at all 7 step anchors. These 14 cells
+# unlock build_sampler_regime_robustness.py for PDB tables (currently skipped).
+# Submit once per sampler: sc:0.35 and sc:0.5 (rep_idx=0, seed=42).
+#   python run_sweep.py --config n256_pdb_sampler_ablation_baseline_backfill --dry_run
+#   sbatch --array=0-6 run_sweep.sh --config n256_pdb_sampler_ablation_baseline_backfill \
+#     --sampling_mode sc --sc_scale_noise 0.35 --rep_idx 0
+#   sbatch --array=0-6 run_sweep.sh --config n256_pdb_sampler_ablation_baseline_backfill \
+#     --sampling_mode sc --sc_scale_noise 0.5 --rep_idx 0
+n256_pdb_sampler_ablation_baseline_backfill:
+  <<: *paper_defaults
+  runs: "baseline_256_bs24_2gpu_step100k,baseline_256_bs24_2gpu_step200k,baseline_256_bs24_2gpu_step400k,baseline_256_bs24_2gpu_step700k,baseline_256_bs24_2gpu_step1000k,baseline_256_bs24_2gpu_step1300k,baseline_256_bs24_2gpu_step1500k"
+  output_dir: results/variance/n256_sampler_ablation
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"

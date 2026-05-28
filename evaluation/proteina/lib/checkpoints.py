@@ -1481,6 +1481,38 @@ RUN_SCHEDULES = {
         9,
         [1400000],
     ),
+    # ── n=256 convergence extension 6 (added 2026-05-28) ────────────────────
+    # L9-GN stopped at 1.4M; L9-MPNN continued to 1.7M.
+    "repa_l9_256_per_residue_bs24_2gpu_step1300k": (
+        "proteina_60m_repa_l9_256_per_residue_bs24_2gpu",
+        True,
+        9,
+        [1300000],
+    ),
+    "repa_l9_256_per_residue_bs24_2gpu_step1400k": (
+        "proteina_60m_repa_l9_256_per_residue_bs24_2gpu",
+        True,
+        9,
+        [1400000],
+    ),
+    "repa_mpnn_l9_256_per_residue_step1500k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [1500000],
+    ),
+    "repa_mpnn_l9_256_per_residue_step1600k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [1600000],
+    ),
+    "repa_mpnn_l9_256_per_residue_step1700k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [1700000],
+    ),
     "repa_l9_afdb_256_step1000k": (
         "proteina_60m_repa_l9_256_afdb_per_residue",
         True,
@@ -1749,6 +1781,12 @@ GEN_RUN_CONFIGS = {
     "repa_mpnn_l9_256_per_residue_step1400k": "inference/paper/inference_fid_60m_paper",
     "repa_l9_afdb_256_step1000k": "inference/paper/inference_fid_60m_paper",
     "repa_l4_afdb_256_random_step100k": "inference/paper/inference_fid_60m_paper",
+    # ── n=256 convergence extension 6 (added 2026-05-28) ─────────────────── #
+    "repa_l9_256_per_residue_bs24_2gpu_step1300k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_per_residue_bs24_2gpu_step1400k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step1500k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step1600k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step1700k": "inference/paper/inference_fid_60m_paper",
 }
 
 
