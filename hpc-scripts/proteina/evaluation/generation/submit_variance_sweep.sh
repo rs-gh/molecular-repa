@@ -67,13 +67,20 @@ RUN_SH="$REPO_DIR/hpc-scripts/proteina/evaluation/generation/run_sweep.sh"
 # Profile size determines the array range. Sample-matched n128 / n256 each
 # have 4 tasks; if a profile differs, callers can override via --runs (which
 # bypasses the profile's full run list).
-case "$PROFILE" in
-    n128|n256) ARRAY_RANGE="0-3" ;;
-    *)         ARRAY_RANGE="0-3" ;;  # default; rely on dry_run to confirm
-esac
 if [[ -n "$RUNS" ]]; then
     N_RUNS=$(echo "$RUNS" | tr ',' '\n' | grep -c .)
     ARRAY_RANGE="0-$((N_RUNS - 1))"
+else
+    # Derive the task count from run_sweep.py --dry_run (authoritative) so the
+    # array range always matches the profile's (run, step) tuple count. The old
+    # hardcoded 0-3 over-provisioned profiles with fewer tasks (e.g. the 2-task
+    # *_ext5 convergence configs), spawning out-of-range tasks that FAIL on exit.
+    N_TASKS=$(cd "$REPO_DIR" && python evaluation/proteina/generation/scripts/run_sweep.py \
+        --config "$PROFILE" --dry_run 2>/dev/null \
+        | sed -nE 's/.*Task list \(([0-9]+) tasks?\):.*/\1/p' | head -1)
+    [[ -z "$N_TASKS" || "$N_TASKS" -lt 1 ]] && {
+        echo "ERROR: could not determine task count for profile '$PROFILE' via --dry_run"; exit 1; }
+    ARRAY_RANGE="0-$((N_TASKS - 1))"
 fi
 
 if [[ -z "$OUTPUT_DIR" ]]; then
