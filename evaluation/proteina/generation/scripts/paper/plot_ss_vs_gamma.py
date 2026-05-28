@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
 ROOT = Path(__file__).resolve().parents[2]
-ABLATION = ROOT / "results/variance/n256_sampler_ablation/sweep_results.jsonl"
+ABLATION = ROOT / "results/variance/n256_sampler_ablation/sweep_results.clean.jsonl"
 CONVERGENCE = ROOT / "results/paper/n256_convergence_pdb/sweep_results.clean.jsonl"
 FIG_OUT = ROOT / "figures/paper/n256_sampler_ablation/pdb"
 FIG_OUT.mkdir(parents=True, exist_ok=True)

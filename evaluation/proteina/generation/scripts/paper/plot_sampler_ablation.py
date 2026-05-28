@@ -59,7 +59,8 @@ ROOT = Path(__file__).resolve().parents[2]
 # L4=red, L9=green; GearNet=circle, MPNN=triangle.
 DATASET_CONFIGS = {
     "pdb": {
-        "jsonl": ROOT / "results/variance/n256_sampler_ablation/sweep_results.jsonl",
+        "jsonl": ROOT
+        / "results/variance/n256_sampler_ablation/sweep_results.clean.jsonl",
         "jsonl_paper": ROOT
         / "results/paper/n256_convergence_pdb/sweep_results.clean.jsonl",
         "fig_out": ROOT / "figures/paper/n256_sampler_ablation/pdb",
@@ -76,7 +77,7 @@ DATASET_CONFIGS = {
     },
     "afdb": {
         "jsonl": ROOT
-        / "results/variance/n256_afdb_sampler_ablation/sweep_results.jsonl",
+        / "results/variance/n256_afdb_sampler_ablation/sweep_results.clean.jsonl",
         "jsonl_paper": ROOT
         / "results/paper/n256_convergence_afdb/sweep_results.clean.jsonl",
         "fig_out": ROOT / "figures/paper/n256_sampler_ablation/afdb",
@@ -336,7 +337,11 @@ def _plot_figure(rows, columns, suptitle, out_name, annotate_n=False):
                     mins = [v * 100.0 for v in mins]
                     maxs = [v * 100.0 for v in maxs]
                 plot_band(ax, xs, means, mins, maxs, color, marker, model_label)
-                if annotate_n:
+                # Annotate designability rate on every panel that's restricted
+                # to the designable subset (so reader can spot small-N noise).
+                # Skip the Designability panel itself (y already is the rate).
+                annotate_this_panel = annotate_n and title != "Designability"
+                if annotate_this_panel:
                     rate_by_step = extract_des_rate(rows, run_prefix, sampler_tag)
                     for x, y in zip(xs, means):
                         rate = rate_by_step.get(x)
@@ -445,18 +450,20 @@ def main() -> None:
         des_quality,
         suptitle=(
             f"n=256 {DATASET_LABEL} sampler ablation — designability / sample-quality / diversity (designable subset)\n"
-            "Rows = sampler config. Baseline (blue) vs REPA (red/green) head-to-head per regime. γ=0.45 plotted as mean+min/max envelope; other γ are single seed 42."
+            "Rows = sampler config. Baseline (blue) vs REPA (red/green) head-to-head per regime. γ=0.45 plotted as mean+min/max envelope; other γ are single seed 42. Inline % = designability rate at that ckpt (small % → metric computed over few samples → noisy)."
         ),
         out_name="sampler_ablation_des_quality.png",
+        annotate_n=True,
     )
     _plot_figure(
         rows,
         des_dist,
         suptitle=(
             f"n=256 {DATASET_LABEL} sampler ablation — novelty / SS-distribution match (designable subset)\n"
-            "Rows = sampler config. Baseline (blue) vs REPA (red/green) head-to-head per regime. γ=0.45 plotted as mean+min/max envelope; other γ are single seed 42."
+            "Rows = sampler config. Baseline (blue) vs REPA (red/green) head-to-head per regime. γ=0.45 plotted as mean+min/max envelope; other γ are single seed 42. Inline % = designability rate at that ckpt (small % → metric computed over few samples → noisy)."
         ),
         out_name="sampler_ablation_des_dist.png",
+        annotate_n=True,
     )
 
     # Focused secondary-structure view: H frac, E frac, H/E ratio, SS-JSD vs PDB

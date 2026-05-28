@@ -529,3 +529,50 @@ n256_convergence_afdb_ext4:
   runs: "baseline_afdb_256_step1800k,repa_l4_afdb_256_step1300k"
   output_dir: results/paper/n256_convergence_afdb
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# 2026-05-26: n=256 convergence extension 5 — newest 100k-boundary ckpts that
+# landed while ext4 was running. Multi-seed via submit_variance_sweep.sh
+# --axis A --reps 3. Same output dirs as base so rows merge.
+n256_convergence_pdb_ext5:
+  <<: *paper_defaults
+  runs: "baseline_256_bs24_2gpu_step1800k,repa_mpnn_l9_256_per_residue_step1400k"
+  output_dir: results/paper/n256_convergence_pdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+n256_convergence_afdb_ext5:
+  <<: *paper_defaults
+  runs: "repa_l9_afdb_256_step1000k,repa_l4_afdb_256_random_step100k"
+  output_dir: results/paper/n256_convergence_afdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# 2026-05-27: AFDB sampler-ablation extension. Existing
+# results/variance/n256_afdb_sampler_ablation/ has only 3 ckpts per model and
+# only baseline + repa_l4. Add 400k/1000k/1300k for baseline & repa_l4, plus
+# full L9 (GearNet) and MPNN-L9 step trajectories, so we can do step-matched
+# T-D cliff analysis across the four AFDB model families. Five samplers
+# (ode, sde_n0.0, sde_n0.35, sde_n0.5, sde_n1.0) run at rep_idx=0; the
+# default sde_n0.45 is already covered by n256_convergence_afdb at 3 reps.
+n256_afdb_sampler_ablation_ext:
+  <<: *paper_defaults
+  runs: "baseline_afdb_256_step400k,baseline_afdb_256_step1000k,baseline_afdb_256_step1300k,repa_l4_afdb_256_step400k,repa_l4_afdb_256_step1000k,repa_l4_afdb_256_step1300k,repa_l9_afdb_256_step100k,repa_l9_afdb_256_step400k,repa_l9_afdb_256_step700k,repa_l9_afdb_256_step900k,repa_mpnn_l9_afdb_256_step100k,repa_mpnn_l9_afdb_256_step400k,repa_mpnn_l9_afdb_256_step700k,repa_mpnn_l9_afdb_256_step1000k,repa_mpnn_l9_afdb_256_step1300k"
+  output_dir: results/variance/n256_afdb_sampler_ablation
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# 2026-05-27: PDB sampler-ablation extension — full encoder/layer coverage.
+# Existing results/variance/n256_sampler_ablation/ has only baseline + repa_l9
+# (GearNet). This adds the remaining PDB families so the sampler-regime
+# robustness check (docs/research/proteina_narratives.md) covers both layers ×
+# {GearNet, MPNN, random}, matching the AFDB ext. Output_dir is the SAME dir,
+# so run_sweep.py's (run,step,sampler_tag,rep) dedup skips the baseline/l9
+# cells already present — only the gap cells below actually run.
+# Target step grid {100,200,400,700,1000,1300}k (baseline already has all of
+# these); L4-GN caps at 1000k, L4-random at 700k (store maxes 800k). 23 new
+# (run,step) cells -> array 0-22; submit once per sampler (vf/ODE, sc 0.0/
+# 0.35/0.5/1.0). gamma=0.45 is already covered by n256_convergence_pdb @ 3 reps.
+# L9-GN caps registered at 1200k (use 1000k); MPNN-L9 PDB has no 700k periodic
+# ckpt. 21 new (run,step) cells -> array 0-20.
+n256_pdb_sampler_ablation_ext:
+  <<: *paper_defaults
+  runs: "repa_l4_256_per_residue_bs24_2gpu_step100k,repa_l4_256_per_residue_bs24_2gpu_step200k,repa_l4_256_per_residue_bs24_2gpu_step400k,repa_l4_256_per_residue_bs24_2gpu_step700k,repa_l4_256_per_residue_bs24_2gpu_step1000k,repa_l9_256_per_residue_bs24_2gpu_step1000k,repa_l4_256_per_residue_random_bs24_2gpu_step100k,repa_l4_256_per_residue_random_bs24_2gpu_step200k,repa_l4_256_per_residue_random_bs24_2gpu_step400k,repa_l4_256_per_residue_random_bs24_2gpu_step700k,repa_mpnn_l4_256_per_residue_step100k,repa_mpnn_l4_256_per_residue_step200k,repa_mpnn_l4_256_per_residue_step400k,repa_mpnn_l4_256_per_residue_step700k,repa_mpnn_l4_256_per_residue_step1000k,repa_mpnn_l4_256_per_residue_step1300k,repa_mpnn_l9_256_per_residue_step100k,repa_mpnn_l9_256_per_residue_step200k,repa_mpnn_l9_256_per_residue_step400k,repa_mpnn_l9_256_per_residue_step1000k,repa_mpnn_l9_256_per_residue_step1300k"
+  output_dir: results/variance/n256_sampler_ablation
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
