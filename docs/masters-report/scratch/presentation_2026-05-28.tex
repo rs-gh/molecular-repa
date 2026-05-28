@@ -1,0 +1,703 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage[pdfborder={0 0 0}]{hyperref}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{parskip}
+\graphicspath{{figures/}}
+\captionsetup{font=small, labelfont=bf, justification=raggedright, singlelinecheck=false}
+
+\title{Master's Report --- Progress \& Feedback Session\\\large Proteina chapter and supporting structure}
+\author{Shreyas Ravishankar}
+\date{2026-05-28}
+
+\begin{document}
+\maketitle
+
+\section*{Reading guide}
+
+This doc is intentionally bullet-heavy --- a working scaffold for our
+discussion, not finished prose. Figures and tables are embedded near the
+claims they support; captions are written to be self-contained. The
+chapter draft itself lives at \texttt{docs/masters-report/report-draft.tex}
+and the detailed per-paragraph plan at
+\texttt{docs/masters-report/proteina-chapter-flow.md}. The five narrative
+threads I'll keep referring to are:
+\begin{description}[leftmargin=*,itemsep=0pt]
+\item[T1] REPA does mechanistic work (encoder-selectivity, not regularisation)
+\item[T2] Multi-factorial reps $\Rightarrow$ encoder routes REPA to a factor (imaging vs molecular)
+\item[T3] Regime asymmetry (PDB vs AFDB tracks baseline convergence behaviour)
+\item[T4] T-D trade-off (designable concentration on encoder-preferred folds)
+\item[T5] Sampler-robustness scaffold (REPA composes with the sampler dial)
+\end{description}
+
+% ====================================================================
+\section{The argument in one paragraph}
+
+The field's response to scarce high-quality molecular data has been to
+relax structural priors and lean on scale --- synthetic data (AFDB) and
+augmentation as proxies for ground-truth abundance. This shifts the
+representation-learning burden onto the training objective. \emph{Representation
+alignment (REPA)}, originally proposed for image diffusion, offers a soft
+substitute: inject structural knowledge through a content-based loss
+against a frozen pretrained encoder. The empirical question this report
+takes on is \emph{whether and when this substitution transfers across
+domains}. We test in two regimes --- small molecules (Tabasco) and protein
+backbones (Proteina) --- and find that REPA's transferability is best
+understood not as a property of the domain but as a property of the
+\emph{representational geometry}: it helps when the encoder carries
+transferable structural information that the flow-matching objective
+doesn't already learn cheaply, and the evaluation surface has headroom.
+In a domain whose representation is \emph{multi-factorial} --- decoupled
+content and geometry, plus a hierarchy --- the encoder choice routes REPA
+to different factors, so REPA becomes a \emph{family of interventions}
+rather than one.
+
+\paragraph{Three headline claims.}
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+\item \textbf{Tabasco (small molecules) shows no measurable REPA gain.} Two
+interacting conditions explain it diagnostically (Ch.~5): the candidate
+encoders fail profiling (CheMeleon: 93\% sparsity, conformation-invariant;
+MACE-OFF: low headroom) \emph{and} the metric surface is near-saturated for
+the baseline. A constraint on what cross-domain claims can responsibly say
+--- not a negative result.
+\item \textbf{Proteina (protein backbones) shows REPA does mechanistic work
+that is encoder-routed and regime-asymmetric.} Persistent representation
+gap on the rep-side; FID-acceleration on the gen-side that is
+\emph{durable on synthetic AFDB} (6.5--13$\times$ to the baseline's best
+FID; the baseline never closes) but \emph{transient on real PDB} (REPA-L9
+leads at every step $\le$1.2M; baseline catches up at $\sim$1.4M). The
+direction of the gain depends on the encoder: GearNet routes to
+tertiary/distribution, MPNN routes to per-residue/per-sample quality.
+\item \textbf{REPA in molecular generation is a family of interventions.} The
+imaging-vs-molecular framing is the conceptual root: in images the pixel
+grid is both content and geometry, so a single SSL encoder is
+near-complete; in molecules the two are decoupled, so different encoders
+route the gain to different representational factors. Our key new
+empirical evidence: the encoder-direction split (e.g.\ $\beta$-rich
+ordering of designable folds) is \emph{sampler-invariant} --- encoder and
+sampler are orthogonal axes that the sampler dial cannot substitute for.
+\end{enumerate}
+
+% ====================================================================
+\section{Document flow (Ch 1--7)}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+\item \textbf{Ch 1 Introduction} --- the trade-off arc (hard priors $\to$
+augmentation + synthetic data); the representation bottleneck framing
+from \cite{REPA}; the two regimes; contributions: profiling framework,
+Tabasco study, Proteina study, a working framework that recasts REPA's
+transferability as a representation-statistics question.
+
+\item \textbf{Ch 2 Background \& Related Work (merged)} --- flow matching
+(\S2.1, brisk); REPA construction and design knobs (\S2.2, with figure
+and equation); ``what makes a good REPA encoder?'' as the open question
+(\S2.2.1); a primer on molecular generation as one node in a discovery
+pipeline (\S2.3); Tabasco and Proteina parameterisations (\S2.3.1/2).
+
+\item \textbf{Ch 3 Evaluating molecular generation} --- the metric layer
+the rest of the report depends on.
+  \begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \S3.1 What ``good'' means --- a small set of conflicting axes.
+  \item \S3.2 \emph{Imaging vs molecular} --- the multi-factorial argument
+  (content-geometry coupling vs decoupling; discrete/continuous duality).
+  \emph{The conceptual root of Thread T2; payoff in Ch.~7.}
+  \item \S3.3 Small-molecule metrics --- saturation preview for Ch.~5.
+  \item \S3.4 \emph{Protein supercolumn taxonomy} --- five supercolumns:
+  Quality $\mid$ T-W (tertiary, whole-set distribution) $\mid$ T-D (tertiary,
+  designable diversity) $\mid$ S-W (secondary, whole-set) $\mid$ S-D
+  (secondary, designable). \emph{LOAD-BEARING: Ch.~6's headline
+  ``T-W up, T-D down'' is only legible if T-W vs T-D is already a
+  primitive.} Includes the proxy-data alignment NotA-as-prose: designability
+  via ProteinMPNN $\to$ ESMFold shares model lineage with AFDB (AF2)
+  $\Rightarrow$ AFDB-trained generators score higher on the proxy by
+  construction. Seed for Ch.~6 \S6.4 claim 3b (Thread T3 honesty layer).
+  \item \S3.5 Two-regime framing --- PDB (real, scarce) vs AFDB (synthetic,
+  abundant, more in-silico-designable). Foreshadows Ch.~6's regime
+  asymmetry (Thread T3).
+  \item \S3.6 Representation-quality probe principle --- the
+  ImageNet-linear-probe analogue. The principle is shared; Ch.~4
+  specialises it for frozen encoders (RankMe / projector-gap), Ch.~6
+  specialises it for the student trunk (CATH / IF / dihedral / contact /
+  distance battery; they overlap only on CATH and IF).
+  \item \S3.7 Trade-offs, Pareto framings, statistical hygiene.
+  \item \S3.8 Closing question --- is representation quality domain-specific
+  or statistical? Posed here, answered in Ch.~7.
+  \end{itemize}
+
+\item \textbf{Ch 4 Encoder targets and profiling} --- the \emph{a priori}
+filter the studies build on.
+  \begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \S4.1 What makes a good encoder target (Q1 info content, Q2
+  reachability/headroom, Q3 trainability/RankMe).
+  \item \S4.2 Molecule encoder zoo --- CheMeleon (93\% sparsity,
+  conformation-invariant), MACE-OFF (low headroom).
+  \item \S4.3 Protein encoder zoo --- CA-GearNet (usable), ESM2-650M
+  mid-layers (usable, saturated), MC-GearNet-Edge (\emph{unusable},
+  eff.\ rank 1.1/3072 + norm explosion), PW-GearNet, ProteinMPNN.
+  \item \S4.4 Predictions for Ch.~5 and Ch.~6 --- explicit and a priori.
+  \end{itemize}
+
+\item \textbf{Ch 5 REPA on small molecules (Tabasco)} --- diagnosed null
+result.
+  \begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \S5.1 The small-molecule regime; \S5.2 setup; \S5.3 results (no
+  measurable gain; seed variance swallows signal); \S5.4 diagnosis
+  (encoder failures from Ch.~4 + metric-surface saturation from Ch.~3).
+  \end{itemize}
+
+\item \textbf{Ch 6 REPA on protein backbones (Proteina)} --- the
+load-bearing chapter (detail in next section).
+
+\item \textbf{Ch 7 Conclusions} --- pay off the multi-factorial framing.
+  \begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \S7.1 Headline findings (3--4 sentences).
+  \item \S7.2 Encoder-selection heuristic distilled from profiling +
+  ablations.
+  \item \S7.3 Imaging-vs-molecular pay-off (Thread T2). Empirical anchors:
+  Ch.~6 \S6.6 claim 4b ($\beta$-direction is $\gamma$-invariant) and
+  \S6.7.2 claim 2 (fJSD-A selectivity is $\gamma$-invariant) ---
+  encoder routing is sampler-orthogonal.
+  \item \S7.4 Limitations; \S7.5 future work (untried encoders, joint
+  training, length-extrapolation, third domain).
+  \item \S7.6 Closing: REPA-as-mechanism vs REPA-as-vision-trick.
+  \end{itemize}
+\end{itemize}
+
+% ====================================================================
+\section{Chapter 6 (Proteina) --- detail}
+
+Ordering: lead with representation (cleanest evidence), then convergence,
+then the rep$\leftrightarrow$gen bridge, then the anatomy/trade-off
+(load-bearing), then robustness. ``REPA is a family of interventions''
+thread crystallises in \S6.6.
+
+\subsection*{\S6.1 Setup}
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+\item Proteina 60M non-equivariant flow-matching CA-backbone generator;
+3-layer trainable projector; attach to a chosen trunk layer.
+\item Two encoders (CA-GearNet, ProteinMPNN) $\times$ two injection depths
+(L4, L9) $+$ random-weight GearNet falsifier; two data regimes (PDB,
+AFDB).
+\item Evaluation: Ch.~3 supercolumn suite; $\gamma=0.45$ SDE sampler
+unless stated; multi-seed (3 seeds for most cells).
+\end{itemize}
+
+\subsection*{\S6.2 REPA improves representation quality [problem $\to$ solution]}
+
+\textbf{The cleanest evidence in the chapter, and the thread that
+recurs.} \emph{Threads T1 + T2 base evidence.}
+
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+\item \textbf{Problem.} Flow-matching alone never makes Proteina's hidden
+states more structural: across 1.8M steps the baseline's CATH-A,
+inverse-folding top-1, and dihedral-MAE probe accuracies are essentially
+flat.
+\item \textbf{Solution.} Under REPA the student's reps become markedly
+more structural, as a \emph{persistent gap} (CATH-T 0.30$\to$0.75 for
+L9-GN; IF 0.12$\to$0.17; dihedral 32$^\circ$$\to$16$^\circ$). Note: the
+gen-side gain is \emph{acceleration}; the rep-side gain is a \emph{gap}
+the baseline never closes.
+\item \textbf{Encoder rank-order is axis-specific.} On per-chain fold
+decodability (CATH-A) GearNet dominates; on per-residue local geometry
+(IF, dihedral) MPNN dominates. This mirror exactly the gen-side
+encoder-routing finding in \S6.6 --- the rep-side previews the routing.
+\item Random-weight encoder gives the smallest gain on every probe
+$\Rightarrow$ effect needs structural knowledge in the target.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{fig_rep_quality_over_training.png}
+\caption{\textbf{REPA installs a persistent representation gap; the
+baseline never catches up.} Per-residue probe accuracy vs training step,
+PDB-trained $n=256$ models. Baseline (grey) is flat for 1.8M steps on
+every probe; REPA variants climb. Encoder rank-order is axis-specific:
+GearNet wins per-chain CATH (right panel), MPNN wins per-residue
+geometry (IF top-1, dihedral MAE --- left and middle). NVIDIA-60M
+reference plotted for IF/dihedral only (CATH ceiling not quoted ---
+cleantrain CATH is model-side-leaky for our val and inflates the
+absolute numbers; the rank-order Deltas are robust). Random-weight
+GearNet (orange) sits between baseline and learned, with the
+\emph{smallest} $\Delta$ on every probe --- a clean falsifier.}
+\end{figure}
+
+\subsection*{\S6.3 REPA improves representation alignment (CKNNA)}
+
+\emph{Threads T1 + T2; the geometric counterpart to \S6.2.}
+
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+\item Beyond decodability, REPA pulls the trunk's geometry \emph{toward}
+the encoder's geometry --- per-residue CKNNA lifts $\sim$20--25$\times$
+above the baseline noise floor.
+\item Alignment peaks in the upper-middle stack ($\approx$L8) and
+\emph{collapses} at the final velocity-output layer (L9). The injection
+layer is not where the representational peak ends up.
+\item \emph{Off-diagonal Platonic convergence}: aligning to GearNet alone
+also raises alignment to MPNN and ESM2 (L9-GN's alignment to ESM2 actually
+\emph{exceeds} its alignment to its own GearNet target). Defuses the
+``CKNNA to your own target is tautological'' objection.
+\item Per-residue effect only: the per-protein (mean-pooled) matrix is
+flat --- guardrail against over-claiming fold-level alignment.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.92\textwidth]{fig_cknna_per_residue.png}
+\caption{\textbf{Alignment is REPA-induced and propagates off-diagonally
+(Platonic convergence).} Per-residue CKNNA between Proteina trunk layers
+(rows: model variants $\times$ layers) and three frozen target encoders
+(columns: GearNet, ProteinMPNN, ESM2). Baseline rows sit at the noise
+floor ($\le 0.003$) across every layer and every target encoder ---
+flow-matching alone does not produce encoder-like geometry. REPA rows
+lift 20--25$\times$ with a peak in the upper-middle stack and L9
+collapse. Crucially, the gains are \emph{off-diagonal} --- aligning to
+GearNet also raises alignment to MPNN and ESM2 --- so REPA produces
+generically encoder-like reps, not just target-shaped ones.
+$N{=}10{,}000$ residues, $k{=}10$, n256 PDB at step 1M.}
+\end{figure}
+
+\subsection*{\S6.4 REPA accelerates generation convergence}
+
+\emph{Thread T3 (regime asymmetry) with the honesty caveat 3b.}
+
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+\item \textbf{Headline: AFDB-GearNet is durable.} L4-GN reaches the
+baseline's best FID-AFDB (386 at 1.3M) at \textbf{100K} (13$\times$);
+L9-GN at 200K (6.5$\times$); both continue past the baseline's floor.
+The baseline never closes.
+\item \textbf{PDB is transient, not absent.} REPA-L9 (both GN and MPNN)
+leads on FID-PDB at every step $\le$1.2M ($-27\%$ at 700K,
+$\sim$1.3--1.5$\times$ step-efficiency to REPA's plateau $\sim$330). The
+long-trained baseline matches that plateau by $\sim$1.4M and edges below
+by 1.6M (288). Frame as \emph{transient acceleration}, not ``no speedup.''
+\item \textbf{The regime split tracks the baseline's own convergence}:
+AFDB baseline plateaus poorly (FID-AFDB floors at 386 throughout 1.7M);
+PDB baseline is a strong asymptotic learner. \emph{REPA helps most
+where the base loss struggles most.}
+\item \textbf{Honesty caveat 3b (NEW, from sampler audit).} AFDB-trained
+models score 2--5$\times$ higher on designability than PDB-trained at
+\emph{every} $\gamma$. The proxy (ProteinMPNN $\to$ ESMFold) shares
+folding-model lineage with AFDB (AF2). REPA's AFDB gains on
+\emph{FID, fJSD, ssJSD-2D, rep-quality probes, and CKNNA} are robust
+(none share that lineage); only the \emph{designability} component of
+durability is proxy-friendly by construction.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{fig_headline_fid_convergence.png}
+\caption{\textbf{REPA accelerates FID convergence; durable on AFDB,
+transient on PDB.} In-distribution FID vs training step for the
+best-learned variants, the random-encoder control, and the baseline,
+$n{=}256$, $\gamma{=}0.45$, 3 seeds (shaded $\pm$1\,SD). \emph{Right
+(AFDB):} the baseline (grey) oscillates 380--530 across 1.7M with no
+clear improvement; REPA-L4-GearNet (blue) reaches the baseline's
+best FID by 100K and continues to 282 --- a durable
+$\sim$13$\times$ acceleration. \emph{Left (PDB):} REPA-L9-GearNet leads
+the baseline through $\sim$1M; the long-trained baseline ultimately
+matches REPA's plateau ($\sim$320--330) by 1.5M and edges below at 1.6M
+(288) --- transient acceleration tracking the baseline's own
+strong-asymptotic-learner behaviour. Random-encoder control on PDB
+(grey) sits at or above the baseline trajectory.}
+\end{figure}
+
+\subsection*{\S6.5 Does representation quality predict generation quality? [the bridge]}
+
+\emph{Threads T1 + T2; the link is encoder-driven and axis-matched.}
+
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+\item \textbf{Lead pair (cleanest defensible)}: dihedral MAE $\to$
+designability across the convergence sweep, xclean-PDB Pearson
+$r{=}-0.54$, step-controlled partial $r{=}-0.47$ (survives the
+``both improve over training'' caveat). Absolute spread is interpretable
+(32$^\circ$ $\to$ 16$^\circ$).
+\item Supplementary: IF $\to$ designability has the largest raw
+correlation ($r{=}0.69$, partial $0.53$); CATH-A $\to$ FID is the
+per-chain analogue ($-0.49$ PDB, $-0.55$ AFDB).
+\item \textbf{The encoder-matched structure is the strongest evidence
+the gen gain runs through representation}: GearNet's fold-rep advantage
+surfaces as a fold-\emph{distribution} gen advantage; MPNN's local-rep
+advantage as a \emph{designability} advantage. Mirrors \S6.2/\S6.3 rank-
+order exactly.
+\item \textbf{Honest scope}: we stop short of a formal mediation claim.
+Random-GN brackets the link (small rep gain $\to$ small gen gain); on
+PDB the CATH$\to$FID partial correlation washes out (much of the raw
+co-movement is the common training-time trend).
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.78\textwidth]{fig_gen_vs_rep_if_des_xclean.png}
+\caption{\textbf{Rep quality predicts gen quality across the convergence
+sweep.} Each point is one $(\text{run},\text{step})$ checkpoint; $x$ is
+best-layer IF top-1 (probed on xclean PDB val); $y$ is designability
+rate. Lines connect a run's trajectory. The relationship is monotone
+across checkpoints (Pearson $r{=}0.69$, $n{=}129$; partial-step
+$r{=}0.53$). The cleanest defensible pair on per-residue absolute scale
+is dihedral MAE $\to$ designability ($r{=}-0.54$, partial $-0.47$;
+plotted in the supplementary panel). We stop short of formal mediation.}
+\end{figure}
+
+\subsection*{\S6.6 The anatomy of the generation gain [LOAD-BEARING]}
+
+\emph{Threads T1 + T2 + T4; the encoder-routing claim crystallises here.}
+
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+\item Decomposed across the supercolumn suite (Ch.~3 \S3.4), REPA's
+effect is not uniform: strongest and most encoder-robust on whole-set
+distribution; most nuanced on designable-subset diversity.
+\item \textbf{T-W and S-W (whole-set) $\to$ generic.} Fold-class entropy
+(fS-A, fS-C) almost always rises; SS-distribution match (ssJSD-2D) is
+the most robust REPA effect --- even random control helps. See Table 1
+centerpiece.
+\item \textbf{Quality $\to$ MPNN-specific.} MPNN accelerates
+designability and per-residue quality on both datasets; GearNet less
+consistently.
+\item \textbf{S-D (designable SS composition) $\to$ encoder $\times$
+dataset.} On PDB, learned-encoder REPA shifts $\beta$-ward. On AFDB the
+direction is encoder-specific: GN-L9 $\uparrow\beta$, MPNN-L9
+$\downarrow\beta$ (the \emph{falsifier} for any encoder-agnostic
+$\beta$-claim).
+\item \textbf{T-D (designable diversity) $\to$ the trade-off.} REPA
+concentrates the designable subset onto a few encoder-preferred modes:
+whole-set fold coverage rises (T-W $\uparrow$, fS-A $\uparrow$) while
+distinct designable folds fall (T-D $\downarrow$, \#clusters and pwTM
+$\downarrow$). Confined to the designable subspace and grows with
+training.
+\item \textbf{Mechanism, two components}:
+  \begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \emph{Direction} of the SS-shift ($\beta$- vs $\alpha$-rich)
+  requires learned features (random-GN doesn't shift $\beta$).
+  \item \emph{Clustering} component is encoder geometric inductive bias
+  (random-weight GearNet \emph{also} reduces designable \#Clust on PDB
+  --- consistent with GearNet's relational graph-convolution over residue
+  contact graphs). Caveat: no random-MPNN run to fully isolate
+  graph-conv-general from GearNet-specific.
+  \end{itemize}
+\item \textbf{Two clean falsifiers given explicit space}: random-GN
+(no compositional shift) and MPNN-AFDB (no diversity loss, $\alpha$-ward).
+\item \textbf{NEW from sampler audit (claim 4b)}: $\beta$-direction is
+\emph{$\gamma$-invariant} --- encoder-direction split (GN-AFDB
+$\uparrow\beta$, MPNN-AFDB $\downarrow\beta$) holds at every
+$\gamma\in\{$ODE, 0, 0.35, 0.45, 0.5, $1\}$. Encoder and sampler are
+orthogonal axes in this domain. \emph{Direct empirical anchor for the
+imaging-vs-molecular pay-off in Ch.~7.}
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{fig_td_tradeoff.png}
+\caption{\textbf{The T-D trade-off: whole-set fold entropy rises while
+designable-subset diversity falls.} Top row: fS-A (fold-class entropy of
+the whole generated set; higher = more diverse). Bottom row: designable
+\#clusters (TM-clustered designable subset; higher = more distinct
+folds). Lines: baseline (grey), best-learned REPA, plus encoder-specific
+contrasts. \emph{AFDB (left column):} REPA-L4-GearNet sweeps the
+whole-set diversity up but reduces designable \#clusters --- the
+trade-off. REPA-L9-MPNN (green, the falsifier) \emph{preserves}
+designable \#clusters at or above baseline. \emph{PDB (right column):}
+the trade-off persists, and crucially the random-weight GearNet
+(grey, ``L4-random'') \emph{also} reduces designable \#clusters
+$\Rightarrow$ the clustering component of the trade-off is the encoder's
+geometric inductive bias, not a learned-feature effect. The
+$\beta$-direction shift (where designable mass goes) requires learned
+features.}
+\end{figure}
+
+\subsection*{\S6.7 Robustness (five subsections)}
+
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+\item \textbf{\S6.7.1 Across datasets.} Two-regime contrast extends from
+FID to the full metric suite (durable on AFDB, transient on PDB).
+\item \textbf{\S6.7.2 Across sampler noise levels} (NEW after the
+sampler-ablation extension landed 2026-05-28; replaces the prior
+$\gamma{=}1$-collapse framing).
+  \begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \emph{Scaffold (T5)}: REPA shifts the \emph{levels} of the
+  Des$\leftrightarrow$T-D tradeoff but not the $\gamma$-shape. Composability,
+  not interaction.
+  \item \emph{MAIN (T1)}: REPA's fJSD-A advantage is $\gamma$-invariant
+  for learned encoders ($\sim$70--75\% wins across all 6 $\gamma$) but
+  \emph{near-chance for the random control} ($\sim$52\%). Validates
+  that REPA does mechanistic work via the encoder's learned structural
+  knowledge, not auxiliary-loss regularisation. Pairs with the Table 1
+  centerpiece pattern that random helps T-W/S-W but not fJSD-A/quality.
+  \item \emph{ODE designability-FLOOR (T3, refined)}: AFDB only. Every
+  AFDB REPA encoder boosts ODE Des by $+0.06$ to $+0.16$. On PDB the
+  baseline's ODE Des is near-zero at the matched steps so absolute
+  $\Delta$s are tiny --- consistent with the broader AFDB designability
+  bias (\S6.4 claim 3b).
+  \item \emph{Single failure mode}: $\gamma{=}0$ Des loss for
+  GearNet-aligned REPA on \emph{both} datasets (L9-GN PDB 2/5, AFDB 0/3;
+  random-GN PDB also loses). MPNN preserves at $\gamma{=}0$.
+  Encoder-specific, not dataset-specific.
+  \item \emph{RETRACTION}: the prior ``$\gamma{=}1$ distribution-match
+  collapse on PDB'' claim was a single-cell PDB-L9-GN-700K artifact ---
+  every other PDB REPA encoder wins fJSD-A at $\gamma{=}1$.
+  \end{itemize}
+\item \textbf{\S6.7.3 Across encoders.} ``REPA is a family of
+interventions'' fully formed: encoder-routing of effects ($\beta$-shift,
+T-D direction) is encoder $\times$ dataset conditional, sampler-invariant.
+\item \textbf{\S6.7.4 Across scale ($n{=}128$).} Learned-vs-random
+separation compresses at smaller scale; anchor headlines at $n{=}256$.
+(OPT) Length-extrapolation as a future-work flag.
+\item \textbf{\S6.7.5 (OPT) Training dynamics.} $\lambda$, batch size,
+projector depth, alignment-layer choice --- stability check; not crux.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.48\textwidth]{fig_sampler_ablation_afdb_fid.png}\hfill
+\includegraphics[width=0.48\textwidth]{fig_sampler_ablation_pdb_fid.png}
+\caption{\textbf{Sampler ablation, FID family.} AFDB (left) and PDB
+(right) FID-family metrics across $\gamma\in\{$ODE, 0, 0.35, 0.45, 0.5,
+1$\}$. AFDB-GearNet wins FID/fJSD-A at \emph{every} $\gamma$; PDB
+patterns broadly similar but baseline-bound at extremes. The earlier
+``$\gamma{=}1$ collapse'' framing was based on a single 700K
+PDB-L9-GearNet cell that does not generalise.}
+\end{figure}
+
+% ====================================================================
+\section{Tables}
+
+\subsection*{Table 1 --- Centerpiece: all metrics $\times$ encoder at 700K, $\gamma=0.45$, $n=256$}
+
+The full encoder $\times$ supercolumn story in one place. Bold cells = best in
+column within block. ``rand'' = random-weight GearNet falsifier (PDB only;
+AFDB has no random run).
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l|ccc|ccc|cc|c|c}
+\toprule
+& \multicolumn{3}{c|}{\textbf{Quality}}
+& \multicolumn{3}{c|}{\textbf{T-W} (whole-set, $\downarrow$/$\uparrow$ as marked)}
+& \multicolumn{2}{c|}{\textbf{T-D} (designable, $\uparrow$/$\downarrow$)}
+& \textbf{S-W}
+& \textbf{S-D} \\
+Variant
+& Des\% $\uparrow$ & scRMSD $\downarrow$ & pLDDT $\uparrow$
+& FID-PDB $\downarrow$ & fJSD-A $\downarrow$ & fS-A $\uparrow$
+& \#Clust $\uparrow$ & pwTM $\downarrow$
+& ssJSD2D $\downarrow$
+& E\%-des \\
+\midrule
+\multicolumn{11}{l}{\textit{PDB-trained, $n{=}256$, step 700K, 3 seeds}}\\
+baseline       & 0.46 & 2.96 & 0.61 & 437 & 1.11 & 5.48 & 77 & 0.27 & 0.35 & 0.22 \\
+L4-GN          & \textbf{0.70} & 3.36 & \textbf{0.66} & 508 & 0.73 & 7.11 & 78 & 0.38 & 0.14 & 0.22 \\
+L9-GN          & 0.60 & 3.07 & \textbf{0.66} & \textbf{319} & 0.53 & \textbf{7.79} & 104 & 0.25 & 0.16 & 0.18 \\
+MPNN-L4        & 0.64 & \textbf{2.77} & \textbf{0.66} & 349 & 0.98 & 5.96 & 73 & 0.35 & 0.19 & 0.23 \\
+MPNN-L9        & 0.51 & 2.71 & 0.63 & 418 & 0.79 & 5.85 & \textbf{110} & 0.26 & 0.21 & 0.15 \\
+rand           & 0.38 & 4.07 & 0.58 & 471 & \textbf{0.55} & 5.53 & 54 & \textbf{0.17} & 0.22 & 0.10 \\
+\midrule
+\multicolumn{11}{l}{\textit{AFDB-trained, $n{=}256$, step 700K, 3 seeds (MPNN-L4: 1 seed)}}\\
+baseline       & 0.72 & 2.11 & 0.69 & 463 & 2.07 & 4.59 & 128 & 0.22 & 0.23 & 0.15 \\
+L4-GN          & \textbf{0.77} & 2.34 & \textbf{0.74} & \textbf{253} & \textbf{0.61} & 6.86 & 92 & 0.26 & 0.09 & 0.15 \\
+L9-GN          & 0.73 & 2.67 & 0.72 & 272 & 0.69 & \textbf{7.35} & 77 & 0.33 & \textbf{0.06} & 0.21 \\
+MPNN-L4*       & 0.69 & 2.20 & 0.69 & 452 & 1.92 & 4.62 & 127 & 0.15 & 0.21 & 0.14 \\
+MPNN-L9        & \textbf{0.77} & \textbf{1.93} & 0.72 & 326 & 1.45 & 4.90 & \textbf{149} & 0.20 & 0.24 & 0.14 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{The encoder-routing story at one fixed step.}
+GearNet $\to$ best T-W (FID, fJSD-A, fS-A) and S-W (ssJSD-2D) on
+\emph{both} datasets. MPNN $\to$ best Quality (scRMSD, pLDDT, Des) on
+both datasets. T-D: GearNet \emph{reduces} designable diversity on
+AFDB (128 $\to$ 77/92); \textbf{MPNN-L9-AFDB \emph{preserves} it (149)
+--- the clean falsifier}. PDB random control (``rand''): helps T-W
+distribution-match metrics (fJSD-A, ssJSD-2D, pwTM) but \emph{hurts}
+designability (0.38 $<$ baseline 0.46) and \#Clust (54 $<$ baseline 77)
+--- regulariser without quality benefit. * MPNN-L4-AFDB is 1-seed.}
+\end{table}
+
+\subsection*{Table 2 --- Speedup: REPA reaches the baseline's best FID in N$\times$ fewer steps}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll|cccc}
+\toprule
+Dataset & Metric & Variant & Baseline best & REPA reaches @ & \textbf{Speedup} & Durable? \\
+\midrule
+\multicolumn{7}{l}{\textit{AFDB-GearNet (durable, clean):}}\\
+AFDB & FID-AFDB & L4-GN     & 386 @1.3M & 100K & \textbf{13.0$\times$} & \checkmark (reaches 282) \\
+AFDB & FID-AFDB & L9-GN     & 386 @1.3M & 200K & \textbf{6.5$\times$}  & \checkmark (reaches 313) \\
+AFDB & FID-AFDB & MPNN-L9   & 386 @1.3M & 400K & 3.2$\times$            & $\sim$ (reaches 352) \\
+AFDB & FID-AFDB & MPNN-L4   & 386 @1.3M & never & ---                    & $\times$\ (MPNN-AFDB $\neq$ distribution shaper) \\
+\midrule
+\multicolumn{7}{l}{\textit{PDB (transient acceleration, baseline catches up):}}\\
+PDB & FID-PDB & L9-GN    & $\sim$330 plateau     & 700K  & \textbf{$\sim$1.3--1.5$\times$} & $\times$\ (base matches by $\sim$1.4M; 288 by 1.6M) \\
+PDB & FID-PDB & L9-MPNN  & $\sim$330 plateau     & 1.1M  & \textbf{$\sim$1.3$\times$}      & $\times$\ same shape \\
+PDB & FID-PDB & MPNN-L4 (full 1.6M) & 329 plateau & 1.6M & budget-matched               & $\times$\ baseline asymptotically better (288) \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Acceleration is durable on AFDB, transient on PDB.}
+``Baseline best'' is the cumulative-min FID across the baseline's
+training trajectory; the ``REPA reaches'' column is the earliest step
+the variant's cumulative-min FID hits the baseline's best. AFDB-GearNet
+is the clean story: 6.5--13$\times$ to reach the baseline's best and
+keeps improving past it. PDB does NOT support a ``reaches-baseline-final
+faster'' speedup --- REPA-L9 leads at every step $\le$1.2M but the
+baseline keeps grinding and ultimately edges below by 1.6M (288).
+Frame PDB as \emph{transient acceleration to REPA's plateau}, not a
+speedup factor.}
+\end{table}
+
+\subsection*{Table 3 --- Sampler-noise robustness (n256, after 2026-05-28 extension)}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{l|p{6.5cm}p{6.5cm}}
+\toprule
+$\gamma$ regime & What survives & What breaks \\
+\midrule
+\textbf{ODE (deterministic)} & AFDB Des-floor: REPA boosts ODE Des by $+0.06$ to $+0.16$ on AFDB; REPA wins fJSD-A. & PDB Des-floor is tiny ($\le 0.05$) --- baseline ODE Des is already near zero at matched early steps. \\
+\textbf{$\gamma{=}0$} & Distribution-match wins broadly. & GearNet-aligned REPA loses Des on \emph{both} datasets (L9-GN PDB 2/5, AFDB 0/3; random-GN PDB also loses). \emph{Encoder-specific, not dataset-specific.} \\
+\textbf{$\gamma \in [0.35, 0.5]$ (middle band)} & The canonical regime. All learned-encoder REPA wins broadly on FID, fJSD-A, ssJSD-2D, fS-A. & --- \\
+\textbf{$\gamma{=}1$ (full-temperature SDE)} & Most encoders still win FID-PDB (L4-GN 4/5, MPNN-L4 4/6, MPNN-L9 4/5 on PDB). & Earlier ``$\gamma{=}1$ distribution-match collapse on PDB'' claim \textbf{RETRACTED} --- was a single-cell PDB-L9-GN-700K artifact. \\
+\midrule
+\multicolumn{3}{l}{\textit{Key $\gamma$-invariant findings (cross-cuts above):}}\\
+\multicolumn{3}{l}{1. \textbf{fJSD-A selectivity (T1, MAIN)}: learned encoders $\sim$70--75\% wins across all 6 $\gamma$; random $\sim$52\%.}\\
+\multicolumn{3}{l}{2. \textbf{$\beta$-direction (T2)}: encoder $\times$ dataset split holds at every $\gamma$ (AFDB GN-L9 $\uparrow\beta$ at every $\gamma$; AFDB MPNN-L9 $\downarrow\beta$ at every $\gamma$).}\\
+\multicolumn{3}{l}{3. \textbf{Composability scaffold (T5)}: REPA shifts levels but not the $\gamma$-shape of the Des$\leftrightarrow$T-D tradeoff.}\\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Sampler-noise robustness summary, post-2026-05-28
+sampler-ablation extension.} Coverage: all 5 PDB REPA variants (incl.\
+L4-random) at 5 $\gamma$ values; AFDB has L4-GN, L9-GN, MPNN-L9 at 5
+$\gamma$ values. PDB-baseline missing $\gamma{=}0.35/0.5$ rows
+(recovered from older clean.jsonl for the audit). Full analysis:
+\texttt{docs/research/proteina\_sampler\_regime\_audit\_2026-05-28.md}.}
+\end{table}
+
+\subsection*{Table 4 --- Representation-quality rank-order (companion to \S6.2)}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+& IF top-1 $\uparrow$ & dihedral MAE ($^\circ$) $\downarrow$ & CATH-A $\uparrow$ & CATH-T $\uparrow$ \\
+\midrule
+baseline      & 0.123 & 32.1 & 0.407 & 0.301 \\
+\textbf{L9-GN}        & 0.156 & 19.5 & \textbf{0.702} & \textbf{0.752} \\
+\textbf{MPNN-L9}      & \textbf{0.167} & \textbf{16.4} & 0.548 & 0.473 \\
+random        & 0.146 & 20.2 & 0.476 & 0.378 \\
+\textit{NVIDIA-60M ref.\ (no rel.\ to our val)} & \textit{0.215} & \textit{12.9} & \textit{not quoted}$^\dagger$ & \textit{---} \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Encoder rank-order on student rep quality (best-layer,
+$\ge$700K mean, $n{=}256$ PDB).} \textbf{The axis split mirrors the
+gen-side encoder-routing} (\S6.6): MPNN-L9 wins per-residue probes
+(IF, dihedral); GearNet-L9 wins per-chain CATH probes. Random
+gives the smallest gain on every probe --- learned target needed.
+$^\dagger$NVIDIA-60M CATH absolutes inflated by model-side leakage
+on cleantrain (memory \texttt{project\_pdb\_split\_leakage}); quote
+$\Delta$s only.}
+\end{table}
+
+% ====================================================================
+\section{Coverage and limitations}
+
+\paragraph{What's defensible (the headline claims).}
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+\item Persistent rep-quality gap under REPA, $n{=}256$ PDB --- multi-seed,
+multi-probe, robust.
+\item AFDB-GearNet 6.5--13$\times$ FID-AFDB speedup, durable ---
+multi-seed; AFDB baseline genuinely plateaus.
+\item Encoder-routing direction split (GearNet $\to$ distribution / fold;
+MPNN $\to$ quality / local) --- shown on both rep-side and gen-side and
+across the sampler-noise grid.
+\item Random-encoder falsifier --- bracketed both rep and gen gains.
+\item $\beta$-direction $\gamma$-invariance and fJSD-A encoder-selectivity
+$\gamma$-invariance --- cross-encoder, multi-$\gamma$, multi-step.
+\item T-D trade-off mechanism (geometric inductive bias + learned features
+disentangled by random-GN) --- supported by audit Claim E.
+\end{itemize}
+
+\paragraph{What's couched and why.}
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+\item PDB ``transient acceleration'' framing (vs.\ ``no speedup'') is
+the most subtle call. REPA-L9 leads at every matched step $\le$1.2M
+but the long-trained baseline catches up. L9 trajectories stop at
+1.2M; extending to 1.4M / 1.6M would sharpen.
+\item Rep-side gains are PDB-trained-only at honest scale --- xclean
+AFDB val is too small ($n\approx 62$) to ground rep-quality claims for
+AFDB-trained models.
+\item CKNNA is a single-step / single-dataset snapshot ($n{=}256$ PDB
+1M, $t{=}1.0$). Convergence-over-training extension is a NEEDS-DATA item.
+\item No random-MPNN run --- the ``geometric inductive bias drives
+clustering'' mechanism is supported by random-GN but not fully isolated
+from GearNet-specific design choices.
+\item AFDB designability comparisons carry the proxy-data alignment
+caveat (\S6.4 claim 3b). FID/fJSD/rep-quality/CKNNA gains do not share
+this caveat.
+\end{itemize}
+
+\paragraph{Open data-gathering items} (handed off to a separate session;
+see \texttt{docs/research/data\_gathering\_handoff\_2026-05-28.md}):
+PDB L9 gen-eval extension at 1.3--1.6M; 14 PDB baseline cells at
+$\gamma{=}0.35/0.5$ (reproducibility, not load-bearing); citation hunt
+for the proxy/data-lineage caveat.
+
+% ====================================================================
+\section{Where I want your feedback most}
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+\item \textbf{Is the PDB framing as ``transient acceleration'' the right
+call?} The data: REPA-L9 leads at every step $\le$1.2M; the long-trained
+baseline catches up and edges below by 1.6M (288 vs REPA's $\sim$330
+plateau). Alternative framings: (a) ``acceleration that the long-trained
+baseline closes'' (current), (b) ``step-matched advantage only'' (more
+conservative), (c) ``early-training acceleration; asymptotic parity''
+(softest). Does the current framing read defensibly to a reviewer?
+
+\item \textbf{Is the proxy-data alignment caveat (\S6.4 claim 3b) the
+right way to handle AFDB designability inflation?} The data: AFDB
+baseline is 2--5$\times$ more designable at every $\gamma$ than PDB
+baseline. The mechanism: ProteinMPNN/ESMFold share AF2 lineage with
+AFDB. I've scoped the caveat to ``the designability component of AFDB
+durability is partly proxy-friendly; FID/fJSD/rep-quality/CKNNA gains
+are clean.'' Does this scope read right? Is the caveat necessary or
+over-cautious?
+
+\item \textbf{Does the encoder-routing claim hang together as the
+chapter's central finding?} The thread: \S6.2 rep-side rank-order
+(GN $\to$ CATH, MPNN $\to$ IF/dihedral) $\to$ \S6.5 axis-matched
+co-movement $\to$ \S6.6 anatomy (gen-side: GN $\to$ FID/fJSD,
+MPNN $\to$ Des/scRMSD) $\to$ \S6.7.3 sampler-invariance crystallises it.
+The pay-off is in Ch.~7 (imaging-vs-molecular --- single encoder
+near-complete in images, multi-factorial routing in molecules). Is
+the through-line clear, or does it need more scaffolding earlier?
+
+\item \textbf{T-D trade-off framing}: do we present REPA's lower
+designable diversity as a \emph{feature} (``converges to the encoder's
+preferred designable modes'') or a \emph{limitation} (``less variety
+in the long-trained regime'')? The mechanism is real and supported
+(random-GN reproduces clustering; MPNN-AFDB is the clean falsifier).
+The valence is a writing choice.
+
+\item \textbf{What else should I be doing in the time I have left}? Big
+candidates: (a) Tabasco chapter draft, (b) Ch.~3 evaluation prose,
+(c) more figures (length-extrapolation for $n{=}128$ models, sample
+gallery), (d) the open data-gathering items (PDB L9 extension to 1.6M
+in particular). Time budget is roughly 5--6 weeks to submission.
+
+\item \textbf{What am I underselling or overselling?} Genuinely the
+question I most want pressure-tested. The bullet ``CKNNA: aligning to
+GearNet alone raises alignment to MPNN and ESM2 (Platonic
+convergence)'' feels strong to me; ``representation is a persistent
+gap, not just acceleration'' also feels strong. Conversely, the
+T-D trade-off is real but I worry it reads as an asterisk on an
+otherwise-positive story. Where do these calibrations look off?
+\end{enumerate}
+
+\end{document}

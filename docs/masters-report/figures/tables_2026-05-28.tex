@@ -1,0 +1,219 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=18mm]{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}    % for \resizebox
+\usepackage{parskip}
+\usepackage{caption}
+\captionsetup{font=small, labelfont=bf, justification=raggedright, singlelinecheck=false}
+
+\title{Master's Report --- proposed tables\\\large all-numbers dump, 2026-05-28}
+\author{Shreyas Ravishankar}
+\date{}
+\begin{document}
+\maketitle
+
+\section{Table 1 --- Centerpiece: all metrics $\times$ encoder at step 700K}
+
+Multi-seed mean (3 seeds for most cells; MPNN-L4-AFDB is 1 seed).
+\textbf{Baseline} row gives absolute values; REPA rows give
+\textbf{$\Delta$ (REPA $-$ baseline)}. Arrows on column headers indicate the
+direction of improvement.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l|cc|ccc|cc|c|cc}
+\toprule
+& \multicolumn{2}{c|}{\textbf{Quality}}
+& \multicolumn{3}{c|}{\textbf{T-W}}
+& \multicolumn{2}{c|}{\textbf{T-D}}
+& \textbf{S-W}
+& \multicolumn{2}{c}{\textbf{S-D}} \\
+Variant
+& Des\,$\uparrow$ & FID\,$\downarrow$
+& fJSD-A\,$\downarrow$ & fS-A\,$\uparrow$ & pwTM\,$\downarrow$
+& \#Clust\,$\uparrow$ & pwTM\,$\downarrow$
+& ssJSD2D\,$\downarrow$
+& ssJSD2D\,$\downarrow$ & E\%des\,$\uparrow$ \\
+\midrule
+\multicolumn{11}{l}{\textit{PDB-trained, $n{=}256$, 700K, 3 seeds; FID is FID-PDB (in-distribution).}}\\
+Baseline       & 0.46 & 437   & 1.11 & 5.48 & 0.22 & 77   & 0.27 & 0.35 & 0.40 & 0.22 \\
+REPA L4-GN     & +0.24 & +71  & $-$0.38 & +1.63 & +0.13 & +1  & +0.11 & $-$0.21 & $-$0.12 & +0.00 \\
+REPA L9-GN     & +0.14 & $-$118 & $-$0.57 & +2.31 & $-$0.03 & +27 & $-$0.02 & $-$0.19 & $-$0.10 & $-$0.04 \\
+REPA L4-MPNN   & +0.18 & $-$88  & $-$0.13 & +0.48 & +0.05 & $-$4  & +0.08 & $-$0.16 & $-$0.14 & +0.01 \\
+REPA L9-MPNN   & +0.05 & $-$19  & $-$0.32 & +0.37 & $-$0.01 & +33 & $-$0.01 & $-$0.14 & $-$0.11 & $-$0.07 \\
+REPA L4-random & $-$0.08 & +34  & $-$0.55 & +0.05 & $-$0.05 & $-$23 & $-$0.10 & $-$0.13 & $-$0.01 & $-$0.11 \\
+\midrule
+\multicolumn{11}{l}{\textit{AFDB-trained, $n{=}256$, 700K, 3 seeds (MPNN-L4: 1 seed); FID is FID-AFDB.}}\\
+Baseline       & 0.72 & 494 & 2.45 & 4.59 & 0.20 & 128  & 0.22 & 0.15 & 0.16 & 0.15 \\
+REPA L4-GN     & +0.05 & $-$195 & $-$1.56 & +2.27 & +0.00 & $-$35 & +0.04 & $-$0.11 & $-$0.07 & $-$0.02 \\
+REPA L9-GN     & +0.01 & $-$172 & $-$1.29 & +2.76 & +0.01 & $-$50 & +0.11 & $-$0.12 & $-$0.06 & +0.04 \\
+REPA L4-MPNN   & $-$0.03 & $-$22 & $-$0.39 & +0.03 & ---   & $-$1  & $-$0.07 & $-$0.02 & +0.05 & $-$0.01 \\
+REPA L9-MPNN   & +0.05 & $-$139 & $-$0.93 & +0.31 & $-$0.03 & +21 & $-$0.03 & +0.01 & +0.02 & $-$0.04 \\
+\bottomrule
+\end{tabular}}
+\caption{\textbf{The encoder-routing pattern at one fixed step.} GearNet
+$\to$ best T-W (FID, fJSD-A, fS-A) on both datasets. MPNN $\to$ best
+quality (Des). T-D: GearNet reduces designable diversity on AFDB
+($-35$, $-50$ \#Clust); MPNN-L9-AFDB preserves it ($+21$, the clean
+falsifier). Random control (PDB only): wins on T-W and S-W
+distribution-match metrics (fJSD-A, ssJSD2D, pwTM) but \emph{hurts}
+quality (Des $-0.08$) and designable diversity (\#Clust $-23$,
+E\%des $-0.11$) --- a regulariser without quality benefit.}
+\end{table}
+
+\section{Table 2 --- Post-trade-off snapshot at step 1.0M}
+
+Same metrics as Table 1, snapshot at \textbf{step 1.0M} --- past the PDB
+T-D crossover ($\sim$850K) and well past the AFDB crossover ($\sim$150K).
+PDB L4-random not run past 700K (---); AFDB L9-GearNet stops at 900K (---);
+AFDB L4-MPNN whole-set pwTM unavailable.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l|cc|ccc|cc|c|cc}
+\toprule
+& \multicolumn{2}{c|}{\textbf{Quality}}
+& \multicolumn{3}{c|}{\textbf{T-W}}
+& \multicolumn{2}{c|}{\textbf{T-D}}
+& \textbf{S-W}
+& \multicolumn{2}{c}{\textbf{S-D}} \\
+Variant
+& Des\,$\uparrow$ & FID\,$\downarrow$
+& fJSD-A\,$\downarrow$ & fS-A\,$\uparrow$ & pwTM\,$\downarrow$
+& \#Clust\,$\uparrow$ & pwTM\,$\downarrow$
+& ssJSD2D\,$\downarrow$
+& ssJSD2D\,$\downarrow$ & E\%des\,$\uparrow$ \\
+\midrule
+\multicolumn{11}{l}{\textit{PDB-trained, $n{=}256$, 1.0M, 3 seeds; FID is FID-PDB.}}\\
+Baseline       & 0.54 & 467 & 0.95 & 5.67 & 0.17 & 114 & 0.16 & 0.32 & 0.39 & 0.15 \\
+REPA L4-GN     & $-$0.09 & $-$35 & $-$0.41 & +1.68 & +0.00 & $-$27 & +0.01 & $-$0.16 & +0.00 & $-$0.07 \\
+REPA L9-GN     & $-$0.02 & $-$130 & +0.06 & +0.92 & +0.06 & $-$44 & +0.13 & $-$0.19 & $-$0.13 & +0.09 \\
+REPA L4-MPNN   & $-$0.20 & +27 & +0.10 & $-$0.27 & +0.00 & $-$62 & +0.07 & $-$0.26 & $-$0.26 & +0.02 \\
+REPA L9-MPNN   & +0.01 & $-$81 & $-$0.05 & +0.29 & +0.07 & $-$51 & +0.15 & $-$0.15 & $-$0.08 & +0.04 \\
+REPA L4-random & --- & --- & --- & --- & --- & --- & --- & --- & --- & --- \\
+\midrule
+\multicolumn{11}{l}{\textit{AFDB-trained, $n{=}256$, 1.0M, 3 seeds (MPNN-L4: 1 seed); FID is FID-AFDB.}}\\
+Baseline       & 0.72 & 534 & 2.23 & 4.35 & 0.20 & 133 & 0.21 & 0.16 & 0.18 & 0.14 \\
+REPA L4-GN     & +0.01 & $-$228 & $-$1.43 & +3.68 & $-$0.00 & $-$39 & +0.03 & $-$0.12 & $-$0.09 & +0.01 \\
+REPA L9-GN     & --- & --- & --- & --- & --- & --- & --- & --- & --- & --- \\
+REPA L4-MPNN   & $-$0.18 & $-$118 & $-$0.57 & +1.20 & --- & $-$29 & $-$0.06 & $-$0.06 & +0.09 & +0.02 \\
+REPA L9-MPNN   & $-$0.01 & $-$101 & $-$0.74 & +0.44 & $-$0.04 & +6 & $-$0.02 & +0.02 & +0.01 & $-$0.03 \\
+\bottomrule
+\end{tabular}}
+\caption{\textbf{Post-trade-off: every PDB REPA variant now loses on T-D
+\#Clust} ($-27$ to $-62$). T-W gains persist (REPA still wins FID and
+fS-A on most variants) but tertiary diversity within the designable
+subset collapses. \textbf{AFDB L9-MPNN remains the falsifier} --- the
+only REPA variant in the table with a positive \#Clust $\Delta$
+($+6$), and the encoder $\times$ dataset combination that escapes the
+trade-off entirely. The contrast against Table 1's 700K snapshot makes
+the temporal nature of the trade-off explicit: REPA's T-W gain is
+durable, the T-D loss develops with training.}
+\end{table}
+
+\section{Table 3 --- Speedup: REPA reaches the baseline's best FID in $N\times$ fewer steps}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll|cccc}
+\toprule
+Dataset & Metric & Variant & Baseline best & REPA reaches @ & \textbf{Speedup} & REPA's own best \\
+\midrule
+\multicolumn{7}{l}{\textit{AFDB-GearNet --- durable, clean:}}\\
+AFDB & FID-AFDB & L4-GN     & 386 @1.3M & 100K & \textbf{13.0$\times$} & 282 \\
+AFDB & FID-AFDB & L9-GN     & 386 @1.3M & 200K & \textbf{6.5$\times$}  & 313 \\
+AFDB & FID-AFDB & MPNN-L9   & 386 @1.3M & 400K & 3.2$\times$            & 352 \\
+AFDB & FID-AFDB & MPNN-L4   & 386 @1.3M & never & ---                    & 416 \\
+\midrule
+\multicolumn{7}{l}{\textit{PDB --- transient acceleration; baseline catches up late:}}\\
+PDB & FID-PDB & L9-GN    & $\sim$330 plateau & 700K & $\sim$1.3--1.5$\times$ & 319 (@1.2M) \\
+PDB & FID-PDB & L9-MPNN  & $\sim$330 plateau & 1.1M & $\sim$1.3$\times$       & 334 (@1.1M) \\
+PDB & FID-PDB & MPNN-L4  & 329 plateau (full 1.6M) & 1.6M & budget-matched & 329 (@1.6M) \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Acceleration is durable on AFDB, transient on PDB.}
+``Baseline best'' = cumulative-min FID across baseline's training; ``REPA
+reaches'' = earliest step REPA's cumulative-min hits the baseline's best.
+On AFDB, baseline FID-AFDB floors at 386 throughout 1.7M; REPA-GearNet
+both reaches that floor in 100--200K AND keeps improving past it
+(282--313). On PDB, REPA-L9 leads at every step $\le$1.2M but the
+long-trained baseline matches and edges below by 1.6M (288). PDB
+framing: transient acceleration to REPA's plateau, not a
+``reaches-baseline-final'' speedup.}
+\end{table}
+
+\section{Table 4 --- Sampler-noise robustness: $\Delta$ across $\gamma$}
+
+For the chapter's best-PDB and best-AFDB REPA variants, mean $\Delta$
+(REPA $-$ baseline) across step-matched cells at each sampler noise
+level. Sign reflects effect direction; for ``lower-is-better'' metrics
+(FID, fJSD-A, ssJSD2D) a negative $\Delta$ is a REPA win.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{l|cccccc}
+\toprule
+$\Delta$ (REPA $-$ baseline) & ODE & $\gamma=0$ & $\gamma=0.35$ & $\gamma=0.45$ & $\gamma=0.5$ & $\gamma=1.0$ \\
+\midrule
+\multicolumn{7}{l}{\textit{PDB --- REPA L9-MPNN vs Baseline (step-matched cells; baseline rows for $\gamma{=}0.35,0.5$ recovered from older clean.jsonl).}}\\
+Des $\uparrow$         & +0.06 & +0.07 & +0.16 & +0.18 & +0.15 & +0.04 \\
+FID $\downarrow$        & $-$22   & $-$1225 & $-$78   & $-$77   & $-$89   & $-$131 \\
+fJSD-A $\downarrow$     & $-$0.13 & +0.18 & +0.21 & $-$0.06 & +0.07 & $-$0.30 \\
+ssJSD2D $\downarrow$    & $-$0.11 & +0.08 & $-$0.01 & $-$0.03 & $-$0.00 & $-$0.10 \\
+\#Clust $\uparrow$      & +9    & +8    & $-$7    & +4    & +12   & +2  \\
+\midrule
+\multicolumn{7}{l}{\textit{AFDB --- REPA L4-GearNet vs Baseline (step-matched cells).}}\\
+Des $\uparrow$          & +0.16 & +0.08 & +0.07 & +0.06 & +0.06 & +0.08 \\
+FID $\downarrow$         & $-$102  & $-$45   & $-$133  & $-$144  & $-$132  & $-$97 \\
+fJSD-A $\downarrow$      & $-$0.31 & +0.28 & $-$0.94 & $-$1.06 & $-$0.92 & $-$0.24 \\
+ssJSD2D $\downarrow$     & $-$0.04 & $-$0.19 & $-$0.13 & $-$0.13 & $-$0.10 & $-$0.03 \\
+\#Clust $\uparrow$       & +32   & $-$15   & $-$27   & $-$23   & $-$21   & +10 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{REPA's encoder-routed effects are sampler-invariant in
+the middle band ($\gamma{\in}[0.35, 0.5]$) and largely survive at the
+extremes.} AFDB shows the clean ODE designability floor ($\Delta$~Des
+$=+0.16$) and durable FID gains across all $\gamma$. PDB at $\gamma{=}0$
+shows a striking $-1225$ FID gain: the PDB baseline at $\gamma{=}0$
+mode-collapses (high Des, but very high FID); REPA's distribution-match
+gain is correspondingly large. The earlier $\gamma{=}1$ distribution-
+match-collapse claim is retracted --- L9-MPNN actually \emph{wins}
+fJSD-A at $\gamma{=}1$ ($-0.30$), and only $\gamma{=}0$ shows the
+GearNet-specific Des-loss (not visible for MPNN here).}
+\end{table}
+
+\section{Table 5 --- Representation rank-order (PDB-trained, best layer)}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{l|cccc}
+\toprule
+& IF top-1 $\uparrow$ & dihedral MAE\,(\,$^\circ$\,)\,$\downarrow$ & CATH-A $\uparrow$ & CATH-T $\uparrow$ \\
+\midrule
+Baseline       & 0.123 & 32.1 & 0.407 & 0.301 \\
+REPA L9-GN     & 0.156 & 19.5 & \textbf{0.702} & \textbf{0.752} \\
+REPA L9-MPNN   & \textbf{0.167} & \textbf{16.4} & 0.548 & 0.473 \\
+REPA L4-random & 0.146 & 20.2 & 0.476 & 0.378 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Encoder rank-order on student representation quality,
+best-layer, mean across steps $\ge$700K, $n{=}256$ PDB.} \textbf{The
+axis split mirrors the gen-side encoder-routing (Table 1):} MPNN-L9
+wins per-residue probes (IF, dihedral); GearNet-L9 wins per-chain CATH
+probes. Random gives the smallest gain on every probe --- learned
+target needed. CATH absolute values use the cleantrain protocol (highest
+$n$); IF and dihedral use xclean (doubly-clean cross-DB val).}
+\end{table}
+
+\end{document}
