@@ -1,0 +1,35 @@
+% Table -- acceleration (FID + designability): steps to reach baseline's best. \input{} from Ch6.
+\begin{table}[tbp]
+\centering
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lll|cccc}
+\toprule
+Dataset & Metric & Variant & Baseline best & REPA reaches @ & Speedup & REPA's own best \\
+\midrule
+\multicolumn{7}{l}{\textit{FID acceleration --- durable on AFDB:}}\\
+AFDB & FID-AFDB & L4-GN   & 386 @1.3M & 100K & 13.0$\times$ & 282 \\
+AFDB & FID-AFDB & L9-GN   & 386 @1.3M & 200K & 6.5$\times$  & 313 \\
+AFDB & FID-AFDB & MPNN-L9 & 386 @1.3M & 400K & 3.2$\times$  & 352 \\
+AFDB & FID-AFDB & MPNN-L4 & 386 @1.3M & never & ---         & 416 \\
+\midrule
+\multicolumn{7}{l}{\textit{FID acceleration --- transient on PDB (baseline catches up late):}}\\
+PDB & FID-PDB & L9-GN   & $\sim$330 plateau & 700K & $\sim$1.3--1.5$\times$ & 319 (@1.2M) \\
+PDB & FID-PDB & L9-MPNN & $\sim$330 plateau & 1.1M & $\sim$1.3$\times$      & 334 (@1.1M) \\
+PDB & FID-PDB & MPNN-L4 & 329 plateau (1.6M) & 1.6M & budget-matched & 329 (@1.6M) \\
+\midrule
+\multicolumn{7}{l}{\textit{Designability acceleration --- clean on PDB:}}\\
+PDB & Des & L4-GN     & 0.67 @1.6M & 700K & 2.3$\times$ & 0.70 \\
+PDB & Des & L9-MPNN   & 0.67 @1.6M & 900K & 1.8$\times$ & 0.81 \\
+PDB & Des & L4-random & 0.67 @1.6M & never & ---        & 0.39 \\
+AFDB & Des & (all)    & \multicolumn{4}{l}{baseline saturates at 0.75 by 400K --- acceleration not meaningful (proxy bias, \S\ref{sec:proteina-convergence})} \\
+\bottomrule
+\end{tabular}}
+\caption{\textbf{REPA's acceleration is durable on AFDB FID ($6.5$--$13\times$) and clean on PDB designability ($1.8$--$2.3\times$), but only transient on PDB FID.} ``Baseline best'' is the cumulative-best value the baseline reaches in training; ``REPA reaches @'' is the earliest step REPA matches it; speedup is their ratio.
+On FID, REPA-GearNet is durably $6.5$--$13\times$ faster on AFDB and keeps improving
+past the baseline's floor, whereas on PDB the lead is transient ($\sim$1.3--1.5$\times$ to REPA's
+plateau before the long baseline catches up). On designability, PDB shows a clean $1.8$--$2.3\times$: the baseline only reaches 0.67 at 1.6M while REPA-L4-GN reaches it at 700K
+and REPA-L9-MPNN peaks at 0.81 --- the random control never reaches it (peak 0.39). AFDB
+designability saturates too early for an acceleration number (\S\ref{sec:proteina-convergence}).}
+\label{tab:proteina-speedup}
+\end{table}

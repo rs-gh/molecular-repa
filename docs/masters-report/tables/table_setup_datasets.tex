@@ -1,0 +1,29 @@
+% Setup Table S1 -- dataset comparison. \input{} from report-draft.tex Ch6.
+\begin{table}[tbp]
+\centering
+\small
+\begin{tabular}{l l l}
+\toprule
+ & \textbf{PDB} & \textbf{AFDB (Swiss-Prot)} \\
+\midrule
+Origin                  & Experimental (X-ray, cryo-EM) & Predicted (AlphaFold2, v6) \\
+Per-residue confidence  & B-factor & pLDDT \\
+Source pool             & 194{,}090 structures & 550{,}122 structures \\
+Train / val / test chains & 425{,}100 / 5{,}000 / 500 & 229{,}670 / 4{,}521 / 235 \\
+Length filter           & 50--512 res ($n{=}256,128$ subsets) & $\le 256$ res \\
+CATH coverage (train)   & 44.2\% & 61.8\% \\
+Dominant CATH class     & $\alpha/\beta$ (55\%) & $\alpha/\beta$ (57\%) \\
+Split                   & random, 98/1.9/0.1 & random, 98/1.9/0.1 \\
+Val$\leftrightarrow$train, $\ge$30\% seq.\ id. & 98.3\% & 92.2\% \\
+Val$\leftrightarrow$train, identical sequence  & 79.0\% & 29.6\% \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Our two regimes bracket the data problem --- experimental-but-scarce PDB versus synthetic-but-abundant AFDB --- and both have heavily leaked splits.} PDB is experimental but scarce after redundancy is
+accounted for; AFDB is AlphaFold-predicted, abundant, and (being machine-generated)
+more in-silico-designable. Neither split is sequence-clustered, so both leak heavily
+between train and validation --- 79\% of PDB validation chains have a byte-identical
+sequence in training --- which is why we read in-house absolute scores with care and
+lean on \emph{rank-order} and \emph{$\Delta$-from-baseline} comparisons throughout
+(\S\ref{ch:evaluation}).}
+\label{tab:setup-datasets}
+\end{table}

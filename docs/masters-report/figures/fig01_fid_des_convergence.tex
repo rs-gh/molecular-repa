@@ -1,0 +1,7 @@
+% Figure -- headline FID + designability convergence. \input{} from Ch6.
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=\textwidth]{figures/fig01_fid_des_convergence.png}
+\caption{\textbf{REPA accelerates both FID and designability --- durably on AFDB, where the gap never closes, and transiently on PDB, where the long baseline catches up.} Convergence versus training step, $n=256$, with $\pm 1$ SD bands across three seeds. \emph{Left column:} in-distribution FID (log-scaled axes; lower is better). \emph{Right column:} designability (higher is better). \emph{Top row:} PDB-trained models (FID against the PDB reference). REPA (best learned variant, green) leads on FID at every matched step up to $\approx 1.2$M, but the long-trained baseline (blue) catches up and edges below late --- transient acceleration; the random control (grey) tracks the baseline. \emph{Bottom row:} AFDB-trained models (FID against the AFDB reference). The baseline plateaus poorly and REPA-GearNet (red) opens a gap that never closes --- durable acceleration. The designability panels show the same regime split.}
+\label{fig:proteina-fid}
+\end{figure}

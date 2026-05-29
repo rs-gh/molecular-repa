@@ -1,0 +1,7 @@
+% Figure -- per-layer CKNNA alignment + Platonic off-diagonal. \input{} from Ch6.
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=\textwidth]{figures/fig03_alignment.png}
+\caption{\textbf{REPA pulls the trunk's geometry toward the encoder's --- and toward encoders it was never trained on (Platonic convergence).} Per-residue CKNNA ($k=10$) by trunk layer, $n=256$ PDB, step 1M, $t=1.0$. \emph{Left:} alignment to the GearNet target. The baseline (blue) is at the noise floor at every layer; REPA lifts alignment $\approx 20$--$25\times$, peaking around layer~8 and collapsing at the final output layer~9. \emph{Right:} aligning the trunk to GearNet alone also raises its alignment to encoders it was never trained against --- ProteinMPNN and ESM2 --- the off-diagonal signature of Platonic convergence, with ESM2 the most universal attractor.}
+\label{fig:proteina-cknna}
+\end{figure}

@@ -1,0 +1,21 @@
+% Setup Table S3 -- why CATH-A is the headline fold probe. \input{} from report-draft.tex Ch6.
+\begin{table}[tbp]
+\centering
+\small
+\begin{tabular}{l c c >{\raggedright\arraybackslash}p{0.43\textwidth}}
+\toprule
+CATH level & \#classes & baseline probe acc.\ & verdict \\
+\midrule
+C (class)        & 4              & 0.733 & one class ($\alpha/\beta$) is 55\% of the data; coarse, already near-saturated --- \emph{gameable} \\
+A (architecture) & $\sim$40       & 0.407 & balanced and discriminative, with headroom to move --- \textbf{our headline fold metric} \\
+T (topology)     & $\sim$1400     & 0.301 & long-tailed (top fold $\sim$18\%; only $\sim$89 classes populated enough to probe); per-class accuracy is unreliable --- \emph{too many buckets} \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{We read fold-level representation quality off CATH \emph{architecture} --- Class is too coarse, Topology too finely-bucketed.} The CATH hierarchy nests Class\,$\supset$\,Architecture\,$\supset$\,Topology. ``Baseline probe
+acc.'' is a linear probe on the un-aligned (baseline) trunk. Class is too coarse to
+discriminate (4 buckets, one at 55\%, baseline already 0.73); Topology is too fine
+($\sim$1400 imbalanced buckets) for reliable per-class accuracy; Architecture sits in
+between --- enough classes to be meaningful, enough examples per class to be learnable ---
+so we use CATH-A as the headline fold-decodability metric and report C/T in the appendix.}
+\label{tab:setup-cath}
+\end{table}

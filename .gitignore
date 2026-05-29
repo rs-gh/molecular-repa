@@ -119,3 +119,4 @@ evaluation/proteina/representation/scripts/_legacy/
 # committed in-tree. Add as submodules if a stable revision is needed.
 third_party/
 eval_output.old_*
+docs/masters-report/tables/preview/

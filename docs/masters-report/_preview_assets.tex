@@ -1,0 +1,34 @@
+% Preview doc: renders every Ch6 table + figure (with caption) one per page.
+% Compile from docs/masters-report/ so figures/ and tables/ paths resolve.
+\documentclass[11pt]{article}
+\usepackage[margin=12mm,landscape,a4paper]{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+\usepackage{parskip}
+\usepackage{caption}
+\newcommand{\gd}[1]{\cellcolor{green!20}#1}
+\newcommand{\gb}[1]{\cellcolor{green!42}#1}
+\newcommand{\rd}[1]{\cellcolor{red!15}#1}
+% neutralise cross-refs so captions don't print "??"
+\renewcommand{\ref}[1]{\textup{[ref]}}
+\pagestyle{empty}
+\begin{document}
+\input{tables/table_setup_datasets}\clearpage
+\input{tables/table_setup_model}\clearpage
+\input{tables/table_setup_cath}\clearpage
+\input{tables/table_rep_quality}\clearpage
+\input{tables/table_speedup}\clearpage
+\input{tables/table_proteina_700k}\clearpage
+\input{tables/table_proteina_1m}\clearpage
+\input{tables/table_proteina_1m_reduced}\clearpage
+\input{tables/table_concentration}\clearpage
+\input{tables/table_ode}\clearpage
+\input{tables/table_sampler}\clearpage
+\input{figures/fig01_fid_des_convergence}\clearpage
+\input{figures/fig02_representation}\clearpage
+\input{figures/fig03_alignment}\clearpage
+\input{figures/fig04_fid_des_gen_vs_rep}\clearpage
+\input{figures/fig05_td_tradeoff}\clearpage
+\end{document}

@@ -1,0 +1,22 @@
+% Table -- representation rank-order, Delta from baseline. \input{} from Ch6.
+\begin{table}[tbp]
+\centering
+\small
+\setlength{\tabcolsep}{8pt}
+\begin{tabular}{l|cccc}
+\toprule
+ & IF top-1\,$\uparrow$ & dihedral MAE\,(\,$^\circ$\,)\,$\downarrow$ & CATH-A\,$\uparrow$ & CATH-T\,$\uparrow$ \\
+\midrule
+Baseline       & 0.123 & 32.1 & 0.407 & 0.301 \\
+REPA L4-random & \gd{+0.023} & \gd{$-$11.9} & \gd{+0.069} & \gd{+0.077} \\
+REPA L9-GN     & \gd{+0.033} & \gd{$-$12.6} & \gb{+0.295} & \gb{+0.451} \\
+REPA L9-MPNN   & \gb{+0.044} & \gb{$-$15.7} & \gd{+0.141} & \gd{+0.172} \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{REPA's representation gain is encoder-routed: GearNet wins the fold probes (CATH), MPNN the per-residue probes (IF, dihedral), and the random control improves least.} Values are best-layer, mean across steps $\ge 700$K, $n{=}256$ PDB; baseline is absolute, REPA rows are $\Delta$ from baseline. \colorbox{green!20}{Green} = improvement
+over baseline (every variant improves every probe); \colorbox{green!42}{darker green} marks the
+best variant per probe. The random control improves every probe least,
+so the gain needs structural knowledge in the target, not merely an auxiliary loss.
+CATH uses the cleantrain protocol; IF and dihedral the doubly-clean cross-database slice.}
+\label{tab:proteina-rep}
+\end{table}

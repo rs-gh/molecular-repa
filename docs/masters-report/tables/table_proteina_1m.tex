@@ -1,0 +1,48 @@
+% Centerpiece Table -- 1.0M snapshot. \input{} from report-draft.tex Ch6.
+% Requires \gd/\rd macros and \usepackage[table]{xcolor} from the preamble.
+\begin{table}[tbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l|cc|ccc|cc|c|cc}
+\toprule
+& \multicolumn{2}{c|}{\textbf{Quality}}
+& \multicolumn{3}{c|}{\textbf{T-W}}
+& \multicolumn{2}{c|}{\textbf{T-D}}
+& \textbf{S-W}
+& \multicolumn{2}{c}{\textbf{S-D}} \\
+Variant
+& Des\,$\uparrow$ & FID\,$\downarrow$
+& fJSD-A\,$\downarrow$ & fS-A\,$\uparrow$ & pwTM\,$\downarrow$
+& \#Clust\,$\uparrow$ & pwTM\,$\downarrow$
+& ssJSD2D\,$\downarrow$
+& ssJSD2D\,$\downarrow$ & E\%des\,$\uparrow$ \\
+\midrule
+\multicolumn{11}{l}{\textit{PDB-trained, $n{=}256$, 1.0M, 3 seeds; FID is FID-PDB.}}\\
+Baseline       & 0.54 & 467 & 0.95 & 5.67 & 0.17 & 114 & 0.16 & 0.32 & 0.39 & 0.15 \\
+REPA L4-GN     & \rd{$-$0.09} & \gd{$-$35} & \gd{$-$0.41} & \gd{+1.68} & +0.00 & \rd{$-$27} & \rd{+0.01} & \gd{$-$0.16} & +0.00 & \rd{$-$0.07} \\
+REPA L9-GN     & \rd{$-$0.02} & \gd{$-$130} & \rd{+0.06} & \gd{+0.92} & \rd{+0.06} & \rd{$-$44} & \rd{+0.13} & \gd{$-$0.19} & \gd{$-$0.13} & \gd{+0.09} \\
+REPA L4-MPNN   & \rd{$-$0.20} & \rd{+27} & \rd{+0.10} & \rd{$-$0.27} & +0.00 & \rd{$-$62} & \rd{+0.07} & \gd{$-$0.26} & \gd{$-$0.26} & \gd{+0.02} \\
+REPA L9-MPNN   & \gd{+0.01} & \gd{$-$81} & \gd{$-$0.05} & \gd{+0.29} & \rd{+0.07} & \rd{$-$51} & \rd{+0.15} & \gd{$-$0.15} & \gd{$-$0.08} & \gd{+0.04} \\
+REPA L4-random & --- & --- & --- & --- & --- & --- & --- & --- & --- & --- \\
+\midrule
+\multicolumn{11}{l}{\textit{AFDB-trained, $n{=}256$, 1.0M, 3 seeds (MPNN-L4: 1 seed); FID is FID-AFDB.}}\\
+Baseline       & 0.72 & 534 & 2.23 & 4.35 & 0.20 & 133 & 0.21 & 0.16 & 0.18 & 0.14 \\
+REPA L4-GN     & \gd{+0.01} & \gd{$-$228} & \gd{$-$1.43} & \gd{+3.68} & \gd{$-$0.00} & \rd{$-$39} & \rd{+0.03} & \gd{$-$0.12} & \gd{$-$0.09} & \gd{+0.01} \\
+REPA L9-GN     & --- & --- & --- & --- & --- & --- & --- & --- & --- & --- \\
+REPA L4-MPNN   & \rd{$-$0.18} & \gd{$-$118} & \gd{$-$0.57} & \gd{+1.20} & ---  & \rd{$-$29} & \gd{$-$0.06} & \gd{$-$0.06} & \rd{+0.09} & \gd{+0.02} \\
+REPA L9-MPNN   & \rd{$-$0.01} & \gd{$-$101} & \gd{$-$0.74} & \gd{+0.44} & \gd{$-$0.04} & \gd{+6} & \gd{$-$0.02} & \rd{+0.02} & \rd{+0.01} & \rd{$-$0.03} \\
+\bottomrule
+\end{tabular}}
+\caption{\textbf{By 1.0M the trade-off has fully developed: every PDB REPA variant is now negative on designable diversity while its whole-set gains persist, and AFDB-L9-MPNN is the lone falsifier.} This same supercolumn decomposition at 1.0M is past the PDB designable-diversity crossover ($\sim$850K) and well past the AFDB one ($\sim$150K). \colorbox{green!20}{Green}
+marks an improvement, \colorbox{red!15}{red} a regression; ``---'' marks cells not run
+(PDB L4-random stops at 700K; AFDB L9-GearNet at 900K; AFDB L4-MPNN whole-set pwTM
+unavailable). Every PDB REPA variant has by now turned negative on designable \#Clust
+($-27$ to $-62$), where Table~\ref{tab:proteina-700k} showed several still positive;
+the whole-set gains (FID, fS-A) persist. AFDB L9-MPNN remains the only positive \#Clust
+cell ($+6$), the same falsifier. The contrast with the 700K snapshot makes the temporal
+nature of the trade-off explicit: REPA's whole-set gain is durable, the
+designable-diversity loss develops with training.}
+\label{tab:proteina-1m}
+\end{table}

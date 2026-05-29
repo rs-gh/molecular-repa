@@ -1,0 +1,29 @@
+% Setup Table S2 -- model & REPA configuration. \input{} from report-draft.tex Ch6.
+\begin{table}[tbp]
+\centering
+\small
+\begin{tabular}{l l}
+\toprule
+Component & Setting \\
+\midrule
+Generator        & Proteina (CAFlow), 60M parameters \\
+Trunk            & 10-layer non-equivariant transformer; token dim 512, 8 heads \\
+Parameterisation & raw C$\alpha$ coordinates (no architectural symmetry priors) \\
+\midrule
+Alignment loss   & cosine similarity, averaged per residue, weight $\lambda = 0.5$ \\
+Projector        & MLP, hidden dim 512 (depth in Appendix~\ref{ch:appendix}) \\
+Injection depth $\ell$ & layer 4, layer 9 (of 10; layer 0 in the fuller sweep) \\
+Encoder targets  & CA-GearNet (512-d, frozen) $\cdot$ ProteinMPNN $\cdot$ random-GearNet (control) \\
+\midrule
+Sampler          & SDE, noise scale $\gamma = 0.45$ (default; ablated in \S\ref{sec:proteina-sampler}) \\
+Regimes          & PDB, AFDB; residue length $n{=}256$ (headline), $n{=}128$ (scale check) \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Model and REPA configuration: a 60M non-equivariant trunk, with encoder target and injection depth as the two axes under test.} The two axes we vary --- encoder target and
+injection depth --- give four learned configurations (\{GearNet, MPNN\}\,$\times$\,\{L4, L9\})
+plus the random-GearNet falsifier, trained in both regimes; the broader layer/encoder sweep
+and all optimisation hyperparameters (batch size, learning rate, step counts) are in
+Appendix~\ref{ch:appendix}. The non-equivariant trunk makes Proteina a clean testbed: any
+structural inductive bias it acquires is learned, not imposed.}
+\label{tab:setup-model}
+\end{table}

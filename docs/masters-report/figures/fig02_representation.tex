@@ -1,0 +1,7 @@
+% Figure -- student representation quality vs training step. \input{} from Ch6.
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=\textwidth]{figures/fig02_representation.png}
+\caption{\textbf{Flow-matching alone never makes the student's representations more structural; REPA installs structure as a persistent, encoder-axis-specific gap.} Student representation quality versus training step, $n=256$, PDB-trained, on the doubly-clean cross-database validation slice (\S\ref{ch:evaluation}). Each panel is a linear-probe readout of the trunk's best layer: inverse-folding top-1 accuracy ($\uparrow$), backbone dihedral mean absolute error ($\downarrow$), and CATH-architecture accuracy ($\uparrow$). The baseline (blue) is flat across 1.8M steps on every probe; REPA installs structural decodability as a persistent gap. The encoder rank-order is axis-specific: GearNet (green circles) leads on CATH; MPNN (green triangles) leads on dihedral and inverse-folding; the random-GearNet control (grey) gives the smallest gain on every probe.}
+\label{fig:proteina-rep}
+\end{figure}
