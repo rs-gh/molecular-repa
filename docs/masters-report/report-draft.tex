@@ -40,7 +40,6 @@
 \usepackage{amssymb}  % for \mathbb{} (e.g. \mathbb{E} expectation symbol)
 \usepackage{booktabs} % \toprule/\midrule/\bottomrule for clean tables
 \usepackage{array}    % extended column specifiers
-\usepackage{float}    % [H] to pin a float exactly where it is \input
 \usepackage[table]{xcolor} % \cellcolor for the Ch6 result tables (load
                       % before tikz so tikz does not re-load xcolor and clash)
 \usepackage{tikz}     % for diagrams (e.g. the REPA construction)
@@ -1291,7 +1290,7 @@ We take both questions up empirically in Chapters~\ref{ch:profiling}--\ref{ch:pr
 
 In this chapter, we expand the scope of our study on representation alignment from small molecules to much larger ones: proteins. Previously (Chapter~\ref{ch:tabasco-study}), our efforts using REPA to generate small molecules yielded little demonstrable improvement, largely because the Tabasco~\cite{Tabasco} baseline was already saturated on most measures of generation quality. However, de novo backbone design represents a more challenging task, as the data distribution of proteins is significantly larger, and the geometry of these structures is correspondingly more complex. In this context, we ask: \emph{can REPA accelerate or improve the training of Proteina~\cite{Proteina}, a flow-matching transformer-based protein backbone generator?}
 
-\textbf{Our headline finding is that REPA accelerates convergence on the two key measures of protein generation quality, in both synthetic and experimental training-data regimes} (Figure~\ref{fig:proteina-fid}). This chapter characterises \emph{what} happens and attempts to understand \emph{why}. We also pick up the thread from Chapter~\ref{ch:evaluation} on how the molecular domain differs from the image domain REPA was built for, and develop a theme throughout: REPA here is less a single mechanism than a \emph{family} of interventions.
+\textbf{Our headline finding is that REPA accelerates convergence on the two key measures of protein generation quality, in both synthetic and experimental training-data regimes} (Figure~\ref{fig:proteina-fid}). This chapter characterises \emph{what} happens and attempts to understand \emph{why}. We also pick up the thread from Chapter~\ref{ch:evaluation} on how the molecular domain differs from the image domain REPA was built for, and develop a theme throughout: REPA here is a \emph{family} of interventions rather than a single mechanism.
 
 \input{figures/fig01_fid_des_convergence}
 
@@ -1303,15 +1302,17 @@ We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant
 
 \subsection{Datasets}
 
-We train in two regimes that span the field's experimental--synthetic spectrum: the experimentally-determined Protein Data Bank~\cite{PDB} and the AlphaFold-predicted AlphaFold Database~\cite{AFDB} (Swiss-Prot subset; Table~\ref{tab:setup-datasets}). We use the manually-curated Swiss-Prot subset of AFDB as a reproducible stand-in for the Foldseek-clustered TrEMBL subset on which Proteina was trained~\cite{Proteina} (whose released structure index references UniProt accessions since pruned from AFDB); both are AlphaFold-predicted, so the experimental-versus-synthetic contrast is unaffected.
+We train in two regimes that span the field's experimental--synthetic spectrum: the experimentally-determined Protein Data Bank~\cite{PDB} and the AlphaFold-predicted AlphaFold Database~\cite{AFDB} (Swiss-Prot subset; Table~\ref{tab:setup-datasets}). We use the manually-curated Swiss-Prot subset of AFDB as a reproducible stand-in for the Foldseek-clustered TrEMBL subset on which Proteina was trained~\cite{Proteina}. (The original corpus contained data that has since been pruned from AFDB, and is hence inaccessible.)
 
-\textbf{Different datasets in this domain carry different biases that must be accounted for.} Trends in designability offer a clear example, as training on AFDB raises the in-silico-designability floor well above PDB at every setting we tested (\S\ref{sec:proteina-convergence}). The likely cause is circular. The canonical designability test inverse-folds a generated backbone with ProteinMPNN~\cite{ProteinMPNN} and re-folds it with ESMFold~\cite{ESM2} (Chapter~\ref{ch:evaluation}). Both of these models share their lineage with the AlphaFold2~\cite{AlphaFold2} network that produced AFDB in the first place, so AlphaFold-like backbones are plausibly the ones it re-folds most confidently. AFDB backbones are also more idealised (low-clash, high-confidence, mostly single-domain), and thus intrinsically more designable. We do not test these mechanisms, but flag this observation so metrics are read with care. We return to this theme in Chapter~\ref{ch:conclusions}.
+\textbf{Different datasets in this domain carry different biases.} Trends in designability offer a clear example, as training on AFDB raises the in-silico-designability floor well above PDB at every setting we tested (\S\ref{sec:proteina-convergence}). The likely cause is circular. The canonical designability test inverse-folds a generated backbone with ProteinMPNN~\cite{ProteinMPNN} and re-folds it with ESMFold~\cite{ESM2} (Chapter~\ref{ch:evaluation}). Both of these models share their lineage with the AlphaFold2~\cite{AlphaFold2} network that produced AFDB in the first place, so AlphaFold-like backbones are plausibly the ones it re-folds most confidently. We do not test this mechanism, but flag the observation so metrics are read with care.
 
 \input{tables/table_setup_datasets}
 
 \subsection{Models}
 
-Our experiments vary the two design axes that Chapter~\ref{ch:profiling} flagged as the most consequential for REPA and the least explored in the molecular setting: the encoder target and the injection depth (Table~\ref{tab:setup-model}). We study the two encoders profiling identified as viable --- CA-GearNet~\cite{GearNet}, which encodes global contact-graph topology, and ProteinMPNN~\cite{ProteinMPNN}, which encodes each residue's local inverse-folding environment --- each attached at two trunk depths, layer~4 and layer~9 of ten. A random-weights GearNet, identical in architecture but never trained, is our falsifier control: it separates whatever REPA achieves merely by adding an auxiliary loss from what it achieves through the encoder's \emph{learned} structural knowledge. \textbf{That two such different encoders are both viable targets is why REPA here behaves as a \emph{family} of interventions: each alignment target addresses a different gap in the core architecture and routes the generation gain to a different aspect of quality.}
+The base Proteina model comprises a stack of ten transformer layers (zero-indexed) that feed a flow matching objective. Our experiments add a REPA loss to this design. We primarily vary the two design axes that Chapter~\ref{ch:profiling} flagged as the most consequential for REPA: the encoder target and the injection depth (Table~\ref{tab:setup-model}). This chapter concentrates on the two encoders profiling identified as most viable --- CA-GearNet~\cite{GearNet}, which encodes fold-level contact topology, and ProteinMPNN~\cite{ProteinMPNN}, which encodes each residue's local inverse-folding environment --- each attached at two representative trunk depths, layer~4 (middle layer) and layer~9 (last layer). The remaining encoder and depth combinations are collected in Appendix~\ref{ch:appendix}.
+
+\textbf{Separating regularisation from mechanism.} A random-weights GearNet, identical in architecture but never trained, is our falsifier control. We use this mode to separate whatever REPA achieves merely by adding an auxiliary loss from what it achieves through the encoder's \emph{learned} structural knowledge.
 
 \input{tables/table_setup_model}
 
@@ -1328,6 +1329,8 @@ We measure three things (Table~\ref{tab:setup-metrics}). \emph{Representation qu
 \input{tables/table_setup_metrics}
 
 \input{tables/table_setup_cath}
+
+Together these axes --- dataset, encoder, and injection depth --- let us treat REPA not as a single knob but as a \emph{family} of interventions. Across the results that follow we trace how each choice routes the alignment's effect to a different facet of generation quality, a thread we draw together in Chapter~\ref{ch:conclusions}.
 
 \section{REPA installs structural representations the baseline never learns}
 \label{sec:proteina-rep}

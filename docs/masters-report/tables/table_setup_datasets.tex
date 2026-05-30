@@ -1,27 +1,21 @@
 % Setup Table S1 -- dataset comparison. \input{} from report-draft.tex Ch6.
-\begin{table}[H]
+\begin{table}[tbp]
 \centering
 \small
 \setlength{\tabcolsep}{5pt}
 \begin{tabular}{l l l}
 \toprule
- & \textbf{PDB} & \textbf{AFDB (Swiss-Prot)} \\
+\textbf{Property} & \textbf{PDB} & \textbf{AFDB (Swiss-Prot)} \\
 \midrule
 Origin                     & Experimental (X-ray, cryo-EM) & Predicted (AlphaFold2, v6) \\
-Per-residue confidence     & B-factor & pLDDT \\
 Train / val / test chains  & 273{,}771 / 3{,}190 / 323 & 229{,}670 / 4{,}521 / 235 \\
-Length filter              & $\le$256 res & $\le$256 res \\
-CATH coverage (train)      & 44.2\% ($\alpha/\beta$-dom.) & 61.8\% ($\alpha/\beta$-dom.) \\
+CATH coverage (train)      & 44.2\% & 61.8\% \\
 Val$\leftrightarrow$train, $\ge$30\% id. & 98.3\% & 92.2\% \\
-AFDB-val$\leftrightarrow$PDB-train, ident. & \multicolumn{2}{c}{5.7\% (vs 79\% in-DB)} \\
+AFDB-val$\leftrightarrow$PDB-train, $\ge$30\% id. & \multicolumn{2}{c}{62.1\%} \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Our two regimes differ by origin --- experimentally-determined (PDB)
-versus AlphaFold-predicted (AFDB) --- which is the contrast we exploit, not raw scale.}
-Counts are for the headline $n{=}256$ regime in a random 98/1.9/0.1 split (the $n{=}128$
-scale check refilters the same pools to $\le$128). Neither split is sequence-clustered, so
-throughout we read rank-order and $\Delta$-from-baseline rather than absolute in-house scores
-(\S\ref{ch:evaluation}); the cross-DB row (AFDB validation chains identical to a PDB training
-chain) motivates the leakage-clean AFDB probe set used there.}
+\caption{Properties of the two datasets we study, at the headline $n{=}256$ regime.
+Sequence identity is computed with MMseqs2 (\texttt{easy-search}, $\ge$30\% identity over
+$\ge$80\% alignment coverage).}
 \label{tab:setup-datasets}
 \end{table}
