@@ -7,22 +7,15 @@
 \textbf{Hyperparameter} & \textbf{Default (unless stated)} & \textbf{Varied / swept in} \\
 \midrule
 Alignment weight $\lambda$ & 0.5 (after Yu et al.~\cite{REPA}) & Appendix~\ref{ch:appendix} \\
-Similarity                 & cosine                            & --- \\
 Token averaging            & per residue                       & \S\ref{sec:repa} (design knob) \\
 Residue length $n$         & 256 (headline regime)             & 128 (\S\ref{sec:proteina-scale}) \\
-Training regime            & PDB \emph{and} AFDB (both reported) & --- \\
+Batch size                 & 24 ($n{=}256$)                    & Appendix~\ref{ch:appendix} \\
+Weight decay               & none                              & --- \\
 Sampler                    & SDE, noise scale $\gamma = 0.45$  & \S\ref{sec:proteina-sampler} \\
-Evaluation                 & supercolumn suite (Table~\ref{tab:setup-metrics}) & --- \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Held-fixed training and evaluation hyperparameters: our ``unless stated otherwise'' defaults.} The alignment weight follows the value Yu et al.~\cite{REPA} found effective
-for image diffusion; cosine similarity averaged per residue is the REPA objective of
-\S\ref{sec:repa}, with the per-residue (vs.\ per-sample) averaging mode being a design
-knob we discuss there. We anchor headline claims at residue length $n{=}256$ and use
-$n{=}128$ as a scale-robustness check (\S\ref{sec:proteina-scale}). Every variant is
-trained in both data regimes and sampled at the default SDE noise scale $\gamma{=}0.45$,
-which we ablate across six values in \S\ref{sec:proteina-sampler}. Optimisation
-hyperparameters (batch size, learning rate, step counts) and the $\lambda$/batch-size/projector-depth
-ablations are in Appendix~\ref{ch:appendix}.}
+\caption{Our ``unless stated otherwise'' defaults; the final column gives where each is
+swept. Remaining optimisation settings (learning rate, step counts) are in
+Appendix~\ref{ch:appendix}.}
 \label{tab:setup-hparams}
 \end{table}

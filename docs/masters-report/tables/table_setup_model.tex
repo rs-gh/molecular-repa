@@ -13,11 +13,10 @@ Parameterisation & raw C$\alpha$ coordinates (no architectural symmetry priors) 
 Alignment loss   & cosine similarity, averaged per residue (Table~\ref{tab:setup-hparams}) \\
 Projector        & 3-layer MLP, hidden dim 512 \\
 Injection depth $\ell$ & layer 4 (middle) and layer 9 (last) of 10, zero-indexed \\
-Encoder targets  & CA-GearNet (512-d, frozen) $\cdot$ ProteinMPNN $\cdot$ random-GearNet (control) \\
+Encoder targets  & GearNet (512-d) $\cdot$ ProteinMPNN (128-d) $\cdot$ random-GearNet (control) \\
 \bottomrule
 \end{tabular}
 \caption{Model configurations presented in this chapter. The
 broader layer/encoder sweep is in Appendix~\ref{ch:appendix}.}
 \label{tab:setup-model}
 \end{table}
-`'
