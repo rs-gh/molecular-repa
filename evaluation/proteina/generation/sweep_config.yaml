@@ -599,3 +599,24 @@ n256_pdb_sampler_ablation_baseline_backfill:
   runs: "baseline_256_bs24_2gpu_step100k,baseline_256_bs24_2gpu_step200k,baseline_256_bs24_2gpu_step400k,baseline_256_bs24_2gpu_step700k,baseline_256_bs24_2gpu_step1000k,baseline_256_bs24_2gpu_step1300k,baseline_256_bs24_2gpu_step1500k"
   output_dir: results/variance/n256_sampler_ablation
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# 2026-05-30: convergence extension 7 — frontier periodic ckpts that were never
+# swept. Five runs across both datasets had unevaluated tails past their last
+# point. Cheap variant (1 seed × N tasks, rep_idx=0). Same output_dirs as base
+# so rows merge. AFDB random + PDB random training are being resumed; tokens
+# pin STABLE numbered EMA snapshots (not the moving last-EMA) — see checkpoints.py.
+#   python run_sweep.py --config n256_convergence_afdb_ext7 --dry_run
+#   sbatch --array=0-2  run_sweep.sh --config n256_convergence_afdb_ext7
+#   python run_sweep.py --config n256_convergence_pdb_ext7  --dry_run
+#   sbatch --array=0-14 run_sweep.sh --config n256_convergence_pdb_ext7
+n256_convergence_afdb_ext7:
+  <<: *paper_defaults
+  runs: "repa_l4_afdb_256_random_step200k,repa_l4_afdb_256_random_step400k,repa_l4_afdb_256_random_step500k"
+  output_dir: results/paper/n256_convergence_afdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+n256_convergence_pdb_ext7:
+  <<: *paper_defaults
+  runs: "repa_l4_256_per_residue_random_bs24_2gpu_step900k,repa_l4_256_per_residue_random_bs24_2gpu_step1000k,repa_l4_256_per_residue_random_bs24_2gpu_step1100k,repa_l4_256_per_residue_random_bs24_2gpu_step1200k,baseline_256_bs24_2gpu_step1900k,baseline_256_bs24_2gpu_step2000k,baseline_256_bs24_2gpu_step2100k,baseline_256_bs24_2gpu_step2200k,baseline_256_bs24_2gpu_step2300k,baseline_256_bs24_2gpu_step2400k,repa_mpnn_l9_256_per_residue_step1800k,repa_mpnn_l9_256_per_residue_step1900k,repa_mpnn_l9_256_per_residue_step2000k,repa_l9_256_per_residue_bs24_2gpu_step1500k,repa_l9_256_per_residue_bs24_2gpu_step1600k"
+  output_dir: results/paper/n256_convergence_pdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"

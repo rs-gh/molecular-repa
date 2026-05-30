@@ -11,11 +11,6 @@ A (architecture) & $\sim$40       & 0.407 & balanced and discriminative, with he
 T (topology)     & $\sim$1400     & 0.301 & long-tailed (top fold $\sim$18\%; only $\sim$89 classes populated enough to probe); per-class accuracy is unreliable --- \emph{too many buckets} \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{We read fold-level representation quality off CATH \emph{architecture} --- Class is too coarse, Topology too finely-bucketed.} The CATH hierarchy nests Class\,$\supset$\,Architecture\,$\supset$\,Topology. ``Baseline probe
-acc.'' is a linear probe on the un-aligned (baseline) trunk. Class is too coarse to
-discriminate (4 buckets, one at 55\%, baseline already 0.73); Topology is too fine
-($\sim$1400 imbalanced buckets) for reliable per-class accuracy; Architecture sits in
-between --- enough classes to be meaningful, enough examples per class to be learnable ---
-so we use CATH-A as the headline fold-decodability metric and report C/T in the appendix.}
+\caption{\textbf{We read fold-level representation quality off CATH \emph{architecture} --- Class is too coarse to discriminate, Topology too finely-bucketed to probe reliably.} Class has 4 buckets (one at 55\%, baseline already 0.73); Topology has $\sim$1400 imbalanced buckets; Architecture sits between --- enough classes to be meaningful, enough examples per class to be learnable --- so CATH-A is our headline fold metric (C and T are reported in the appendix). (``Baseline probe acc.'' is a linear probe on the un-aligned trunk.)}
 \label{tab:setup-cath}
 \end{table}

@@ -1527,6 +1527,123 @@ RUN_SCHEDULES = {
         4,
         [100000],
     ),
+    # ── n=256 convergence extension 7 (added 2026-05-30): frontier ckpts ──── #
+    # Five runs had unevaluated periodic ckpts past their last-swept step. AFDB
+    # random + PDB random are being resumed in training, so pin to STABLE
+    # numbered EMA snapshots (not the moving last-EMA.ckpt) to avoid torn reads.
+    # AFDB random (store max 500k periodic; last-EMA ~518k):
+    "repa_l4_afdb_256_random_step200k": (
+        "proteina_60m_repa_l4_256_afdb_per_residue_random_bs24_2gpu",
+        True,
+        4,
+        [200000],
+    ),
+    "repa_l4_afdb_256_random_step400k": (
+        "proteina_60m_repa_l4_256_afdb_per_residue_random_bs24_2gpu",
+        True,
+        4,
+        [400000],
+    ),
+    "repa_l4_afdb_256_random_step500k": (
+        "proteina_60m_repa_l4_256_afdb_per_residue_random_bs24_2gpu",
+        True,
+        4,
+        [500000],
+    ),
+    # PDB random (store max 1200k):
+    "repa_l4_256_per_residue_random_bs24_2gpu_step900k": (
+        "proteina_60m_repa_l4_256_per_residue_random_bs24_2gpu",
+        True,
+        4,
+        [900000],
+    ),
+    "repa_l4_256_per_residue_random_bs24_2gpu_step1000k": (
+        "proteina_60m_repa_l4_256_per_residue_random_bs24_2gpu",
+        True,
+        4,
+        [1000000],
+    ),
+    "repa_l4_256_per_residue_random_bs24_2gpu_step1100k": (
+        "proteina_60m_repa_l4_256_per_residue_random_bs24_2gpu",
+        True,
+        4,
+        [1100000],
+    ),
+    "repa_l4_256_per_residue_random_bs24_2gpu_step1200k": (
+        "proteina_60m_repa_l4_256_per_residue_random_bs24_2gpu",
+        True,
+        4,
+        [1200000],
+    ),
+    # baseline_256 PDB (store max 2400k; was only swept to 1800k):
+    "baseline_256_bs24_2gpu_step1900k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [1900000],
+    ),
+    "baseline_256_bs24_2gpu_step2000k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [2000000],
+    ),
+    "baseline_256_bs24_2gpu_step2100k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [2100000],
+    ),
+    "baseline_256_bs24_2gpu_step2200k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [2200000],
+    ),
+    "baseline_256_bs24_2gpu_step2300k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [2300000],
+    ),
+    "baseline_256_bs24_2gpu_step2400k": (
+        "proteina_60m_baseline_256_bs24_2gpu",
+        False,
+        4,
+        [2400000],
+    ),
+    # MPNN-L9-256 PDB (store max 2000k; was swept to 1700k):
+    "repa_mpnn_l9_256_per_residue_step1800k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [1800000],
+    ),
+    "repa_mpnn_l9_256_per_residue_step1900k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [1900000],
+    ),
+    "repa_mpnn_l9_256_per_residue_step2000k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [2000000],
+    ),
+    # L9-256 GearNet PDB (store max 1600k; was swept to 1400k):
+    "repa_l9_256_per_residue_bs24_2gpu_step1500k": (
+        "proteina_60m_repa_l9_256_per_residue_bs24_2gpu",
+        True,
+        9,
+        [1500000],
+    ),
+    "repa_l9_256_per_residue_bs24_2gpu_step1600k": (
+        "proteina_60m_repa_l9_256_per_residue_bs24_2gpu",
+        True,
+        9,
+        [1600000],
+    ),
 }
 
 
@@ -1787,6 +1904,25 @@ GEN_RUN_CONFIGS = {
     "repa_mpnn_l9_256_per_residue_step1500k": "inference/paper/inference_fid_60m_paper",
     "repa_mpnn_l9_256_per_residue_step1600k": "inference/paper/inference_fid_60m_paper",
     "repa_mpnn_l9_256_per_residue_step1700k": "inference/paper/inference_fid_60m_paper",
+    # ── n=256 convergence extension 7 (added 2026-05-30): frontier ckpts ──── #
+    "repa_l4_afdb_256_random_step200k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_afdb_256_random_step400k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_afdb_256_random_step500k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_random_bs24_2gpu_step900k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_random_bs24_2gpu_step1000k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_random_bs24_2gpu_step1100k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_random_bs24_2gpu_step1200k": "inference/paper/inference_fid_60m_paper",
+    "baseline_256_bs24_2gpu_step1900k": "inference/paper/inference_fid_60m_paper",
+    "baseline_256_bs24_2gpu_step2000k": "inference/paper/inference_fid_60m_paper",
+    "baseline_256_bs24_2gpu_step2100k": "inference/paper/inference_fid_60m_paper",
+    "baseline_256_bs24_2gpu_step2200k": "inference/paper/inference_fid_60m_paper",
+    "baseline_256_bs24_2gpu_step2300k": "inference/paper/inference_fid_60m_paper",
+    "baseline_256_bs24_2gpu_step2400k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step1800k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step1900k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step2000k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_per_residue_bs24_2gpu_step1500k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_256_per_residue_bs24_2gpu_step1600k": "inference/paper/inference_fid_60m_paper",
 }
 
 

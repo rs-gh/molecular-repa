@@ -35,14 +35,6 @@ REPA L4-MPNN   & \rd{$-$0.18} & \gd{$-$118} & \gd{$-$0.57} & \gd{+1.20} & ---  &
 REPA L9-MPNN   & \rd{$-$0.01} & \gd{$-$101} & \gd{$-$0.74} & \gd{+0.44} & \gd{$-$0.04} & \gd{+6} & \gd{$-$0.02} & \rd{+0.02} & \rd{+0.01} & \rd{$-$0.03} \\
 \bottomrule
 \end{tabular}}
-\caption{\textbf{By 1.0M the trade-off has fully developed: every PDB REPA variant is now negative on designable diversity while its whole-set gains persist, and AFDB-L9-MPNN is the lone falsifier.} This same supercolumn decomposition at 1.0M is past the PDB designable-diversity crossover ($\sim$850K) and well past the AFDB one ($\sim$150K). \colorbox{green!20}{Green}
-marks an improvement, \colorbox{red!15}{red} a regression; ``---'' marks cells not run
-(PDB L4-random stops at 700K; AFDB L9-GearNet at 900K; AFDB L4-MPNN whole-set pwTM
-unavailable). Every PDB REPA variant has by now turned negative on designable \#Clust
-($-27$ to $-62$), where Table~\ref{tab:proteina-700k} showed several still positive;
-the whole-set gains (FID, fS-A) persist. AFDB L9-MPNN remains the only positive \#Clust
-cell ($+6$), the same falsifier. The contrast with the 700K snapshot makes the temporal
-nature of the trade-off explicit: REPA's whole-set gain is durable, the
-designable-diversity loss develops with training.}
+\caption{\textbf{By 1.0M every PDB REPA variant is negative on designable diversity while its whole-set gains persist; AFDB-L9-MPNN is the lone falsifier.} \#Clust falls $-27$ to $-62$ on PDB, the whole-set FID and fS-A gains hold, and only AFDB-L9-MPNN keeps a positive \#Clust ($+6$). (Full decomposition past the PDB $\sim$850K and AFDB $\sim$150K crossovers; $n{=}256$; baseline absolute, REPA rows $\Delta$; \colorbox{green!20}{green}/\colorbox{red!15}{red} = improvement/regression; ``---'' = not run.)}
 \label{tab:proteina-1m}
 \end{table}

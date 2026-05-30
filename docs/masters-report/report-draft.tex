@@ -1298,7 +1298,7 @@ Our headline finding is that \emph{REPA accelerates convergence on two key measu
 \section{Experimental setup}
 \label{sec:proteina-setup}
 
-We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant flow-matching generator of C$\alpha$ protein backbones, attaching a trainable projector at a chosen trunk layer that aligns the model's hidden states to a frozen structural encoder, exactly as in the construction of \S\ref{sec:repa}. The data regimes, the model and REPA configuration, the held-fixed hyperparameters, and the metrics are specified in the tables of this section; we summarise each below.
+We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant flow-matching generator of C$\alpha$ protein backbones. Following \S\ref{sec:repa}, we attach a trainable projector at a chosen trunk layer that aligns the model's hidden states to a frozen structural encoder.
 
 \subsection{Datasets}
 

@@ -154,11 +154,6 @@ des_panel(
     ylabel="Designability rate",
 )
 
-fig.suptitle(
-    "$n{=}256$ models, 3 seeds; shaded bands show min/max",
-    fontsize=10,
-    y=0.995,
-)
-plt.tight_layout(rect=[0, 0, 1, 0.97])
+plt.tight_layout()
 plt.savefig(OUT, dpi=150, bbox_inches="tight")
 print(f"Saved {OUT}")

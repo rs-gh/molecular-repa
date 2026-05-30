@@ -18,12 +18,6 @@ Val$\leftrightarrow$train, $\ge$30\% seq.\ id. & 98.3\% & 92.2\% \\
 Val$\leftrightarrow$train, identical sequence  & 79.0\% & 29.6\% \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Our two regimes bracket the data problem --- experimental-but-scarce PDB versus synthetic-but-abundant AFDB --- and both have heavily leaked splits.} PDB is experimental but scarce after redundancy is
-accounted for; AFDB is AlphaFold-predicted, abundant, and (being machine-generated)
-more in-silico-designable. Neither split is sequence-clustered, so both leak heavily
-between train and validation --- 79\% of PDB validation chains have a byte-identical
-sequence in training --- which is why we read in-house absolute scores with care and
-lean on \emph{rank-order} and \emph{$\Delta$-from-baseline} comparisons throughout
-(\S\ref{ch:evaluation}).}
+\caption{\textbf{Our two regimes bracket the data problem --- experimental-but-scarce PDB versus synthetic-but-abundant AFDB --- and both have heavily leaked splits.} AFDB, being machine-generated, is also more in-silico-designable. Neither split is sequence-clustered (79\% of PDB validation chains share a byte-identical sequence with training), so throughout we read rank-order and $\Delta$-from-baseline rather than absolute in-house scores (\S\ref{ch:evaluation}).}
 \label{tab:setup-datasets}
 \end{table}

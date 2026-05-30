@@ -13,10 +13,6 @@ REPA L9-GN     & \gd{+0.033} & \gd{$-$12.6} & \gb{+0.295} & \gb{+0.451} \\
 REPA L9-MPNN   & \gb{+0.044} & \gb{$-$15.7} & \gd{+0.141} & \gd{+0.172} \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA's representation gain is encoder-routed: GearNet wins the fold probes (CATH), MPNN the per-residue probes (IF, dihedral), and the random control improves least.} Values are best-layer, mean across steps $\ge 700$K, $n{=}256$ PDB; baseline is absolute, REPA rows are $\Delta$ from baseline. \colorbox{green!20}{Green} = improvement
-over baseline (every variant improves every probe); \colorbox{green!42}{darker green} marks the
-best variant per probe. The random control improves every probe least,
-so the gain needs structural knowledge in the target, not merely an auxiliary loss.
-CATH uses the cleantrain protocol; IF and dihedral the doubly-clean cross-database slice.}
+\caption{\textbf{REPA's representation gain is encoder-routed: GearNet wins the fold probes (CATH), MPNN the per-residue probes (IF, dihedral), and the random control gains least --- so the effect needs the encoder's learned structure, not just an auxiliary loss.} ($n{=}256$ PDB, best-layer probes, mean over steps $\ge$700K; baseline absolute, REPA rows $\Delta$ from baseline; \colorbox{green!20}{green} = improvement, \colorbox{green!42}{darker} = best per probe.)}
 \label{tab:proteina-rep}
 \end{table}

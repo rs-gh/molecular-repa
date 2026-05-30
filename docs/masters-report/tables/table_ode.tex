@@ -22,11 +22,6 @@ REPA L9-GN     & \gd{+0.21} & \gd{+0.28}$^{*}$ \\
 REPA L9-MPNN   & \gd{+0.10} & +0.02 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA raises the deterministic-sampling (ODE) designability floor --- durably under every learned encoder on AFDB, and for learned but not random encoders on PDB.} Baseline is absolute; REPA rows
-are $\Delta$ from baseline (\colorbox{green!20}{green} = higher designability; $|\Delta|{<}0.025$
-uncoloured). At ODE the baseline's designability floor is near-zero on PDB and modest on AFDB;
-REPA raises it. On AFDB the floor lifts under every learned encoder and stays lifted
-($+0.10$ to $+0.28$ across steps); on PDB the learned encoders lift it while the random control
-does not ($-0.02$). Single-seed. $^{*}$AFDB L9-GN: 900K shown (1.0M not run).}
+\caption{\textbf{REPA raises the deterministic-sampling (ODE) designability floor --- durably under every learned encoder on AFDB, and for learned but not random encoders on PDB.} The ODE baseline floors near-zero on PDB and modest on AFDB; REPA lifts it by $+0.10$ to $+0.28$ across steps on AFDB, while the PDB random control does not ($-0.02$). (ODE designability; baseline absolute, REPA rows $\Delta$; \colorbox{green!20}{green} = higher, $|\Delta|{<}0.025$ uncoloured. Single-seed; $^{*}$900K for AFDB L9-GN.)}
 \label{tab:proteina-ode}
 \end{table}

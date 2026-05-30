@@ -20,14 +20,6 @@ REPA L9-GN           & \rd{+0.23} & +0.02 & \rd{+0.65} & \rd{+0.24}$^{*}$ & \rd{
 REPA L9-MPNN \textit{(falsifier)} & +0.01 & $-$0.02 & \gd{$-$0.06} & $-$0.01 & $-$0.02 & +0.00 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA's one consistent cost --- a loss of tertiary diversity --- is confined to the sheet-rich folds, grows with training, and is escaped only by the AFDB-MPNN falsifier.} pwTM is the mean
-pairwise TM-score within the designable subset, stratified by $\beta$\% (lower = more diverse).
-$\Delta$ = REPA $-$ baseline, step-matched; \colorbox{red!15}{red} ($\Delta{>}0$) = REPA
-\emph{concentrates} (loses designable diversity), \colorbox{green!20}{green} ($\Delta{<}0$) = more
-diverse; $|\Delta|{<}0.05$ uncoloured. Concentration is localised to the $\beta{\ge}25$ bin,
-arises under every encoder that routes toward $\beta$-rich folds (GearNet on both datasets,
-MPNN on PDB), and \emph{grows} with training ($+0.23{\to}+0.74$). AFDB-MPNN-L9 is the clean
-falsifier --- diverse in every bin. Single-seed; multi-seed backfill pending.
-$^{*}$AFDB L9-GN: 900K shown (1.0M not run).}
+\caption{\textbf{REPA's one consistent cost --- a loss of tertiary diversity --- is confined to the sheet-rich folds, grows with training, and is escaped only by the AFDB-MPNN falsifier.} Concentration appears only in the $\beta{\ge}25$ bin, under encoders that route toward $\beta$-rich folds (GearNet on both datasets, MPNN on PDB), and grows over training ($+0.23{\to}+0.74$); AFDB-MPNN-L9 stays diverse in every bin. (Designable-subset pwTM stratified by $\beta$\%, lower = more diverse; $\Delta$ = REPA $-$ baseline; \colorbox{red!15}{red} ($\Delta{>}0$) = concentrates, \colorbox{green!20}{green} = more diverse, $|\Delta|{<}0.05$ uncoloured. Single-seed; $^{*}$900K for AFDB L9-GN.)}
 \label{tab:proteina-concentration}
 \end{table}
