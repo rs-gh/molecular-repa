@@ -1,22 +1,30 @@
-% Setup Table S2 -- model & REPA configuration. \input{} from report-draft.tex Ch6.
+% Setup table -- merged model & training configuration. \input{} from report-draft.tex Ch6.
 \begin{table}[tbp]
 \centering
 \small
-\begin{tabular}{l l}
+\begin{tabular}{l >{\raggedright\arraybackslash}p{0.62\textwidth}}
 \toprule
 \textbf{Property} & \textbf{Value} \\
 \midrule
-Generator        & Proteina (CAFlow), 60M parameters \\
-Trunk            & 10-layer non-equivariant transformer; token dim 512, 8 heads \\
-Parameterisation & raw C$\alpha$ coordinates (no architectural symmetry priors) \\
+\multicolumn{2}{l}{\textit{Base architecture}} \\
+Backbone               & Proteina (CAFlow): 60M-param, 10-layer non-equivariant C$\alpha$ transformer (token dim 512, 8 heads) \\
 \midrule
-Alignment loss   & cosine similarity, averaged per residue (Table~\ref{tab:setup-hparams}) \\
-Projector        & 3-layer MLP, hidden dim 512 \\
-Injection depth $\ell$ & layer 4 (middle) and layer 9 (last) of 10, zero-indexed \\
-Encoder targets  & GearNet (512-d) $\cdot$ ProteinMPNN (128-d) $\cdot$ random-GearNet (control) \\
+\multicolumn{2}{l}{\textit{REPA alignment}} \\
+Encoder targets        & GearNet (512-d) $\cdot$ ProteinMPNN (128-d) $\cdot$ random-GearNet (control) \\
+Injection depth $\ell$ & layer 4 (middle) $\cdot$ layer 9 (last) \\
+Projector              & 3-layer MLP, hidden dim 512 \\
+Similarity metric $\operatorname{sim}$ & cosine similarity \\
+Averaging mode         & per residue \\
+Alignment weight $\lambda$ & 0.5 \\
+\midrule
+\multicolumn{2}{l}{\textit{Training \& sampling}} \\
+Learning rate          & $10^{-3}$ \\
+Batch size             & 24 ($n{\le}256$) \\
+Weight decay           & none \\
+Sampler                & SDE, noise scale $\gamma = 0.45$ \\
 \bottomrule
 \end{tabular}
-\caption{Model configurations presented in this chapter. The
-broader layer/encoder sweep is in Appendix~\ref{ch:appendix}.}
+\caption{Model and training configuration. This chapter presents two encoder targets and two
+injection depths. Other ablations are deferred to Appendix~\ref{ch:appendix}.}
 \label{tab:setup-model}
 \end{table}

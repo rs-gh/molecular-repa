@@ -1309,23 +1309,29 @@ Following the original presentation, we train on the subset of chains with at mo
 
 \subsection{Models}
 
-The base Proteina model comprises a stack of ten transformer layers (zero-indexed) that feeds a flow matching objective. Our experiments add a REPA loss to this design.
+The base Proteina model comprises a stack of ten transformer layers (zero-indexed) that feeds a flow matching objective. Our experiments add a REPA loss to this design, as outlined in Table~\ref{tab:setup-model}.
 
 \textbf{Encoder and injection-depth ablations.} Our narrative concentrates on the two encoders identified as most viable in Chapter~\ref{ch:profiling}: \emph{GearNet}~\cite{GearNet}, a structure encoder pretrained for CATH fold classification (checkpoint released with Proteina~\cite{Proteina}) whose embeddings capture fold-level contact topology; and \emph{ProteinMPNN}~\cite{ProteinMPNN}, which encodes each residue's local inverse-folding environment. Each extenal encoder is attached at two representative trunk depths, layer~4 (middle layer) and layer~9 (last layer). The remaining encoder and depth combinations are collected in Appendix~\ref{ch:appendix}. Figures presented in this chapter will typically follow the best performing model to serve as an illustrative example.
 
 \textbf{Separating regularisation from mechanism.} A random-weights GearNet, identical in architecture but never trained, is our falsifier control. We use this mode to separate whatever REPA achieves merely by adding an auxiliary loss from what it achieves through the encoder's \emph{learned} structural knowledge.
 
+\textbf{Hyperparameters.} Our defaults largely follow the original image-domain REPA recipe~\cite{REPA}.
+
 \input{tables/table_setup_model}
-
-\textbf{Hyperparameters.} Our default settings largely follow the original image-domain REPA recipe~\cite{REPA}, as outlined in Table~\ref{tab:setup-hparams}.
-
-\input{tables/table_setup_hparams}
 
 \subsection{Metrics}
 
-We measure three things (Table~\ref{tab:setup-metrics}). \emph{Representation quality} is the linear-probe recoverability of structural labels from the trunk (the probe principle of \S\ref{ch:evaluation}): a per-residue battery (inverse folding and backbone dihedrals) and a per-chain CATH fold probe, for which we report \emph{architecture} (CATH-A) as the headline level --- Class is too coarse to discriminate and Topology too finely-bucketed to probe reliably (we justify this choice in Appendix~\ref{ch:appendix}, Table~\ref{tab:setup-cath}). \emph{Representation alignment} is CKNNA~\cite{PlatonicRep}, the mutual-nearest-neighbour kernel-alignment between the trunk and an encoder. \emph{Generation quality} is reported in five groups (defined in Chapter~\ref{ch:evaluation}) --- quality, tertiary-whole (T-W), tertiary-designable (T-D), secondary-whole (S-W) and secondary-designable (S-D) --- which we use to anatomise the effect in \S\ref{sec:proteina-anatomy}.
+We measure three things (Table~\ref{tab:setup-metrics}). \emph{Representation quality} asks what structural information is linearly decodable from the trunk (the probe principle of \S\ref{ch:evaluation}), at three levels of abstraction: inverse-folding sequence recovery (the local chemical environment), backbone dihedral error (low-level geometry), and CATH fold-architecture accuracy (global fold). We report architecture (CATH-A) as the headline fold level --- Class is too coarse to discriminate and Topology too finely-bucketed to probe reliably (Appendix~\ref{ch:appendix}, Table~\ref{tab:setup-cath}). \emph{Representation alignment} is CKNNA~\cite{PlatonicRep}, the mutual-nearest-neighbour kernel-alignment between the trunk and an encoder.
+
+\emph{Generation quality} is reported in five groups (Chapter~\ref{ch:evaluation}): quality, tertiary-whole (T-W), tertiary-designable (T-D), secondary-whole (S-W) and secondary-designable (S-D). The fold metrics --- FID and the fold Jensen--Shannon divergences and scores (fJSD, fS) --- are those introduced by Proteina~\cite{Proteina}. We additionally introduce ssJSD-2D, which compares the full (helix-fraction, strand-fraction) distribution rather than its mean, to measure secondary-structure match. A useful axis runs across the whole suite: \emph{fidelity} metrics ask how well the generated distribution matches the reference (FID, fJSD, ssJSD), while \emph{diversity} metrics ask how much the generated set spreads (fS, pairwise TM, cluster count). REPA moves the two differently, which we exploit when we anatomise the effect in \S\ref{sec:proteina-anatomy}.
 
 \input{tables/table_setup_metrics}
+
+\subsection{Evaluation protocol}
+
+\textbf{Representation probing.} To measure representation quality we freeze each checkpoint and fit linear probes to its trunk hidden states, taken at a clean input ($t{=}1$). The inverse-folding and dihedral probes are per-residue (a linear classifier and a linear regressor); the CATH probe is a per-chain logistic regression on mean-pooled representations. Probes are fit on chains sampled from the training set and evaluated on the validation set. Because the splits are leaky (Appendix~\ref{ch:appendix}), we read rank-order and $\Delta$-from-baseline rather than absolute accuracies.
+
+\textbf{Generation sampling.} To measure generation quality we sample 1{,}125 backbones per checkpoint --- 125 at each length in $\{50, 75, \dots, 250\}$. Whole-set metrics are computed over all 1{,}125, against PDB or AFDB reference statistics matching the training regime. Designability follows the Proteina protocol~\cite{Proteina}: 50 backbones at each of $\{50, 100, 150, 200, 250\}$ are inverse-folded with ProteinMPNN (8 sequences each), re-folded with ESMFold, and called designable when the self-consistency RMSD is below 2\,\AA{}. The designable-subset metrics (T-D, S-D) are then computed on the backbones that pass. The $n{=}128$ scale check uses the same recipe over four lengths ($\{50, 75, 100, 125\}$), for 500 backbones per checkpoint.
 
 Together these axes --- dataset, encoder, and injection depth --- let us treat REPA not as a single knob but as a \emph{family} of interventions. Across the results that follow we trace how each choice routes the alignment's effect to a different facet of generation quality, a thread we draw together in Chapter~\ref{ch:conclusions}.
 

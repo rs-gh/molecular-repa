@@ -2,37 +2,46 @@
 \begin{table}[tbp]
 \centering
 \small
-\begin{tabular}{l >{\raggedright\arraybackslash}p{0.50\textwidth} l}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l >{\raggedright\arraybackslash}p{0.38\textwidth} >{\raggedright\arraybackslash}p{0.20\textwidth} l}
 \toprule
-\textbf{Metric} & \textbf{What it captures} & \textbf{Granularity} \\
+\textbf{Metric} & \textbf{Definition} & \textbf{Content} & \textbf{Granularity} \\
 \midrule
-\multicolumn{3}{l}{\textit{Representation quality --- linear-probe recoverability of structural labels from the trunk}} \\
-IF top-1\,$\uparrow$       & inverse-folding sequence recovery (semantic content) & per residue \\
-Dihedral MAE\,$\downarrow$ & backbone dihedral-angle error (low-level geometry)   & per residue \\
-CATH-A\,$\uparrow$         & fold-architecture accuracy --- headline fold metric (Table~\ref{tab:setup-cath}) & per chain \\
+\multicolumn{4}{l}{\textbf{Representation quality}} \\
+IF top-1\,$\uparrow$       & Inverse-folding sequence recovery & Semantic content & Per residue \\
+Dihedral MAE\,$\downarrow$ & Backbone dihedral-angle error & Low-level geometry & Per residue \\
+CATH-A\,$\uparrow$         & Fold-architecture classification accuracy (Table~\ref{tab:setup-cath}) & Fold-level structure & Per chain \\
 \midrule
-\multicolumn{3}{l}{\textit{Representation alignment}} \\
-CKNNA\,$\uparrow$~\cite{PlatonicRep} & mutual-nearest-neighbour kernel alignment between trunk and encoder & per residue \\
+\multicolumn{4}{l}{\textbf{Representation alignment}} \\
+CKNNA\,$\uparrow$~\cite{PlatonicRep} & Mutual-nearest-neighbour kernel alignment & Trunk--encoder similarity & Per residue \\
 \midrule
-\multicolumn{3}{l}{\textit{Generation quality --- reported in five groups (Chapter~\ref{ch:evaluation})}} \\
-\multicolumn{3}{@{}p{0.9\textwidth}@{}}{\hspace{1em}\footnotesize Protocol: whole-set metrics (FID, fJSD, fS) over all 1{,}125 sampled backbones (125 per length, $\ell{\in}\{50,75,\dots,250\}$); designable-subset metrics over the 250-backbone subset (50 per length, $\ell{\in}\{50,100,150,200,250\}$).} \\
-Quality                     & per-sample designability (Des\,$\uparrow$) and FID\,$\downarrow$ to the reference set & per set \\
-T-W (tertiary, whole)       & whole-set fold-distribution match and coverage (fJSD-A\,$\downarrow$, fS-A\,$\uparrow$, pwTM\,$\downarrow$) & per set \\
-T-D (tertiary, designable)  & fold diversity within the designable subset (\#Clust\,$\uparrow$, pwTM\,$\downarrow$) & per set \\
-S-W (secondary, whole)      & whole-set secondary-structure distribution match (ssJSD-2D\,$\downarrow$) & per set \\
-S-D (secondary, designable) & secondary-structure match and $\beta$-content of the designable subset (ssJSD-2D\,$\downarrow$, E\%des\,$\uparrow$) & per set \\
+\multicolumn{4}{l}{\textbf{Generation quality} (Chapter~\ref{ch:evaluation})} \\
+\addlinespace
+\multicolumn{4}{l}{\hspace{0.5em}\textit{Quality}} \\
+Des\,$\uparrow$            & Fraction of samples that are designable & Physical realisability & Whole set \\
+FID\,$\downarrow$          & Fréchet distance to the reference set (GearNet features) & Distributional fidelity & Whole set \\
+\addlinespace
+\multicolumn{4}{l}{\hspace{0.5em}\textit{Tertiary structure --- whole set (T-W)}} \\
+fJSD-A\,$\downarrow$       & Jensen--Shannon divergence vs.\ reference CATH-A distribution & Fold-distribution fidelity & Whole set \\
+fS-A\,$\uparrow$           & Spread of generated folds across CATH-architecture classes & Whole-set fold diversity & Whole set \\
+pwTM\,$\downarrow$         & Mean pairwise TM-score & Structural diversity & Whole set \\
+\addlinespace
+\multicolumn{4}{l}{\hspace{0.5em}\textit{Tertiary structure --- designable subset (T-D)}} \\
+\#Clust\,$\uparrow$        & Number of TM$\,\ge\,$0.5 structural clusters & Designable diversity & Designable subset \\
+pwTM\,$\downarrow$         & Mean pairwise TM-score, designable subset & Designable diversity & Designable subset \\
+\addlinespace
+\multicolumn{4}{l}{\hspace{0.5em}\textit{Secondary structure --- whole set (S-W)}} \\
+ssJSD-2D\,$\downarrow$     & Jensen--Shannon divergence of the (helix-frac, strand-frac) distribution & Secondary-structure fidelity & Whole set \\
+\addlinespace
+\multicolumn{4}{l}{\hspace{0.5em}\textit{Secondary structure --- designable subset (S-D)}} \\
+ssJSD-2D\,$\downarrow$     & As above, on the designable subset & SS fidelity (designable) & Designable subset \\
+E\%des\,$\uparrow$         & Mean $\beta$-strand (E) fraction & $\beta$-content & Designable subset \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{We measure three things: representation quality, representation alignment, and generation quality.} Representation quality is the linear-probe recoverability of structural
-labels from the trunk --- a per-residue battery (inverse-folding sequence recovery and
-backbone dihedral error) and a per-chain fold probe on CATH, for which we report
-\emph{architecture} (CATH-A) as the headline level (Table~\ref{tab:setup-cath}).
-Representation alignment is CKNNA~\cite{PlatonicRep}, the mutual-nearest-neighbour
-kernel-alignment between a trunk layer and an encoder. Generation quality is reported
-in five groups (defined in Chapter~\ref{ch:evaluation}): per-sample
-\emph{quality}, whole-set vs.\ designable-subset \emph{tertiary} structure (T-W, T-D),
-and whole-set vs.\ designable-subset \emph{secondary} structure (S-W, S-D); arrows give
-the good direction for each member metric, and the full per-metric breakdown appears in
+\caption{The three measurement families used in this chapter: representation quality,
+representation alignment, and generation quality (five reported groups). The whole set is all
+generated backbones; the designable subset is those passing the designability filter. Arrows
+give the good direction. Full per-metric results appear in
 Tables~\ref{tab:proteina-700k}--\ref{tab:proteina-1m-reduced}.}
 \label{tab:setup-metrics}
 \end{table}
