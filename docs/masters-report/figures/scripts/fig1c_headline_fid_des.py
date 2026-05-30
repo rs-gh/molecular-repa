@@ -18,7 +18,7 @@ import re
 import os
 import sys
 from collections import defaultdict
-from statistics import mean, stdev
+from statistics import mean
 import matplotlib
 
 matplotlib.use("Agg")
@@ -26,10 +26,21 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
 sys.path.insert(0, os.path.dirname(__file__))
-from style import classify_family, setup_axes, plot_trajectory, legend, log_step_axis
+from style import (
+    classify_family,
+    setup_axes,
+    plot_trajectory,
+    legend,
+    log_step_axis,
+    use_report_style,
+)
+
+use_report_style()
 
 ROOT = "/home/sr2173/git/molecular-repa"
-OUT = f"{ROOT}/docs/masters-report/figures/fig01_fid_des_convergence.png"
+OUT = os.environ.get(
+    "FIG_OUT", f"{ROOT}/docs/masters-report/figures/fig01_fid_des_convergence.png"
+)
 
 PDB_JSONL = f"{ROOT}/evaluation/proteina/generation/results/paper/n256_convergence_pdb/sweep_results.clean.jsonl"
 AFDB_JSONL = f"{ROOT}/evaluation/proteina/generation/results/paper/n256_convergence_afdb/sweep_results.clean.jsonl"
@@ -69,11 +80,7 @@ def trajec(rows, key):
         for s in sorted(agg[fam]):
             vals = [v for v in agg[fam][s] if v is not None]
             if vals:
-                out[fam][s] = (
-                    mean(vals),
-                    stdev(vals) if len(vals) > 1 else 0.0,
-                    len(vals),
-                )
+                out[fam][s] = (mean(vals), min(vals), max(vals), len(vals))
     return out
 
 
@@ -85,10 +92,14 @@ def draw(ax, tj, fams_to_show, title, ylabel):
         steps = sorted(tj[fam])
         steps_k = [s / 1000 for s in steps]
         means = [tj[fam][s][0] for s in steps]
-        stds = [tj[fam][s][1] for s in steps]
-        plot_trajectory(ax, steps_k, means, stds, color, marker, label, zorder=z)
+        mins = [tj[fam][s][1] for s in steps]
+        maxs = [tj[fam][s][2] for s in steps]
+        # line + markers (suppress helper's SD band); draw a min--max band instead
+        plot_trajectory(ax, steps_k, means, None, color, marker, label, zorder=z)
+        if any(mx > mn for mn, mx in zip(mins, maxs)):
+            ax.fill_between(steps_k, mins, maxs, color=color, alpha=0.18, zorder=z - 1)
     setup_axes(ax, title=title, ylabel=ylabel)
-    log_step_axis(ax)
+    log_step_axis(ax, label="Training step (thousands, log scale)")
 
 
 def fid_panel(ax, tj, fams, title, ylabel):
@@ -116,14 +127,14 @@ fid_panel(
     axes[0, 0],
     trajec(pdb, "_res_PDB_FID"),
     PDB_FAMS,
-    title="PDB-trained — FID vs PDB reference ↓",
-    ylabel="FID-PDB",
+    title="(a) PDB-trained: FID $\\downarrow$",
+    ylabel="FID-PDB (log scale)",
 )
 des_panel(
     axes[0, 1],
     trajec(pdb, "_res_designability_rate"),
     PDB_FAMS,
-    title="PDB-trained — designability ↑",
+    title="(b) PDB-trained: designability $\\uparrow$",
     ylabel="Designability rate",
 )
 
@@ -132,17 +143,22 @@ fid_panel(
     axes[1, 0],
     trajec(afdb, "_res_AFDB_FID"),
     AFDB_FAMS,
-    title="AFDB-trained — FID vs AFDB reference ↓",
-    ylabel="FID-AFDB",
+    title="(c) AFDB-trained: FID $\\downarrow$",
+    ylabel="FID-AFDB (log scale)",
 )
 des_panel(
     axes[1, 1],
     trajec(afdb, "_res_designability_rate"),
     AFDB_FAMS,
-    title="AFDB-trained — designability ↑",
+    title="(d) AFDB-trained: designability $\\uparrow$",
     ylabel="Designability rate",
 )
 
-plt.tight_layout()
+fig.suptitle(
+    "$n{=}256$ models, 3 seeds; shaded bands show min/max",
+    fontsize=10,
+    y=0.995,
+)
+plt.tight_layout(rect=[0, 0, 1, 0.97])
 plt.savefig(OUT, dpi=150, bbox_inches="tight")
 print(f"Saved {OUT}")

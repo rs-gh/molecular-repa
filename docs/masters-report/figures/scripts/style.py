@@ -9,6 +9,33 @@ Conventions (locked 2026-05-28):
 
 import re
 
+
+def use_report_style():
+    """Match figure text to the report body font (Computer Modern / Latin Modern).
+
+    The report loads no font package, so LaTeX typesets it in Computer Modern
+    Roman. matplotlib ships the matching ``cmr10`` TTF and a ``cm`` mathtext
+    fontset, so we can match the look without shelling out to LaTeX (fast, no
+    external dependency, can never fail a figure regen).
+
+    Caveats handled here:
+      * cmr10 has no proper minus glyph -> ``axes.unicode_minus=False``.
+      * cmr10 has no arrow/unicode-symbol glyphs; write arrows as mathtext
+        (e.g. ``$\\downarrow$``) in labels, not literal "down" Unicode.
+    """
+    import matplotlib as mpl
+
+    mpl.rcParams.update(
+        {
+            "font.family": "serif",
+            "font.serif": ["cmr10", "Computer Modern Roman", "DejaVu Serif"],
+            "mathtext.fontset": "cm",
+            "axes.formatter.use_mathtext": True,
+            "axes.unicode_minus": False,
+        }
+    )
+
+
 # Locked palette
 COLORS = {
     "baseline": "#1f77b4",  # blue

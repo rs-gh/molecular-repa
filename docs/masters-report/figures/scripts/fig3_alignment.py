@@ -18,7 +18,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.dirname(__file__))
-from style import COLORS, MARKERS, setup_axes, legend
+from style import COLORS, MARKERS, setup_axes, legend, use_report_style
+
+use_report_style()
 
 ROOT = "/home/sr2173/git/molecular-repa"
 SRC = f"{ROOT}/evaluation/proteina/alignment/results/cknna_matrix_per_residue.jsonl"
@@ -78,7 +80,7 @@ for model in ["baseline", "repa_gearnet_l9", "repa_mpnn_l9"]:
     )
 setup_axes(
     ax,
-    title="CKNNA to GearNet (target), per layer ↑",
+    title="CKNNA to GearNet (target), per layer $\\uparrow$",
     xlabel="Trunk layer index",
     ylabel="CKNNA (per-residue, k=10)",
 )
@@ -116,14 +118,14 @@ for target, label, color, marker in TARGETS:
         "-",
         marker=marker,
         color=color,
-        label=f"REPA L9-GN → {label}",
+        label=f"REPA L9-GN $\\rightarrow$ {label}",
         linewidth=1.8,
         markersize=6,
         zorder=10,
     )
 setup_axes(
     ax,
-    title="REPA-L9-GN propagates alignment off-diagonally (Platonic) ↑",
+    title="REPA-L9-GN propagates alignment off-diagonally (Platonic) $\\uparrow$",
     xlabel="Trunk layer index",
 )
 ax.set_xticks(list(range(0, 10)))

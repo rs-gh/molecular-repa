@@ -26,7 +26,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.dirname(__file__))
-from style import classify_family, setup_axes, legend
+from style import classify_family, setup_axes, legend, use_report_style
+
+use_report_style()
 
 ROOT = "/home/sr2173/git/molecular-repa"
 XCLEAN = f"{ROOT}/evaluation/proteina/representation/results/paper/n256_xclean_afdb_pdb/pretrained_sweep_results.csv"
@@ -124,7 +126,7 @@ def panel(ax, gen_data, ylabel, set_ylim01=False):
 
     setup_axes(
         ax,
-        xlabel="Dihedral MAE (xclean PDB, best layer, °)",
+        xlabel="Dihedral MAE (xclean PDB, best layer, $^\\circ$)",
         ylabel=ylabel,
     )
     ax.invert_xaxis()  # so "better rep" reads left-to-right
@@ -181,13 +183,13 @@ def panel(ax, gen_data, ylabel, set_ylim01=False):
 fig, axes = plt.subplots(1, 2, figsize=(13, 5.4))
 
 # Left = FID-PDB (lower is better; y NOT inverted)
-panel(axes[0], gen_trajec("_res_PDB_FID"), ylabel="FID-PDB ↓")
+panel(axes[0], gen_trajec("_res_PDB_FID"), ylabel="FID-PDB $\\downarrow$")
 
 # Right = designability rate (higher is better)
 panel(
     axes[1],
     gen_trajec("_res_designability_rate"),
-    ylabel="Designability rate ↑",
+    ylabel="Designability rate $\\uparrow$",
     set_ylim01=True,
 )
 

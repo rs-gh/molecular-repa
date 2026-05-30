@@ -26,7 +26,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.dirname(__file__))
-from style import COLORS, MARKERS, setup_axes, legend
+from style import COLORS, MARKERS, setup_axes, legend, use_report_style
+
+use_report_style()
 
 ROOT = "/home/sr2173/git/molecular-repa"
 SRC = f"{ROOT}/evaluation/proteina/generation/results/variance/wholeset_vs_designable_diversity.json"
@@ -135,7 +137,7 @@ plot_panel(
     axes[0],
     "PDB",
     ["baseline", "L9_GN", "L9_MPNN", "L4_rand"],
-    title="PDB — REPA concentrates designable, not whole-set",
+    title="PDB: REPA concentrates designable, not whole-set",
 )
 
 # AFDB — baseline + L4-GN (clean concentration) + L9-MPNN (the falsifier, stays on diagonal)
@@ -143,7 +145,7 @@ plot_panel(
     axes[1],
     "AFDB",
     ["baseline", "L4_GN", "L9_MPNN"],
-    title="AFDB — MPNN-L9 stays on diagonal (no concentration)",
+    title="AFDB: MPNN-L9 stays on diagonal (no concentration)",
 )
 
 plt.tight_layout()

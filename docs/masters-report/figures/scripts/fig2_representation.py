@@ -20,7 +20,16 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.dirname(__file__))
-from style import classify_family, setup_axes, plot_trajectory, legend, log_step_axis
+from style import (
+    classify_family,
+    setup_axes,
+    plot_trajectory,
+    legend,
+    log_step_axis,
+    use_report_style,
+)
+
+use_report_style()
 
 ROOT = "/home/sr2173/git/molecular-repa"
 XCLEAN = f"{ROOT}/evaluation/proteina/representation/results/paper/n256_xclean_afdb_pdb/pretrained_sweep_results.csv"
@@ -90,21 +99,26 @@ cath_data = best_layer(
 # Build figure — 3 panels in a row
 fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.2))
 plot_traj_panel(
-    axes[0], if_data, FAMS, "IF top-1 (xclean PDB) ↑", "top-1 acc", higher_better=True
+    axes[0],
+    if_data,
+    FAMS,
+    "IF top-1 (xclean PDB) $\\uparrow$",
+    "top-1 acc",
+    higher_better=True,
 )
 plot_traj_panel(
     axes[1],
     dih_data,
     FAMS,
-    "Dihedral MAE (xclean PDB) ↓",
-    "MAE (°)",
+    "Dihedral MAE (xclean PDB) $\\downarrow$",
+    "MAE ($^\\circ$)",
     higher_better=False,
 )
 plot_traj_panel(
     axes[2],
     cath_data,
     FAMS,
-    "CATH-A (cleantrain PDB) ↑",
+    "CATH-A (cleantrain PDB) $\\uparrow$",
     "CATH-A top-1",
     higher_better=True,
 )
