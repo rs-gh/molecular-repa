@@ -22,8 +22,16 @@ pdf: report-draft.pdf
 report-submission.tex: report.tex
 	sed -e 's/^%\(\\submissiontrue\)/\1/' $< >$@
 
+# included assets: any change to a table/figure .tex source, or to a figure
+# image asset, must force a rebuild of the draft. Without these prerequisites
+# make sees report-draft.tex unchanged and treats the PDF as up to date.
+DRAFT_DEPS := $(wildcard tables/*.tex) \
+              $(wildcard figures/*.tex) \
+              $(wildcard figures/*.png) $(wildcard figures/*.pdf) \
+              $(wildcard figures/*.jpg) $(wildcard figures/*.jpeg)
+
 report.pdf: logo-dcst-colour.pdf
-report-draft.pdf: logo-dcst-colour.pdf
+report-draft.pdf: logo-dcst-colour.pdf $(DRAFT_DEPS)
 
 # extract number of first and last page of the main chapters from the AUX file
 WORDCOUNT_FILE=report-draft
