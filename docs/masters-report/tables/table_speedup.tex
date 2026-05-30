@@ -25,6 +25,6 @@ PDB & Des & L4-random & 0.67 @1.6M & never & ---        & 0.39 \\
 AFDB & Des & (all)    & \multicolumn{4}{l}{baseline saturates at 0.75 by 400K --- acceleration not meaningful (proxy bias, \S\ref{sec:proteina-convergence})} \\
 \bottomrule
 \end{tabular}}
-\caption{\textbf{REPA's acceleration is durable on AFDB FID ($6.5$--$13\times$) and clean on PDB designability ($1.8$--$2.3\times$), but only transient on PDB FID.} On AFDB, REPA-GearNet keeps improving past the baseline's FID floor; on PDB the FID lead is handed back as the long baseline catches up, yet REPA's designability advantage persists --- the random control never reaches the baseline's best. (``Baseline best'' = baseline's cumulative-best value; ``REPA reaches @'' = first step REPA matches it; speedup = their ratio. $n{=}256$.)}
+\caption{\textbf{REPA's acceleration is durable on AFDB FID ($6.5$--$13\times$) and clean on PDB designability ($1.8$--$2.3\times$), but only transient on PDB FID.} On AFDB, REPA-GearNet keeps improving past the baseline's FID floor; on PDB the FID lead is handed back as the long baseline catches up, yet REPA's designability advantage persists --- the random control never reaches the baseline's best. (``Baseline best'' = baseline's cumulative-best value; ``REPA reaches @'' = first step REPA matches it; speedup = their ratio. $n{\le}256$.)}
 \label{tab:proteina-speedup}
 \end{table}

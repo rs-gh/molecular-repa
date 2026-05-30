@@ -7,15 +7,13 @@
 \textbf{Hyperparameter} & \textbf{Default (unless stated)} & \textbf{Varied / swept in} \\
 \midrule
 Alignment weight $\lambda$ & 0.5 (after Yu et al.~\cite{REPA}) & Appendix~\ref{ch:appendix} \\
-Token averaging            & per residue                       & \S\ref{sec:repa} (design knob) \\
-Residue length $n$         & 256 (headline regime)             & 128 (\S\ref{sec:proteina-scale}) \\
-Batch size                 & 24 ($n{=}256$)                    & Appendix~\ref{ch:appendix} \\
+Learning rate              & $10^{-3}$                         & swept (writeup pending) \\
+Token averaging            & per residue                       & planned (not yet swept) \\
+Batch size                 & 24 ($n{\le}256$)                    & Appendix~\ref{ch:appendix} \\
 Weight decay               & none                              & --- \\
 Sampler                    & SDE, noise scale $\gamma = 0.45$  & \S\ref{sec:proteina-sampler} \\
 \bottomrule
 \end{tabular}
-\caption{Our ``unless stated otherwise'' defaults. The final column gives where each is
-swept. Remaining optimisation settings (learning rate, step counts) are in
-Appendix~\ref{ch:appendix}.}
+\caption{Our ``unless stated otherwise'' hyperparameter defaults.}
 \label{tab:setup-hparams}
 \end{table}

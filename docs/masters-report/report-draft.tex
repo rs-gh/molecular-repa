@@ -1301,33 +1301,31 @@ We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant
 
 \subsection{Datasets}
 
-We train in two regimes that span the field's experimental--synthetic spectrum: the experimentally-determined Protein Data Bank~\cite{PDB} and the AlphaFold-predicted AlphaFold Database~\cite{AFDB} (Swiss-Prot subset; Table~\ref{tab:setup-datasets}). We use the manually-curated Swiss-Prot subset of AFDB as a reproducible stand-in for the Foldseek-clustered TrEMBL subset on which Proteina was trained~\cite{Proteina}. (The original corpus contained data that has since been pruned from AFDB, and is hence inaccessible.)
+We train in two regimes that span the field's experimental--synthetic spectrum: the experimentally-determined Protein Data Bank~\cite{PDB} and the AlphaFold-predicted AlphaFold Database~\cite{AFDB} (Swiss-Prot subset). (We use the manually-curated Swiss-Prot subset of AFDB as a reproducible stand-in for the Foldseek-clustered TrEMBL subset on which Proteina was trained~\cite{Proteina}. The original corpus contained data that has since been pruned from AFDB, and is hence inaccessible.)
+
+Following the original presentation, we train on the subset of chains with at most 256 residues; we represent this length-regime by $n{\le}256$. (We note that represents only a property of the training datasets, not a bound on the length of the proteins that models trained on these datasets can generate.) Following this filter, the two training sets are comparable in size (PDB: 273{,}771 / 3{,}190 / 323 train/val/test chains; AFDB: 229{,}670 / 4{,}521 / 235). Appendix~\ref{ch:appendix} (Table~\ref{tab:setup-datasets}) contains further details on dataset composition.
 
 \textbf{Different datasets in this domain carry different biases.} Trends in designability offer a clear example, as training on AFDB raises the in-silico-designability floor well above PDB at every setting we tested (\S\ref{sec:proteina-convergence}). The likely cause is circular. The canonical designability test inverse-folds a generated backbone with ProteinMPNN~\cite{ProteinMPNN} and re-folds it with ESMFold~\cite{ESM2} (Chapter~\ref{ch:evaluation}). Both of these models share their lineage with the AlphaFold2~\cite{AlphaFold2} network that produced AFDB in the first place, so AlphaFold-like backbones are plausibly the ones it re-folds most confidently. We do not test this mechanism, but flag the observation so metrics are read with care.
 
-\input{tables/table_setup_datasets}
-
 \subsection{Models}
 
-The base Proteina model comprises a stack of ten transformer layers (zero-indexed) that feeds a flow matching objective. Our experiments add a REPA regularisation loss to this design. We primarily vary the two design axes that Chapter~\ref{ch:profiling} flagged as the most consequential for REPA: the encoder target and the injection depth (Table~\ref{tab:setup-model}). This chapter concentrates on the two encoders profiling identified as most viable: \emph{GearNet}~\cite{GearNet}, a structure encoder pretrained for CATH fold classification (checkpoint released with Proteina~\cite{Proteina}) whose embeddings capture fold-level contact topology; and \emph{ProteinMPNN}~\cite{ProteinMPNN}, which encodes each residue's local inverse-folding environment. Each extenal encoder is attached at two representative trunk depths, layer~4 (middle layer) and layer~9 (last layer). The remaining encoder and depth combinations are collected in Appendix~\ref{ch:appendix}. Figures presented in this chapter will typically follow the best performing model to serve as an illustrative example.
+The base Proteina model comprises a stack of ten transformer layers (zero-indexed) that feeds a flow matching objective. Our experiments add a REPA loss to this design.
+
+\textbf{Encoder and injection-depth ablations.} Our narrative concentrates on the two encoders identified as most viable in Chapter~\ref{ch:profiling}: \emph{GearNet}~\cite{GearNet}, a structure encoder pretrained for CATH fold classification (checkpoint released with Proteina~\cite{Proteina}) whose embeddings capture fold-level contact topology; and \emph{ProteinMPNN}~\cite{ProteinMPNN}, which encodes each residue's local inverse-folding environment. Each extenal encoder is attached at two representative trunk depths, layer~4 (middle layer) and layer~9 (last layer). The remaining encoder and depth combinations are collected in Appendix~\ref{ch:appendix}. Figures presented in this chapter will typically follow the best performing model to serve as an illustrative example.
 
 \textbf{Separating regularisation from mechanism.} A random-weights GearNet, identical in architecture but never trained, is our falsifier control. We use this mode to separate whatever REPA achieves merely by adding an auxiliary loss from what it achieves through the encoder's \emph{learned} structural knowledge.
 
 \input{tables/table_setup_model}
 
-\subsection{Hyperparameters}
-
-Our settings largely follow the original image-domain REPA recipe~\cite{REPA}, but we sweep some design choices --- aligmnent weight, averaging mode, residue length, and sampler noise --- as noted in Table~\ref{tab:setup-hparams}.
+\textbf{Hyperparameters.} Our default settings largely follow the original image-domain REPA recipe~\cite{REPA}, as outlined in Table~\ref{tab:setup-hparams}.
 
 \input{tables/table_setup_hparams}
 
 \subsection{Metrics}
 
-We measure three things (Table~\ref{tab:setup-metrics}). \emph{Representation quality} is the linear-probe recoverability of structural labels from the trunk (the probe principle of \S\ref{ch:evaluation}): a per-residue battery (inverse folding and backbone dihedrals) and a per-chain CATH fold probe, for which we report \emph{architecture} (CATH-A) as the headline level --- Class is too coarse to discriminate and Topology too finely-bucketed to probe reliably (Table~\ref{tab:setup-cath}). \emph{Representation alignment} is CKNNA~\cite{PlatonicRep}, the mutual-nearest-neighbour kernel-alignment between the trunk and an encoder. \emph{Generation quality} is the Chapter~\ref{ch:evaluation} supercolumn suite --- quality, tertiary-whole (T-W), tertiary-designable (T-D), secondary-whole (S-W) and secondary-designable (S-D) --- which we use to anatomise the effect in \S\ref{sec:proteina-anatomy}.
+We measure three things (Table~\ref{tab:setup-metrics}). \emph{Representation quality} is the linear-probe recoverability of structural labels from the trunk (the probe principle of \S\ref{ch:evaluation}): a per-residue battery (inverse folding and backbone dihedrals) and a per-chain CATH fold probe, for which we report \emph{architecture} (CATH-A) as the headline level --- Class is too coarse to discriminate and Topology too finely-bucketed to probe reliably (we justify this choice in Appendix~\ref{ch:appendix}, Table~\ref{tab:setup-cath}). \emph{Representation alignment} is CKNNA~\cite{PlatonicRep}, the mutual-nearest-neighbour kernel-alignment between the trunk and an encoder. \emph{Generation quality} is reported in five groups (defined in Chapter~\ref{ch:evaluation}) --- quality, tertiary-whole (T-W), tertiary-designable (T-D), secondary-whole (S-W) and secondary-designable (S-D) --- which we use to anatomise the effect in \S\ref{sec:proteina-anatomy}.
 
 \input{tables/table_setup_metrics}
-
-\input{tables/table_setup_cath}
 
 Together these axes --- dataset, encoder, and injection depth --- let us treat REPA not as a single knob but as a \emph{family} of interventions. Across the results that follow we trace how each choice routes the alignment's effect to a different facet of generation quality, a thread we draw together in Chapter~\ref{ch:conclusions}.
 
@@ -1409,12 +1407,12 @@ Together these axes --- dataset, encoder, and injection depth --- let us treat R
 \section{What we do not claim}
 \label{sec:proteina-scope}
 
-\textbf{Several tempting claims do not survive our own data, and we flag them.} REPA does not reliably improve novelty --- the signal is too noisy to call. It does not ``preserve $\beta$'' in general; the direction is encoder$\times$dataset conditional, and MPNN-AFDB reverses it. It does not strictly \emph{require} a learned encoder at every scale --- at $n{=}128$ a random encoder helps nearly as much (\S\ref{sec:proteina-scale}). Its designability gains are read through a proxy (ProteinMPNN$\to$ESMFold) that shares lineage with AFDB's AlphaFold2, so we never compare designability across datasets without that caveat. We claim co-movement, not formal mediation, between representation and generation. And we retract an earlier ``distribution collapse at $\gamma{=}1$'' reading: with the full encoder grid it was a single-cell artefact.
+\textbf{Several tempting claims do not survive our own data, and we flag them.} REPA does not reliably improve novelty --- the signal is too noisy to call. It does not ``preserve $\beta$'' in general; the direction is encoder$\times$dataset conditional, and MPNN-AFDB reverses it. It does not strictly \emph{require} a learned encoder at every scale --- at $n{\le}128$ a random encoder helps nearly as much (\S\ref{sec:proteina-scale}). Its designability gains are read through a proxy (ProteinMPNN$\to$ESMFold) that shares lineage with AFDB's AlphaFold2, so we never compare designability across datasets without that caveat. We claim co-movement, not formal mediation, between representation and generation. And we retract an earlier ``distribution collapse at $\gamma{=}1$'' reading: with the full encoder grid it was a single-cell artefact.
 
 \section{Robustness across scale}
 \label{sec:proteina-scale}
 
-\textbf{At smaller scale the learned-versus-random gap narrows, so we anchor headline claims at $n{=}256$.} At $n{=}128$ the random control helps nearly as much on representation and whole-set metrics. The direction of every gain is consistent across scale, but the margin of learned over random shrinks, so we read $n{=}128$ as a scale-robustness check rather than a headline regime. Training-dynamics ablations ($\lambda$, batch size, projector depth) are reported in Appendix~\ref{ch:appendix}; length extrapolation --- generating proteins longer than the training crop --- is the natural next test and remains future work.
+\textbf{At smaller scale the learned-versus-random gap narrows, so we anchor headline claims at $n{\le}256$.} At $n{\le}128$ the random control helps nearly as much on representation and whole-set metrics. The direction of every gain is consistent across scale, but the margin of learned over random shrinks, so we read $n{\le}128$ as a scale-robustness check rather than a headline regime. Training-dynamics ablations ($\lambda$, batch size, projector depth) are reported in Appendix~\ref{ch:appendix}; length extrapolation --- generating proteins longer than the training crop --- is the natural next test and remains future work.
 
 \section{Summary}
 \label{sec:proteina-summary}
@@ -1828,6 +1826,20 @@ Minyoung Huh, Brian Cheung, Tongzhou Wang, Phillip Isola.
 
 % The placeholder Lorem-ipsum text has been removed; remove this entire
 % appendix block if the report doesn't end up needing appendices.
+
+\section{Dataset composition and split overlap}
+\label{app:datasets}
+
+Table~\ref{tab:setup-datasets} summarises the two datasets used in Chapter~\ref{ch:proteina-study}. Both training sets are $\alpha/\beta$-dominated and span a substantial fraction of CATH architectures (44.2\% PDB, 61.8\% AFDB), which is what makes the per-chain CATH fold probe meaningful. Neither random split is sequence-clustered: 98.3\% of PDB and 92.2\% of AFDB validation chains have a $\ge$30\%-identity homolog in their own training set, so absolute in-house scores are inflated and we read rank-order and $\Delta$-from-baseline instead. The cross-database overlap is far lower --- only 62.1\% of AFDB validation chains have a $\ge$30\%-identity hit in PDB training --- so a homology-filtered AFDB set serves as a cleaner probe set for PDB-trained models (Chapter~\ref{ch:evaluation}).
+
+\input{tables/table_setup_datasets}
+
+\section{Choice of CATH fold-probe level}
+\label{app:cath}
+
+We report CATH \emph{architecture} (CATH-A) as the headline fold-probe level throughout Chapter~\ref{ch:proteina-study}. Table~\ref{tab:setup-cath} justifies that choice: Class is too coarse (four buckets, one already near-saturated), Topology too finely-bucketed to probe reliably, and Architecture sits between --- discriminative but learnable.
+
+\input{tables/table_setup_cath}
 
 \section{Placeholder section}
 

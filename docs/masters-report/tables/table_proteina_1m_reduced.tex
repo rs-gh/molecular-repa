@@ -18,15 +18,15 @@ Variant
 & ssJSD2D\,$\downarrow$
 & ssJSD2D\,$\downarrow$ & E\%des\,$\uparrow$ \\
 \midrule
-\multicolumn{11}{l}{\textit{PDB-trained, $n{=}256$, 1.0M; FID is FID-PDB.}}\\
+\multicolumn{11}{l}{\textit{PDB-trained, $n{\le}256$, 1.0M; FID is FID-PDB.}}\\
 Baseline     & 0.54 & 467 & 0.95 & 5.67 & 0.17 & 114 & 0.16 & 0.32 & 0.39 & 0.15 \\
 REPA L9-MPNN & \gd{+0.01} & \gd{$-$81} & \gd{$-$0.05} & \gd{+0.29} & \rd{+0.07} & \rd{$-$51} & \rd{+0.15} & \gd{$-$0.15} & \gd{$-$0.08} & \gd{+0.04} \\
 \midrule
-\multicolumn{11}{l}{\textit{AFDB-trained, $n{=}256$, 1.0M; FID is FID-AFDB.}}\\
+\multicolumn{11}{l}{\textit{AFDB-trained, $n{\le}256$, 1.0M; FID is FID-AFDB.}}\\
 Baseline   & 0.72 & 534 & 2.23 & 4.35 & 0.20 & 133 & 0.21 & 0.16 & 0.18 & 0.14 \\
 REPA L4-GN & \gd{+0.01} & \gd{$-$228} & \gd{$-$1.43} & \gd{+3.68} & \gd{$-$0.00} & \rd{$-$39} & \rd{+0.03} & \gd{$-$0.12} & \gd{$-$0.09} & \gd{+0.01} \\
 \bottomrule
 \end{tabular}}
-\caption{\textbf{The whole-set gains persist at 1.0M while designable diversity turns negative --- the trade-off is temporal, not immediate.} Past the crossover the best variant per dataset keeps its FID, fS-A and fJSD-A gains but loses designable diversity (\#Clust $-51$ PDB, $-39$ AFDB); contrast the 700K snapshot (Table~\ref{tab:proteina-700k}). ($n{=}256$, step 1.0M; baseline absolute, REPA rows $\Delta$; \colorbox{green!20}{green}/\colorbox{red!15}{red} = improvement/regression.)}
+\caption{\textbf{The whole-set gains persist at 1.0M while designable diversity turns negative --- the trade-off is temporal, not immediate.} Past the crossover the best variant per dataset keeps its FID, fS-A and fJSD-A gains but loses designable diversity (\#Clust $-51$ PDB, $-39$ AFDB); contrast the 700K snapshot (Table~\ref{tab:proteina-700k}). ($n{\le}256$, step 1.0M; baseline absolute, REPA rows $\Delta$; \colorbox{green!20}{green}/\colorbox{red!15}{red} = improvement/regression.)}
 \label{tab:proteina-1m-reduced}
 \end{table}

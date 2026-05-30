@@ -14,7 +14,8 @@ CATH-A\,$\uparrow$         & fold-architecture accuracy --- headline fold metric
 \multicolumn{3}{l}{\textit{Representation alignment}} \\
 CKNNA\,$\uparrow$~\cite{PlatonicRep} & mutual-nearest-neighbour kernel alignment between trunk and encoder & per residue \\
 \midrule
-\multicolumn{3}{l}{\textit{Generation quality --- the supercolumn suite (Chapter~\ref{ch:evaluation})}} \\
+\multicolumn{3}{l}{\textit{Generation quality --- reported in five groups (Chapter~\ref{ch:evaluation})}} \\
+\multicolumn{3}{@{}p{0.9\textwidth}@{}}{\hspace{1em}\footnotesize Protocol: whole-set metrics (FID, fJSD, fS) over all 1{,}125 sampled backbones (125 per length, $\ell{\in}\{50,75,\dots,250\}$); designable-subset metrics over the 250-backbone subset (50 per length, $\ell{\in}\{50,100,150,200,250\}$).} \\
 Quality                     & per-sample designability (Des\,$\uparrow$) and FID\,$\downarrow$ to the reference set & per set \\
 T-W (tertiary, whole)       & whole-set fold-distribution match and coverage (fJSD-A\,$\downarrow$, fS-A\,$\uparrow$, pwTM\,$\downarrow$) & per set \\
 T-D (tertiary, designable)  & fold diversity within the designable subset (\#Clust\,$\uparrow$, pwTM\,$\downarrow$) & per set \\
@@ -27,8 +28,8 @@ labels from the trunk --- a per-residue battery (inverse-folding sequence recove
 backbone dihedral error) and a per-chain fold probe on CATH, for which we report
 \emph{architecture} (CATH-A) as the headline level (Table~\ref{tab:setup-cath}).
 Representation alignment is CKNNA~\cite{PlatonicRep}, the mutual-nearest-neighbour
-kernel-alignment between a trunk layer and an encoder. Generation quality is the
-Chapter~\ref{ch:evaluation} supercolumn suite, which decomposes into per-sample
+kernel-alignment between a trunk layer and an encoder. Generation quality is reported
+in five groups (defined in Chapter~\ref{ch:evaluation}): per-sample
 \emph{quality}, whole-set vs.\ designable-subset \emph{tertiary} structure (T-W, T-D),
 and whole-set vs.\ designable-subset \emph{secondary} structure (S-W, S-D); arrows give
 the good direction for each member metric, and the full per-metric breakdown appears in

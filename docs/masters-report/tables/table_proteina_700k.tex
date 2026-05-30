@@ -19,7 +19,7 @@ Variant
 & ssJSD2D\,$\downarrow$
 & ssJSD2D\,$\downarrow$ & E\%des\,$\uparrow$ \\
 \midrule
-\multicolumn{11}{l}{\textit{PDB-trained, $n{=}256$, 700K, 3 seeds; FID is FID-PDB (in-distribution).}}\\
+\multicolumn{11}{l}{\textit{PDB-trained, $n{\le}256$, 700K, 3 seeds; FID is FID-PDB (in-distribution).}}\\
 Baseline       & 0.46 & 437   & 1.11 & 5.48 & 0.22 & 77   & 0.27 & 0.35 & 0.40 & 0.22 \\
 REPA L4-random & \rd{$-$0.08} & \rd{+34}  & \gd{$-$0.55} & \gd{+0.05} & \gd{$-$0.05} & \rd{$-$23} & \gd{$-$0.10} & \gd{$-$0.13} & \gd{$-$0.01} & \rd{$-$0.11} \\
 REPA L4-GN     & \gd{+0.24} & \rd{+71}  & \gd{$-$0.38} & \gd{+1.63} & \rd{+0.13} & \gd{+1}  & \rd{+0.11} & \gd{$-$0.21} & \gd{$-$0.12} & +0.00 \\
@@ -27,7 +27,7 @@ REPA L9-GN     & \gd{+0.14} & \gd{$-$118} & \gd{$-$0.57} & \gd{+2.31} & \gd{$-$0
 REPA L4-MPNN   & \gd{+0.18} & \gd{$-$88}  & \gd{$-$0.13} & \gd{+0.48} & \rd{+0.05} & \rd{$-$4}  & \rd{+0.08} & \gd{$-$0.16} & \gd{$-$0.14} & \gd{+0.01} \\
 REPA L9-MPNN   & \gd{+0.05} & \gd{$-$19}  & \gd{$-$0.32} & \gd{+0.37} & \gd{$-$0.01} & \gd{+33} & \gd{$-$0.01} & \gd{$-$0.14} & \gd{$-$0.11} & \rd{$-$0.07} \\
 \midrule
-\multicolumn{11}{l}{\textit{AFDB-trained, $n{=}256$, 700K, 3 seeds (MPNN-L4: 1 seed); FID is FID-AFDB.}}\\
+\multicolumn{11}{l}{\textit{AFDB-trained, $n{\le}256$, 700K, 3 seeds (MPNN-L4: 1 seed); FID is FID-AFDB.}}\\
 Baseline       & 0.72 & 494 & 2.45 & 4.59 & 0.20 & 128  & 0.22 & 0.15 & 0.16 & 0.15 \\
 REPA L4-GN     & \gd{+0.05} & \gd{$-$195} & \gd{$-$1.56} & \gd{+2.27} & +0.00 & \rd{$-$35} & \gd{$-$0.04} & \gd{$-$0.11} & \gd{$-$0.07} & \rd{$-$0.02} \\
 REPA L9-GN     & \gd{+0.01} & \gd{$-$172} & \gd{$-$1.29} & \gd{+2.76} & \rd{+0.01} & \rd{$-$50} & \rd{+0.11} & \gd{$-$0.12} & \gd{$-$0.06} & \gd{+0.04} \\
@@ -35,6 +35,6 @@ REPA L4-MPNN   & \rd{$-$0.03} & \gd{$-$22} & \gd{$-$0.39} & \gd{+0.03} & ---   &
 REPA L9-MPNN   & \gd{+0.05} & \gd{$-$139} & \gd{$-$0.93} & \gd{+0.31} & \gd{$-$0.03} & \gd{+21} & \gd{$-$0.03} & \rd{+0.01} & \rd{+0.02} & \rd{$-$0.04} \\
 \bottomrule
 \end{tabular}}
-\caption{\textbf{At one fixed early step, REPA's effect is already encoder-routed --- GearNet to whole-set distribution, MPNN to per-sample quality.} GearNet wins the tertiary-whole metrics (FID, fJSD-A, fS-A) on both datasets; MPNN wins quality (Des). The random control wins whole-set distribution-match but hurts quality and designable diversity --- a regulariser without the quality benefit. ($n{=}256$, step 700K; baseline absolute, REPA rows $\Delta$; \colorbox{green!20}{green} = improvement, \colorbox{red!15}{red} = regression; header arrows give the good direction.)}
+\caption{\textbf{At one fixed early step, REPA's effect is already encoder-routed --- GearNet to whole-set distribution, MPNN to per-sample quality.} GearNet wins the tertiary-whole metrics (FID, fJSD-A, fS-A) on both datasets; MPNN wins quality (Des). The random control wins whole-set distribution-match but hurts quality and designable diversity --- a regulariser without the quality benefit. ($n{\le}256$, step 700K; baseline absolute, REPA rows $\Delta$; \colorbox{green!20}{green} = improvement, \colorbox{red!15}{red} = regression; header arrows give the good direction.)}
 \label{tab:proteina-700k}
 \end{table}

@@ -183,7 +183,7 @@ def panel(ax, gen_data, ylabel, set_ylim01=False):
 fig, axes = plt.subplots(1, 2, figsize=(13, 5.4))
 
 # Left = FID-PDB (lower is better; y NOT inverted)
-panel(axes[0], gen_trajec("_res_PDB_FID"), ylabel="FID-PDB $\\downarrow$")
+panel(axes[0], gen_trajec("_res_PDB_FID"), ylabel="FID-PDB (1.1K refs) $\\downarrow$")
 
 # Right = designability rate (higher is better)
 panel(

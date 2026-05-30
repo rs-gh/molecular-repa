@@ -8,13 +8,14 @@
 \textbf{Property} & \textbf{PDB} & \textbf{AFDB (Swiss-Prot)} \\
 \midrule
 Origin                     & Experimental (X-ray, cryo-EM) & Predicted (AlphaFold2, v6) \\
+Residue-length crop $n$    & \multicolumn{2}{c}{$\le 256$ residues} \\
 Train / val / test chains  & 273{,}771 / 3{,}190 / 323 & 229{,}670 / 4{,}521 / 235 \\
 CATH coverage (train)      & 44.2\% & 61.8\% \\
 Val$\leftrightarrow$train, $\ge$30\% id. & 98.3\% & 92.2\% \\
 AFDB-val$\leftrightarrow$PDB-train, $\ge$30\% id. & \multicolumn{2}{c}{62.1\%} \\
 \bottomrule
 \end{tabular}
-\caption{Properties of the two datasets we study, at the headline $n{=}256$ regime.
+\caption{Properties of the two datasets we study, at the headline $n{\le}256$ regime.
 Sequence identity is computed with MMseqs2~\cite{MMseqs2} (\texttt{easy-search}, $\ge$30\% identity over
 $\ge$80\% alignment coverage).}
 \label{tab:setup-datasets}

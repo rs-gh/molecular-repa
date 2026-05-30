@@ -10,7 +10,7 @@ Layout (rows = dataset, columns = metric):
 Variant selection matches the two source figures so all four panels read
 together:
     PDB:  baseline + REPA L9-MPNN + L4-random
-    AFDB: baseline + REPA L4-GearNet
+    AFDB: baseline + REPA L4-GearNet + L4-random
 """
 
 import json
@@ -50,7 +50,7 @@ PDB_FAMS = [
     "repa_mpnn_l9_256_per_residue",
     "repa_l4_256_per_residue_random_bs24_2gpu",
 ]
-AFDB_FAMS = ["baseline_afdb_256", "repa_l4_afdb_256"]
+AFDB_FAMS = ["baseline_afdb_256", "repa_l4_afdb_256", "repa_l4_afdb_256_random"]
 
 
 def load(p):
@@ -128,7 +128,7 @@ fid_panel(
     trajec(pdb, "_res_PDB_FID"),
     PDB_FAMS,
     title="(a) PDB-trained: FID $\\downarrow$",
-    ylabel="FID-PDB (log scale)",
+    ylabel="FID-PDB (1.1K refs, log scale)",
 )
 des_panel(
     axes[0, 1],
@@ -144,7 +144,7 @@ fid_panel(
     trajec(afdb, "_res_AFDB_FID"),
     AFDB_FAMS,
     title="(c) AFDB-trained: FID $\\downarrow$",
-    ylabel="FID-AFDB (log scale)",
+    ylabel="FID-AFDB (4.5K refs, log scale)",
 )
 des_panel(
     axes[1, 1],
