@@ -1288,9 +1288,9 @@ We take both questions up empirically in Chapters~\ref{ch:profiling}--\ref{ch:pr
 %          training lands. Not crux of the chapter.
 %  - 6.8 (OPT) Brief summary bridging to Ch~\ref{ch:conclusions}.
 
-In this chapter, we expand the scope of our study of representation alignment from small molecules to much larger ones: proteins. Previously (Chapter~\ref{ch:tabasco-study}), our efforts using REPA to generate small molecules yielded little demonstrable improvement. This was largely because the baseline architecture we studied, Tabasco~\cite{Tabasco}, already saturated most measures of generation quality. However, de novo backbone design represents a more challenging task, as the data distribution of proteins is significantly larger. In this context, we ask: \emph{can REPA accelerate or improve the training of Proteina~\cite{Proteina}, a flow-matching transformer-based protein backbone generator?}
+In this chapter, we expand the scope of our study on representation alignment from small molecules to much larger ones: proteins. Previously (Chapter~\ref{ch:tabasco-study}), our efforts using REPA to generate small molecules yielded little demonstrable improvement. This was largely because the baseline architecture we studied, Tabasco~\cite{Tabasco}, already saturated most measures of generation quality. However, de novo backbone design represents a more challenging task, as the data distribution of proteins is significantly larger, and the geometry of these structures is correspondingly more complex. In this context, we ask: \emph{can REPA accelerate or improve the training of Proteina~\cite{Proteina}, a flow-matching transformer-based protein backbone generator?}
 
-Our headline finding is that \emph{REPA accelerates convergence on two key measures for generation quality}, FID scores and designability (defined in Chapter~\ref{ch:evaluation}), in both synthetic and experimental training-data regimes (Figure~\ref{fig:proteina-fid}). This chapter characterises \emph{what} happens, and attempts to understand \emph{why}. Along the way, we also pick up the thread introduced in Chapter~\ref{ch:evaluation} on how the molecular domain differs considerably from the image domain that REPA was originally designed for, and the implications this has for model designers. A theme that emerges from this discussion is that REPA for molecules is more a \emph{family} of interventions than a single mechanism. Different alignment targets address different gaps in the core architecture, and route the generation gain to different aspects of quality.
+Our headline finding is that \emph{REPA accelerates convergence on two key measures for generation quality}, FID scores and designability (defined in Chapter~\ref{ch:evaluation}), in both synthetic and experimental training-data regimes (Figure~\ref{fig:proteina-fid}). This chapter characterises \emph{what} happens, and attempts to understand \emph{why}. Along the way, we pick up the thread introduced in Chapter~\ref{ch:evaluation} on how the molecular domain differs considerably from the image domain that REPA was originally designed for. A theme that emerges from this discussion is that REPA for molecules is more a \emph{family} of interventions than a single mechanism. Every alignment target addresses a different gap in the core architecture, and routes generation gain to a different aspect of quality.
 
 \input{figures/fig01_fid_des_convergence}
 
@@ -1298,7 +1298,7 @@ Our headline finding is that \emph{REPA accelerates convergence on two key measu
 \section{Experimental setup}
 \label{sec:proteina-setup}
 
-We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant flow-matching generator of C$\alpha$ protein backbones, attaching a trainable projector at a chosen trunk layer that aligns the model's hidden states to a frozen structural encoder, exactly as in the construction of \S\ref{sec:repa}. We hold the alignment weight at $\lambda = 0.5$, following the value Yu et al.~\cite{REPA} found effective for image diffusion, and use cosine similarity averaged per residue. Unless stated otherwise we report results at residue length $n = 256$ (the headline regime; $n = 128$ is a scale-robustness check in \S\ref{sec:proteina-scale}), evaluated with the Chapter~\ref{ch:evaluation} supercolumn suite at the default SDE sampler noise level $\gamma = 0.45$.
+We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant flow-matching generator of C$\alpha$ protein backbones, attaching a trainable projector at a chosen trunk layer that aligns the model's hidden states to a frozen structural encoder, exactly as in the construction of \S\ref{sec:repa}. The data regimes, the model and REPA configuration, the held-fixed hyperparameters, and the metrics are specified in the tables of this section; we summarise each below.
 
 \subsection{Datasets}
 
@@ -1312,9 +1312,17 @@ Our experiments vary the two design axes that Chapter~\ref{ch:profiling} flagged
 
 \input{tables/table_setup_model}
 
+\subsection{Hyperparameters}
+
+Unless stated otherwise, we hold the alignment and evaluation settings fixed at the defaults in Table~\ref{tab:setup-hparams}: alignment weight $\lambda = 0.5$ with cosine similarity averaged per residue, residue length $n = 256$ as the headline regime ($n = 128$ as a scale-robustness check, \S\ref{sec:proteina-scale}), both data regimes reported, and the Chapter~\ref{ch:evaluation} supercolumn suite evaluated at the default SDE sampler noise level $\gamma = 0.45$.
+
+\input{tables/table_setup_hparams}
+
 \subsection{Metrics}
 
-We measure three things. \emph{Representation quality} is the linear-probe recoverability of structural labels from the trunk (the probe principle of \S\ref{ch:evaluation}): a per-residue battery --- inverse-folding sequence recovery (semantic content) and backbone dihedral-angle error (low-level geometry) --- and a per-chain battery built on the CATH fold hierarchy. Of the three CATH levels we take \emph{architecture} (CATH-A) as the headline fold metric, for the reasons in Table~\ref{tab:setup-cath}: Class is too coarse to discriminate and Topology too finely-bucketed to probe reliably, while Architecture is both meaningful and learnable. \emph{Representation alignment} is CKNNA~\cite{PlatonicRep}, the mutual-nearest-neighbour kernel-alignment between the trunk and an encoder. \emph{Generation quality} is the Chapter~\ref{ch:evaluation} supercolumn suite --- quality, tertiary-whole (T-W), tertiary-designable (T-D), secondary-whole (S-W) and secondary-designable (S-D) --- which we use to anatomise the effect in \S\ref{sec:proteina-anatomy}.
+We measure three things (Table~\ref{tab:setup-metrics}). \emph{Representation quality} is the linear-probe recoverability of structural labels from the trunk (the probe principle of \S\ref{ch:evaluation}): a per-residue battery (inverse folding and backbone dihedrals) and a per-chain CATH fold probe, for which we report \emph{architecture} (CATH-A) as the headline level --- Class is too coarse to discriminate and Topology too finely-bucketed to probe reliably (Table~\ref{tab:setup-cath}). \emph{Representation alignment} is CKNNA~\cite{PlatonicRep}, the mutual-nearest-neighbour kernel-alignment between the trunk and an encoder. \emph{Generation quality} is the Chapter~\ref{ch:evaluation} supercolumn suite --- quality, tertiary-whole (T-W), tertiary-designable (T-D), secondary-whole (S-W) and secondary-designable (S-D) --- which we use to anatomise the effect in \S\ref{sec:proteina-anatomy}.
+
+\input{tables/table_setup_metrics}
 
 \input{tables/table_setup_cath}
 

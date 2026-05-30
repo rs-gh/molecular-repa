@@ -1,0 +1,37 @@
+% Setup Table S4 -- metric specification across the three measurement families. \input{} from report-draft.tex Ch6.
+\begin{table}[tbp]
+\centering
+\small
+\begin{tabular}{l >{\raggedright\arraybackslash}p{0.50\textwidth} l}
+\toprule
+Metric & What it captures & Granularity \\
+\midrule
+\multicolumn{3}{l}{\textit{Representation quality --- linear-probe recoverability of structural labels from the trunk}} \\
+IF top-1\,$\uparrow$       & inverse-folding sequence recovery (semantic content) & per residue \\
+Dihedral MAE\,$\downarrow$ & backbone dihedral-angle error (low-level geometry)   & per residue \\
+CATH-A\,$\uparrow$         & fold-architecture accuracy --- headline fold metric (Table~\ref{tab:setup-cath}) & per chain \\
+\midrule
+\multicolumn{3}{l}{\textit{Representation alignment}} \\
+CKNNA\,$\uparrow$~\cite{PlatonicRep} & mutual-nearest-neighbour kernel alignment between trunk and encoder & per residue \\
+\midrule
+\multicolumn{3}{l}{\textit{Generation quality --- the supercolumn suite (Chapter~\ref{ch:evaluation})}} \\
+Quality                     & per-sample designability (Des\,$\uparrow$) and FID\,$\downarrow$ to the reference set & per set \\
+T-W (tertiary, whole)       & whole-set fold-distribution match and coverage (fJSD-A\,$\downarrow$, fS-A\,$\uparrow$, pwTM\,$\downarrow$) & per set \\
+T-D (tertiary, designable)  & fold diversity within the designable subset (\#Clust\,$\uparrow$, pwTM\,$\downarrow$) & per set \\
+S-W (secondary, whole)      & whole-set secondary-structure distribution match (ssJSD-2D\,$\downarrow$) & per set \\
+S-D (secondary, designable) & secondary-structure match and $\beta$-content of the designable subset (ssJSD-2D\,$\downarrow$, E\%des\,$\uparrow$) & per set \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{We measure three things: representation quality, representation alignment, and generation quality.} Representation quality is the linear-probe recoverability of structural
+labels from the trunk --- a per-residue battery (inverse-folding sequence recovery and
+backbone dihedral error) and a per-chain fold probe on CATH, for which we report
+\emph{architecture} (CATH-A) as the headline level (Table~\ref{tab:setup-cath}).
+Representation alignment is CKNNA~\cite{PlatonicRep}, the mutual-nearest-neighbour
+kernel-alignment between a trunk layer and an encoder. Generation quality is the
+Chapter~\ref{ch:evaluation} supercolumn suite, which decomposes into per-sample
+\emph{quality}, whole-set vs.\ designable-subset \emph{tertiary} structure (T-W, T-D),
+and whole-set vs.\ designable-subset \emph{secondary} structure (S-W, S-D); arrows give
+the good direction for each member metric, and the full per-metric breakdown appears in
+Tables~\ref{tab:proteina-700k}--\ref{tab:proteina-1m-reduced}.}
+\label{tab:setup-metrics}
+\end{table}
