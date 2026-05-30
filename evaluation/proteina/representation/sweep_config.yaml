@@ -641,3 +641,38 @@ paper_n256_cath_if_dih_convergence_afdb_ext4:
   output_dir: results/paper/n256_convergence_cath_if_dih_afdb
   baseline_trained_noise_run: baseline_afdb_256_ep20
   runs: "repa_l4_afdb_256_random_step200k,repa_l4_afdb_256_random_step400k,repa_l4_afdb_256_random_step500k"
+
+# Report-grade regimes for the same ext4 frontier ckpts (cleantrain + xclean),
+# so docs/masters-report fig2 & fig4c (which read these dirs, not the in-place
+# convergence dir) pick up the new data. All families below already exist in
+# the target CSVs — these only extend their trajectories. DoneSet dedup makes
+# re-runs safe. PDB token set == gen pdb_ext7; AFDB == gen afdb_ext7.
+paper_n256_cath_if_dih_cleantrain_pdb_ext4:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 3190
+  train_manifest_version: train_clean_v2
+  eval_manifest_version: eval_v1
+  output_dir: results/paper/n256_convergence_cleantrain_pdb
+  baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
+  runs: "repa_l4_256_per_residue_random_bs24_2gpu_step900k,repa_l4_256_per_residue_random_bs24_2gpu_step1000k,repa_l4_256_per_residue_random_bs24_2gpu_step1100k,repa_l4_256_per_residue_random_bs24_2gpu_step1200k,baseline_256_bs24_2gpu_step1900k,baseline_256_bs24_2gpu_step2000k,baseline_256_bs24_2gpu_step2100k,baseline_256_bs24_2gpu_step2200k,baseline_256_bs24_2gpu_step2300k,baseline_256_bs24_2gpu_step2400k,repa_mpnn_l9_256_per_residue_step1800k,repa_mpnn_l9_256_per_residue_step1900k,repa_mpnn_l9_256_per_residue_step2000k,repa_l9_256_per_residue_bs24_2gpu_step1500k,repa_l9_256_per_residue_bs24_2gpu_step1600k"
+
+paper_n256_cath_if_dih_xclean_afdb_pdb_ext4:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 325
+  train_manifest_version: train_v2
+  eval_manifest_version: eval_clean_v2
+  output_dir: results/paper/n256_xclean_afdb_pdb
+  baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
+  runs: "repa_l4_256_per_residue_random_bs24_2gpu_step900k,repa_l4_256_per_residue_random_bs24_2gpu_step1000k,repa_l4_256_per_residue_random_bs24_2gpu_step1100k,repa_l4_256_per_residue_random_bs24_2gpu_step1200k,baseline_256_bs24_2gpu_step1900k,baseline_256_bs24_2gpu_step2000k,baseline_256_bs24_2gpu_step2100k,baseline_256_bs24_2gpu_step2200k,baseline_256_bs24_2gpu_step2300k,baseline_256_bs24_2gpu_step2400k,repa_mpnn_l9_256_per_residue_step1800k,repa_mpnn_l9_256_per_residue_step1900k,repa_mpnn_l9_256_per_residue_step2000k,repa_l9_256_per_residue_bs24_2gpu_step1500k,repa_l9_256_per_residue_bs24_2gpu_step1600k"
+
+paper_n256_cath_if_dih_xclean_pdb_afdb_ext4:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 62
+  train_manifest_version: train_v2
+  eval_manifest_version: eval_clean_v2
+  output_dir: results/paper/n256_xclean_pdb_afdb
+  baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
+  runs: "repa_l4_afdb_256_random_step200k,repa_l4_afdb_256_random_step400k,repa_l4_afdb_256_random_step500k"

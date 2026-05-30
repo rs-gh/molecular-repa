@@ -71,8 +71,8 @@ GROUPS = {
 # All metrics across the 4 claims, for the before/after split.
 ALL_METRICS = [
     # (label, key, lower_is_better)
-    ("FID-PDB", "_res_PDB_FID", True),
-    ("FID-AFDB", "_res_AFDB_FID", True),
+    ("FID-1.1K (PDB)", "_res_PDB_FID", True),
+    ("FID-1.1K (AFDB)", "_res_AFDB_FID", True),
     ("fJSD-A", "_res_PDB_fJSD_A", True),
     ("fJSD-C", "_res_PDB_fJSD_C", True),
     ("fS-A", "_res_fS_A", False),

@@ -85,8 +85,8 @@ VARIANT_GROUPS = {
 # Claim definitions: list of (display_name, metric_key, scale, lower_is_better)
 CLAIMS = {
     "Claim 1 — REPA accelerates whole-distribution learning (T-W / S-W)": [
-        ("FID-PDB", "_res_PDB_FID", 1.0, True),
-        ("FID-AFDB", "_res_AFDB_FID", 1.0, True),
+        ("FID-1.1K (PDB)", "_res_PDB_FID", 1.0, True),
+        ("FID-1.1K (AFDB)", "_res_AFDB_FID", 1.0, True),
         ("fJSD-A", "_res_PDB_fJSD_A", 1.0, True),
         ("fJSD-T", "_res_PDB_fJSD_T", 1.0, True),
         ("fJSD-C", "_res_PDB_fJSD_C", 1.0, True),

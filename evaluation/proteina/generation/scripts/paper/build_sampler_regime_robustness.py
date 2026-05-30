@@ -155,6 +155,7 @@ def delta(data, base, repa, step, gamma, metric):
 
 
 HIGHER = {m: hb for m, _, hb in METRICS}
+DISPLAY = {"FID": "FID-1.1K"}
 
 
 def is_win(metric, d):
@@ -219,7 +220,7 @@ def emit():
                             w += int(is_win(m, d))
                     cells.append(f"{w}/{tot}" if tot else "–")
                 arrow = "↑" if hb else "↓"
-                P(f"| {m} {arrow} | " + " | ".join(cells) + " |")
+                P(f"| {DISPLAY.get(m, m)} {arrow} | " + " | ".join(cells) + " |")
     return "\n".join(lines)
 
 
@@ -247,7 +248,7 @@ def emit_700k():
         P(
             f"\n**{dataset} 700K step-matched (baseline vs REPA {label}), Δ = REPA−base:**\n"
         )
-        P("| γ | " + " | ".join(m for m, _, _ in show) + " |")
+        P("| γ | " + " | ".join(DISPLAY.get(m, m) for m, _, _ in show) + " |")
         P("|" + "---|" * (len(show) + 1))
         for g in gs:
             cells = []

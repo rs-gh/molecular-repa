@@ -84,9 +84,9 @@ EFF_BS: Dict[str, int] = {
 }
 
 METRICS: List[Tuple[str, str, bool]] = [
-    ("_res_PDB_FID", "PDB FID ↓", True),
+    ("_res_PDB_FID", "PDB FID-500 ↓", True),
     ("_res_PDB_fJSD_T", "PDB fJSD T ↓", True),
-    ("_res_AFDB_FID", "AFDB FID ↓", True),
+    ("_res_AFDB_FID", "AFDB FID-500 ↓", True),
     ("_res_AFDB_fJSD_T", "AFDB fJSD T ↓", True),
     ("_res_designability_rate", "Designability (%) ↑", False),
     ("_res_scRMSD_mean", "scRMSD mean (Å) ↓", True),
