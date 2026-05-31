@@ -676,3 +676,29 @@ paper_n256_cath_if_dih_xclean_pdb_afdb_ext4:
   output_dir: results/paper/n256_xclean_pdb_afdb
   baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
   runs: "repa_l4_afdb_256_random_step200k,repa_l4_afdb_256_random_step400k,repa_l4_afdb_256_random_step500k"
+
+# ─── n=256 convergence extension 5 (added 2026-05-31) ────────────────────────
+# Extend ONLY the L4-random trajectory to 1.3M and 1.4M on the report regimes
+# (cleantrain + xclean), so table_rep_quality can widen its 700K-1.2M common
+# window (L4-random is the only family capping it). Checkpoints exist on /rds;
+# evals had stopped at 1.2M. Same output_dirs as the base/ext profiles so rows
+# merge in place; DoneSet dedup makes re-runs safe.
+paper_n256_cath_if_dih_cleantrain_pdb_ext5:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 3190
+  train_manifest_version: train_clean_v2
+  eval_manifest_version: eval_v1
+  output_dir: results/paper/n256_convergence_cleantrain_pdb
+  baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
+  runs: "repa_l4_256_per_residue_random_bs24_2gpu_step1300k,repa_l4_256_per_residue_random_bs24_2gpu_step1400k"
+
+paper_n256_cath_if_dih_xclean_afdb_pdb_ext5:
+  <<: *paper_cath_if_dih_defaults
+  max_size: 256
+  n_eval: 325
+  train_manifest_version: train_v2
+  eval_manifest_version: eval_clean_v2
+  output_dir: results/paper/n256_xclean_afdb_pdb
+  baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
+  runs: "repa_l4_256_per_residue_random_bs24_2gpu_step1300k,repa_l4_256_per_residue_random_bs24_2gpu_step1400k"
