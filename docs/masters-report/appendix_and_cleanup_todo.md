@@ -37,6 +37,11 @@ Running list of things to add to the appendix and other deferred cleanup for
 
 ## Prose / structure cleanup
 
+- [ ] **n=128 generation/representation protocol** — parked out of the Ch6
+  Evaluation-protocol section (was: 500 backbones over 4 lengths {50,75,100,125}).
+  Document it in the n=128 scale section (`sec:proteina-scale`) when that is
+  written up.
+
 - [ ] Cover-page word count is stale (says 8895; main chapters now ~8232).
   Regenerate via `make wordcount` on the real build env.
 - [ ] Ch3 (Evaluation) is scaffold-only; several `\ref{ch:evaluation}`
