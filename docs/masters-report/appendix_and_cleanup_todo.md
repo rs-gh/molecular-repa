@@ -21,6 +21,10 @@ Running list of things to add to the appendix and other deferred cleanup for
   - [ ] Add a citation for P-SEA / Biotite secondary-structure assignment
     (currently named without a `\cite`).
   - [ ] Optionally expand with the 3-bin centroid sanity-check variant.
+- [x] **Leakage-controlled probe evaluation** — done (`app:leakage`); model vs
+  probe leakage, blinded vs probe-clean splits, per-probe regime choice.
+  Summarised from `docs/research/pdb_split_leakage_audit.md` (the full audit,
+  decomposition tables, and per-probe lead-regime choices live there).
 - [ ] Remove the `\section{Placeholder section}` stub once the appendix is real.
 
 ## Citations / references to finish
