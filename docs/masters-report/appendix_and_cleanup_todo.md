@@ -9,6 +9,11 @@ Running list of things to add to the appendix and other deferred cleanup for
   combinations beyond the L4/L9 + GearNet/MPNN subset shown in Ch6. Referenced
   from the model-config table caption ("Other ablations are deferred to
   Appendix A") and the Models prose.
+  - [ ] **MUST include the depth-matched control:** trained encoder at layer~4
+    vs random-weights GearNet at layer~4. The Models prose now asserts "a trained
+    encoder at the same layer~4 still outperforms the random one, so the
+    learned-versus-random gap is not an artefact of injection depth
+    (Appendix~\ref{ch:appendix})" — that claim is unbacked until this lands.
 - [ ] **Optimisation ablations** — λ, batch size, learning rate sweeps.
   Referenced from the merged model/hparams table caption and the Models prose.
 - [ ] **Projector-depth ablation** — referenced at the training-dynamics
