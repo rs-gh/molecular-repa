@@ -1,18 +1,25 @@
 % Table -- representation rank-order, Delta from baseline. \input{} from Ch6.
+% Numbers: best-layer linear probe, mean over the 700K-1.2M training-step window
+% common to all four families (xclean CSV for IF/dihedral, cleantrain CSV for
+% CATH; n<=256 PDB). TODO: widen the window to 1.4M once the L4-random evals at
+% 1.3M/1.4M land (checkpoints exist on /rds), then regenerate. See
+% appendix_and_cleanup_todo.md.
 \begin{table}[tbp]
 \centering
 \small
-\setlength{\tabcolsep}{8pt}
-\begin{tabular}{l|cccc}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{l|ccccc}
 \toprule
- & IF top-1\,$\uparrow$ & dihedral MAE\,(\,$^\circ$\,)\,$\downarrow$ & CATH-A\,$\uparrow$ & CATH-T\,$\uparrow$ \\
+ & & & \multicolumn{3}{c}{CATH top-1 acc.\,$\uparrow$} \\
+\cmidrule(lr){4-6}
+ & IF top-1\,$\uparrow$ & dihedral MAE\,(\,$^\circ$\,)\,$\downarrow$ & C & A & T \\
 \midrule
-Baseline       & 0.123 & 32.1 & 0.407 & 0.301 \\
-REPA L4-random & \gd{+0.023} & \gd{$-$11.9} & \gd{+0.069} & \gd{+0.077} \\
-REPA L9-GN     & \gd{+0.033} & \gd{$-$12.6} & \gb{+0.295} & \gb{+0.451} \\
-REPA L9-MPNN   & \gb{+0.044} & \gb{$-$15.7} & \gd{+0.141} & \gd{+0.172} \\
+Baseline       & 0.130 & 27.6 & 0.717 & 0.397 & 0.303 \\
+REPA L4-random & \gd{+0.007} & \gd{$-$5.1} & \gd{+0.101} & \gd{+0.089} & \gd{+0.060} \\
+REPA L9-GN     & \gd{+0.026} & \gd{$-$8.1} & \gb{+0.171} & \gb{+0.305} & \gb{+0.449} \\
+REPA L9-MPNN   & \gb{+0.036} & \gb{$-$11.4} & \gd{+0.120} & \gd{+0.151} & \gd{+0.172} \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA's representation gain is encoder-routed: GearNet wins the fold probes (CATH), MPNN the per-residue probes (IF, dihedral), and the random control gains least --- so the effect needs the encoder's learned structure, not just an auxiliary loss.} ($n{\le}256$ PDB, best-layer probes, mean over steps $\ge$700K; baseline absolute, REPA rows $\Delta$ from baseline; \colorbox{green!20}{green} = improvement, \colorbox{green!42}{darker} = best per probe.)}
+\caption{\textbf{REPA offers persistent and encoder-routed representation advantages.} Best-layer linear-probe performance, averaged over the 700K--1.2M training-step window common to all variants. REPA-GearNet wins the fold probes (CATH C/A/T), while REPA-MPNN wins the per-residue probes (IF, dihedral), and the random control gains least --- consistent with what each encoder was trained for. We headline on CATH-A and report Class and Topology for completeness. ($n{\le}256$ PDB; $\Delta$ from baseline; \colorbox{green!20}{green} = improvement, \colorbox{green!42}{darker} = best per probe.)}
 \label{tab:proteina-rep}
 \end{table}

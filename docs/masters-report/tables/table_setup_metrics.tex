@@ -8,9 +8,9 @@
 \textbf{Metric} & \textbf{Definition} & \textbf{Content} & \textbf{Granularity} \\
 \midrule
 \multicolumn{4}{l}{\textbf{Representation quality}} \\
-IF top-1\,$\uparrow$       & Inverse-folding sequence recovery & Semantic content & Per residue \\
+IF top-1\,$\uparrow$       & Inverse-folding sequence recovery (top-1 accuracy) & Semantic content & Per residue \\
 Dihedral MAE\,$\downarrow$ & Backbone dihedral-angle error & Low-level geometry & Per residue \\
-CATH-A\,$\uparrow$         & Fold-architecture classification accuracy (Table~\ref{tab:setup-cath}) & Fold-level structure & Per chain \\
+CATH-A top-1\,$\uparrow$   & Fold-architecture classification top-1 accuracy (Table~\ref{tab:setup-cath}) & Fold-level structure & Per chain \\
 \midrule
 \multicolumn{4}{l}{\textbf{Representation alignment}} \\
 CKNNA\,$\uparrow$~\cite{PlatonicRep} & Mutual-nearest-neighbour kernel alignment & Trunk--encoder similarity & Per residue \\
