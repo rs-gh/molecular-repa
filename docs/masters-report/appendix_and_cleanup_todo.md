@@ -35,6 +35,28 @@ Running list of things to add to the appendix and other deferred cleanup for
 - [ ] Confirm **CKNNA** is the alignment measure actually reported in the
   original REPA and BoltzREPA papers (vs CKA/another) before final.
 
+## Representation-quality table & figure (Ch6 §rep)
+
+- [ ] **Regenerate `table_rep_quality` from current data.** Committed numbers are
+  a stale 2026-05-30 11:39 snapshot (the source CSVs grew at 17:05) and no longer
+  reproduce. Caption claims "mean over steps $\ge$700K" but the numbers match a
+  last-checkpoint snapshot, not that window. Intended methodology going forward:
+  best-layer probe, mean over the **700K–1.2M** window common to all four families.
+  - [ ] **Extend L4-random representation evals to 1.3M and 1.4M** — checkpoints
+    exist (`proteina_60m_repa_l4_256_per_residue_random_bs24_2gpu`, steps to 1400k)
+    but evals stop at 1200k; this is the only family capping the common window.
+    Once in, widen the window to 700K–1.4M and regenerate.
+  - [ ] **Add the CATH-C column** (currently IF, dihedral, CATH-A, CATH-T) so the
+    table shows C/A/T for completeness; headline stays on CATH-A.
+  - [ ] **Reconcile the Metrics-section prose** (§proteina-metrics): once C/A/T are
+    all in the main table, drop "defer the full hierarchy to Appendix" and soften
+    "Topology too finely-bucketed to probe reliably" → "noisiest level, but the
+    direction is consistent across C→A→T".
+  - [ ] Write the table from a small reproducible generator script (don't hand-maintain).
+- [ ] **Figure/plot conventions to propagate** (introduced on fig02 this session):
+  single shared legend below the panels, (a)/(b)/(c) panel-title labels, and
+  "(thousands, log scale)" x-axis label. Apply to fig1c, fig3, fig4, fig5.
+
 ## Prose / structure cleanup
 
 - [ ] **n=128 generation/representation protocol** — parked out of the Ch6
