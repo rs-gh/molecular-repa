@@ -18,6 +18,13 @@ Running list of things to add to the appendix and other deferred cleanup for
   Referenced from the merged model/hparams table caption and the Models prose.
 - [ ] **Projector-depth ablation** — referenced at the training-dynamics
   callback (`Appendix~\ref{ch:appendix}`, ~Ch6 scale section).
+- [ ] **Full CKNNA model×encoder matrix** — the §alignment prose now asserts
+  "every REPA variant we tested raises alignment to all three encoders … (full
+  model×encoder matrix in Appendix)". Back it with a table: baseline + 4 learned
+  variants (GearNet/MPNN × L4/L9) × 3 encoders (GearNet, MPNN, ESM2), peak
+  per-residue CKNNA. Source: `evaluation/proteina/alignment/results/cknna_matrix_per_residue.jsonl`
+  (verified 2026-05-31: every variant > baseline on all three; no random control
+  in this matrix).
 - [x] **Dataset composition & split overlap** — done (`app:datasets`, with
   `table_setup_datasets`).
 - [x] **Choice of CATH fold-probe level** — done (`app:cath`, with
