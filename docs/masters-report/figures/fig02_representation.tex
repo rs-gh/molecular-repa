@@ -2,6 +2,6 @@
 \begin{figure}[tbp]
 \centering
 \includegraphics[width=\textwidth]{figures/fig02_representation.png}
-\caption{\textbf{Flow-matching alone never makes the student's representations more structural; REPA installs it as a persistent, encoder-axis-specific gap.} The baseline stays flat for 1.8M steps while every REPA variant opens a gap that never closes. The rank-order is axis-specific --- GearNet leads the fold probe (CATH), MPNN the per-residue probes (inverse folding, dihedral) --- and the random control gains least, so the effect draws on the encoder's learned structure, not the auxiliary loss alone. ($n{\le}256$, PDB-trained; best-layer linear probes on the doubly-clean cross-database slice, \S\ref{ch:evaluation}.)}
+\caption{\textbf{Flow-matching alone never makes the student's representations more structural; REPA installs it as a persistent, encoder-axis-specific gap.} The baseline stays flat for 1.8M steps while every REPA variant opens a gap that never closes. The rank-order is axis-specific --- GearNet leads the fold probe (CATH), MPNN the per-residue probes (inverse folding, dihedral) --- and the random control gains least, so the effect draws on the encoder's learned structure, not the auxiliary loss alone. ($n{\le}256$, PDB-trained; best-layer linear probes --- per-residue probes on a blinded cross-database slice, CATH on a probe-clean split, \S\ref{ch:evaluation} and Appendix~\ref{app:leakage}.)}
 \label{fig:proteina-rep}
 \end{figure}
