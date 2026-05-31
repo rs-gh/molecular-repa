@@ -2,6 +2,6 @@
 \begin{figure}[tbp]
 \centering
 \includegraphics[width=\textwidth]{figures/fig03_alignment.png}
-\caption{\textbf{REPA aligns the trunk toward structural encoders --- including ones it never trained against (Platonic convergence).} \textbf{(a)} Each REPA variant lifts per-residue alignment to its own target encoder above the baseline floor (CKNNA $\approx 0$); magnitudes to different target encoders are not directly comparable. \textbf{(b)} A GearNet-aligned trunk also moves toward ProteinMPNN and ESM2, encoders it was never aligned to. Absolute alignment is small throughout (peak $\approx 0.02$--$0.05$ against $1$ for self-alignment), so we read the pattern, not its magnitude; the per-protein signal is far weaker, and we claim no chain-level benefit. ($n{\le}256$ PDB, step 1M, $t{=}1.0$; per-residue CKNNA, $k{=}10$.)}
+\caption{\textbf{REPA aligns the trunk with domain encoders, including those it was not trained with.} (a) Each REPA variant lifts per-residue alignment to its own target encoder above the baseline floor. (b) REPA induces cross-encoder alignment: for example, a GearNet-aligned trunk also moves toward ProteinMPNN and ESM2. Absolute alignment is small throughout, so we read the pattern, not its magnitude. ($n{\le}256$ PDB, step 1M, $t{=}1.0$; per-residue CKNNA, $k{=}10$.)}
 \label{fig:proteina-cknna}
 \end{figure}
