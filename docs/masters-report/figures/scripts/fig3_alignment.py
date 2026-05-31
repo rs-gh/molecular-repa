@@ -59,11 +59,36 @@ def model_style(model):
 
 fig, axes = plt.subplots(1, 2, figsize=(12.5, 4.6), sharey=True)
 
-# LEFT — alignment to GearNet target: baseline + REPA variants
+# LEFT — each REPA variant's alignment to ITS OWN target encoder, vs baseline floor
 ax = axes[0]
-for model in ["baseline", "repa_gearnet_l9", "repa_mpnn_l9"]:
-    color, marker, label, z = model_style(model)
-    pts = by_layer(model, "gearnet")
+OWN = [
+    (
+        "baseline",
+        "gearnet",
+        "Baseline (floor)",
+        COLORS["baseline"],
+        MARKERS["baseline"],
+        10,
+    ),
+    (
+        "repa_gearnet_l9",
+        "gearnet",
+        "REPA L9-GearNet $\\rightarrow$ GearNet",
+        COLORS["L9"],
+        MARKERS["GearNet"],
+        8,
+    ),
+    (
+        "repa_mpnn_l9",
+        "mpnn",
+        "REPA L9-MPNN $\\rightarrow$ MPNN",
+        COLORS["L9"],
+        MARKERS["MPNN"],
+        8,
+    ),
+]
+for model, target, label, color, marker, z in OWN:
+    pts = by_layer(model, target)
     if not pts:
         continue
     ax.plot(
@@ -80,7 +105,7 @@ for model in ["baseline", "repa_gearnet_l9", "repa_mpnn_l9"]:
     )
 setup_axes(
     ax,
-    title="CKNNA to GearNet (target), per layer $\\uparrow$",
+    title="(a) Alignment to own target encoder $\\uparrow$",
     xlabel="Trunk layer index",
     ylabel="CKNNA (per-residue, k=10)",
 )
@@ -125,7 +150,7 @@ for target, label, color, marker in TARGETS:
     )
 setup_axes(
     ax,
-    title="REPA-L9-GN propagates alignment off-diagonally (Platonic) $\\uparrow$",
+    title="(b) REPA-L9-GN propagates alignment off-diagonally (Platonic) $\\uparrow$",
     xlabel="Trunk layer index",
 )
 ax.set_xticks(list(range(0, 10)))
