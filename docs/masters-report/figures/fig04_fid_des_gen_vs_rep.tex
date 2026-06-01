@@ -2,6 +2,6 @@
 \begin{figure}[tbp]
 \centering
 \includegraphics[width=\textwidth]{figures/fig04_fid_des_gen_vs_rep.png}
-\caption{\textbf{Better student representations accompany better generation at equal compute.} The baseline and REPA-MPNN-L9 lie on a common representation--generation band: higher student fold accuracy (CATH-A) goes with better FID (a) and designability (b). At matched compute ($\approx$400K steps, dashed arrow) REPA already sits further along the band than the baseline on both. (One marker per checkpoint; $x$ = student CATH-A accuracy, higher to the right; generation values are means over up to three sampling seeds; $n{\le}256$, PDB.)}
+\caption{\textbf{At equal compute, REPA achieves better representation and generation quality.} The dashed arrow marks the matched-compute comparison at step 400K. Against the baseline, the REPA variant has higher fold accuracy (CATH-A) and better generation lower FID (a) and higher designability (b). (Markers are a coarse $\approx$400K-spaced subset of checkpoints from 100K, with the 400K point bordered; $x$ = student CATH-A accuracy, higher to the right; generation values are means $N$=3 sampling seeds; $n{\le}256$, PDB-trained.)}
 \label{fig:proteina-genrep}
 \end{figure}
