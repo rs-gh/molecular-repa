@@ -417,6 +417,7 @@ _CSV_FIELDS = [
     "dist_n_pairs_test",
     # Provenance
     "dim",
+    "probe_seed",
     "ckpt_path",
     "train_manifest",
     "eval_manifest",
@@ -452,8 +453,10 @@ def consolidate(outdir: Path) -> None:
                 except json.JSONDecodeError:
                     continue
 
-    # Dedup by (run, step, layer, t, probe_kind, cath_level). Errors are not
-    # deduped — they're kept verbatim so a recurring failure stays visible.
+    # Dedup by (run, step, layer, t, probe_kind, cath_level, probe_seed). Errors
+    # are not deduped — they're kept verbatim so a recurring failure stays visible.
+    # probe_seed is part of the key so multi-seed runs (for variance bands)
+    # accumulate rather than overwrite; legacy single-seed rows are all seed 42.
     seen: Set[Tuple] = set()
     deduped: List[Dict] = []
     for r in reversed(rows):  # iterate backwards so first kept = last-seen
@@ -467,6 +470,7 @@ def consolidate(outdir: Path) -> None:
             f"{float(r.get('t', 1.0)):.4f}" if "t" in r else None,
             r.get("probe_kind", "contact"),
             r.get("cath_level"),
+            r.get("probe_seed"),
         )
         if key in seen:
             continue
