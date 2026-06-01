@@ -1,4 +1,7 @@
 % Table -- beta-stratified designable concentration (the T-D trade-off). \input{} from Ch6.
+% Absolute pwTM (not deltas) so the matched-beta contrast and the baseline-vs-REPA
+% trajectory are directly readable. Colour marks REPA cells vs the baseline in the
+% same block/step/bin: red = more concentrated, green = more diverse, |delta|<0.05 uncoloured.
 \begin{table}[tbp]
 \centering
 \small
@@ -8,18 +11,18 @@
  & \multicolumn{3}{c|}{\textbf{700K steps}} & \multicolumn{3}{c}{\textbf{1.0M steps}} \\
 Designable-subset pwTM\,$\downarrow$ & $\beta{<}10$ & $10$--$25$ & $\beta{\ge}25$ & $\beta{<}10$ & $10$--$25$ & $\beta{\ge}25$ \\
 \midrule
-\multicolumn{7}{l}{\textit{PDB-trained \quad (baseline = absolute; REPA = $\Delta$ vs.\ baseline)}}\\
-Baseline             & 0.15 & 0.22 & 0.50 & 0.15 & 0.23 & 0.13 \\
-REPA L9-GN           & +0.01 & \rd{+0.05} & \rd{+0.23} & $-$0.01 & +0.01 & \rd{+0.74} \\
-REPA L9-MPNN         & +0.01 & $-$0.01 & \rd{+0.17} & \rd{+0.11} & $-$0.01 & \rd{+0.54} \\
+\multicolumn{7}{l}{\textit{PDB-trained}}\\
+Baseline             & 0.15 & 0.22 & 0.50 & 0.15 & 0.23 & \textbf{0.13} \\
+REPA L9-GN           & 0.16 & \rd{0.27} & \rd{0.73} & 0.14 & 0.24 & \rd{\textbf{0.87}} \\
+REPA L9-MPNN         & 0.16 & 0.21 & \rd{0.67} & \rd{0.26} & 0.22 & \rd{0.67} \\
 REPA L4-random       & \multicolumn{6}{c}{\textit{[TODO: random control --- not yet $\beta$-stratified]}} \\
 \midrule
 \multicolumn{7}{l}{\textit{AFDB-trained}}\\
 Baseline             & 0.14 & 0.29 & 0.17 & 0.16 & 0.26 & 0.15 \\
-REPA L9-GN           & \rd{+0.23} & +0.02 & \rd{+0.65} & \rd{+0.24}$^{*}$ & \rd{+0.06}$^{*}$ & \rd{+0.61}$^{*}$ \\
-REPA L9-MPNN \textit{(falsifier)} & +0.01 & $-$0.02 & \gd{$-$0.06} & $-$0.01 & $-$0.02 & +0.00 \\
+REPA L9-GN           & \rd{0.37} & 0.31 & \rd{0.82} & \rd{0.40}$^{*}$ & \rd{0.32}$^{*}$ & \rd{0.76}$^{*}$ \\
+REPA L9-MPNN \textit{(falsifier)} & 0.15 & 0.27 & \gd{0.11} & 0.15 & 0.24 & 0.15 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA's one consistent cost --- a loss of tertiary diversity --- is confined to the sheet-rich folds, grows with training, and is escaped only by the AFDB-MPNN falsifier.} Concentration appears only in the $\beta{\ge}25$ bin, under encoders that route toward $\beta$-rich folds (GearNet on both datasets, MPNN on PDB), and grows over training ($+0.23{\to}+0.74$); AFDB-MPNN-L9 stays diverse in every bin. (Designable-subset pwTM stratified by $\beta$\%, lower = more diverse; $\Delta$ = REPA $-$ baseline; \colorbox{red!15}{red} ($\Delta{>}0$) = concentrates, \colorbox{green!20}{green} = more diverse, $|\Delta|{<}0.05$ uncoloured. Single-seed; $^{*}$900K for AFDB L9-GN.)}
+\caption{\textbf{REPA's one consistent cost --- lost tertiary diversity --- is confined to the sheet-rich folds, is not explained by $\beta$-composition, and grows with training while the baseline recovers.} The $\beta{\ge}25$ comparison is at matched $\beta$-content: at 1.0M the baseline's designable backbones stay diverse (pwTM 0.13) while REPA's collapse onto near-identical folds (0.87). The baseline is also concentrated early (0.50 at 700K) but diversifies with training; REPA does not. Concentration appears only under encoders that route toward $\beta$-rich folds (GearNet on both datasets, MPNN on PDB); the $\alpha$-routing AFDB-MPNN-L9 stays diverse in every bin. (Designable-subset pairwise TM, lower\,=\,more diverse; colour marks REPA \emph{vs.}\ the baseline at the same step and bin: \colorbox{red!15}{red}\,=\,more concentrated, \colorbox{green!20}{green}\,=\,more diverse, $|\Delta|{<}0.05$ uncoloured. Single-seed; $^{*}$900K for AFDB L9-GN.)}
 \label{tab:proteina-concentration}
 \end{table}
