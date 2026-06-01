@@ -39,13 +39,16 @@ OUT_DIR = ALIGN_ROOT / "results"
 MODEL_OUT = OUT_DIR / "model_features"
 ENC_OUT = OUT_DIR / "encoder_features"
 
-MATRIX_PATHS = {
-    "per_residue": OUT_DIR / "cknna_matrix_per_residue.jsonl",
-    "per_protein": OUT_DIR / "cknna_matrix_per_protein.jsonl",
-}
-
 K_NEIGHBORS = int(os.environ.get("CKNNA_K", 10))
 N_BOOT = int(os.environ.get("CKNNA_N_BOOT", 50))
+
+# k=10 keeps the canonical (untagged) filenames the plotting scripts read.
+# Any other k writes a k-tagged sidecar so a sweep never clobbers the default.
+_K_TAG = "" if K_NEIGHBORS == 10 else f"_k{K_NEIGHBORS}"
+MATRIX_PATHS = {
+    "per_residue": OUT_DIR / f"cknna_matrix_per_residue{_K_TAG}.jsonl",
+    "per_protein": OUT_DIR / f"cknna_matrix_per_protein{_K_TAG}.jsonl",
+}
 MODEL_ROWS = [
     "baseline",
     "repa_gearnet_l4",
@@ -130,6 +133,10 @@ def _compute_matrix(mode: str, device: str) -> None:
 def main() -> None:
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Using device: {device}")
+    print(f"k={K_NEIGHBORS}, n_boot={N_BOOT}")
+    print(
+        f"Output: {MATRIX_PATHS['per_residue'].name}, {MATRIX_PATHS['per_protein'].name}"
+    )
     _compute_matrix("per_protein", device)  # cheaper (smaller N at sample level)
     _compute_matrix("per_residue", device)
 
