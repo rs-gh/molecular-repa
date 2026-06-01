@@ -719,6 +719,7 @@ paper_n256_if_dih_xclean_s1042:
   n_eval: 325
   probe_seed: 1042
   manifest_seed: 1042
+  eval_manifest_seed: 42
   probes: "inverse_folding,dihedral"
   train_manifest_version: train_v2_s1042
   eval_manifest_version: eval_clean_v2
@@ -732,6 +733,7 @@ paper_n256_if_dih_xclean_s2042:
   n_eval: 325
   probe_seed: 2042
   manifest_seed: 2042
+  eval_manifest_seed: 42
   probes: "inverse_folding,dihedral"
   train_manifest_version: train_v2_s2042
   eval_manifest_version: eval_clean_v2
@@ -745,6 +747,7 @@ paper_n256_cath_cleantrain_s1042:
   n_eval: 3190
   probe_seed: 1042
   manifest_seed: 1042
+  eval_manifest_seed: 42
   probes: "cath"
   train_manifest_version: train_clean_v2_s1042
   eval_manifest_version: eval_v1
@@ -758,6 +761,7 @@ paper_n256_cath_cleantrain_s2042:
   n_eval: 3190
   probe_seed: 2042
   manifest_seed: 2042
+  eval_manifest_seed: 42
   probes: "cath"
   train_manifest_version: train_clean_v2_s2042
   eval_manifest_version: eval_v1

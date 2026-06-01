@@ -244,13 +244,18 @@ class DoneSet:
     distance: Set[Tuple[str, int, int, str]] = field(default_factory=set)
 
     @classmethod
-    def from_jsonl(cls, path: Path) -> "DoneSet":
+    def from_jsonl(cls, path: Path, probe_seed: Optional[int] = None) -> "DoneSet":
         """Load resume state from a JSONL file *plus* any sibling shards.
 
         Sibling shards (``pretrained_sweep_results.<tag>.jsonl``) are written
         by parallel array tasks under ``--jsonl_shard_tag``. A given task
         reads ALL shards so it skips rows another concurrent task already
         produced — and so a resumed task picks up its own prior progress.
+
+        When ``probe_seed`` is given, only rows from that seed count as done
+        (legacy rows with no ``probe_seed`` are treated as seed 42). This keeps
+        multi-seed variance runs from skipping checkpoints that another seed
+        already evaluated.
         """
         ds = cls()
         if path.parent.exists():
@@ -269,6 +274,11 @@ class DoneSet:
                         continue
                     if "error" in r or not all(
                         k in r for k in ("run", "step", "layer")
+                    ):
+                        continue
+                    if (
+                        probe_seed is not None
+                        and int(r.get("probe_seed", 42)) != probe_seed
                     ):
                         continue
                     key4 = (
@@ -1771,6 +1781,13 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     ap.add_argument("--probe_lr", type=float, default=1e-3)
     ap.add_argument("--probe_seed", type=int, default=42)
     ap.add_argument("--manifest_seed", type=int, default=42)
+    ap.add_argument(
+        "--eval_manifest_seed",
+        type=int,
+        default=None,
+        help="seed for the EVAL manifest; defaults to --manifest_seed. Set to 42 "
+        "to hold the eval set fixed while only the train sample varies (seed bands).",
+    )
     ap.add_argument("--train_manifest_version", type=str, default="train_v1")
     ap.add_argument("--eval_manifest_version", type=str, default="eval_v1")
     ap.add_argument("--train_lmdb_path", type=str, default=None)
@@ -1993,14 +2010,21 @@ def _load_batches(
         max_size=args.max_size,
         seed=args.manifest_seed,
     )
-    print(f"[manifest] eval: v={args.eval_manifest_version}, n={args.n_eval}")
+    eval_seed = (
+        args.eval_manifest_seed
+        if getattr(args, "eval_manifest_seed", None) is not None
+        else args.manifest_seed
+    )
+    print(
+        f"[manifest] eval: v={args.eval_manifest_version}, n={args.n_eval}, seed={eval_seed}"
+    )
     eval_manifest = build_or_load_manifest(
         outdir=outdir,
         version=args.eval_manifest_version,
         lmdb_path=eval_lmdb,
         n=args.n_eval,
         max_size=args.max_size,
-        seed=args.manifest_seed,
+        seed=eval_seed,
     )
     # The cached manifest's lmdb_path may point at a previous job's /dev/shm
     # directory that's gone. Keys are stable (same source LMDB on Lustre),
@@ -2147,7 +2171,7 @@ def main() -> None:
     print(f"Cache dir: {cache_dir}")
     print(f"Output dir: {outdir}")
 
-    done = DoneSet.from_jsonl(jsonl_path)
+    done = DoneSet.from_jsonl(jsonl_path, probe_seed=args.probe_seed)
     if len(done):
         print(
             f"Resuming: contact={len(done.contact)} cath={len(done.cath)} "

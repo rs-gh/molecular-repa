@@ -137,8 +137,18 @@ echo "=== Time: $(date) ==="
 
 cd "$REPO_DIR"
 
-#! Sanitise the run name to a filesystem-safe shard tag.
-SHARD_TAG=$(printf '%s' "$RUN_NAME" | tr -c 'A-Za-z0-9_-' '_')
+#! Resolve the profile's probe_seed so multi-seed runs write to DISJOINT shards.
+#! Two seeds of the same checkpoint share a run name; without a seed-scoped tag
+#! they would append to one shard file concurrently and corrupt it.
+PROBE_SEED=$(python - <<EOF
+import yaml
+cfg = yaml.safe_load(open("$REPO_DIR/evaluation/proteina/representation/sweep_config.yaml"))
+print(int(cfg["$PROFILE"].get("probe_seed", 42)))
+EOF
+)
+[ -z "$PROBE_SEED" ] && PROBE_SEED=42
+#! Sanitise the run name to a filesystem-safe, seed-scoped shard tag.
+SHARD_TAG=$(printf '%s_s%s' "$RUN_NAME" "$PROBE_SEED" | tr -c 'A-Za-z0-9_-' '_')
 
 #! Per-task python call: --in_memory + --runs single + --jsonl_shard_tag.
 #! --baselines "" overrides the profile's baselines list — baselines are
