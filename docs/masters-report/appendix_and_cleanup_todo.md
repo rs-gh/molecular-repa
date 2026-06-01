@@ -73,6 +73,20 @@ Running list of things to add to the appendix and other deferred cleanup for
   and state the spread rather than bare point values. Especially important given
   the small absolute CKNNA magnitudes — error bars would show whether the
   alignment pattern is robust to seed.
+  - [ ] **AFDB random run (`repa_l4_afdb_256_random`) — prioritise multi-seed.**
+    This is the random-encoder REPA falsifier control trained on AFDB; it is a
+    headline control yet currently single-seed (seed 42). Re-run its rep/align
+    evals over several probe-fit seeds so the control carries an error bar.
+    Checkpoints on /rds: steps 100k/200k/400k/500k
+    (`store/proteina_60m_repa_l4_256_afdb_per_residue_random_bs24_2gpu`). Appears
+    in profiles `paper_n256_cath_if_dih_convergence_afdb_ext{3,4}` (→
+    `results/paper/n256_convergence_cath_if_dih_afdb`, n_eval=4521) and
+    `paper_n256_cath_if_dih_xclean_pdb_afdb_ext{3,4}` (→
+    `results/paper/n256_xclean_pdb_afdb`, n_eval=62). **Caveat:** passing
+    `--seeds` ≠ `42` flips `run_sweep.py` into the *rich* per-seed schema, which
+    does not co-merge with the existing flat-schema rows in those dirs — write
+    multi-seed output to a separate dir (or re-run the whole comparison set
+    multi-seed), don't append into the flat dirs.
 - [ ] **Figure/plot conventions to propagate** (introduced on fig02 this session):
   single shared legend below the panels, (a)/(b)/(c) panel-title labels, and
   "(thousands, log scale)" x-axis label. Apply to fig1c, fig3, fig4, fig5.
