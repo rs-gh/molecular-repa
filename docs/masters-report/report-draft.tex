@@ -1302,6 +1302,7 @@ In this chapter, we expand the scope of our study on representation alignment fr
 We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant flow-matching generator of C$\alpha$ protein backbones. Following \S\ref{sec:repa}, we attach a trainable projector at a chosen layer of the generator trunk (the transformer stack) that aligns the model's hidden states to a frozen external encoder.
 
 \subsection{Datasets}
+\label{sec:proteina-datasets}
 
 We train in two regimes that span the field's experimental--synthetic spectrum: the experimentally-determined Protein Data Bank~\cite{PDB}, and the AlphaFold-predicted AlphaFold Database~\cite{AFDB} (Swiss-Prot subset). (We use the manually-curated Swiss-Prot subset of AFDB as a reproducible stand-in for the Foldseek-clustered TrEMBL subset on which Proteina was trained in the original presentation~\cite{Proteina}. This corpus contained data that has since been pruned from AFDB, and is hence inaccessible.)
 
@@ -1386,7 +1387,7 @@ With this experimental testbed in place, the rest of the chapter investigates wh
 
 Following Yu et al.~\cite{REPA} and recent in-domain work~\cite{BoltzREPA}, we investigate the mechanism that may be driving REPA's representation quality gains by quantifying the representation alignment it induces. Using CKNNA~\cite{PlatonicRep}, we score how closely our models' per-residue geometry matches that of three domain-specific encoders: GearNet and ProteinMPNN, our two alignment targets in this chapter; and ESM2~\cite{ESM2}, which we align to only in our ablations, not in the models presented here. We note that we study alignment only as a diagnostic, and not to make claims about REPA's utility.
 
-\textbf{REPA lifts alignment above the random floor, albeit at low magnitude.} The baseline sits at the random floor at every layer (CKNNA $\approx 0$), while REPA separates from it cleanly, suggesting that its hidden states do move towards the encoder's (Figure~\ref{fig:proteina-cknna}a). This serves as a minimal check that the construction does something. However, the magnitude of this signal is small. Peak per-residue CKNNA (bootstrap median) is $\approx 0.02$--$0.05$, on a scale where self-alignment is $1$. We therefore read the pattern, not its size, and stake no strong claim on these numbers.
+\textbf{REPA lifts alignment above the random floor, albeit at low magnitude.} The baseline sits at the random floor at every layer (CKNNA $\approx 0$), while REPA separates from it cleanly, suggesting that its hidden states do move towards the encoder's (Figure~\ref{fig:proteina-cknna}a). This serves as a minimal check that the construction changes model behaviour. However, the magnitude of this signal is small. Peak per-residue CKNNA (bootstrap median) is $\approx 0.02$--$0.05$, on a scale where self-alignment is $1$. We therefore read the pattern, not its size, and stake no strong claim on these numbers.
 
 \input{figures/fig03_alignment}
 
@@ -1394,22 +1395,27 @@ Following Yu et al.~\cite{REPA} and recent in-domain work~\cite{BoltzREPA}, we i
 
 One possible explanation for this phenomenon is the \emph{Platonic representation hypothesis}~\cite{PlatonicRep}. This idea suggests models trained on related data converge toward a shared representation. In this framework, REPA may be nudging the trunk toward a common structural representation that several encoders approximate, rather than toward any single encoder. We offer this only as a possible interpretation, not as a claim.
 
-\subsection{REPA accelerates generation, durably on synthetic data}
+\subsection{REPA accelerates generation quality by climbing the representation--generation envelope faster}
 \label{sec:proteina-convergence}
+\label{sec:proteina-genrep}
 
-\textbf{On synthetic data the acceleration is large and permanent.} REPA-GearNet reaches the AFDB baseline's best-ever FID 6.5--13$\times$ earlier and keeps improving past it (Table~\ref{tab:proteina-speedup}); the baseline floors at 386 and never closes the gap. \emph{One caveat:} AFDB's designability edge is partly a proxy artefact --- the ProteinMPNN$\to$ESMFold round-trip shares lineage with the AlphaFold2 that built AFDB (\S\ref{sec:proteina-scope}) --- but the FID, distribution-match, and representation gains share no such lineage.
+In this subsection, we focus on the holistic \emph{Quality} metrics of our suite, FID and designability (outlined in Table~\ref{tab:setup-metrics}), to outline our headline results. A deeper analysis of generation quality along tertiary- and secondary-structure decomposition follows in \S\ref{sec:proteina-anatomy}.
 
-\textbf{On experimental data the acceleration is real but transient.} REPA-L9 leads on FID at every step up to 1.2M, by 27\% at 700K. But the PDB baseline is a strong asymptotic learner: it matches REPA's plateau by $\approx$1.4M and edges below by 1.6M. On designability the PDB story is cleaner --- a 1.8--2.3$\times$ speedup, with the random control never reaching the baseline's best.
-
-\textbf{The regime split is about the baseline, not REPA.} The AFDB baseline plateaus poorly, so REPA's head start is never given back; the PDB baseline is strong, so it closes. Same intervention, opposite asymptotics --- REPA helps most where the base learner struggles most. It is also the first sign that REPA's gains are front-loaded, a theme we return to at the trade-off~\cite{HASTE}.
+\textbf{REPA gives generation quality an early head start in every regime.} At 400K steps into training, most REPA variants lead the baseline on both metrics: FID by up to $+28\%$, and designability by up to $+149\%$ (Table~\ref{tab:proteina-speedup}).
 
 \input{tables/table_speedup}
 
-\textbf{The generation gain plausibly runs through representation.} Across checkpoints, better student geometry tracks better generation, and the two move together only under REPA (Figure~\ref{fig:proteina-genrep}). Lower dihedral error predicts higher designability (Pearson $r=-0.54$; $-0.47$ controlling for training step). The same envelope holds for inverse folding, and on AFDB for fold accuracy against FID.
+\textbf{This acceleration is consistent with the representation-bottleneck hypothesis.} Yu et al.~\cite{REPA} hypothesise that a model's representation quality and its generation quality are coupled, because it is learning both at once. In our models, this coupling is clear. Across checkpoints, representation and generation quality are positively correlated, and the correlation survives controlling for training step (Table~\ref{tab:proteina-genrep-corr}). If the two move together, then securing good representations early should secure good generation early as well.
+
+\textbf{REPA climbs the representation--generation envelope faster than the baseline.} REPA reaches an asymptotically higher representation quality almost as soon as training begins (\S\ref{sec:proteina-rep}, Figure~\ref{fig:proteina-rep}). On the representation--generation curve posited by the bottleneck hypothesis, this places it further along than the baseline at matched compute (Figure~\ref{fig:proteina-genrep}). Hence, it reaches a given level of generation quality at less training. We interpret REPA as simply traversing this curve faster, rather than finding a new shortcut.
 
 \input{figures/fig04_fid_des_gen_vs_rep}
 
-\textbf{The link is encoder-matched, which is the strongest evidence that it is causal.} GearNet's fold-representation advantage surfaces as a fold-\emph{distribution} gain; MPNN's local advantage surfaces as a \emph{designability} gain. Both sides rank-order the encoders identically. We stop short of formal mediation --- the random control brackets the relationship, but co-movement is not proof.
+\textbf{This representation--generation link is encoder-matched, the strongest sign it is causal.} Each encoder's generation gain lands on the axis where its representations are strongest. GearNet, the better fold encoder (\S\ref{sec:proteina-rep}), gives the larger gain in fold \emph{distribution}; MPNN, the better local encoder, gives the larger gain in \emph{designability} (\S\ref{sec:proteina-anatomy}). These two rank-orders coincide, global with global and local with local, which a generic regularisation effect would not produce. We stop short of formal mediation: the random control brackets the relationship, but co-movement is not proof.
+
+\input{tables/table_genrep_corr}
+
+\textbf{Broadly, REPA's lasting advantage tracks the headroom the baseline leaves.} Where the baseline plateaus poorly, REPA's lead is large and permanent, as on AFDB FID. Where the baseline is a slow learner, the lead narrows yet still holds, as on PDB designability. Only where the baseline is a genuinely strong learner, as on PDB FID, does it eventually close the gap. AFDB designability is the exception, leaving little headroom over the baseline, but this high baseline reflects no special merit. As we noted earlier (\S\ref{sec:proteina-datasets}), this is likely a quirk of the relationship between how designability is measured and how AFDB was generated. Tellingly, even the random control scores highest there. We also observed the same headroom-bound pattern in our small-molecule study (Chapter~\ref{ch:tabasco-study}).
 
 \subsection{REPA improves whole-model coverage but trades off designable diversity}
 \label{sec:proteina-anatomy}

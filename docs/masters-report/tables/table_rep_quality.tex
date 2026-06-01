@@ -20,6 +20,6 @@ REPA L9-GN     & \gd{+0.026} & \gd{$-$8.1} & \gb{+0.171} & \gb{+0.305} & \gb{+0.
 REPA L9-MPNN   & \gb{+0.036} & \gb{$-$11.4} & \gd{+0.120} & \gd{+0.151} & \gd{+0.172} \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA offers persistent and encoder-routed representation advantages.} Best-layer linear-probe performance, averaged over the 700K--1.2M training-step window common to all variants. REPA-GearNet wins the fold probes (CATH C/A/T), while REPA-MPNN wins the per-residue probes (IF, dihedral), and the random control gains least --- consistent with what each encoder was trained for. We headline on CATH-A and report Class and Topology for completeness. ($n{\le}256$ PDB; $\Delta$ from baseline; \colorbox{green!20}{green} = improvement, \colorbox{green!42}{darker} = best per probe.)}
+\caption{\textbf{REPA offers persistent and encoder-routed representation advantages.} Consistent with what each encoder was trained for, REPA-GearNet wins the fold probes (CATH C/A/T), while REPA-MPNN wins the per-residue probes (IF, dihedral). We headline on CATH-A, and report C and T for completeness. ($n{\le}256$ PDB-trained; best-layer linear-probe performance, averaged over the 700K--1.2M training-step window; $\Delta$ from baseline; \colorbox{green!20}{green} = improvement, \colorbox{green!42}{darker} = best per probe.)}
 \label{tab:proteina-rep}
 \end{table}

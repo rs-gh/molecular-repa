@@ -47,6 +47,36 @@ Running list of things to add to the appendix and other deferred cleanup for
 - [ ] Confirm **CKNNA** is the alignment measure actually reported in the
   original REPA and BoltzREPA papers (vs CKA/another) before final.
 
+## Generation results (Ch6 §convergence)
+
+- [ ] **Build `table_genrep_corr` — rep-quality × generation-quality correlation
+  matrix** (would back both the bottleneck framing and the encoder-matched claim
+  in §convergence). Data already exists; join the rep CSV and the gen jsonl on
+  `(family, step)`, best-layer per rep metric, seed-mean per gen metric, pooled
+  across families+steps. Write from a generator script (not hand-typed).
+  - Rep metrics: IF top-1, dihedral MAE, CATH-A (and C/T, dist-MAE) — note the
+    eval regime per metric (IF/dihedral from `n256_xclean_afdb_pdb`, CATH from
+    `n256_convergence_cleantrain_pdb`).
+  - Gen metrics: FID, designability, fJSD-A (and C/T, diversity).
+  - Report n per cell and ideally a **step-partialed** correlation alongside the
+    raw one (the raw pooled r conflates the training-step confound).
+  - Exploratory run 2026-06-01 (PDB, n=59, raw pooled Pearson) already shows the
+    encoder-matched diagonal: local rep (IF +0.70 / dih -0.57 vs Des) routes to
+    designability; fold rep (CATH-A -0.39 vs fJSD-A) routes to fold-distribution.
+    §convergence ¶2 currently defers the numbers to this table.
+
+- [ ] **Encoder-matched rank-order panel** (optional, would strengthen the
+  "link is encoder-matched" claim in §convergence / `sec:proteina-genrep`).
+  The claim — GearNet's fold-representation strength surfaces as a fold-
+  *distribution* generation gain, MPNN's local strength as a *designability*
+  gain — currently rests on a **coincidence of two rank-orders read across two
+  sections** (rep rank in §rep / Fig~6.2; gen rank in §anatomy). No single
+  artefact shows the matching. Verified 2026-06-01 the rank-orders do hold in
+  the convergence data (GearNet best AFDB-FID 282 vs MPNN 352; MPNN best PDB-des
+  0.82 vs GearNet 0.70-then-collapse). A small 2-panel figure (rep-rank vs
+  gen-rank, 4 encoders) would make it visible rather than asserted. Not blocking;
+  prose hedges "co-movement, not proof".
+
 ## Representation-quality table & figure (Ch6 §rep)
 
 - [ ] **Regenerate `table_rep_quality` from current data.** Committed numbers are
@@ -73,23 +103,60 @@ Running list of things to add to the appendix and other deferred cleanup for
   and state the spread rather than bare point values. Especially important given
   the small absolute CKNNA magnitudes — error bars would show whether the
   alignment pattern is robust to seed.
-  - [ ] **AFDB random run (`repa_l4_afdb_256_random`) — prioritise multi-seed.**
-    This is the random-encoder REPA falsifier control trained on AFDB; it is a
-    headline control yet currently single-seed (seed 42). Re-run its rep/align
-    evals over several probe-fit seeds so the control carries an error bar.
-    Checkpoints on /rds: steps 100k/200k/400k/500k
-    (`store/proteina_60m_repa_l4_256_afdb_per_residue_random_bs24_2gpu`). Appears
-    in profiles `paper_n256_cath_if_dih_convergence_afdb_ext{3,4}` (→
-    `results/paper/n256_convergence_cath_if_dih_afdb`, n_eval=4521) and
-    `paper_n256_cath_if_dih_xclean_pdb_afdb_ext{3,4}` (→
-    `results/paper/n256_xclean_pdb_afdb`, n_eval=62). **Caveat:** passing
-    `--seeds` ≠ `42` flips `run_sweep.py` into the *rich* per-seed schema, which
-    does not co-merge with the existing flat-schema rows in those dirs — write
-    multi-seed output to a separate dir (or re-run the whole comparison set
-    multi-seed), don't append into the flat dirs.
+  - [ ] **AFDB random run (`repa_l4_afdb_256_random`) — finish the generation
+    variance reps.** This random-encoder REPA falsifier control is a headline
+    control but its **generation** evals (fid/des/div/nov/ss, fig4/fig5) are
+    only multi-seed at step100k. step100k has 3 reps
+    (`results/variance/n256_convergence_afdb_ext5/`, via
+    `submit_variance_sweep.sh --axis A --reps 3`); steps **200k/400k/500k** are
+    the `n256_convergence_afdb_ext7` profile, run single-seed only (rep_idx=0).
+    Bring them up to 3 reps to match step100k:
+    `submit_variance_sweep.sh --profile n256_convergence_afdb_ext7 --axis A --reps 3`
+    (seeds 42/1042/2042 → `results/variance/n256_convergence_afdb_ext7/`).
+    Checkpoints are the stable pinned EMA snapshots (training is resuming), safe
+    to eval. (Separate, lower-priority: the *representation*/alignment sweep is
+    single-seed everywhere — the generic multi-seed item above.)
 - [ ] **Figure/plot conventions to propagate** (introduced on fig02 this session):
   single shared legend below the panels, (a)/(b)/(c) panel-title labels, and
   "(thousands, log scale)" x-axis label. Apply to fig1c, fig3, fig4, fig5.
+
+## ⚠️ Step-matching / training-extent bias (BIG cleanup — affects ALL gen comparisons)
+
+- [ ] **Re-evaluate every model on a common step grid.** Models are trained to
+  very different extents, so any "cumulative best" comparison is biased toward the
+  longer-trained run. Measured 2026-06-01 (n256 convergence, last eval step):
+  - AFDB: baseline **1.7M**, GearNet-L4 1.2M, GearNet-L9 0.9M, MPNN-L4 1.1M,
+    MPNN-L9 1.5M, random **0.5M**. Common max = 500K.
+  - PDB: baseline **2.4M**, GearNet-L4 1.0M, GearNet-L9 1.6M, MPNN-L4 1.6M,
+    MPNN-L9 2.0M, random 1.2M. Common max = 1.0M.
+  - Naive step-matching on existing data fails: common horizons are tiny, and the
+    AFDB baseline FID is non-monotonic (best-in-short-window is unrepresentative).
+  - **Reassurance (why this isn't a fire):** on the two headline durable cells the
+    bias runs AGAINST REPA and it still wins — AFDB-FID baseline (1.7M) best 386 vs
+    GearNet-L4 (1.2M) 282; PDB-Des baseline (2.4M) 0.67 vs MPNN-L9 (2.0M) 0.82. So
+    the durable claims are conservative. The bias only helps the baseline on
+    PDB-FID (transient cell, kept out of the speedup framing) and mildly confounds
+    the random control's "never reaches baseline-best designability" (random only
+    trained to 1.2M PDB / 0.5M AFDB).
+  - **Proper fix:** pick a common step grid, re-run generation eval for all
+    checkpoints on it, recompute speedup / head-to-head step-matched. Until then,
+    `table_speedup` shows a Last-ckpt column + caveat so the unevenness is visible.
+
+## Cross-study themes to pay off (Conclusions / Tabasco)
+
+- [ ] **Metric saturation limits measurable headroom for REPA.** In §convergence
+  (`sec:proteina-genrep`) we note AFDB designability is a null cell: the baseline
+  already saturates the proxy, so there is no headroom for REPA to show a gain.
+  The user flags this as reminiscent of the **small-molecule (Tabasco) study**,
+  where the standard metrics are easily saturated by the baseline, again leaving
+  little headroom. Candidate cross-cutting theme: *how much REPA can demonstrably
+  help is gated by how much headroom the metric/baseline leaves* — tie together
+  in the Conclusions (Ch~\ref{ch:conclusions}) and seed in the Tabasco chapter
+  (`ch:tabasco-study`) once written. **Ch6 §convergence now carries a backward-ref
+  ("We saw the same headroom-bound pattern in our small-molecule study,
+  Ch~\ref{ch:tabasco-study}") — Ch5 (small molecules) PRECEDES Ch6, so the tense
+  is fine, but Ch5 must actually make the metric-saturation/headroom point or this
+  ref dangles.** Pay it off when writing Ch5.
 
 ## Prose / structure cleanup
 

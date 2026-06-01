@@ -1,13 +1,18 @@
 """Fig 4 (combined) — Gen-vs-rep bridge, 2 panels: FID (left), designability (right).
 
 Merges fig4_gen_vs_rep (designability) and fig4b_gen_vs_rep_fid (FID) into one
-figure. x-axis = student representation quality (dihedral MAE, xclean PDB,
-best layer), inverted so "better rep" reads left-to-right. Each point is a
-(run, step) checkpoint; lines connect a run's trajectory.
+figure. x-axis = student representation quality (CATH-A fold-classification
+accuracy, cleantrain PDB, best layer); higher is better, so "better rep" reads
+left-to-right with no inversion. Each point is a (run, step) checkpoint; lines
+connect a run's trajectory.
+
+CATH-A is used (rather than dihedral MAE) because it gives the tightest band, the
+cleanest baseline-vs-REPA separation, and the smoothest trajectory; see the
+x-axis comparison in the session notes.
 
 Conventions vs the source figures:
   - No panel titles.
-  - Random target removed: baseline + REPA L9-MPNN only.
+  - baseline + REPA L9-MPNN only (random control dropped for clarity).
   - 400K checkpoints bordered (not enlarged), with a dashed baseline ->
     L9-MPNN same-compute arrow and a "400K" label by the leftmost dot.
   - FID panel y-axis is NOT inverted (low FID at the bottom).
@@ -31,15 +36,14 @@ from style import classify_family, setup_axes, legend, use_report_style
 use_report_style()
 
 ROOT = "/home/sr2173/git/molecular-repa"
-XCLEAN = f"{ROOT}/evaluation/proteina/representation/results/paper/n256_xclean_afdb_pdb/pretrained_sweep_results.csv"
+REP_CSV = f"{ROOT}/evaluation/proteina/representation/results/paper/n256_convergence_cleantrain_pdb/pretrained_sweep_results.csv"
 GEN = f"{ROOT}/evaluation/proteina/generation/results/paper/n256_convergence_pdb/sweep_results.clean.jsonl"
 OUT = f"{ROOT}/docs/masters-report/figures/fig04_fid_des_gen_vs_rep.png"
 
 TARGET_STEP = 400000
 FAMILIES = [
     "baseline_256_bs24_2gpu",  # floor reference
-    "repa_mpnn_l9_256_per_residue",  # best: wins dihedral (x), FID and Des (y)
-    "repa_l4_256_per_residue_random_bs24_2gpu",  # random-target falsifier
+    "repa_mpnn_l9_256_per_residue",  # best PDB variant: wins FID and Des (y)
 ]
 
 
@@ -47,13 +51,13 @@ def fam(run):
     return re.sub(r"_step\d+k$", "", run)
 
 
-# --- Rep: dihedral MAE best-layer per (family, step) ---
+# --- Rep: CATH-A best-layer accuracy per (family, step) ---
 rep = defaultdict(lambda: defaultdict(list))
-with open(XCLEAN) as f:
+with open(REP_CSV) as f:
     for row in csv.DictReader(f):
-        if row.get("probe_kind") != "dihedral":
+        if row.get("probe_kind") != "cath" or row.get("cath_level") != "A":
             continue
-        v = row.get("dih_mae_total_deg")
+        v = row.get("cath_accuracy")
         if not v:
             continue
         try:
@@ -64,7 +68,7 @@ with open(XCLEAN) as f:
             continue
         rep[fam(row["run"])][step].append((layer, v))
 rep_data = {
-    f: {s: min(vs, key=lambda x: x[1])[1] for s, vs in steps.items()}
+    f: {s: max(vs, key=lambda x: x[1])[1] for s, vs in steps.items()}
     for f, steps in rep.items()
 }
 
@@ -126,10 +130,10 @@ def panel(ax, gen_data, ylabel, set_ylim01=False):
 
     setup_axes(
         ax,
-        xlabel="Dihedral MAE (xclean PDB, best layer, $^\\circ$)",
+        xlabel="CATH-A accuracy (cleantrain PDB, best layer)",
         ylabel=ylabel,
     )
-    ax.invert_xaxis()  # so "better rep" reads left-to-right
+    # higher CATH-A = better, so "better rep" is already left-to-right (no invert).
     if set_ylim01:
         ax.set_ylim(0.0, 1.0)
     legend(ax, loc="lower right")
@@ -167,8 +171,8 @@ def panel(ax, gen_data, ylabel, set_ylim01=False):
             zorder=20,
         )
     if target_points:
-        # x-axis is inverted, so leftmost == largest dihedral MAE.
-        leftmost = max(target_points, key=lambda p: p[0])
+        # higher CATH-A = better = right; leftmost == smallest CATH-A.
+        leftmost = min(target_points, key=lambda p: p[0])
         ax.annotate(
             "400K",
             xy=(leftmost[0], leftmost[1]),

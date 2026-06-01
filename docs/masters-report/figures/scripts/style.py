@@ -79,13 +79,30 @@ def setup_axes(ax, title="", xlabel="", ylabel="", grid=True):
     ax.tick_params(labelsize=9)
 
 
-def log_step_axis(ax, label="Training step (thousands)"):
-    """Apply log scale on x-axis for training-step plots, with humanised ticks."""
+def _humanize_step_k(x, _):
+    """Tick formatter for an x-axis expressed in *thousands* of steps.
+
+    100 -> "100k", 1000 -> "1M", 1600 -> "1.6M", 2400 -> "2.4M".
+    """
+    if x >= 1000:
+        return f"{x / 1000:g}M"
+    return f"{x:g}k"
+
+
+def log_step_axis(ax, label="Training step (log scale)"):
+    """Apply log scale on x-axis for training-step plots, with humanised ticks.
+
+    x-data is in thousands of steps; ticks span the full sweep range (data
+    runs to 2.4M steps) and are humanised to 100k / 1M / 2.4M form. Ticks
+    beyond a given figure's data are auto-clipped by the data-driven xlim.
+    """
     import matplotlib.ticker as mticker
 
     ax.set_xscale("log")
-    ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{int(x)}"))
-    ax.xaxis.set_major_locator(mticker.FixedLocator([100, 200, 400, 700, 1000, 1600]))
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(_humanize_step_k))
+    ax.xaxis.set_major_locator(
+        mticker.FixedLocator([100, 200, 400, 700, 1000, 1500, 2400])
+    )
     ax.xaxis.set_minor_locator(mticker.NullLocator())
     ax.set_xlabel(label, fontsize=10)
     ax.grid(True, which="major", alpha=0.25, linewidth=0.5)

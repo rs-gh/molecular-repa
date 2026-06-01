@@ -99,7 +99,7 @@ def draw(ax, tj, fams_to_show, title, ylabel):
         if any(mx > mn for mn, mx in zip(mins, maxs)):
             ax.fill_between(steps_k, mins, maxs, color=color, alpha=0.18, zorder=z - 1)
     setup_axes(ax, title=title, ylabel=ylabel)
-    log_step_axis(ax, label="Training step (thousands, log scale)")
+    log_step_axis(ax, label="Training step (log scale)")
 
 
 def fid_panel(ax, tj, fams, title, ylabel):

@@ -137,7 +137,7 @@ def plot_traj_panel(ax, data, families, title, ylabel, refs=None, higher_better=
                 alpha=0.9,
             )
     setup_axes(ax, title=title, ylabel=ylabel)
-    log_step_axis(ax, label="Training step (thousands, log scale)")
+    log_step_axis(ax, label="Training step (log scale)")
 
 
 FAMS = [
