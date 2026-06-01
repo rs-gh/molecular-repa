@@ -41,7 +41,12 @@ def fam(run):
 
 
 def best_layer(csv_path, probe_kind, value_col, level=None, higher_better=True):
-    by = defaultdict(lambda: defaultdict(list))
+    """Per (family, step): best-layer value per seed, then (mean, min, max)
+    across seeds. With a single seed the band degenerates (mean=min=max) and
+    no fill is drawn. Mirrors the generation figures' min/max-over-seeds band.
+    """
+    # by[family][step][seed] -> list of (layer, value)
+    by = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     with open(csv_path) as f:
         for row in csv.DictReader(f):
             if row.get("probe_kind") != probe_kind:
@@ -57,13 +62,15 @@ def best_layer(csv_path, probe_kind, value_col, level=None, higher_better=True):
                 layer = int(row["layer"])
             except Exception:
                 continue
-            by[fam(row["run"])][step].append((layer, v))
+            seed = row.get("probe_seed") or "42"  # legacy CSVs have no seed col
+            by[fam(row["run"])][step][seed].append((layer, v))
+    pick = max if higher_better else min
     out = {}
     for f_, steps in by.items():
-        out[f_] = {
-            s: (max if higher_better else min)(v for _, v in vs)
-            for s, vs in steps.items()
-        }
+        out[f_] = {}
+        for s, seeds in steps.items():
+            per_seed = [pick(v for _, v in vs) for vs in seeds.values()]
+            out[f_][s] = (sum(per_seed) / len(per_seed), min(per_seed), max(per_seed))
     return out
 
 
@@ -112,8 +119,12 @@ def plot_traj_panel(ax, data, families, title, ylabel, refs=None, higher_better=
         color, marker, label, z = classify_family(family)
         steps = sorted(data[family])
         steps_k = [s / 1000 for s in steps]
-        vals = [data[family][s] for s in steps]
-        plot_trajectory(ax, steps_k, vals, None, color, marker, label, zorder=z)
+        means = [data[family][s][0] for s in steps]
+        mins = [data[family][s][1] for s in steps]
+        maxs = [data[family][s][2] for s in steps]
+        plot_trajectory(ax, steps_k, means, None, color, marker, label, zorder=z)
+        if any(mx > mn for mn, mx in zip(mins, maxs)):
+            ax.fill_between(steps_k, mins, maxs, color=color, alpha=0.18, zorder=z - 1)
     for label, ls, color, val in refs or []:
         if val is not None:
             ax.axhline(

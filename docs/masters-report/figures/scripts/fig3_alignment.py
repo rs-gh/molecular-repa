@@ -6,6 +6,11 @@ Right: REPA-L9-GearNet's alignment to three different target encoders
        (GearNet, MPNN, ESM2) — Platonic convergence: aligning to GearNet
        alone also raises alignment to MPNN and ESM2.
 
+Lines are CKNNA bootstrap medians; shaded bands are the 5–95%
+subsample-without-replacement bootstrap interval (lo5–hi95). Median rather
+than the full-N point estimate so the line always sits inside its band; the
+two differ by <0.006 everywhere.
+
 n=256 PDB, step 1M, t=1.0, per-residue, k=10.
 """
 
@@ -26,6 +31,8 @@ ROOT = "/home/sr2173/git/molecular-repa"
 SRC = f"{ROOT}/evaluation/proteina/alignment/results/cknna_matrix_per_residue.jsonl"
 OUT = f"{ROOT}/docs/masters-report/figures/fig03_alignment.png"
 
+BAND_ALPHA = 0.15  # shaded 5–95% bootstrap interval
+
 rows = []
 with open(SRC) as f:
     for line in f:
@@ -39,11 +46,37 @@ with open(SRC) as f:
 
 def by_layer(model, target):
     pts = [
-        (r["layer"], r["cknna"])
+        (r["layer"], r["median"], r["lo5"], r["hi95"])
         for r in rows
         if r["model"] == model and r["encoder"] == target
     ]
     return sorted(pts)
+
+
+def plot_curve(ax, pts, color, marker, label, z, lw=1.8, ms=5.5, alpha=0.95):
+    """Plot a bootstrap-median line with its 5–95% bootstrap band."""
+    xs = [p[0] for p in pts]
+    ax.fill_between(
+        xs,
+        [p[2] for p in pts],
+        [p[3] for p in pts],
+        color=color,
+        alpha=BAND_ALPHA,
+        linewidth=0,
+        zorder=z - 1,
+    )
+    ax.plot(
+        xs,
+        [p[1] for p in pts],
+        "-",
+        marker=marker,
+        color=color,
+        label=label,
+        linewidth=lw,
+        markersize=ms,
+        zorder=z,
+        alpha=alpha,
+    )
 
 
 def model_style(model):
@@ -91,18 +124,7 @@ for model, target, label, color, marker, z in OWN:
     pts = by_layer(model, target)
     if not pts:
         continue
-    ax.plot(
-        [p[0] for p in pts],
-        [p[1] for p in pts],
-        "-",
-        marker=marker,
-        color=color,
-        label=label,
-        linewidth=1.8,
-        markersize=5.5,
-        zorder=z,
-        alpha=0.95,
-    )
+    plot_curve(ax, pts, color, marker, label, z)
 setup_axes(
     ax,
     title="(a) Alignment to own target encoder $\\uparrow$",
@@ -116,17 +138,16 @@ legend(ax, loc="upper left")
 ax = axes[1]
 b_pts = by_layer("baseline", "gearnet")
 if b_pts:
-    ax.plot(
-        [p[0] for p in b_pts],
-        [p[1] for p in b_pts],
-        "-",
-        marker=MARKERS["baseline"],
-        color=COLORS["baseline"],
-        label="Baseline (any target)",
-        linewidth=1.5,
-        markersize=5,
+    plot_curve(
+        ax,
+        b_pts,
+        COLORS["baseline"],
+        MARKERS["baseline"],
+        "Baseline (any target)",
+        5,
+        lw=1.5,
+        ms=5,
         alpha=0.7,
-        zorder=5,
     )
 TARGETS = [
     ("gearnet", "GearNet (target)", COLORS["L9"], "o"),
@@ -137,17 +158,7 @@ for target, label, color, marker in TARGETS:
     pts = by_layer("repa_gearnet_l9", target)
     if not pts:
         continue
-    ax.plot(
-        [p[0] for p in pts],
-        [p[1] for p in pts],
-        "-",
-        marker=marker,
-        color=color,
-        label=f"REPA L9-GN $\\rightarrow$ {label}",
-        linewidth=1.8,
-        markersize=6,
-        zorder=10,
-    )
+    plot_curve(ax, pts, color, marker, f"REPA L9-GN $\\rightarrow$ {label}", 10, ms=6)
 setup_axes(
     ax,
     title="(b) REPA-L9-GN propagates alignment off-diagonally (Platonic) $\\uparrow$",

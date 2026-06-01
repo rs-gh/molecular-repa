@@ -65,6 +65,14 @@ Running list of things to add to the appendix and other deferred cleanup for
     "Topology too finely-bucketed to probe reliably" → "noisiest level, but the
     direction is consistent across C→A→T".
   - [ ] Write the table from a small reproducible generator script (don't hand-maintain).
+- [ ] **Run the representation sweep over multiple seeds** — the rep-quality and
+  alignment results (table_rep_quality, fig02, fig03) are currently single-seed
+  point estimates (`sweep_config.yaml`: `seeds: "42"`, `probe_seed 42`,
+  `manifest_seed 42`). Re-run across several seeds so we can report variance /
+  error bars (probe-fit seed at minimum; ideally also the manifest-sample seed),
+  and state the spread rather than bare point values. Especially important given
+  the small absolute CKNNA magnitudes — error bars would show whether the
+  alignment pattern is robust to seed.
 - [ ] **Figure/plot conventions to propagate** (introduced on fig02 this session):
   single shared legend below the panels, (a)/(b)/(c) panel-title labels, and
   "(thousands, log scale)" x-axis label. Apply to fig1c, fig3, fig4, fig5.
