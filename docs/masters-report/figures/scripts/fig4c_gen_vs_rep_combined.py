@@ -31,7 +31,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.dirname(__file__))
-from style import classify_family, setup_axes, legend, use_report_style
+from style import classify_family, setup_axes, use_report_style
 
 use_report_style()
 
@@ -49,6 +49,18 @@ FAMILIES = [
 
 def fam(run):
     return re.sub(r"_step\d+k$", "", run)
+
+
+def thin(steps, min_gap=400_000):
+    """Keep a coarse, well-spaced subset of checkpoints (REPA-paper density),
+    always retaining the matched-compute anchor."""
+    kept = []
+    for s in steps:
+        if not kept or s - kept[-1] >= min_gap:
+            kept.append(s)
+    if TARGET_STEP in steps and TARGET_STEP not in kept:
+        kept = sorted(kept + [TARGET_STEP])
+    return kept
 
 
 # --- Rep: CATH-A best-layer accuracy per (family, step) ---
@@ -92,19 +104,19 @@ def gen_trajec(key):
     return {f: {s: mean(vs) for s, vs in steps.items()} for f, steps in gen.items()}
 
 
-def panel(ax, gen_data, ylabel, set_ylim01=False):
+def panel(ax, gen_data, ylabel, title, set_ylim01=False):
     target_points = []  # (x, y, color, marker, label) at TARGET_STEP
     for family in FAMILIES:
         if family not in rep_data or family not in gen_data:
             continue
         color, marker, label, z = classify_family(family)
-        common = sorted(set(rep_data[family]) & set(gen_data[family]))
+        common = thin(sorted(set(rep_data[family]) & set(gen_data[family])))
         if not common:
             continue
         xs = [rep_data[family][s] for s in common]
         ys = [gen_data[family][s] for s in common]
+        ax.plot(xs, ys, "-", color=color, alpha=0.55, linewidth=1.8, zorder=z - 1)
         sizes = [30 + (s / 1600000) * 100 for s in common]
-        ax.plot(xs, ys, "-", color=color, alpha=0.4, linewidth=1.2, zorder=z - 1)
         ax.scatter(
             xs,
             ys,
@@ -132,11 +144,11 @@ def panel(ax, gen_data, ylabel, set_ylim01=False):
         ax,
         xlabel="CATH-A accuracy (cleantrain PDB, best layer)",
         ylabel=ylabel,
+        title=title,
     )
     # higher CATH-A = better, so "better rep" is already left-to-right (no invert).
     if set_ylim01:
         ax.set_ylim(0.0, 1.0)
-    legend(ax, loc="lower right")
 
     # Border (don't enlarge) the 400K points; dashed baseline -> best arrow.
     target_marker_size = 30 + (TARGET_STEP / 1600000) * 100
@@ -184,24 +196,37 @@ def panel(ax, gen_data, ylabel, set_ylim01=False):
         )
 
 
-fig, axes = plt.subplots(1, 2, figsize=(13, 5.4))
+fig, axes = plt.subplots(1, 2, figsize=(13, 5.0))
 
 # Left = FID-PDB (lower is better; y NOT inverted)
-panel(axes[0], gen_trajec("_res_PDB_FID"), ylabel="FID-PDB (1.1K refs) $\\downarrow$")
+panel(
+    axes[0],
+    gen_trajec("_res_PDB_FID"),
+    ylabel="FID (1.1K refs)",
+    title="(a) FID-PDB $\\downarrow$",
+)
 
 # Right = designability rate (higher is better)
 panel(
     axes[1],
     gen_trajec("_res_designability_rate"),
-    ylabel="Designability rate $\\uparrow$",
+    ylabel="rate",
+    title="(b) Designability $\\uparrow$",
     set_ylim01=True,
 )
 
-fig.suptitle(
-    "Generation quality vs. student representation quality across training checkpoints "
-    "(PDB, $n{=}256$)",
-    fontsize=12,
+# Single shared legend below the panels (common-legend convention).
+handles, labels = axes[0].get_legend_handles_labels()
+fig.tight_layout(rect=[0, 0.08, 1, 1])
+fig.legend(
+    handles,
+    labels,
+    loc="lower center",
+    ncol=len(labels),
+    fontsize=9,
+    frameon=True,
+    framealpha=0.85,
+    bbox_to_anchor=(0.5, 0.0),
 )
-plt.tight_layout()
 plt.savefig(OUT, dpi=150, bbox_inches="tight")
 print(f"Saved {OUT}")

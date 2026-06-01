@@ -2,6 +2,6 @@
 \begin{figure}[tbp]
 \centering
 \includegraphics[width=\textwidth]{figures/fig04_fid_des_gen_vs_rep.png}
-\caption{\textbf{Better student geometry buys better generation at equal compute --- direct evidence REPA relieves the representation bottleneck.} Baseline, REPA L9-MPNN, and the random control all fall on a common band: lower student dihedral error accompanies better generation on both FID and designability. At matched compute ($\approx$400K steps, dashed arrow) REPA sits further along that band than the baseline. ($n{\le}256$ PDB, one marker per checkpoint; $x$-axis student dihedral MAE, better to the right; left FID-PDB $\downarrow$, right designability $\uparrow$.)}
+\caption{\textbf{Better student representations accompany better generation at equal compute.} The baseline and REPA-MPNN-L9 lie on a common representation--generation band: higher student fold accuracy (CATH-A) goes with better FID (a) and designability (b). At matched compute ($\approx$400K steps, dashed arrow) REPA already sits further along the band than the baseline on both. (One marker per checkpoint; $x$ = student CATH-A accuracy, higher to the right; generation values are means over up to three sampling seeds; $n{\le}256$, PDB.)}
 \label{fig:proteina-genrep}
 \end{figure}
