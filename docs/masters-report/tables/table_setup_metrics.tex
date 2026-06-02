@@ -17,23 +17,23 @@ CKNNA\,$\uparrow$~\cite{PlatonicRep} & Mutual-nearest-neighbour kernel alignment
 \midrule
 \multicolumn{4}{l}{\textbf{Generation quality} (Chapter~\ref{ch:evaluation})} \\
 \addlinespace
-\multicolumn{4}{l}{\hspace{0.5em}\textit{Quality}} \\
+\multicolumn{4}{l}{\textit{Quality}} \\
 FID\,$\downarrow$          & Fréchet distance to the reference set (GearNet features) & Distributional fidelity & Whole set \\
 Des\,$\uparrow$            & Fraction of samples that are designable & Physical realisability & Whole set \\
 \addlinespace
-\multicolumn{4}{l}{\hspace{0.5em}\textit{Tertiary structure --- whole set (T-W)}} \\
+\multicolumn{4}{l}{\textit{Tertiary structure --- whole set (T-W)}} \\
 fJSD-A\,$\downarrow$       & Jensen--Shannon divergence vs.\ reference CATH-A distribution & Fold-distribution fidelity & Whole set \\
 fS-A\,$\uparrow$           & Spread of generated folds across CATH-architecture classes & Whole-set fold diversity & Whole set \\
 pwTM\,$\downarrow$         & Mean pairwise TM-score & Structural diversity & Whole set \\
 \addlinespace
-\multicolumn{4}{l}{\hspace{0.5em}\textit{Tertiary structure --- designable subset (T-D)}} \\
+\multicolumn{4}{l}{\textit{Tertiary structure --- designable subset (T-D)}} \\
 \#Clust\,$\uparrow$        & Number of TM$\,\ge\,$0.5 structural clusters & Designable diversity & Designable subset \\
 pwTM\,$\downarrow$         & Mean pairwise TM-score, designable subset & Designable diversity & Designable subset \\
 \addlinespace
-\multicolumn{4}{l}{\hspace{0.5em}\textit{Secondary structure --- whole set (S-W)}} \\
+\multicolumn{4}{l}{\textit{Secondary structure --- whole set (S-W)}} \\
 ssJSD-2D\,$\downarrow$     & Jensen--Shannon divergence of the (helix-frac, strand-frac) distribution & Secondary-structure fidelity & Whole set \\
 \addlinespace
-\multicolumn{4}{l}{\hspace{0.5em}\textit{Secondary structure --- designable subset (S-D)}} \\
+\multicolumn{4}{l}{\textit{Secondary structure --- designable subset (S-D)}} \\
 ssJSD-2D\,$\downarrow$     & As above, on the designable subset & SS fidelity (designable) & Designable subset \\
 E\%des\,$\uparrow$         & Mean $\beta$-strand (E) fraction & $\beta$-content & Designable subset \\
 \bottomrule
