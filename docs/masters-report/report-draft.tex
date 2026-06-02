@@ -1374,13 +1374,13 @@ With this experimental testbed in place, the rest of the chapter investigates wh
 
 \input{figures/fig02_representation}
 
-\textbf{REPA improves representational capacity, consistently and permanently.} Every REPA variant lifts all three probes substantially above the baseline from the very beginning of training, and the difference persists. This is an asymptotic gap, not just a head start or an accelerated convergence pattern. This gap confirms one of the hypotheses posited in the original REPA presentation~\cite{REPA}: an alignment target during training can fill the representational headroom left by the flow-matching objective.
+\textbf{REPA improves representational capacity, consistently and permanently.} Every REPA variant with a trained encoder lifts all three probes substantially above the baseline from the very beginning of training, and the difference persists. This is an asymptotic gap, not just a head start or an accelerated convergence pattern. This gap confirms one of the hypotheses posited in the original REPA presentation~\cite{REPA}: an alignment target during training can fill the representational headroom left by the flow-matching objective.
 
 \textbf{Every encoder routes representation gain differently.} REPA-GearNet consistently wins the fold probes, while REPA-MPNN wins the per-residue probes (Table~\ref{tab:proteina-rep}). This pattern follows what we would expect a priori, given the tasks that each encoder has been specifically trained for. This ties into our emerging theme on the multi-factorial nature of representation learning in the molecular domain~(Chapter~\ref{ch:evaluation}). No single encoder captures every factor, so the choice of alignment target is also a choice over the representational factor a model designer wishes to emphasise. We establish this routing on PDB-trained models and report the AFDB results in Appendix~\ref{ch:appendix}.
 
 \input{tables/table_rep_quality}
 
-\textbf{REPA offers a mechanistic effect beyond just regularisation.} Our random-weights control also improves on the baseline across all probes. This may be because \emph{any} regularisation generically improves the model's representation capacity, or because even an untrained message-passing network imposes geometric priors that aid the trunk. Nevertheless, trained encoders consistently offer more, suggesting a genuine mechanistic effect.
+\textbf{The random-weights control isolates the alignment wrapper from the encoder.} It aligns the trunk to a frozen, \emph{untrained} message-passing network. The goal is narrow. We want to see what the REPA machinery does on its own, with no learned features to transmit. This control helps on the fold probes (CATH). It does not help on the per-residue probes; it is flat on inverse folding and slightly worse on dihedrals. We read this conservatively. An untrained network still imposes some coarse geometric structure, and the wrapper can pass a little of it to the trunk. Local geometry, by contrast, needs a genuinely trained target. The trained encoders beat the control on every probe. So REPA's representational gains come mainly from the encoder, not from the alignment wrapper on its own.
 
 \subsection{A diagnostic check on alignment}
 \label{sec:proteina-alignment}
@@ -1446,7 +1446,9 @@ In this subsection, we investigate how REPA impacts different aspects of generat
 \textbf{REPA's gains hold across the sampler's noise range.} We report our headline results at $\gamma{=}0.45$, the balance Proteina recommends, but the advantage is not specific to it. REPA improves designability and fidelity at almost every $\gamma$ (Table~\ref{tab:proteina-sampler}). The lone exception is the degenerate $\gamma{=}0$ regime, where the baseline saturates designability by repeating a few folds. Hence, REPA tracks the same trade-off, but at a higher level of
 designability and fidelity.
 
-\textbf{REPA also raises the deterministic-sampling floor.} The ODE limit (no injected noise) is where the baseline is least designable: Des $0.04$ on PDB and $0.12$ on AFDB (Table~\ref{tab:proteina-sampler}). This is where REPA's relative lift is largest, raising it to $0.16$ and $0.35$ respectively. As deterministic sampling is the cheapest and most reproducible regime, this is among the more practically useful of REPA's gains.
+\textbf{REPA raises the deterministic-sampling floor, which points to a better learned distribution.} The probability-flow ODE samples the trunk's learned distribution without injected noise (\S\ref{sec:flow-matching}); it is the closest view of what the model has actually learned to generate. Under the baseline that distribution is barely designable --- Des $0.04$ on PDB and $0.12$ on AFDB --- and it is the sampler noise that rescues it, with baseline designability climbing to $\approx$0.84 on PDB at $\gamma{=}0$. REPA's learned distribution is already far more designable at ODE, across nearly every learned encoder (Table~\ref{tab:proteina-ode}); only the PDB random control fails to lift it ($-0.02$). This suggests REPA improves the distribution the trunk learns, not merely the sampler's exploration.
+
+\input{tables/table_ode}
 
 \subsection{What we do not claim}
 \label{sec:proteina-scope}
