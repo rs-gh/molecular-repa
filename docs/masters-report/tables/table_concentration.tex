@@ -12,8 +12,8 @@
 Designable-subset pwTM\,$\downarrow$ & $\beta{<}10$ & $10$--$25$ & $\beta{\ge}25$ & $\beta{<}10$ & $10$--$25$ & $\beta{\ge}25$ \\
 \midrule
 \multicolumn{7}{l}{\textit{PDB-trained}}\\
-Baseline             & 0.15 & 0.22 & 0.50 & 0.15 & 0.23 & \textbf{0.13} \\
-REPA L9-GN           & 0.16 & \rd{0.27} & \rd{0.73} & 0.14 & 0.24 & \rd{\textbf{0.87}} \\
+Baseline             & 0.15 & 0.22 & 0.50 & 0.15 & 0.23 & 0.13 \\
+REPA L9-GN           & 0.16 & \rd{0.27} & \rd{0.73} & 0.14 & 0.24 & \rd{0.87} \\
 REPA L9-MPNN         & 0.16 & 0.21 & \rd{0.67} & \rd{0.26} & 0.22 & \rd{0.67} \\
 \midrule
 \multicolumn{7}{l}{\textit{AFDB-trained}}\\
@@ -22,6 +22,6 @@ REPA L9-GN           & \rd{0.37} & 0.31 & \rd{0.82} & \rd{0.40}$^{*}$ & \rd{0.32
 REPA L9-MPNN \textit{(falsifier)} & 0.15 & 0.27 & \gd{0.11} & 0.15 & 0.24 & 0.15 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA's loss of designable diversity is confined to the $\beta$-rich folds and is not a $\beta$-composition artefact.} Within the matched-$\beta$ $\beta{\ge}25$ bin, REPA concentrates onto near-identical folds (1.0M pwTM 0.87) where the baseline stays diverse (0.13); the $\alpha$-routing AFDB-MPNN-L9 escapes it. (Designable-subset pairwise TM, lower\,=\,more diverse; colour marks REPA \emph{vs.}\ baseline at the same step and bin: \colorbox{red!15}{red}/\colorbox{green!20}{green}\,=\,more concentrated/more diverse, $|\Delta|{<}0.05$ uncoloured. Single-seed; $^{*}$900K for AFDB L9-GN.)}
+\caption{\textbf{A REPA-learned distribution may collapse onto fewer distinct folds within its designable subset.} The effect is strongest in the $\beta$-sheet-rich folds. It is not a $\beta$-composition artefact. Within the matched-$\beta$ $\beta{\ge}25$ bin, REPA concentrates onto near-identical folds (1.0M pwTM 0.87) where the baseline stays diverse (0.13), while the $\alpha$-routing AFDB-MPNN-L9 escapes it. (Designable-subset pairwise TM, lower\,=\,more diverse; colour marks REPA \emph{vs.}\ baseline at the same step and bin: \colorbox{red!15}{red}/\colorbox{green!20}{green}\,=\,more concentrated/more diverse, $|\Delta|{<}0.05$ uncoloured. $n{\le}256$, single-seed; $^{*}$900K for AFDB L9-GN.)}
 \label{tab:proteina-concentration}
 \end{table}
