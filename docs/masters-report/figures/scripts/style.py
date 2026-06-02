@@ -82,18 +82,18 @@ def setup_axes(ax, title="", xlabel="", ylabel="", grid=True):
 def _humanize_step_k(x, _):
     """Tick formatter for an x-axis expressed in *thousands* of steps.
 
-    100 -> "100k", 1000 -> "1M", 1600 -> "1.6M", 2400 -> "2.4M".
+    100 -> "100K", 1000 -> "1M", 1600 -> "1.6M", 2400 -> "2.4M".
     """
     if x >= 1000:
         return f"{x / 1000:g}M"
-    return f"{x:g}k"
+    return f"{x:g}K"
 
 
 def log_step_axis(ax, label="Training step (log scale)"):
     """Apply log scale on x-axis for training-step plots, with humanised ticks.
 
     x-data is in thousands of steps; ticks span the full sweep range (data
-    runs to 2.4M steps) and are humanised to 100k / 1M / 2.4M form. Ticks
+    runs to 2.4M steps) and are humanised to 100K / 1M / 2.4M form. Ticks
     beyond a given figure's data are auto-clipped by the data-driven xlim.
     """
     import matplotlib.ticker as mticker

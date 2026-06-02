@@ -13,9 +13,9 @@
 \toprule
  & \multicolumn{6}{c}{\textbf{Sampler setting}} \\
 \cmidrule(lr){2-7}
-\textbf{Metric} & ODE & $\gamma{=}0$ & $\gamma{=}0.35$ & $\gamma{=}0.45$ & $\gamma{=}0.5$ & $\gamma{=}1.0$ \\
+\textbf{Metric (700K)} & ODE & $\gamma{=}0$ & $\gamma{=}0.35$ & $\gamma{=}0.45$ & $\gamma{=}0.5$ & $\gamma{=}1.0$ \\
 \midrule
-\multicolumn{7}{l}{\textit{PDB-trained --- baseline vs.\ REPA MPNN-L4 (700K)}}\\
+\multicolumn{7}{l}{\textit{PDB-trained --- baseline vs.\ REPA MPNN-L4}}\\
 FID\,$\downarrow$, base & 353 & 782 & 462 & 437 & 425 & 508 \\
 FID\,$\downarrow$, REPA & \gd{279} & \gd{561} & \gd{371} & \gd{349} & \gd{350} & \gd{424} \\
 \addlinespace
@@ -25,7 +25,7 @@ Des\,$\uparrow$, REPA   & \gd{0.16} & \rd{0.78} & \gd{0.66} & \gd{0.64} & \gd{0.
 pwTM (des.)\,$\downarrow$, base & 0.26 & 0.75 & 0.29 & 0.27 & 0.24 & 0.43 \\
 pwTM (des.)\,$\downarrow$, REPA & \rd{0.33} & \gd{0.44} & \rd{0.36} & \rd{0.35} & \rd{0.34} & \gd{0.34} \\
 \midrule
-\multicolumn{7}{l}{\textit{AFDB-trained --- baseline vs.\ REPA GearNet-L4 (700K)}}\\
+\multicolumn{7}{l}{\textit{AFDB-trained --- baseline vs.\ REPA GearNet-L4}}\\
 FID\,$\downarrow$, base & 220 & 641 & 522 & 494 & 475 & 366 \\
 FID\,$\downarrow$, REPA & \gd{148} & \gd{586} & \gd{328} & \gd{298} & \gd{292} & \gd{276} \\
 \addlinespace
