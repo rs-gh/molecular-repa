@@ -31,13 +31,42 @@ from style import (
 use_report_style()
 
 ROOT = "/home/sr2173/git/molecular-repa"
-XCLEAN = f"{ROOT}/evaluation/proteina/representation/results/paper/n256_xclean_afdb_pdb/pretrained_sweep_results.csv"
-CLEANTRAIN = f"{ROOT}/evaluation/proteina/representation/results/paper/n256_convergence_cleantrain_pdb/pretrained_sweep_results.csv"
+_REP = f"{ROOT}/evaluation/proteina/representation/results/paper"
+# Report standardised on n_train=1000 (2026-06-02). The regime CSVs hold the
+# early checkpoints + reference floors at n=1000; the frontier "tail"
+# checkpoints were re-run at n=1000 into the separate _n1000_compare/ dirs
+# (additive — the 5000 rows are never overwritten). We read BOTH and filter to
+# n_train==1000, so the whole trajectory sits on one protocol with no seam.
+N_TRAIN = "1000"
+XCLEAN = [
+    f"{_REP}/n256_xclean_afdb_pdb/pretrained_sweep_results.csv",  # seed42 early + refs
+    f"{_REP}/_n1000_compare/n256_xclean_afdb/pretrained_sweep_results.csv",  # seed42 tails (n=1000)
+    f"{_REP}/_n1000_bands/n256_xclean_afdb/pretrained_sweep_results.csv",  # seeds 1042/2042 (band)
+]
+CLEANTRAIN = [
+    f"{_REP}/n256_convergence_cleantrain_pdb/pretrained_sweep_results.csv",
+    f"{_REP}/_n1000_compare/n256_cleantrain_pdb/pretrained_sweep_results.csv",
+    f"{_REP}/_n1000_bands/n256_cleantrain_pdb/pretrained_sweep_results.csv",
+]
 OUT = f"{ROOT}/docs/masters-report/figures/fig02_representation.png"
 
 
 def fam(run):
     return re.sub(r"_step\d+k$", "", run)
+
+
+def _iter_rows(csv_paths):
+    """Yield rows from one or more CSVs, keeping only n_train==N_TRAIN."""
+    if isinstance(csv_paths, str):
+        csv_paths = [csv_paths]
+    for p in csv_paths:
+        if not os.path.exists(p):
+            continue
+        with open(p) as f:
+            for row in csv.DictReader(f):
+                if str(row.get("n_train")) != N_TRAIN:
+                    continue
+                yield row
 
 
 def best_layer(csv_path, probe_kind, value_col, level=None, higher_better=True):
@@ -47,23 +76,22 @@ def best_layer(csv_path, probe_kind, value_col, level=None, higher_better=True):
     """
     # by[family][step][seed] -> list of (layer, value)
     by = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-    with open(csv_path) as f:
-        for row in csv.DictReader(f):
-            if row.get("probe_kind") != probe_kind:
-                continue
-            if level is not None and row.get("cath_level") != level:
-                continue
-            v = row.get(value_col)
-            if not v:
-                continue
-            try:
-                v = float(v)
-                step = int(row["step"])
-                layer = int(row["layer"])
-            except Exception:
-                continue
-            seed = row.get("probe_seed") or "42"  # legacy CSVs have no seed col
-            by[fam(row["run"])][step][seed].append((layer, v))
+    for row in _iter_rows(csv_path):
+        if row.get("probe_kind") != probe_kind:
+            continue
+        if level is not None and row.get("cath_level") != level:
+            continue
+        v = row.get(value_col)
+        if not v:
+            continue
+        try:
+            v = float(v)
+            step = int(row["step"])
+            layer = int(row["layer"])
+        except Exception:
+            continue
+        seed = row.get("probe_seed") or "42"  # legacy CSVs have no seed col
+        by[fam(row["run"])][step][seed].append((layer, v))
     pick = max if higher_better else min
     out = {}
     for f_, steps in by.items():
@@ -86,17 +114,16 @@ REF_RUNS = [
 
 def naive_ref(csv_path, probe_kind, value_col, run, level=None, higher_better=True):
     best = None
-    with open(csv_path) as f:
-        for row in csv.DictReader(f):
-            if row.get("run") != run or row.get("probe_kind") != probe_kind:
-                continue
-            if level is not None and row.get("cath_level") != level:
-                continue
-            v = row.get(value_col)
-            if not v:
-                continue
-            v = float(v)
-            best = v if best is None else (max if higher_better else min)(best, v)
+    for row in _iter_rows(csv_path):
+        if row.get("run") != run or row.get("probe_kind") != probe_kind:
+            continue
+        if level is not None and row.get("cath_level") != level:
+            continue
+        v = row.get(value_col)
+        if not v:
+            continue
+        v = float(v)
+        best = v if best is None else (max if higher_better else min)(best, v)
     return best
 
 

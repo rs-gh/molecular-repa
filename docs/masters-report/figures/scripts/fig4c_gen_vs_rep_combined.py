@@ -36,9 +36,32 @@ from style import classify_family, setup_axes, use_report_style
 use_report_style()
 
 ROOT = "/home/sr2173/git/molecular-repa"
-REP_CSV = f"{ROOT}/evaluation/proteina/representation/results/paper/n256_convergence_cleantrain_pdb/pretrained_sweep_results.csv"
+_REP = f"{ROOT}/evaluation/proteina/representation/results/paper"
+# Report standardised on n_train=1000 (2026-06-02): regime CSV holds early
+# ckpts + refs at n=1000, the _n1000_compare/ dir holds the n=1000 tail re-runs
+# (additive — 5000 rows untouched). Read both, filter to n_train==1000.
+N_TRAIN = "1000"
+REP_CSV = [
+    f"{_REP}/n256_convergence_cleantrain_pdb/pretrained_sweep_results.csv",
+    f"{_REP}/_n1000_compare/n256_cleantrain_pdb/pretrained_sweep_results.csv",
+]
 GEN = f"{ROOT}/evaluation/proteina/generation/results/paper/n256_convergence_pdb/sweep_results.clean.jsonl"
 OUT = f"{ROOT}/docs/masters-report/figures/fig04_fid_des_gen_vs_rep.png"
+
+
+def _iter_rows(csv_paths):
+    """Yield rows from one or more CSVs, keeping only n_train==N_TRAIN."""
+    if isinstance(csv_paths, str):
+        csv_paths = [csv_paths]
+    for p in csv_paths:
+        if not os.path.exists(p):
+            continue
+        with open(p) as f:
+            for row in csv.DictReader(f):
+                if str(row.get("n_train")) != N_TRAIN:
+                    continue
+                yield row
+
 
 TARGET_STEP = 400000
 FAMILIES = [
@@ -65,20 +88,19 @@ def thin(steps, min_gap=400_000):
 
 # --- Rep: CATH-A best-layer accuracy per (family, step) ---
 rep = defaultdict(lambda: defaultdict(list))
-with open(REP_CSV) as f:
-    for row in csv.DictReader(f):
-        if row.get("probe_kind") != "cath" or row.get("cath_level") != "A":
-            continue
-        v = row.get("cath_accuracy")
-        if not v:
-            continue
-        try:
-            v = float(v)
-            step = int(row["step"])
-            layer = int(row["layer"])
-        except Exception:
-            continue
-        rep[fam(row["run"])][step].append((layer, v))
+for row in _iter_rows(REP_CSV):
+    if row.get("probe_kind") != "cath" or row.get("cath_level") != "A":
+        continue
+    v = row.get("cath_accuracy")
+    if not v:
+        continue
+    try:
+        v = float(v)
+        step = int(row["step"])
+        layer = int(row["layer"])
+    except Exception:
+        continue
+    rep[fam(row["run"])][step].append((layer, v))
 rep_data = {
     f: {s: max(vs, key=lambda x: x[1])[1] for s, vs in steps.items()}
     for f, steps in rep.items()

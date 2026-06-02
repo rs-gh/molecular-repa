@@ -8,11 +8,11 @@
 \cmidrule(lr){2-3} \cmidrule(lr){4-5}
  & partial & raw & partial & raw \\
 \midrule
-Inverse folding (top-1) & +0.36 & +0.34 & +0.76 & +0.70 \\
-Dihedral MAE & +0.37 & +0.35 & +0.60 & +0.57 \\
-CATH-A & +0.22 & +0.27 & +0.48 & +0.49 \\
+Inverse folding (top-1) & +0.37 & +0.17 & +0.79 & +0.61 \\
+Dihedral MAE & +0.44 & -0.03 & +0.77 & +0.36 \\
+CATH-A & +0.22 & +0.11 & +0.49 & +0.38 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Better representations track better generation.} The effect is especially strong for designability, and moderate for FID. Partial Pearson correlation controlling for training step, with the raw value alongside; oriented so a positive value means better representation accompanies better generation. ($N{=}59$ checkpoints pooled over the baseline, the REPA variants, and the random control; $n{\le}256$, PDB-trained.)}
+\caption{\textbf{Better student representations track better generation --- strongly for designability, moderately for FID.} Partial Pearson correlation controlling for training step, with the raw value alongside; oriented so a positive value means better representation accompanies better generation. ($n{=}59$ checkpoints pooled over the baseline, the REPA variants, and the random control; PDB.)}
 \label{tab:proteina-genrep-corr}
 \end{table}

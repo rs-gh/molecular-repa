@@ -23,8 +23,21 @@ from collections import defaultdict
 from statistics import mean
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-REP_X = f"{ROOT}/evaluation/proteina/representation/results/paper/n256_xclean_afdb_pdb/pretrained_sweep_results.csv"
-REP_CT = f"{ROOT}/evaluation/proteina/representation/results/paper/n256_convergence_cleantrain_pdb/pretrained_sweep_results.csv"
+_REP = f"{ROOT}/evaluation/proteina/representation/results/paper"
+# Report standardised on n_train=1000 (2026-06-02). The regime CSV holds early
+# checkpoints at n=1000; the frontier "tail" checkpoints were re-run at n=1000
+# into the separate _n1000_compare/ dir (additive — 5000 rows untouched). Read
+# BOTH and filter to n_train==1000, seed 42, so the correlation pools the same
+# single-protocol values the report figures plot.
+N_TRAIN = "1000"
+REP_X = [
+    f"{_REP}/n256_xclean_afdb_pdb/pretrained_sweep_results.csv",
+    f"{_REP}/_n1000_compare/n256_xclean_afdb/pretrained_sweep_results.csv",
+]
+REP_CT = [
+    f"{_REP}/n256_convergence_cleantrain_pdb/pretrained_sweep_results.csv",
+    f"{_REP}/_n1000_compare/n256_cleantrain_pdb/pretrained_sweep_results.csv",
+]
 GEN = f"{ROOT}/evaluation/proteina/generation/results/paper/n256_convergence_pdb/sweep_results.clean.jsonl"
 OUT = f"{ROOT}/docs/masters-report/tables/table_genrep_corr.tex"
 
@@ -33,24 +46,36 @@ def fam(run):
     return re.sub(r"_step\d+k$", "", run)
 
 
-def best_layer(csvpath, probe_kind, col, higher_better, cath_level=None):
-    """best-layer value per (family, step)."""
+def best_layer(csvpaths, probe_kind, col, higher_better, cath_level=None):
+    """best-layer value per (family, step), n_train==1000 & seed 42 only.
+
+    Accepts one path or a list (regime + compare); rows are pooled.
+    """
+    if isinstance(csvpaths, str):
+        csvpaths = [csvpaths]
     agg = defaultdict(list)
-    with open(csvpath) as f:
-        for r in csv.DictReader(f):
-            if r.get("probe_kind") != probe_kind:
-                continue
-            if cath_level and r.get("cath_level") != cath_level:
-                continue
-            v = r.get(col)
-            if not v:
-                continue
-            try:
-                v = float(v)
-                step = int(r["step"])
-            except Exception:
-                continue
-            agg[(fam(r["run"]), step)].append(v)
+    for csvpath in csvpaths:
+        if not os.path.exists(csvpath):
+            continue
+        with open(csvpath) as f:
+            for r in csv.DictReader(f):
+                if str(r.get("n_train")) != N_TRAIN:
+                    continue
+                if (r.get("probe_seed") or "42") != "42":
+                    continue
+                if r.get("probe_kind") != probe_kind:
+                    continue
+                if cath_level and r.get("cath_level") != cath_level:
+                    continue
+                v = r.get(col)
+                if not v:
+                    continue
+                try:
+                    v = float(v)
+                    step = int(r["step"])
+                except Exception:
+                    continue
+                agg[(fam(r["run"]), step)].append(v)
     return {k: (max(vs) if higher_better else min(vs)) for k, vs in agg.items()}
 
 
