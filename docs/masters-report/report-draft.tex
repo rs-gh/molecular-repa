@@ -1430,7 +1430,7 @@ In this subsection, we investigate how REPA impacts different aspects of generat
 
 \input{tables/table_concentration}
 
-\textbf{Fold concentration occurs early in training, and the baseline grows out of it.} After $700$K training steps, baseline and REPA models alike concentrate their $\beta$-rich designable samples. However, by 1.0M the baseline has diversified while REPA stays concentrated (Table~\ref{tab:proteina-concentration}). This suggests that REPA does not \emph{engender} the concentration, but rather fails to grow out of the early-training regime that the baseline leaves behind. Notably, the AFDB-MPNN configuration routes \emph{away} from $\beta$-rich folds rather than toward them. It sheds designable sheet content where GearNet adds it (the E\%des column of Table~\ref{tab:proteina-700k}: $-0.04$ against $+0.04$). This lets it escape the concentration trap entirely, and shows the behaviour is modulated by both dataset and encoder.
+\textbf{Fold concentration occurs early in training, and the baseline grows out of it.} After $700$K training steps, baseline and REPA models alike concentrate their $\beta$-rich designable samples. However, by 1.0M the baseline has diversified while REPA stays concentrated (Table~\ref{tab:proteina-concentration}). This suggests that REPA does not \emph{engender} the concentration, but rather fails to grow out of the early-training regime that the baseline leaves behind. Notably, AFDB-MPNN escapes the trap entirely: its designable subset stays as diverse as the baseline's in every $\beta$-bin (Table~\ref{tab:proteina-concentration}). This fits an encoder-routing picture --- where GearNet nudges the designable subset toward sheet, MPNN nudges it away (for MPNN-L9, designable strand fraction $-0.04$ and helix $+0.08$; the reverse for GearNet). The shifts are modest but seed-consistent (Appendix~\ref{app:ss-composition}), and only the sheet-ward encoders concentrate, which shows the behaviour is modulated by both dataset and encoder.
 
 \textbf{Nevertheless, REPA's whole-set gains persist deep into training.} At 1.0M the strongest variant on each dataset keeps its fidelity and coverage lead --- REPA-MPNN-L9 on PDB (FID $-$81, fold-score $+0.29$) and REPA-GN-L4 on AFDB ($-$228, $+3.68$) --- even as their distinct designable-fold counts fall below baseline ($-$51 and $-$39 clusters).
 
@@ -1446,7 +1446,7 @@ In this subsection, we investigate how REPA impacts different aspects of generat
 \textbf{REPA's gains hold across the sampler's noise range.} We report our headline results at $\gamma{=}0.45$, the balance Proteina recommends, but the advantage is not specific to it. REPA improves designability and fidelity at almost every $\gamma$ (Table~\ref{tab:proteina-sampler}). The lone exception is the degenerate $\gamma{=}0$ regime, where the baseline saturates designability by repeating a few folds. Hence, REPA tracks the same trade-off, but at a higher level of
 designability and fidelity.
 
-\textbf{REPA also raises the deterministic-sampling floor.} The ODE limit (no injected noise) is where the baseline is least designable --- Des $0.04$ on PDB and $0.12$ on AFDB (Table~\ref{tab:proteina-sampler}). This is where REPA's relative lift is largest, raising it to $0.16$ and $0.35$ respectively. As deterministic sampling is the cheapest and most reproducible regime, this is among the more practically useful of REPA's gains.
+\textbf{REPA also raises the deterministic-sampling floor.} The ODE limit (no injected noise) is where the baseline is least designable: Des $0.04$ on PDB and $0.12$ on AFDB (Table~\ref{tab:proteina-sampler}). This is where REPA's relative lift is largest, raising it to $0.16$ and $0.35$ respectively. As deterministic sampling is the cheapest and most reproducible regime, this is among the more practically useful of REPA's gains.
 
 \subsection{What we do not claim}
 \label{sec:proteina-scope}
@@ -1908,9 +1908,12 @@ Proteina's secondary-structure metric compares the \emph{mean} helix and strand 
 
 For each backbone we annotate every residue as helix, strand, or coil with a C$\alpha$-only secondary-structure assignment (P-SEA, as implemented in Biotite) and record the fraction of residues in helix ($f_H$) and in strand ($f_E$). A set of $N$ backbones is then a cloud of $N$ points in the $(f_H, f_E)$ plane. We bin that plane into a $5\times5$ grid over $[0,1]^2$, form normalised two-dimensional histograms for the generated and reference sets, and report the Jensen--Shannon divergence between them (lower is better). Binning the joint distribution, rather than comparing marginal means, lets the metric reward a model for reproducing the \emph{shape} of the secondary-structure distribution and penalise mode collapse onto, say, all-$\alpha$ backbones.
 
-\section{Placeholder section}
+\section{Secondary-structure composition of the designable subset}
+\label{app:ss-composition}
 
-TODO.
+The encoder-routing reading in \S\ref{sec:proteina-anatomy} --- GearNet shifting the designable subset toward $\beta$-sheet, MPNN on AFDB away from it --- rests on the secondary-structure composition of the designable backbones (Table~\ref{tab:ss-composition}). The shifts are small in absolute terms but seed-consistent: on AFDB the GearNet-L9 and MPNN-L9 strand and helix ranges do not overlap across seeds, in opposite directions. The main-text E\%des figures (Table~\ref{tab:proteina-700k}) are the per-seed means of the strand column; we report the spread here rather than in the main table to avoid clutter.
+
+\input{tables/table_ss_composition}
 
 % --- removed: original template's Lorem-ipsum filler ---
 \iffalse

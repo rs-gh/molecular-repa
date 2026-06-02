@@ -1,0 +1,29 @@
+% Appendix table -- designable-subset secondary-structure composition backing the
+% encoder-routing claim in sec:proteina-anatomy. Step 700K, gamma=0.45. Values are
+% per-seed means +/- half the seed range; strand column = absolute E%des of Table 6.6.
+\begin{table}[tbp]
+\centering
+\small
+\setlength{\tabcolsep}{8pt}
+\begin{tabular}{l|ccc}
+\toprule
+Variant (700K, $\gamma{=}0.45$) & Strand $f_E$ & Helix $f_H$ & Seeds \\
+\midrule
+\multicolumn{4}{l}{\textit{PDB-trained}}\\
+Baseline       & $0.22 \pm 0.02$ & $0.48 \pm 0.03$ & 3 \\
+REPA L4-random & $0.11 \pm 0.01$ & $0.61 \pm 0.02$ & 3 \\
+REPA L4-GN     & $0.22 \pm 0.01$ & $0.40 \pm 0.02$ & 3 \\
+REPA L9-GN     & $0.18 \pm 0.02$ & $0.48 \pm 0.03$ & 3 \\
+REPA L4-MPNN   & $0.23 \pm 0.01$ & $0.39 \pm 0.03$ & 3 \\
+REPA L9-MPNN   & $0.15 \pm 0.01$ & $0.54 \pm 0.02$ & 3 \\
+\midrule
+\multicolumn{4}{l}{\textit{AFDB-trained}}\\
+Baseline       & $0.16 \pm 0.01$ & $0.47 \pm 0.01$ & 2 \\
+REPA L4-GN     & $0.14 \pm 0.00$ & $0.47 \pm 0.01$ & 2 \\
+REPA L9-GN     & $0.19 \pm 0.01$ & $0.38 \pm 0.03$ & 3 \\
+REPA L9-MPNN   & $0.11 \pm 0.00$ & $0.55 \pm 0.01$ & 2 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Secondary-structure composition of the designable subset (step 700K, $\gamma{=}0.45$).} Mean strand ($f_E$) and helix ($f_H$) fractions over the designable backbones, $\pm$ half the seed range. GearNet shifts the designable subset toward strand and away from helix; MPNN on AFDB does the reverse. The AFDB GearNet-L9 vs.\ MPNN-L9 ranges are non-overlapping on both axes. The strand column is the absolute form of the E\%des column in Table~\ref{tab:proteina-700k}, whose entries are the per-seed means reported here. (AFDB MPNN-L4 omitted: no multi-seed $\gamma{=}0.45$ data.)}
+\label{tab:ss-composition}
+\end{table}
