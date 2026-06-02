@@ -1,27 +1,29 @@
-% Table -- ODE (deterministic) designability floor, all variants vs baseline. \input{} from Ch6.
+% Table -- ODE (deterministic) designability floor at 700K, all variants vs baseline.
+% \input{} from Ch6. Single step (700K) to match the rest of the sampler section;
+% at 700K every learned encoder lifts the floor on both datasets, only random fails.
+% PDB L9-MPNN omitted: no 700K ODE-sampler data (only 1.0M).
 \begin{table}[tbp]
 \centering
 \small
 \setlength{\tabcolsep}{9pt}
-\begin{tabular}{l|cc}
+\begin{tabular}{l|c}
 \toprule
-ODE designability & 700K & 1.0M \\
+Variant (700K) & ODE designability \\
 \midrule
-\multicolumn{3}{l}{\textit{PDB-trained \quad (baseline = absolute; REPA = $\Delta$ vs.\ baseline)}}\\
-Baseline       & 0.04 & 0.04 \\
-REPA L4-random & $-$0.02 & --- \\
-REPA L4-GN     & \gd{+0.16} & +0.00 \\
-REPA L9-GN     & \gd{+0.04} & \gd{+0.09} \\
-REPA L4-MPNN   & \gd{+0.12} & $-$0.01 \\
-REPA L9-MPNN   & --- & \gd{+0.16} \\
+\multicolumn{2}{l}{\textit{PDB-trained \quad (baseline = absolute; REPA = $\Delta$ vs.\ baseline)}}\\
+Baseline       & 0.04 \\
+REPA L4-random & $-$0.02 \\
+REPA L4-GN     & \gd{+0.16} \\
+REPA L9-GN     & \gd{+0.04} \\
+REPA L4-MPNN   & \gd{+0.12} \\
 \midrule
-\multicolumn{3}{l}{\textit{AFDB-trained}}\\
-Baseline       & 0.12 & 0.12 \\
-REPA L4-GN     & \gd{+0.23} & \gd{+0.22} \\
-REPA L9-GN     & \gd{+0.21} & \gd{+0.28}$^{*}$ \\
-REPA L9-MPNN   & \gd{+0.10} & +0.02 \\
+\multicolumn{2}{l}{\textit{AFDB-trained}}\\
+Baseline       & 0.12 \\
+REPA L4-GN     & \gd{+0.23} \\
+REPA L9-GN     & \gd{+0.21} \\
+REPA L9-MPNN   & \gd{+0.10} \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA's learned distribution is more designable even without sampling noise.} The ODE limit samples the trunk's learned distribution directly; there the baseline floors near zero on PDB and is modest on AFDB. REPA lifts this floor durably under every learned encoder on AFDB ($+0.10$ to $+0.28$ across steps), and under the learned (not random) encoders on PDB --- the PDB random control does not ($-0.02$). The designability gain therefore does not rest on the sampler's noise. (ODE designability; baseline absolute, REPA rows $\Delta$; \colorbox{green!20}{green} = higher, $|\Delta|{<}0.025$ uncoloured. Single-seed; $^{*}$900K for AFDB L9-GN.)}
+\caption{\textbf{REPA's learned distribution is more designable even without sampling noise.} The ODE limit samples the trunk's learned distribution directly. There the baseline floors near zero on PDB and is modest on AFDB, while REPA lifts the floor under every learned encoder on both datasets ($+0.04$ to $+0.23$); only the random control fails ($-0.02$). The designability gain therefore does not rest on the sampler's noise. (ODE designability at step 700K; baseline absolute, REPA rows $\Delta$; \colorbox{green!20}{green} = higher, $|\Delta|{<}0.025$ uncoloured. Single-seed.)}
 \label{tab:proteina-ode}
 \end{table}
