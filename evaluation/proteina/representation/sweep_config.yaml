@@ -870,16 +870,23 @@ n256_if_dih_xclean_s2042_n1000_band:
 # whose xclean_pdb_afdb probes only ran at the n5000 default. Unblocks the
 # GearNet-L9 700-1000K rows that table_rep_quality_afdb / table_genrep_corr_afdb
 # need for the 700K-1.2M window. Same output_dir as the base/ext profiles so
-# rows merge in place; DoneSet dedup makes re-runs safe. Mirrors
-# paper_n256_cath_if_dih_xclean_pdb_afdb_ext4 (train_v2 / eval_clean_v2 / n_eval
-# 62) with n_train=1000. Launch with --lmdb_dataset afdb.
+# rows merge in place; DoneSet dedup makes re-runs safe. Mirrors the existing
+# n1000 AFDB rows (train_v1 = the n=1000 manifest / eval_clean_v2 / n_eval 62);
+# NOT ext4's train_v2, which is the n=5000 manifest. Launch with
+# --lmdb_dataset PDB (the xclean_pdb_afdb probe set is the PDB cross-DB set;
+# the AFDB model is selected by the run alias, not by --lmdb_dataset).
 paper_n256_cath_if_dih_xclean_pdb_afdb_n1000:
   <<: *paper_cath_if_dih_defaults
   n_train: 1000
   n_eval: 62
   max_size: 256
-  train_manifest_version: train_v2
+  train_manifest_version: train_v1
   eval_manifest_version: eval_clean_v2
-  output_dir: results/paper/n256_xclean_pdb_afdb
+  # Separate dir: DoneSet keys on (run,step,layer,t) NOT n_train, so writing into
+  # the main n5000 dir makes it skip these already-evaluated checkpoints. Fresh
+  # dir => empty DoneSet => n1000 probes actually fit. Mirrors PDB _n1000_compare.
+  # Manifests (train_v1, eval_clean_v2) are pre-copied in so the protein sets are
+  # byte-identical to the existing n1000 rows. Readers must union this dir.
+  output_dir: results/paper/_n1000_compare/n256_xclean_pdb_afdb
   baseline_trained_noise_run: baseline_256_bs24_2gpu_step200k
   runs: "repa_l9_afdb_256_step700k,repa_l9_afdb_256_step800k,repa_l9_afdb_256_step900k,repa_l9_afdb_256_step1000k,repa_l4_afdb_256_step1300k,baseline_afdb_256_step1700k,baseline_afdb_256_step1800k,repa_l4_afdb_256_random_step100k,repa_l4_afdb_256_random_step200k,repa_l4_afdb_256_random_step400k,repa_l4_afdb_256_random_step500k"
