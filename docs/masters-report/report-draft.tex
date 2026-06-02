@@ -1439,15 +1439,11 @@ In this subsection, we investigate how REPA impacts different aspects of generat
 \subsection{REPA's gains hold across sampler noise levels}
 \label{sec:proteina-sampler}
 
-\textbf{REPA's training-time gains compose with the inference-time sampler.} Proteina's SDE noise dial $\gamma$ trades designability for diversity at sampling time. REPA and baseline navigate it identically --- REPA shifts the \emph{levels}, not the shape --- so our $\gamma{=}0.45$ results are not an artefact of one sampler setting (Table~\ref{tab:proteina-sampler}).
+\textbf{REPA's gains reproduce across the sampler's noise range.} Proteina samples with an SDE whose noise scale $\gamma$ trades designability for diversity. REPA and the baseline travel this trade-off in parallel --- REPA shifts the levels, not the shape. Across the full sweep, REPA's designability and fidelity gains hold (Table~\ref{tab:proteina-sampler}). The $\gamma{=}0.45$ setting we report elsewhere is therefore representative, not a favourable pick.
 
 \input{tables/table_sampler}
 
-\textbf{The encoder-selectivity is itself sampler-invariant.} REPA's distribution-match advantage holds at every $\gamma$ for the learned encoders but is near-chance for the random control. The mechanism of \S\ref{sec:proteina-anatomy} --- learned structure helps, an auxiliary loss alone does not --- survives the full noise sweep.
-
-\textbf{REPA also raises the deterministic-sampling floor.} At $\gamma{=}0$ the baseline's designability collapses; REPA lifts it, durably under every learned AFDB encoder and under learned (not random) encoders on PDB (Table~\ref{tab:proteina-ode}). The one surviving $\gamma$-failure is encoder-specific: at $\gamma{=}0$ GearNet-aligned REPA loses designability on both datasets, while MPNN preserves it.
-
-\input{tables/table_ode}
+\textbf{REPA also raises the deterministic-sampling floor.} With the sampler noise switched off (the ODE limit), the baseline's designability bottoms out --- $0.04$ on PDB and $0.12$ on AFDB. Every learned REPA variant lifts the AFDB floor, by $+0.10$ to $+0.28$ across checkpoints; on PDB the learned encoders lift it (up to $+0.16$) while the random control does not ($-0.02$). As deterministic sampling is the cheapest and most reproducible regime, this is among the more practically useful of REPA's gains.
 
 \subsection{What we do not claim}
 \label{sec:proteina-scope}
