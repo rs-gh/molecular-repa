@@ -15,7 +15,6 @@ Designable-subset pwTM\,$\downarrow$ & $\beta{<}10$ & $10$--$25$ & $\beta{\ge}25
 Baseline             & 0.15 & 0.22 & 0.50 & 0.15 & 0.23 & \textbf{0.13} \\
 REPA L9-GN           & 0.16 & \rd{0.27} & \rd{0.73} & 0.14 & 0.24 & \rd{\textbf{0.87}} \\
 REPA L9-MPNN         & 0.16 & 0.21 & \rd{0.67} & \rd{0.26} & 0.22 & \rd{0.67} \\
-REPA L4-random       & \multicolumn{6}{c}{\textit{[TODO: random control --- not yet $\beta$-stratified]}} \\
 \midrule
 \multicolumn{7}{l}{\textit{AFDB-trained}}\\
 Baseline             & 0.14 & 0.29 & 0.17 & 0.16 & 0.26 & 0.15 \\
@@ -23,6 +22,6 @@ REPA L9-GN           & \rd{0.37} & 0.31 & \rd{0.82} & \rd{0.40}$^{*}$ & \rd{0.32
 REPA L9-MPNN \textit{(falsifier)} & 0.15 & 0.27 & \gd{0.11} & 0.15 & 0.24 & 0.15 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA's one consistent cost --- lost tertiary diversity --- is confined to the sheet-rich folds, is not explained by $\beta$-composition, and grows with training while the baseline recovers.} The $\beta{\ge}25$ comparison is at matched $\beta$-content: at 1.0M the baseline's designable backbones stay diverse (pwTM 0.13) while REPA's collapse onto near-identical folds (0.87). The baseline is also concentrated early (0.50 at 700K) but diversifies with training; REPA does not. Concentration appears only under encoders that route toward $\beta$-rich folds (GearNet on both datasets, MPNN on PDB); the $\alpha$-routing AFDB-MPNN-L9 stays diverse in every bin. (Designable-subset pairwise TM, lower\,=\,more diverse; colour marks REPA \emph{vs.}\ the baseline at the same step and bin: \colorbox{red!15}{red}\,=\,more concentrated, \colorbox{green!20}{green}\,=\,more diverse, $|\Delta|{<}0.05$ uncoloured. Single-seed; $^{*}$900K for AFDB L9-GN.)}
+\caption{\textbf{REPA's loss of designable diversity is confined to the $\beta$-rich folds and is not a $\beta$-composition artefact.} Within the matched-$\beta$ $\beta{\ge}25$ bin, REPA concentrates onto near-identical folds (1.0M pwTM 0.87) where the baseline stays diverse (0.13); the $\alpha$-routing AFDB-MPNN-L9 escapes it. (Designable-subset pairwise TM, lower\,=\,more diverse; colour marks REPA \emph{vs.}\ baseline at the same step and bin: \colorbox{red!15}{red}/\colorbox{green!20}{green}\,=\,more concentrated/more diverse, $|\Delta|{<}0.05$ uncoloured. Single-seed; $^{*}$900K for AFDB L9-GN.)}
 \label{tab:proteina-concentration}
 \end{table}
