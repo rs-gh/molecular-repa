@@ -1464,9 +1464,9 @@ In this subsection, we investigate how REPA impacts different aspects of generat
 
 \input{tables/table_sampler}
 
-\textbf{REPA's gains hold across the sampler's noise range.} We report our headline results at $\gamma{=}0.45$, the balance Proteina recommends. The advantage is not specific to that setting. For a representative variant on each dataset, REPA improves designability and fidelity at almost every $\gamma$ (Table~\ref{tab:proteina-sampler}). The lone exception is the degenerate $\gamma{=}0$ regime, where the baseline saturates designability by repeating a few folds. REPA tracks the same trade-off. It simply does so at a higher level of designability and fidelity.
+\textbf{REPA's gains hold across the sampler's noise range.} We report our headline results at $\gamma{=}0.45$, the balance Proteina recommends. The advantage is not specific to that setting. For a representative variant on each dataset, REPA improves designability and fidelity at almost every $\gamma$ (Table~\ref{tab:proteina-sampler}). The lone exception is the degenerate $\gamma{=}0$ regime, where the baseline saturates designability by repeating a few folds. REPA traces the same trade-off as the baseline, but at a higher level of designability and FID.
 
-\textbf{REPA raises the deterministic-sampling floor, which points to a better learned distribution.} The probability-flow ODE samples the trunk's learned distribution without injected noise (\S\ref{sec:flow-matching}); it is the closest view of what the model has actually learned to generate. Under the baseline that distribution is barely designable --- Des $0.04$ on PDB and $0.12$ on AFDB --- and it is the sampler noise that rescues it, with baseline designability climbing to $\approx$0.84 on PDB at $\gamma{=}0$. REPA's learned distribution is already far more designable at ODE, across nearly every learned encoder (Table~\ref{tab:proteina-ode}); only the PDB random control fails to lift it ($-0.02$). This suggests REPA improves the distribution the trunk learns, not merely the sampler's exploration.
+\textbf{REPA raises the deterministic-sampling floor, which points to a better learned distribution.} The probability-flow ODE samples the trunk's learned distribution without injected noise (\S\ref{sec:flow-matching}). As such, it is the closest view of the true learned model distribution, before any correction. Under the baseline architecture, that distribution is barely designable: Des $0.04$ on PDB and $0.12$ on AFDB. The SDE sampling regime rescues this, with baseline designability climbing to $\approx$0.84 on PDB at $\gamma{=}0$. However, REPA's learned distribution is already far more designable at ODE, across nearly every learned encoder (Table~\ref{tab:proteina-ode}). Indeed, only the PDB random control fails to lift it ($-0.02$). This suggests REPA mechanistically improves the distribution the trunk learns.
 
 \input{tables/table_ode}
 
@@ -1476,13 +1476,12 @@ In this subsection, we investigate how REPA impacts different aspects of generat
 Several tempting claims do not survive our own data, and we flag them here.
 
 \begin{itemize}
-  \item \emph{No asymptotic win on experimental data.} REPA accelerates PDB convergence, but the lead is transient. The baseline matches REPA's FID plateau by ${\sim}1.4$M steps and edges below it by $1.6$M (\S\ref{sec:proteina-convergence}). The durable advantage is on synthetic (AFDB) data, where the baseline plateaus poorly.
+  \item \emph{No asymptotic generation quality win on experimental data.} REPA accelerates PDB convergence, but the lead is transient. The baseline matches REPA's FID plateau by ${\sim}1.4$M steps and edges below it by $1.6$M (\S\ref{sec:proteina-convergence}). The durable advantage on fidelity is on synthetic (AFDB) data, where the baseline plateaus poorly.
+  \item \emph{Unclear designability gains on synthetic data.} At the recommended sampler setting, AFDB designability is already biased upwards by construction and near-saturated for the baseline, so a reliable whole-set gain is hard to establish (\S\ref{sec:proteina-datasets}). The deterministic ODE floor of \S\ref{sec:proteina-sampler} is the exception.
   \item \emph{No reliable novelty gain.} The signal is too noisy to call in either direction.
   \item \emph{No general ``$\beta$-preservation''.} The secondary-structure shift is encoder$\times$dataset conditional, and MPNN-AFDB reverses it (\S\ref{sec:proteina-anatomy}).
-  \item \emph{No strict learned-encoder requirement at every scale.} At $n{\le}128$ a random encoder helps nearly as much (\S\ref{sec:proteina-scale}).
-  \item \emph{Designability is read through a proxy.} ProteinMPNN$\to$ESMFold shares lineage with AFDB's AlphaFold2, so we never compare designability across datasets without that caveat (\S\ref{sec:proteina-datasets}).
-  \item \emph{Co-movement, not mediation.} Representation and generation quality move together; we do not claim one formally causes the other (\S\ref{sec:proteina-genrep}).
-  \item \emph{A retraction.} An earlier ``distribution collapse at $\gamma{=}1$'' reading was a single-cell artefact; it disappears under the full encoder grid (\S\ref{sec:proteina-sampler}).
+  \item \emph{Co-movement, not mediation.} Representation and generation quality move together. We do not claim one formally causes the other, but we note that the pattern is consistent with the representation bottleneck hypothesis (\S\ref{sec:proteina-genrep}).
+  \item \emph{Unconditional generation only.} Every experiment here is unconditional: we specify a target length but never a fold class or other structural motif. We do not claim these dynamics carry over to the conditional setting (\S\ref{sec:flow-matching}).
 \end{itemize}
 
 \subsection{Robustness across scale}
@@ -1490,10 +1489,18 @@ Several tempting claims do not survive our own data, and we flag them here.
 
 \textbf{At smaller scale the learned-versus-random gap narrows, so we anchor headline claims at $n{\le}256$.} At $n{\le}128$ the random control helps nearly as much on representation and whole-set metrics. The direction of every gain is consistent across scale, but the margin of learned over random shrinks, so we read $n{\le}128$ as a scale-robustness check rather than a headline regime. Training-dynamics ablations ($\lambda$, batch size, projector depth) are reported in Appendix~\ref{ch:appendix}; length extrapolation --- generating proteins longer than the training crop --- is the natural next test and remains future work.
 
-\subsection{Summary}
-\label{sec:proteina-summary}
+\section{Discussion}
+\label{sec:proteina-discussion}
 
-\textbf{REPA does real mechanistic work on Proteina --- but as a family of encoder-routed interventions, not a single effect.} It installs structural representations the flow-matching loss never learns, as a persistent gap; it pulls the trunk's geometry onto the encoder's, generalising across encoders in the Platonic sense; and it accelerates generation, durably on synthetic data and transiently on experimental data. The representation and generation gains are encoder-matched, strong evidence that the one runs through the other. The gain is generic on whole-set distribution, encoder-specific on quality, and carries a designable-diversity trade-off that develops with training and splits into a geometric-bias clustering component and a learned-feature directional one. Which encoder you align to chooses which of these you get. We carry this --- and the contrast with the small-molecule study of Chapter~\ref{ch:tabasco-study} --- into Chapter~\ref{ch:conclusions}.
+\textbf{This chapter establishes that REPA accelerates Proteina's convergence on generation quality, and shows how the acceleration works.} REPA is not a single lever, but a family of encoder-routed interventions. Across all variants we tested, models learn to represent structural characteristics that the flow-matching loss never learns in isolation. It also pulls the trunk's geometry closer to the encoder's, and this alignment generalises across other domain-specific encoders. Learned encoders consistently outperform our random control, a sign that the effect is genuinely mechanistic. Moreover, the representation and generation gains are encoder-matched, strongly suggesting that one runs through the other.
+
+\textbf{Designability and diversity form a known trade-off, and REPA reaches a better spot on it than the baseline can.} Sampler noise slides a fixed model along this trade-off, but REPA enhances the model itself. The REPA architectures we tested improve two things at once about the \emph{whole} distribution learned over training: fidelity to reference and  structural diversity. The clearest sign is the noise-free ODE floor, which REPA lifts, suggesting that a genuinely better learned distribution. The gain carries an encoder-specific cost, as some encoders may concentrate the \emph{designable} subspace onto fewer folds.
+
+\textbf{REPA helps most where the baseline struggles most.} On experimental data the acceleration is real but transient. The baseline is a strong asymptotic learner and eventually catches up. On synthetic data the baseline plateaus poorly, and there the lead is durable. The intervention is the same in both cases. The asymmetry tracks the baseline's own convergence, not REPA. This is really a data-efficiency statement. It speaks to the motivation of this report directly. REPA's payoff is largest in the abundant-but-synthetic regime the field increasingly leans on. We temper this on designability alone, where the synthetic-data proxy shares lineage with the training distribution (\S\ref{sec:proteina-datasets}).
+
+\textbf{These results point past Proteina, to a thread we develop in the conclusion.} In a domain whose representation is multi-factorial, choosing an alignment target is a routing decision, not a default. There is no single best encoder. Each one buys a different representational factor --- a choice the sampler dial cannot make for you.
+
+We carry this --- and the contrast with the small-molecule study of Chapter~\ref{ch:tabasco-study}, where the same intervention left no mark --- into Chapter~\ref{ch:conclusions}.
 
 \chapter{Conclusions}
 \label{ch:conclusions}
