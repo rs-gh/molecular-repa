@@ -36,6 +36,6 @@ pwTM (des.)\,$\downarrow$, base & 0.20 & 0.69 & 0.25 & 0.22 & 0.22 & 0.15 \\
 pwTM (des.)\,$\downarrow$, REPA & 0.19 & 0.68 & \rd{0.31} & \rd{0.26} & \rd{0.25} & 0.17 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA tracks the same noise--quality envelope as the baseline, at a higher level.} At a fixed 700K training steps, REPA improves FID and designability at almost every $\gamma$; the one exception is the degenerate $\gamma{=}0$ mode-collapse regime, where the PDB baseline already saturates designability by repeating a few folds. The sampler dial trades designability for diversity, and REPA navigates the same trade-off. (Absolute values at step 700K; baseline vs.\ a representative REPA variant per dataset; pwTM is over the designable subset; \colorbox{green!20}{green}/\colorbox{red!15}{red} = REPA better/worse than baseline, small $|\Delta|$ uncoloured; $\gamma{=}0.45$ is Proteina's default; $n{\le}256$.)}
+\caption{\textbf{REPA tracks the same designability--diversity trade-off as the baseline across sampler settings, at a higher level.} (Absolute values at step 700K; baseline vs.\ a representative REPA variant per dataset; pwTM is over the designable subset; \colorbox{green!20}{green}/\colorbox{red!15}{red} = REPA better/worse than baseline, small $|\Delta|$ uncoloured; $\gamma{=}0.45$ is Proteina's default; $n{\le}256$.)}
 \label{tab:proteina-sampler}
 \end{table}
