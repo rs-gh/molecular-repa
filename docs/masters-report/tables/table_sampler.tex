@@ -1,7 +1,8 @@
-% Table -- sampler-noise robustness, ABSOLUTE values (baseline + best REPA variant
-% per dataset), coloured by REPA-vs-baseline delta. \input{} from Ch6.
-% Numbers from build_sampler_regime_robustness.py basis (step-matched cells;
-% ablation gammas single-rep, gamma=0.45 from the 3-rep convergence sweep).
+% Table -- sampler-noise robustness at a FIXED step (700K), ABSOLUTE values
+% (baseline + a representative REPA variant per dataset), coloured by REPA-vs-
+% baseline delta. \input{} from Ch6. Single step isolates the sampler (gamma)
+% axis from the training-time axis; gamma=0.45 column matches Table 6.6 (the
+% PDB MPNN-L4 / AFDB GearNet-L4 rows). pwTM is the designable-subset metric.
 % Colour: Des higher / FID,pwTM lower = green (REPA better), red = worse;
 % |delta| below ~0.02 (Des,pwTM) / ~5 (FID) left uncoloured.
 \begin{table}[tbp]
@@ -14,27 +15,27 @@
 \cmidrule(lr){2-7}
  & ODE & $\gamma{=}0$ & $\gamma{=}0.35$ & $\gamma{=}0.45$ & $\gamma{=}0.5$ & $\gamma{=}1.0$ \\
 \midrule
-\multicolumn{7}{l}{\textit{PDB-trained --- baseline vs.\ REPA L9-MPNN}}\\
-Des\,$\uparrow$, base   & 0.02 & 0.57 & 0.33 & 0.30 & 0.23 & 0.01 \\
-Des\,$\uparrow$, REPA   & \gd{0.09} & \gd{0.64} & \gd{0.50} & \gd{0.48} & \gd{0.40} & \gd{0.05} \\
+\multicolumn{7}{l}{\textit{PDB-trained --- baseline vs.\ REPA MPNN-L4 (700K)}}\\
+FID\,$\downarrow$, base & 353 & 782 & 462 & 437 & 425 & 508 \\
+FID\,$\downarrow$, REPA & \gd{279} & \gd{561} & \gd{371} & \gd{349} & \gd{350} & \gd{424} \\
 \addlinespace
-FID\,$\downarrow$, base & 450 & 2041 & 528 & 514 & 549 & 824 \\
-FID\,$\downarrow$, REPA & \gd{428} & \gd{816} & \gd{450} & \gd{435} & \gd{460} & \gd{693} \\
+Des\,$\uparrow$, base   & 0.04 & 0.84 & 0.56 & 0.46 & 0.36 & 0.01 \\
+Des\,$\uparrow$, REPA   & \gd{0.16} & \rd{0.78} & \gd{0.66} & \gd{0.64} & \gd{0.52} & \gd{0.11} \\
 \addlinespace
-pwTM\,$\downarrow$, base & 0.21 & 0.62 & 0.18 & 0.19 & 0.16 & 0.12 \\
-pwTM\,$\downarrow$, REPA & \rd{0.29} & \gd{0.59} & \rd{0.24} & \rd{0.24} & \rd{0.22} & \rd{0.34} \\
+pwTM (des.)\,$\downarrow$, base & 0.26 & 0.75 & 0.29 & 0.27 & 0.24 & 0.43 \\
+pwTM (des.)\,$\downarrow$, REPA & \rd{0.33} & \gd{0.44} & \rd{0.36} & \rd{0.35} & \rd{0.34} & \gd{0.34} \\
 \midrule
-\multicolumn{7}{l}{\textit{AFDB-trained --- baseline vs.\ REPA L4-GearNet}}\\
-Des\,$\uparrow$, base   & 0.09 & 0.82 & 0.73 & 0.68 & 0.62 & 0.14 \\
-Des\,$\uparrow$, REPA   & \gd{0.25} & \gd{0.90} & \gd{0.80} & \gd{0.71} & \gd{0.68} & \gd{0.22} \\
+\multicolumn{7}{l}{\textit{AFDB-trained --- baseline vs.\ REPA GearNet-L4 (700K)}}\\
+FID\,$\downarrow$, base & 220 & 641 & 522 & 494 & 475 & 366 \\
+FID\,$\downarrow$, REPA & \gd{148} & \gd{586} & \gd{328} & \gd{298} & \gd{292} & \gd{276} \\
 \addlinespace
-FID\,$\downarrow$, base & 264 & 669 & 479 & 462 & 441 & 422 \\
-FID\,$\downarrow$, REPA & \gd{163} & \gd{624} & \gd{346} & \gd{317} & \gd{309} & \gd{325} \\
+Des\,$\uparrow$, base   & 0.12 & 0.91 & 0.72 & 0.72 & 0.69 & 0.21 \\
+Des\,$\uparrow$, REPA   & \gd{0.35} & \gd{0.96} & \gd{0.84} & \gd{0.77} & \gd{0.72} & \gd{0.28} \\
 \addlinespace
-pwTM\,$\downarrow$, base & 0.14 & 0.57 & 0.22 & 0.21 & 0.19 & 0.16 \\
-pwTM\,$\downarrow$, REPA & \rd{0.19} & \rd{0.67} & \rd{0.25} & 0.22 & 0.21 & 0.15 \\
+pwTM (des.)\,$\downarrow$, base & 0.20 & 0.69 & 0.25 & 0.22 & 0.22 & 0.15 \\
+pwTM (des.)\,$\downarrow$, REPA & 0.19 & 0.68 & \rd{0.31} & \rd{0.26} & \rd{0.25} & 0.17 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA tracks the same noise--quality envelope as the baseline, shifted toward higher designability.} The sampler noise trades designability for diversity: the low-noise $\gamma{=}0$ regime is the most designable but least diverse (highest pwTM), higher-noise regimes the reverse. REPA improves designability and FID at every setting --- including a near-collapsed PDB baseline at $\gamma{=}0$ (FID $2041{\to}816$) --- at the cost of slightly lower whole-set diversity. (Absolute values; baseline vs.\ the best REPA variant per dataset, averaged over step-matched cells; \colorbox{green!20}{green}/\colorbox{red!15}{red} = REPA better/worse than baseline, small $|\Delta|$ uncoloured; $\gamma{=}0.45$ is Proteina's default; $n{\le}256$.)}
+\caption{\textbf{REPA tracks the same noise--quality envelope as the baseline, at a higher level.} At a fixed 700K training steps, REPA improves FID and designability at almost every $\gamma$; the one exception is the degenerate $\gamma{=}0$ mode-collapse regime, where the PDB baseline already saturates designability by repeating a few folds. The sampler dial trades designability for diversity, and REPA navigates the same trade-off. (Absolute values at step 700K; baseline vs.\ a representative REPA variant per dataset; pwTM is over the designable subset; \colorbox{green!20}{green}/\colorbox{red!15}{red} = REPA better/worse than baseline, small $|\Delta|$ uncoloured; $\gamma{=}0.45$ is Proteina's default; $n{\le}256$.)}
 \label{tab:proteina-sampler}
 \end{table}

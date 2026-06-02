@@ -1443,9 +1443,9 @@ In this subsection, we investigate how REPA impacts different aspects of generat
 
 \input{tables/table_sampler}
 
-\textbf{REPA's gains hold at every point on that envelope.} We report our headline results at $\gamma{=}0.45$, the balance Proteina recommends, but the advantage is not specific to it. At each $\gamma$ in the sweep, REPA improves designability and fidelity over the baseline (Table~\ref{tab:proteina-sampler}). REPA occupies the same trade-off curve, shifted toward higher designability and fidelity at the cost of slightly lower whole-set diversity.
+\textbf{REPA's gains hold across the sampler's noise range.} We report our headline results at $\gamma{=}0.45$, the balance Proteina recommends, but the advantage is not specific to it. REPA improves designability and fidelity at almost every $\gamma$ (Table~\ref{tab:proteina-sampler}); the lone exception is the degenerate $\gamma{=}0$ regime, where the baseline already saturates designability by repeating a few folds. REPA occupies the same trade-off curve, shifted toward higher designability and fidelity.
 
-\textbf{REPA also raises the deterministic-sampling floor.} The ODE limit (no injected noise) is where the baseline is least designable --- Des $0.02$ on PDB and $0.09$ on AFDB (Table~\ref{tab:proteina-sampler}). This is where REPA's relative lift is largest, raising it to $0.09$ and $0.25$ respectively. As deterministic sampling is the cheapest and most reproducible regime, this is among the more practically useful of REPA's gains.
+\textbf{REPA also raises the deterministic-sampling floor.} The ODE limit (no injected noise) is where the baseline is least designable --- Des $0.04$ on PDB and $0.12$ on AFDB (Table~\ref{tab:proteina-sampler}). This is where REPA's relative lift is largest, raising it to $0.16$ and $0.35$ respectively. As deterministic sampling is the cheapest and most reproducible regime, this is among the more practically useful of REPA's gains.
 
 \subsection{What we do not claim}
 \label{sec:proteina-scope}
