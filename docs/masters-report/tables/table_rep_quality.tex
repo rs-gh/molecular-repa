@@ -1,23 +1,23 @@
 % Table -- representation rank-order, Delta from baseline. \input{} from Ch6.
-% Numbers: best-layer linear probe, mean over the 700K-1.2M training-step window
-% common to all four families (xclean CSV for IF/dihedral, cleantrain CSV for
-% CATH; n<=256 PDB). TODO: widen the window to 1.4M once the L4-random evals at
-% 1.3M/1.4M land (checkpoints exist on /rds), then regenerate. See
-% appendix_and_cleanup_todo.md.
+% Numbers: best-layer linear probe, n_train=1000 (report-standard, 2026-06-02),
+% seed 42, mean over the 700K-1.2M training-step window common to all four
+% families (xclean CSV for IF/dihedral, cleantrain CSV for CATH; n<=256 PDB).
+% At n=1000 the L4-random control no longer beats baseline on the per-residue
+% probes (IF/dihedral) -- uncoloured -- only on the fold probes (CATH).
 \begin{table}[tbp]
 \centering
 \small
 \setlength{\tabcolsep}{6pt}
-\begin{tabular}{l|ccccc}
+\begin{tabular}{lccccc}
 \toprule
  & & & \multicolumn{3}{c}{\textbf{CATH top-1 acc.\,$\uparrow$}} \\
 \cmidrule(lr){4-6}
 \textbf{Variant} & \textbf{IF top-1\,$\uparrow$} & \textbf{dihedral MAE\,(\,$^\circ$\,)\,$\downarrow$} & C & A & T \\
 \midrule
 Baseline       & 0.130 & 27.6 & 0.717 & 0.397 & 0.303 \\
-REPA L4-random & \gd{+0.007} & \gd{$-$5.1} & \gd{+0.101} & \gd{+0.089} & \gd{+0.060} \\
-REPA L9-GN     & \gd{+0.026} & \gd{$-$8.1} & \gb{+0.171} & \gb{+0.305} & \gb{+0.449} \\
-REPA L9-MPNN   & \gb{+0.036} & \gb{$-$11.4} & \gd{+0.120} & \gd{+0.151} & \gd{+0.172} \\
+REPA L4-random & $-$0.002 & +2.7 & \gd{+0.051} & \gd{+0.029} & \gd{+0.017} \\
+REPA L9-GN     & \gd{+0.022} & \gd{$-$3.6} & \gb{+0.163} & \gb{+0.283} & \gb{+0.462} \\
+REPA L9-MPNN   & \gb{+0.027} & \gb{$-$6.8} & \gd{+0.085} & \gd{+0.078} & \gd{+0.113} \\
 \bottomrule
 \end{tabular}
 \caption{\textbf{REPA offers persistent and encoder-routed representation advantages.} Consistent with what each encoder was trained for, REPA-GearNet wins the fold probes (CATH C/A/T), while REPA-MPNN wins the per-residue probes (IF, dihedral). We headline on CATH-A, and report C and T for completeness. ($n{\le}256$ PDB-trained; best-layer linear-probe performance, averaged over the 700K--1.2M training-step window; $\Delta$ from baseline; \colorbox{green!20}{green}/\colorbox{green!42}{darker} = improvement/best per probe.)}
