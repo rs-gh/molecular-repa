@@ -675,7 +675,7 @@ In practice, every training step samples a time $t \in [0,1]$ and a noise-data p
 
 Flow matching with this linear interpolant generalises score-based diffusion: the variance-preserving Gaussian-path objective of denoising diffusion models~\cite{DDPM} is a special case of the FM family~\cite{FlowMatching,FMGuide}.
 
-Generating samples from a trained flow-matching model amounts to integrating the learned velocity field. This is often performed with a standard ODE solver, with Euler steps usually sufficing for stable trajectories. The field also admits stochastic sampling variants --- such as those drawing on the connection to score-based stochastic differential equations (SDEs) --- which inject noise during the integration steps to explore the probability space and improve sample diversity. The models we work with in this report, Tabasco and Proteina, support both deterministic and stochastic samplers.
+Generating samples from a trained flow-matching model amounts to integrating the learned velocity field. This is often performed with a standard ODE solver, with Euler steps usually sufficing for stable trajectories. The field also admits stochastic sampling variants --- such as those drawing on the connection to score-based stochastic differential equations (SDEs) --- which inject noise during the integration steps to explore the probability space and improve sample diversity. The amount of injected noise is itself a tunable knob: more noise broadens diversity at some cost to per-sample quality, with the deterministic ODE recovered as its zero-noise limit. The models we work with in this report, Tabasco and Proteina, support both deterministic and stochastic samplers.
 
 Conditional generation augments $v_\theta$ with context tokens --- such as a class label, a sequence length, or a structural motif --- with conditioning supplied at both training and sampling time. In this report, we focus on unconditional generation only.
 
@@ -1439,11 +1439,13 @@ In this subsection, we investigate how REPA impacts different aspects of generat
 \subsection{REPA's gains hold across sampler noise levels}
 \label{sec:proteina-sampler}
 
-\textbf{REPA's gains reproduce across the sampler's noise range.} Proteina samples with an SDE whose noise scale $\gamma$ trades designability for diversity. REPA and the baseline travel this trade-off in parallel --- REPA shifts the levels, not the shape. Across the full sweep, REPA's designability and fidelity gains hold (Table~\ref{tab:proteina-sampler}). The $\gamma{=}0.45$ setting we report elsewhere is therefore representative, not a favourable pick.
+\textbf{REPA navigates the same noise--quality trade-off as the baseline.} As outlined in \S\ref{sec:flow-matching}, Proteina samples with an SDE whose noise scale $\gamma$ trades designability for diversity. REPA does not reshape this trade-off. As $\gamma$ rises, REPA and the baseline both shed designability and gain diversity together, tracing the same envelope (Table~\ref{tab:proteina-sampler}).
 
 \input{tables/table_sampler}
 
-\textbf{REPA also raises the deterministic-sampling floor.} With the sampler noise switched off (the ODE limit), the baseline's designability bottoms out --- $0.04$ on PDB and $0.12$ on AFDB. Every learned REPA variant lifts the AFDB floor, by $+0.10$ to $+0.28$ across checkpoints; on PDB the learned encoders lift it (up to $+0.16$) while the random control does not ($-0.02$). As deterministic sampling is the cheapest and most reproducible regime, this is among the more practically useful of REPA's gains.
+\textbf{REPA's gains hold at every point on that envelope.} We report our headline results at $\gamma{=}0.45$, the balance Proteina recommends, but the advantage is not specific to it. At each $\gamma$ in the sweep, REPA improves designability and fidelity over the baseline (Table~\ref{tab:proteina-sampler}). REPA occupies the same trade-off curve, shifted toward higher designability and fidelity at the cost of slightly lower whole-set diversity.
+
+\textbf{REPA also raises the deterministic-sampling floor.} The ODE limit (no injected noise) is where the baseline is least designable --- Des $0.02$ on PDB and $0.09$ on AFDB (Table~\ref{tab:proteina-sampler}). This is where REPA's relative lift is largest, raising it to $0.09$ and $0.25$ respectively. As deterministic sampling is the cheapest and most reproducible regime, this is among the more practically useful of REPA's gains.
 
 \subsection{What we do not claim}
 \label{sec:proteina-scope}

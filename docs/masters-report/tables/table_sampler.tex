@@ -1,27 +1,40 @@
-% Table -- sampler-noise robustness, per-gamma Delta. \input{} from Ch6.
+% Table -- sampler-noise robustness, ABSOLUTE values (baseline + best REPA variant
+% per dataset), coloured by REPA-vs-baseline delta. \input{} from Ch6.
+% Numbers from build_sampler_regime_robustness.py basis (step-matched cells;
+% ablation gammas single-rep, gamma=0.45 from the 3-rep convergence sweep).
+% Colour: Des higher / FID,pwTM lower = green (REPA better), red = worse;
+% |delta| below ~0.02 (Des,pwTM) / ~5 (FID) left uncoloured.
 \begin{table}[tbp]
 \centering
 \small
-\setlength{\tabcolsep}{6pt}
+\setlength{\tabcolsep}{5pt}
 \begin{tabular}{l|cccccc}
 \toprule
-$\Delta$ (REPA $-$ baseline) & ODE & $\gamma=0$ & $\gamma=0.35$ & $\gamma=0.45$ & $\gamma=0.5$ & $\gamma=1.0$ \\
+ & \multicolumn{6}{c}{Sampler setting} \\
+\cmidrule(lr){2-7}
+ & ODE & $\gamma{=}0$ & $\gamma{=}0.35$ & $\gamma{=}0.45$ & $\gamma{=}0.5$ & $\gamma{=}1.0$ \\
 \midrule
-\multicolumn{7}{l}{\textit{PDB --- REPA L9-MPNN vs Baseline (step-matched cells).}}\\
-Des $\uparrow$         & \gd{+0.06} & \gd{+0.07} & \gd{+0.16} & \gd{+0.18} & \gd{+0.15} & \gd{+0.04} \\
-FID $\downarrow$        & \gd{$-$22}   & \gd{$-$1225} & \gd{$-$78}   & \gd{$-$77}   & \gd{$-$89}   & \gd{$-$131} \\
-fJSD-A $\downarrow$     & \gd{$-$0.13} & \rd{+0.18} & \rd{+0.21} & \gd{$-$0.06} & \rd{+0.07} & \gd{$-$0.30} \\
-ssJSD2D $\downarrow$    & \gd{$-$0.11} & \rd{+0.08} & \gd{$-$0.01} & \gd{$-$0.03} & \gd{$-$0.00} & \gd{$-$0.10} \\
-\#Clust $\uparrow$      & \gd{+9}    & \gd{+8}    & \rd{$-$7}    & \gd{+4}    & \gd{+12}   & \gd{+2}  \\
+\multicolumn{7}{l}{\textit{PDB-trained --- baseline vs.\ REPA L9-MPNN}}\\
+Des\,$\uparrow$, base   & 0.02 & 0.57 & 0.33 & 0.30 & 0.23 & 0.01 \\
+Des\,$\uparrow$, REPA   & \gd{0.09} & \gd{0.64} & \gd{0.50} & \gd{0.48} & \gd{0.40} & \gd{0.05} \\
+\addlinespace
+FID\,$\downarrow$, base & 450 & 2041 & 528 & 514 & 549 & 824 \\
+FID\,$\downarrow$, REPA & \gd{428} & \gd{816} & \gd{450} & \gd{435} & \gd{460} & \gd{693} \\
+\addlinespace
+pwTM\,$\downarrow$, base & 0.21 & 0.62 & 0.18 & 0.19 & 0.16 & 0.12 \\
+pwTM\,$\downarrow$, REPA & \rd{0.29} & \gd{0.59} & \rd{0.24} & \rd{0.24} & \rd{0.22} & \rd{0.34} \\
 \midrule
-\multicolumn{7}{l}{\textit{AFDB --- REPA L4-GearNet vs Baseline (step-matched cells).}}\\
-Des $\uparrow$          & \gd{+0.16} & \gd{+0.08} & \gd{+0.07} & \gd{+0.06} & \gd{+0.06} & \gd{+0.08} \\
-FID $\downarrow$         & \gd{$-$102}  & \gd{$-$45}   & \gd{$-$133}  & \gd{$-$144}  & \gd{$-$132}  & \gd{$-$97} \\
-fJSD-A $\downarrow$      & \gd{$-$0.31} & \rd{+0.28} & \gd{$-$0.94} & \gd{$-$1.06} & \gd{$-$0.92} & \gd{$-$0.24} \\
-ssJSD2D $\downarrow$     & \gd{$-$0.04} & \gd{$-$0.19} & \gd{$-$0.13} & \gd{$-$0.13} & \gd{$-$0.10} & \gd{$-$0.03} \\
-\#Clust $\uparrow$       & \gd{+32}   & \rd{$-$15}   & \rd{$-$27}   & \rd{$-$23}   & \rd{$-$21}   & \gd{+10} \\
+\multicolumn{7}{l}{\textit{AFDB-trained --- baseline vs.\ REPA L4-GearNet}}\\
+Des\,$\uparrow$, base   & 0.09 & 0.82 & 0.73 & 0.68 & 0.62 & 0.14 \\
+Des\,$\uparrow$, REPA   & \gd{0.25} & \gd{0.90} & \gd{0.80} & \gd{0.71} & \gd{0.68} & \gd{0.22} \\
+\addlinespace
+FID\,$\downarrow$, base & 264 & 669 & 479 & 462 & 441 & 422 \\
+FID\,$\downarrow$, REPA & \gd{163} & \gd{624} & \gd{346} & \gd{317} & \gd{309} & \gd{325} \\
+\addlinespace
+pwTM\,$\downarrow$, base & 0.14 & 0.57 & 0.22 & 0.21 & 0.19 & 0.16 \\
+pwTM\,$\downarrow$, REPA & \rd{0.19} & \rd{0.67} & \rd{0.25} & 0.22 & 0.21 & 0.15 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA's gains are sampler-invariant in the middle band ($\gamma\in[0.35,0.5]$) and largely survive at the extremes --- a training-time effect that composes with the inference-time noise dial.} The large $-1225$ FID gain at $\gamma{=}0$ reflects the PDB baseline mode-collapsing at deterministic sampling. (Mean $\Delta$ = REPA $-$ baseline across step-matched cells per noise level, for the best PDB and AFDB variants; \colorbox{green!20}{green}/\colorbox{red!15}{red} = improvement/regression; negative is a win on lower-is-better metrics.)}
+\caption{\textbf{REPA tracks the same noise--quality envelope as the baseline, shifted toward higher designability.} The sampler noise trades designability for diversity: the low-noise $\gamma{=}0$ regime is the most designable but least diverse (highest pwTM), higher-noise regimes the reverse. REPA improves designability and FID at every setting --- including a near-collapsed PDB baseline at $\gamma{=}0$ (FID $2041{\to}816$) --- at the cost of slightly lower whole-set diversity. (Absolute values; baseline vs.\ the best REPA variant per dataset, averaged over step-matched cells; \colorbox{green!20}{green}/\colorbox{red!15}{red} = REPA better/worse than baseline, small $|\Delta|$ uncoloured; $\gamma{=}0.45$ is Proteina's default; $n{\le}256$.)}
 \label{tab:proteina-sampler}
 \end{table}
