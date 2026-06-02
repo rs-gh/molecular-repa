@@ -146,7 +146,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 8895
+Main chapters word count: 9111
 
 Methodology used to generate that word count:
 
@@ -154,9 +154,9 @@ Methodology used to generate that word count:
 \begin{verbatim}
 $ make wordcount
 gs -q -dSAFER -sDEVICE=txtwrite -o - \
-   -dFirstPage=7 -dLastPage=36 report-draft.pdf | \
+   -dFirstPage=7 -dLastPage=35 report-draft.pdf | \
 egrep '[A-Za-z]{3}' | wc -w
-8895
+9111
 \end{verbatim}
 \end{quote}
 
@@ -1415,7 +1415,7 @@ In this subsection, we focus on the holistic \emph{Quality} metrics of our suite
 
 \input{tables/table_genrep_corr}
 
-\textbf{Broadly, REPA's lasting advantage tracks the headroom the baseline leaves.} Where the baseline plateaus poorly, REPA's lead is large and permanent, as on AFDB FID. Where the baseline is a slow learner, the lead narrows yet still holds, as on PDB designability. Only where the baseline is a genuinely strong learner, as on PDB FID, does it eventually close the gap. AFDB designability is the exception, leaving little headroom over the baseline, but this high baseline reflects no special merit. As we noted earlier (\S\ref{sec:proteina-datasets}), this is likely a quirk of the relationship between how designability is measured and how AFDB was generated. Tellingly, even the random control scores highest there.
+\textbf{Broadly, REPA's lasting advantage tracks the headroom the baseline leaves.} Where the baseline plateaus poorly, REPA's lead is large and permanent, as on AFDB FID. Where the baseline is a slow learner, the lead narrows yet still holds, as on PDB designability. Only where the baseline is a genuinely strong learner, as on PDB FID, does it eventually close the gap. AFDB designability is the exception, as it leaves little headroom over the baseline. However, as we noted earlier (\S\ref{sec:proteina-datasets}), this is likely a quirk of the relationship between how designability is measured and how AFDB was generated, and not due to any special merit. Tellingly, even the random control scores highly here.
 
 \subsection{REPA improves whole-set coverage but may trade off diversity in the designable subspace}
 \label{sec:proteina-anatomy}
@@ -1426,13 +1426,15 @@ In this subsection, we investigate how REPA impacts different aspects of generat
 
 \textbf{REPA consistently improves whole-set fidelity and diversity metrics.} Under almost every REPA variant tested, the model's learned data distribution more closely replicates the reference distribution on tertiary- and secondary-structure. Curiously, this is true of the random-weights control as well. However, only the learned encoders translate this advantage into higher FID and designability (Table~\ref{tab:proteina-700k}).
 
-\textbf{However, a REPA-learned distribution may collapse onto fewer folds in its designable subspace.} Across configurations, the number of distinct designable folds generated is often lower than baseline. This appears especially true for $\beta$-sheet-rich samples, where the drop-off is severe (Table~\ref{tab:proteina-concentration}). Crucially, it holds even at matched $\beta$-content. Within the $\beta{\ge}25$ bin the baseline stays diverse (pwTM $\approx$0.13) while REPA collapses onto near-identical folds ($\approx$0.87), suggesting a mechanism that is uniquely induced by the additional loss. Somehow, REPA appears to generate the \emph{same} $\beta$-rich folds repeatedly, while the baseline spans many.
+\textbf{However, a REPA-learned distribution may collapse onto fewer folds in its designable subspace.} Across configurations, the number of distinct designable folds generated is often lower than baseline. This appears especially true for $\beta$-sheet-rich samples, where the drop-off is severe (Table~\ref{tab:proteina-concentration}). Crucially, the pattern holds even at matched $\beta$-content. Within the $\beta{\ge}25$ bin, the baseline stays diverse (pwTM$\approx$0.13) while REPA variants collapse onto near-identical folds ($\approx$0.87). Somehow, the REPA construction appears to generate the \emph{same} $\beta$-rich folds repeatedly, while the baseline spans many.
 
 \input{tables/table_concentration}
 
-\textbf{Fold concentration occurs early in training, and the baseline grows out of it.} After $700$K training steps, baseline and REPA models alike concentrate their $\beta$-rich designable samples. However, by 1.0M the baseline has diversified while REPA stays concentrated (Table~\ref{tab:proteina-concentration}). This suggests that REPA does not \emph{engender} the concentration, but rather fails to grow out of the early-training regime that the baseline leaves behind. Notably, the AFDB-MPNN configuration appears to bias towards more $\alpha$-heavy samples, and escapes this concentration trap entirely, suggesting that this behaviour is modulated by dataset and encoder dynamics. We also confirm that the whole-set gains persist deep into training. At 1.0M the strongest variant on each dataset keeps its fidelity and coverage lead --- REPA-MPNN-L9 on PDB (FID $-$81, fold-score $+0.29$) and REPA-GN-L4 on AFDB (FID $-$228, $+3.68$) --- even as their distinct designable-fold counts fall below baseline ($-$51 and $-$39 clusters).
+\textbf{Fold concentration occurs early in training, and the baseline grows out of it.} After $700$K training steps, baseline and REPA models alike concentrate their $\beta$-rich designable samples. However, by 1.0M the baseline has diversified while REPA stays concentrated (Table~\ref{tab:proteina-concentration}). This suggests that REPA does not \emph{engender} the concentration, but rather fails to grow out of the early-training regime that the baseline leaves behind. Notably, the AFDB-MPNN configuration appears to bias towards more $\alpha$-heavy samples, and escapes this concentration trap entirely, suggesting that this behaviour is modulated by dataset and encoder dynamics.
 
-\textbf{Does alignment outlive its purpose?} Given the early acceleration in generation quality induced by REPA, and the later-stage fold concentration we observe, it is possible that the best approach may be to stop alignment after some time. A similar arc is reported in image diffusion literature, where REPA is reported to help early and is best switched off partway through training~\cite{HASTE}. We do not test such a schedule and make no argument of this form. However, on this reading, an early stop may let REPA diversify like the baseline while keeping the whole-set gains.
+\textbf{Nevertheless, REPA's whole-set gains persist deep into training.} At 1.0M the strongest variant on each dataset keeps its fidelity and coverage lead --- REPA-MPNN-L9 on PDB (FID $-$81, fold-score $+0.29$) and REPA-GN-L4 on AFDB ($-$228, $+3.68$) --- even as their distinct designable-fold counts fall below baseline ($-$51 and $-$39 clusters).
+
+\textbf{Does alignment outlive its purpose?} Given the early acceleration in generation quality induced by REPA, and the later-stage fold concentration we observe, it is possible that the best approach may be to stop alignment after early training. A similar arc is reported in image diffusion literature, where REPA is reported to help early and is best switched off after early training~\cite{HASTE}. We do not test such a schedule and make no argument of this form. However, if this framework holds, an early stop may let REPA diversify like the baseline while keeping the whole-set gains.
 
 \subsection{REPA's gains hold across sampler noise levels}
 \label{sec:proteina-sampler}
