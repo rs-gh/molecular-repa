@@ -1,0 +1,21 @@
+% Tabasco generation metrics -- \input{} from report-draft.tex Ch5.
+\begin{table}[tbp]
+\centering
+\small
+\begin{tabular}{l c c c c c c c}
+\toprule
+\textbf{Model} & \textbf{Steps} & \textbf{Valid.} & \textbf{Conn.} & \textbf{Uniq.} & \textbf{Div.} & \textbf{Nov.} & \textbf{FCD}~$\downarrow$ \\
+\midrule
+Baseline                     & 151k & 0.980 & 0.998 & 1.000 & 0.886 & 0.966 & \textbf{5.61} \\
+\midrule
+CheMeleon additive (same)    & 73k  & 0.967 & 1.000 & 0.999 & 0.891 & 0.950 & 5.83 \\
+CheMeleon additive (fused)   & 73k  & 0.972 & 0.999 & 1.000 & 0.882 & 0.961 & 7.43 \\
+CheMeleon tradeoff (same)    & 73k  & 0.976 & 0.999 & 1.000 & 0.883 & 0.964 & 6.49 \\
+CheMeleon tradeoff (fused)   & 78k  & 0.960 & 0.999 & 1.000 & 0.890 & 0.942 & 6.24 \\
+MACE additive                & 69k  & 1.000 & 0.995 & 0.996 & 0.884 & 0.977 & 6.81 \\
+MACE tradeoff                & 69k  & 1.000 & 0.999 & 1.000 & 0.883 & 0.982 & 6.32 \\
+\bottomrule
+\end{tabular}
+\caption{Generation metrics over 1{,}000 sampled molecules, baseline versus REPA variants. All metrics except FCD are higher-is-better; FCD (Fr\'echet ChemNet Distance) is lower-is-better, and is the only metric not near its ceiling. The baseline records the best FCD; every REPA variant is worse. \emph{Steps} is the training-step count at evaluation: the baseline trained roughly twice as long as the variants, so the saturated quality metrics are read training-matched (\S\ref{sec:tabasco-results}). One run per variant; bootstrap intervals were computed only for the MACE variants and confirm saturated validity at $[1.0, 1.0]$.}
+\label{tab:tabasco-gen}
+\end{table}
