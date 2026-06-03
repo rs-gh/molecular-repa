@@ -23,7 +23,21 @@ _REP = f"{ROOT}/evaluation/proteina/representation/results/paper"
 # AFDB-trained models' probes live (at n_train=1000) in the cross-DB blinded
 # sweep. IF/dihedral are blinded; CATH-A is read on the same set (no separate
 # cleantrain-AFDB sweep exists), which we note in the caption.
-REP_CSV = f"{_REP}/n256_xclean_pdb_afdb/pretrained_sweep_results.csv"
+# n1000 rows live in the main dir (early ckpts) + the _n1000_compare dir (tail
+# ckpts re-evaluated 2026-06-02: GN-L9 700-1000K, GN-L4 1300K, baseline
+# 1700-1800K, L4-random 100-500K). Union both; (run,step) sets are disjoint.
+REP_CSVS = [
+    f"{_REP}/n256_xclean_pdb_afdb/pretrained_sweep_results.csv",
+    f"{_REP}/_n1000_compare/n256_xclean_pdb_afdb/pretrained_sweep_results.csv",
+]
+
+
+def _rep_rows():
+    for path in REP_CSVS:
+        if os.path.exists(path):
+            yield from csv.DictReader(open(path))
+
+
 GEN = f"{ROOT}/evaluation/proteina/generation/results/paper/n256_convergence_afdb/sweep_results.clean.jsonl"
 OUT = f"{ROOT}/docs/masters-report/tables/table_genrep_corr_afdb.tex"
 
@@ -43,7 +57,7 @@ def step_of(run):
 def best_layer(probe_kind, col, higher_better, cath_level=None):
     """best-layer value per (family, step) for AFDB-trained runs only."""
     agg = defaultdict(list)
-    for r in csv.DictReader(open(REP_CSV)):
+    for r in _rep_rows():
         run = r.get("run", "")
         if "afdb" not in run:
             continue

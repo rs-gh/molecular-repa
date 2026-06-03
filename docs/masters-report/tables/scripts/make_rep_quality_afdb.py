@@ -23,7 +23,22 @@ from collections import defaultdict
 from statistics import mean
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-REP_CSV = f"{ROOT}/evaluation/proteina/representation/results/paper/n256_xclean_pdb_afdb/pretrained_sweep_results.csv"
+_REP = f"{ROOT}/evaluation/proteina/representation/results/paper"
+# n1000 rows live in the main dir (early ckpts) + the _n1000_compare dir (tail
+# ckpts re-evaluated 2026-06-02: GN-L9 700-1000K, GN-L4 1300K, baseline
+# 1700-1800K, L4-random 100-500K). Union both; (run,step) sets are disjoint.
+REP_CSVS = [
+    f"{_REP}/n256_xclean_pdb_afdb/pretrained_sweep_results.csv",
+    f"{_REP}/_n1000_compare/n256_xclean_pdb_afdb/pretrained_sweep_results.csv",
+]
+
+
+def _rep_rows():
+    for path in REP_CSVS:
+        if os.path.exists(path):
+            yield from csv.DictReader(open(path))
+
+
 OUT = f"{ROOT}/docs/masters-report/tables/table_rep_quality_afdb.tex"
 
 N_TRAIN = "1000"
@@ -61,7 +76,7 @@ def step_k(run):
 def window_mean(probe_kind, col, higher_better, cath_level):
     """best-layer value per (family,step), then mean over the window, per family."""
     per_step = defaultdict(list)  # (family, step) -> [layer values]
-    for r in csv.DictReader(open(REP_CSV)):
+    for r in _rep_rows():
         run = r.get("run", "")
         if "afdb" not in run or str(r.get("n_train")) != N_TRAIN:
             continue
@@ -161,14 +176,14 @@ lines.append(
     "\\caption{\\textbf{On AFDB, REPA's representation gain concentrates on fold structure.} "
     "The AFDB counterpart to Table~\\ref{tab:proteina-rep}. REPA-GearNet lifts the CATH fold "
     "probes here as on PDB, so the fold routing replicates. The per-residue picture does not: "
-    "inverse-folding accuracy is flat and dihedral error rises under every variant, unlike the "
-    "MPNN-led per-residue gain seen on PDB. These per-residue reads rest on only 2--3 in-window "
-    "checkpoints per variant and are correspondingly noisy. ($n{\\le}256$ AFDB-trained; best-layer "
+    "inverse-folding accuracy is flat, and the dihedral probe shows no consistent REPA effect "
+    "(it tracks a baseline that itself swings several degrees between checkpoints), unlike the "
+    "clear MPNN-led per-residue gain on PDB. At this checkpoint density the per-residue reads are "
+    "noise-dominated, so we lean on the fold result. ($n{\\le}256$ AFDB-trained; best-layer "
     "linear probe at $n_\\text{train}{=}1000$ on the cross-database blinded set; mean over the "
     f"{WINDOW[0]}K--{WINDOW[1]/1000:.1f}M window; $\\Delta$ from baseline; "
     "\\colorbox{green!20}{green}/\\colorbox{green!42}{darker} = improvement/best per probe. "
-    "GearNet-L9 and the random control are omitted: their $n_\\text{train}{=}1000$ probes do not "
-    "yet reach this window.)}"
+    "The random control is omitted: it trained only to 500K, below this window.)}"
 )
 lines.append("\\label{tab:proteina-rep-afdb}")
 lines.append("\\end{table}")

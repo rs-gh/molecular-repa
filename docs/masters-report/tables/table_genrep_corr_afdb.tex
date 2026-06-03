@@ -8,11 +8,11 @@
 \cmidrule(lr){2-3} \cmidrule(lr){4-5}
  & partial & raw & partial & raw \\
 \midrule
-Inverse folding (top-1) & -0.18 & -0.18 & +0.63 & +0.59 \\
-Dihedral MAE & -0.01 & -0.07 & +0.44 & +0.12 \\
-CATH-A & +0.46 & +0.46 & +0.13 & +0.21 \\
+Inverse folding (top-1) & -0.17 & -0.16 & +0.50 & +0.50 \\
+Dihedral MAE & +0.03 & -0.03 & +0.37 & +0.09 \\
+CATH-A & +0.42 & +0.43 & +0.29 & +0.34 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{On AFDB too, better student representations track better generation.} The AFDB counterpart to Table~\ref{tab:proteina-genrep-corr}: partial Pearson controlling for training step (raw alongside), oriented so positive means better representation accompanies better generation. Generation is FID-AFDB and designability; representation probes are read at $n_\text{train}{=}1000$ on the cross-database blinded set. ($n{=}32$ AFDB checkpoints pooled over the baseline, the REPA variants, and the random control.)}
+\caption{\textbf{On AFDB too, better student representations track better generation.} The AFDB counterpart to Table~\ref{tab:proteina-genrep-corr}: partial Pearson controlling for training step (raw alongside), oriented so positive means better representation accompanies better generation. Generation is FID-AFDB and designability; representation probes are read at $n_\text{train}{=}1000$ on the cross-database blinded set. ($n{=}40$ AFDB checkpoints pooled over the baseline, the REPA variants, and the random control.)}
 \label{tab:proteina-genrep-corr-afdb}
 \end{table}
