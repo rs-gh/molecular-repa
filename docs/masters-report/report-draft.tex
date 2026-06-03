@@ -148,7 +148,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 10375
+Main chapters word count: 10380
 
 Methodology used to generate that word count:
 
@@ -162,7 +162,7 @@ the word-count rules. Reproduce with:
 \begin{verbatim}
 $ make wordcount
 perl tools/texcount.pl -inc -sum -total -1 report-draft.tex
-10375
+10380
 \end{verbatim}
 \end{quote}
 
@@ -1111,32 +1111,36 @@ We take both questions up empirically in Chapters~\ref{ch:profiling}--\ref{ch:pr
 %        two-conditions reading as the cleanest explanation. Forward-
 %        reference Ch~\ref{ch:proteina-study} as the contrasting regime.
 
-Chapter~\ref{ch:profiling} profiled candidate encoders in isolation and issued predictions about which ones should help a generative model. This chapter is the first of two that test those predictions inside a real model. We integrate REPA into Tabasco~\cite{Tabasco}, a flow-matching generator of 3D small molecules, and ask a simple question: does the mechanism that worked for images transfer to this domain?
+Previously (Chapter~\ref{ch:profiling}), we profiled various encoders in the molecular generation domain for their suitability as a representation alignment (REPA) target. This chapter is the first of two that put this analysis to the test. We begin here with the relatively simpler task of generating small molecules, before moving to much larger molecules in proteins next. In this chapter, we ask: \emph{can REPA accelerate or improve the training of Tabasco~\cite{Tabasco}, a flow-matching transformer-based generator of 3D small molecules?}
 
-We approach this as an open investigation. The interesting product is less the headline outcome than the account of \emph{why} we see it --- an account we carry forward when we later turn to a very different molecular regime.
-
-\section{The small-molecule regime}
-\label{sec:tabasco-regime}
-
-\textbf{Small molecules are a compact, locally-structured generation target.} Tabasco~\cite{Tabasco} generates drug-like molecules at the sub-900-Dalton scale, trained on GEOM-drugs~\cite{GEOMdrugs} (\S\ref{sec:small-mol}). Each is a small point cloud of typed atoms, often fewer than fifty, and much of what makes one valid is fixed by its 2D bonding graph. A strong generator learns to reproduce that graph almost perfectly. The standard quality metrics --- validity, connectivity, uniqueness --- accordingly sit at or near their ceilings for a well-trained baseline (Chapter~\ref{ch:evaluation}). The clearest exception is the Fr\'echet ChemNet Distance (FCD)~\cite{FCD}, a distributional metric comparing a generated set against a reference, which stays some way from its floor.
-
-\textbf{The question for this chapter is whether REPA changes any of this.} We attach a REPA loss to Tabasco and align its trunk to the two molecular encoders that Chapter~\ref{ch:profiling} flagged as the domain's leading candidates. Whether alignment can find room to help on so saturated a surface, and whether either encoder carries signal the generator does not already have, is what we set out to measure.
+\textbf{Our headline finding is that REPA has little impact on small molecule generation.} This is likely because the regime offers REPA little to work with: a near-saturated metric surface, and encoders that carry little structural signal the model does not already have. This null result points to a theme that we develop in subsequent chapters as well. REPA appears to work best where the baseline architecture struggles, but does not appear to offer significant advantage to an already strong learner.
 
 \section{Experimental setup}
 \label{sec:tabasco-setup}
 
-\textbf{We add a REPA loss to the Tabasco trunk and align it to a frozen molecular encoder.} The baseline is the unmodified flow-matching transformer, which denoises 3D atom coordinates and atom types jointly (\S\ref{sec:small-mol}). Following \S\ref{sec:repa}, we attach a trainable projector to the trunk's hidden states and align the projected states to the encoder's output on the clean molecule. The trunk carries two hidden-state streams, one for coordinates and one for atom types. We concatenate them and project the pair through a single head, so the model aligns one \emph{fused} representation rather than two separate ones.
+\subsection{Dataset}
+\label{sec:tabasco-data}
 
-\textbf{The two encoders come straight from the profiling of Chapter~\ref{ch:profiling}.} \emph{CheMeleon}~\cite{CheMeleon} is a 2D molecular-graph foundation encoder. It is conformer-invariant, so it sees only the bonding graph and not the 3D pose. \emph{MACE}~\cite{MACE} is a 3D interatomic-potential encoder. It is geometry-aware, but, as the profiling showed, its output is a narrow descriptor of local atomic environments. These were the strongest small-molecule candidates available, and they span a useful contrast: one carries rich 2D-graph information, the other genuine 3D geometry.
+We train on GEOM-drugs~\cite{GEOMdrugs}, a dataset of drug-like molecular conformers at the sub-900-Dalton scale (\S\ref{sec:small-mol}). We model heavy atoms only, and augment each molecule with random rotations (eight rotated views per sample at each training step). Each molecule is a small point cloud of typed atoms, often fewer than fifty.
 
-\textbf{We sweep a small grid of REPA variants against the baseline (Table~\ref{tab:tabasco-variants}).} Two design axes vary. The \emph{combination mode} sets how the REPA term enters the loss: \emph{additive} adds it as a plain regulariser and leaves the generative objective intact; \emph{tradeoff} forms a convex combination that down-weights the generative term to force the alignment signal in. The \emph{plumbing} sets how the two hidden-state streams reach the projector: \emph{fused} (the default above) or as two separate projections. We swept both axes for CheMeleon and ran MACE in the fused configuration. Our reading centres on the principled case --- additive combination, fused plumbing --- and treats tradeoff as a deliberate attempt to wring signal out of the loss.
+\subsection{Models}
+\label{sec:tabasco-models}
 
-\input{tables/table_tabasco_variants}
+The baseline is the unmodified Tabasco flow-matching transformer (\S\ref{sec:small-mol}): a 3.7M-parameter non-equivariant model that denoises 3D atom coordinates and atom types jointly. Our REPA variants add a trainable projector that aligns the trunk's hidden states to a frozen molecular encoder, evaluated on the clean ($t$=1) molecule (\S\ref{sec:repa}). The trunk carries two hidden-state streams, one for coordinates and one for atom types. We concatenate them and project the pair through a single head, so the model aligns one \emph{fused} representation rather than two separate ones.
+
+\textbf{Encoder ablations.} The two encoders we study come from the profiling of Chapter~\ref{ch:profiling}, and span a useful contrast. \emph{CheMeleon}~\cite{CheMeleon} is a 2D molecular-graph encoder. It is conformer-invariant, so it sees only the bonding graph and not the 3D pose. Meanwhile, \emph{MACE}~\cite{MACE} is a 3D interatomic-potential encoder. It is geometry-aware, but, as the profiling showed, its output is a narrow descriptor of local atomic environments. One carries rich 2D-graph information, the other genuine 3D geometry. We sweep each against the baseline under two combination modes --- \emph{additive}, which adds the alignment as a plain regulariser, and \emph{tradeoff}, a convex combination that down-weights the generative term to force the signal in --- with two projector configurations for CheMeleon (Table~\ref{tab:tabasco-setup}). Our reading centres on the principled case, additive combination with fused plumbing; we treat tradeoff as a deliberate attempt to wring signal from the loss.
+
+\input{tables/table_tabasco_setup}
+
+\subsection{Metrics}
+\label{sec:tabasco-metrics}
+
+We report the standard small-molecule generation metrics of Chapter~\ref{ch:evaluation}: validity, connectivity, and uniqueness (structural quality); diversity and novelty (set coverage); and the Fr\'echet ChemNet Distance (FCD)~\cite{FCD}, a distributional metric comparing a generated set against a reference. For the diagnosis of \S\ref{sec:tabasco-diagnosis}, we additionally fit linear probes to the frozen trunk's hidden states, recovering molecular descriptors --- molecular weight, LogP, ring count, rotatable-bond count --- to measure what structural information the representation carries, following the probe principle of Chapter~\ref{ch:evaluation}.
 
 \section{Results: no measurable gain}
 \label{sec:tabasco-results}
 
-\textbf{No REPA variant improves on the baseline (Table~\ref{tab:tabasco-gen}).} On the saturated quality axes every variant matches the baseline to within about a percentage point. Validity, connectivity, and uniqueness all sit at or near their ceilings, baseline included. The two MACE variants reach perfect validity, with bootstrap intervals that pin it at $[1.0, 1.0]$. There is simply no headroom on these metrics for an intervention to claim.
+\textbf{No REPA variant improves on the baseline (Table~\ref{tab:tabasco-gen}).} On the saturated quality axes every variant matches the baseline to within about a percentage point. Validity, connectivity, and uniqueness all sit at or near their ceilings, baseline included --- as we should expect, since these are largely properties of bond topology, which a strong generator reproduces almost perfectly. The two MACE variants reach perfect validity, with bootstrap intervals that pin it at $[1.0, 1.0]$. There is simply no headroom on these metrics for an intervention to claim.
 
 \textbf{On FCD --- the one metric with room to move --- every variant is worse.} The baseline records the lowest (best) FCD at $5.61$; the REPA variants range from $5.83$ to $7.43$ (Table~\ref{tab:tabasco-gen}). The ordering is not subtle. The principled CheMeleon variant (additive, fused) is in fact the \emph{worst} of the set, and the MACE variants land in the middle. We caveat this carefully: each variant is a single run, not a multi-seed average, and we do not have per-set FCD intervals to bound the gaps. But the direction is unambiguous --- REPA does not improve the only metric that could have improved.
 
@@ -1158,7 +1162,7 @@ We approach this as an open investigation. The interesting product is less the h
 
 \textbf{The first condition fails on the metric surface.} The quality axes are saturated, as \S\ref{sec:tabasco-results} showed. A linear probe makes the same point about the representation. Atom-type identity is recovered at $0.999$ accuracy from the baseline trunk, and from every variant alike --- the model takes atom types as input, so this is trivial. There is no representational gap on this axis for an encoder to close.
 
-\textbf{The second condition fails on both encoders, for opposite reasons (Table~\ref{tab:tabasco-probe}).} We probe how well four molecular descriptors --- molecular weight, LogP, ring count, rotatable-bond count --- can be linearly decoded from each frozen encoder and from the trunk. CheMeleon decodes them almost perfectly in isolation ($R^2$ up to $0.99$). But the baseline trunk already decodes them well ($0.64$--$0.92$), because they are 2D-graph quantities and the trunk sees the graph. CheMeleon's signal therefore overlaps with what the model already has. Aligning to it adds noise, not information --- and it is conformer-invariant, so it cannot guide the 3D geometry that FCD rewards. MACE is the mirror image. It is genuinely 3D, but its output is so narrow that those same descriptors are nearly undecodable from it ($R^2$ near zero). Its signal differs from the trunk's, but does not transfer.
+\textbf{The second condition fails on both encoders, for opposite reasons (Table~\ref{tab:tabasco-probe}).} The descriptor probe of \S\ref{sec:tabasco-metrics} compares what each frozen encoder carries against what the trunk already has. CheMeleon decodes the descriptors almost perfectly in isolation ($R^2$ up to $0.99$). But the baseline trunk already decodes them well ($0.64$--$0.92$), because they are 2D-graph quantities and the trunk sees the graph. CheMeleon's signal therefore overlaps with what the model already has. Aligning to it adds noise, not information --- and it is conformer-invariant, so it cannot guide the 3D geometry that FCD rewards. MACE is the mirror image. It is genuinely 3D, but its output is so narrow that those same descriptors are nearly undecodable from it ($R^2$ near zero). Its signal differs from the trunk's, but does not transfer.
 
 \input{tables/table_tabasco_probe}
 
@@ -1354,21 +1358,21 @@ We approach this as an open investigation. The interesting product is less the h
 
 In this chapter, we expand the scope of our study on representation alignment from small molecules to much larger ones: proteins. Previously (Chapter~\ref{ch:tabasco-study}), our efforts using REPA to generate small molecules yielded little demonstrable improvement, largely because the Tabasco~\cite{Tabasco} baseline was already saturated on most measures of generation quality. However, de novo backbone design represents a more challenging task, as the data distribution of proteins is significantly larger, and the geometry of these structures is correspondingly more complex. In this context, we ask: \emph{can REPA accelerate or improve the training of Proteina~\cite{Proteina}, a flow-matching transformer-based protein backbone generator?}
 
-\textbf{Our headline finding is that REPA accelerates convergence on the two key measures of protein generation quality.} This holds across both experimental and synthetic training-data regimes (Figure~\ref{fig:proteina-fid}). The one exception is designability on synthetic data, which the baseline already saturates under standard sampling (\S\ref{sec:proteina-datasets}). This chapter characterises \emph{what} happens and attempts to understand \emph{why}. We also pick up the thread from Chapter~\ref{ch:evaluation} on how the molecular domain differs from the image domain REPA was built for, and develop a theme throughout: REPA here is a \emph{family} of interventions rather than a single mechanism.
+\textbf{Our headline finding is that REPA accelerates convergence on the two key measures of protein generation quality.} This holds across both experimental and synthetic training-data regimes (Figure~\ref{fig:proteina-fid}). The one exception is designability on synthetic data, which the baseline already saturates under standard sampling (\S\ref{sec:proteina-datasets}). This chapter characterises \emph{what} happens and attempts to understand \emph{why}. We also pick up the thread from Chapter~\ref{ch:evaluation} on how the molecular domain differs from the image domain REPA was built for, and develop a theme throughout: REPA here is a \emph{family} of interventions rather than a single mechanism. Throughout, our aim is to test whether the mechanism transfers at all. We do not search for its best configuration (\S\ref{sec:proteina-scope}).
 
 \input{figures/fig01_fid_des_convergence}
 
 \section{Experimental setup}
 \label{sec:proteina-setup}
 
-We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant flow-matching generator of C$\alpha$ protein backbones. Following \S\ref{sec:repa}, we attach a trainable projector at a chosen layer of the generator trunk (the transformer stack) that aligns the model's hidden states to a frozen external encoder.
+We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant flow-matching generator of C$\alpha$ protein backbones (\S\ref{sec:protein}). Following \S\ref{sec:repa}, we attach a trainable projector at a chosen layer of the generator trunk (the transformer stack) that aligns the model's hidden states to a frozen external encoder.
 
 \subsection{Datasets}
 \label{sec:proteina-datasets}
 
 We train in two regimes that span the field's experimental--synthetic spectrum: the experimentally-determined Protein Data Bank~\cite{PDB}, and the AlphaFold-predicted AlphaFold Database~\cite{AFDB} (Swiss-Prot subset). (We use the manually-curated Swiss-Prot subset of AFDB as a reproducible stand-in for the Foldseek-clustered TrEMBL subset on which Proteina was trained in the original presentation~\cite{Proteina}. This corpus contained data that has since been pruned from AFDB, and is hence inaccessible.)
 
-Following Proteina~\cite{Proteina}, we train on the subset of chains with at most 256 residues; we represent this length-regime by $n{\le}256$. (We note that this represents only a property of the training datasets, not a bound on the length of the proteins that models trained on these datasets can generate.) Following this filter, the two training sets are comparable in size (PDB: 273{,}771 / 3{,}190 / 323 train/val/test chains; AFDB: 229{,}670 / 4{,}521 / 235). Appendix~\ref{ch:appendix} (Table~\ref{tab:setup-datasets}) contains further details on dataset composition.
+Following Proteina~\cite{Proteina}, we train on the subset of chains with at most 256 residues; we represent this length-regime by $n{\le}256$. (We note that this represents only a property of the training datasets, not a bound on the length of the proteins that models trained on these datasets can generate.) Following this filter, the two training sets are comparable in size (PDB: 273{,}771 / 3{,}190 / 323 train/val/test chains; AFDB: 229{,}670 / 4{,}521 / 235). Appendix~\ref{ch:appendix} (Table~\ref{tab:setup-datasets}) contains further details on dataset composition. During training, we augment each backbone with a single random global rotation per sample.
 
 \textbf{Different datasets in this domain carry different biases.} Trends in designability offer a clear example, as training on AFDB raises the in-silico-designability floor well above PDB at every setting we tested (\S\ref{sec:proteina-convergence}). The likely cause is circular. The canonical designability test inverse-folds a generated backbone with ProteinMPNN~\cite{ProteinMPNN} and re-folds it with ESMFold~\cite{ESM2} (Chapter~\ref{ch:evaluation}). Both of these models share their lineage with the AlphaFold2~\cite{AlphaFold2} network that produced AFDB in the first place, so AlphaFold-like backbones are plausibly the ones it re-folds most confidently. We do not test this mechanism, but flag the observation so metrics are read with care.
 
@@ -1544,6 +1548,7 @@ Several tempting claims do not survive our own data, and we flag them here.
   \item \emph{No general ``$\beta$-preservation''.} The secondary-structure shift is encoder$\times$dataset conditional, and MPNN-AFDB reverses it (\S\ref{sec:proteina-anatomy}).
   \item \emph{Co-movement, not mediation.} Representation and generation quality move together. We do not claim one formally causes the other, but we note that the pattern is consistent with the representation bottleneck hypothesis (\S\ref{sec:proteina-genrep}).
   \item \emph{Unconditional generation only.} Every experiment here is unconditional: we specify a target length but never a fold class or other structural motif. We do not claim these dynamics carry over to the conditional setting (\S\ref{sec:flow-matching}).
+  \item \emph{No claim of optimality.} We do not search the configuration space for the best setup of layer, weight, or encoder. The question here is whether the mechanism works at all, not how to tune it for maximum gain (\S\ref{sec:proteina-setup}).
 \end{itemize}
 
 \subsection{Robustness across scale}
