@@ -73,6 +73,8 @@
 
 \begin{document}
 
+%TC:ignore  % wordcount: exclude front matter (cover sheet, abstract, TOC). See makefile target 'wordcount'.
+
 \begin{sffamily} % use a sans-serif font for the pro-forma cover sheet
 
 \begin{titlepage}
@@ -146,17 +148,21 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 9111
+Main chapters word count: 10375
 
 Methodology used to generate that word count:
 
 \begin{quote}
+The count is produced with \texttt{texcount} over the \LaTeX{} source, following
+\verb|\input| files. It is scoped to the core chapters by \verb|%TC:ignore|
+directives that exclude the front matter, bibliography, and appendix. The
+reported figure sums body text, section headings, and figure/table captions
+(i.e.\ narrative text); tabular data listings are not counted, in keeping with
+the word-count rules. Reproduce with:
 \begin{verbatim}
 $ make wordcount
-gs -q -dSAFER -sDEVICE=txtwrite -o - \
-   -dFirstPage=7 -dLastPage=35 report-draft.pdf | \
-egrep '[A-Za-z]{3}' | wc -w
-9111
+perl tools/texcount.pl -inc -sum -total -1 report-draft.tex
+10375
 \end{verbatim}
 \end{quote}
 
@@ -249,6 +255,7 @@ Write a summary of the whole thing. Make sure it fits on one page.
 % `% LOAD-BEARING` inline comment.
 % ==========================================================================
 
+%TC:endignore  % wordcount: resume counting at the first core chapter
 \chapter{Introduction}
 \label{ch:intro}
 
@@ -1612,6 +1619,8 @@ We carry this --- and the contrast with the small-molecule study of Chapter~\ref
 
 \label{lastcontentpage} % end page count here
 
+%TC:ignore  % wordcount: exclude references + appendix (non-core material)
+
 \begin{thebibliography}{99}
 
 % --- Foundational generative methods ---
@@ -2189,5 +2198,6 @@ et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea
 takimata sanctus est Lorem ipsum dolor sit amet.
 \fi
 
+%TC:endignore
 \label{lastpage}
 \end{document}
