@@ -13,9 +13,8 @@ Backbone (\emph{trunk}) & Tabasco: 3.7M-param, 16-layer non-equivariant transfor
 \multicolumn{2}{l}{\textit{REPA alignment}} \\
 Encoder targets        & CheMeleon (2D, 2048-d) $\cdot$ MACE (3D, 192-d) \\
 Injection depth $\ell$ & final (last) layer \\
-Combination mode       & additive $\cdot$ tradeoff \\
-Plumbing               & fused $\cdot$ separate (CheMeleon; MACE fused only) \\
-Projector              & 3-layer MLP \\
+Combination mode       & additive (alignment as plain regulariser) \\
+Projector              & single shared 3-layer MLP \\
 Similarity metric $\operatorname{sim}$ & cosine similarity \\
 Averaging mode         & per atom \\
 Alignment weight $\lambda$ & 0.8 \\
@@ -27,6 +26,6 @@ EMA decay              & 0.999 \\
 Sampler                & SDE interpolant, 100 integration steps \\
 \bottomrule
 \end{tabular}
-\caption{Tabasco model and training configuration. The baseline is the trunk alone; the REPA variants add the alignment block. We sweep two encoders and two combination modes against the baseline, with two projector configurations for CheMeleon (MACE was run in the fused configuration only), giving six REPA variants in total. Our analysis centres on the additive combination with fused plumbing.}
+\caption{Model and training configuration. This chapter presents two encoder targets.}
 \label{tab:tabasco-setup}
 \end{table}
