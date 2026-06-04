@@ -22,6 +22,9 @@ Learning rate          & $10^{-3}$ \\
 Batch size             & 24 ($n{\le}256$) \\
 Weight decay           & none \\
 Sampler                & SDE, noise scale $\gamma = 0.45$ \\
+\quad Integration steps & $400$ (step size $dt = 0.0025$) \\
+\quad Self-conditioning & on \\
+\quad Diffusion schedule & $g_t = 1/t$, log-spaced time steps \\
 \bottomrule
 \end{tabular}
 \caption{Model and training configuration. This chapter presents two encoder targets and two

@@ -23,7 +23,10 @@ Alignment weight $\lambda$ & 0.8 \\
 Learning rate          & $2\times10^{-3}$ \\
 Batch size             & 256 \\
 EMA decay              & 0.999 \\
-Sampler                & SDE interpolant, 100 integration steps \\
+Sampler                & SDE (Langevin) interpolant, 100 integration steps \\
+\quad Prior noise scale & $1.0$ (unit Gaussian) \\
+\quad Langevin schedule & $1/(t{+}0.01)$, disabled for $t \geq 0.9$ \\
+\quad White-noise scale & $0.01$ \\
 \bottomrule
 \end{tabular}
 \caption{Model and training configuration. This chapter presents two encoder targets.}

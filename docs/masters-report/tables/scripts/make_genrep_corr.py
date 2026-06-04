@@ -176,7 +176,7 @@ for i, (rlabel, _, _) in enumerate(REP):
 lines.append("\\bottomrule")
 lines.append("\\end{tabular}")
 lines.append(
-    "\\caption{\\textbf{Better student representations track better generation --- "
+    "\\caption{\\textbf{Better trunk representations track better generation --- "
     "strongly for designability, moderately for FID.} Partial Pearson correlation "
     "controlling for training step, with the raw value alongside; oriented so a positive "
     "value means better representation accompanies better generation. ($n{=}"

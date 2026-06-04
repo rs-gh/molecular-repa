@@ -166,7 +166,7 @@ for i, (rlabel, _, _) in enumerate(REP):
 lines.append("\\bottomrule")
 lines.append("\\end{tabular}")
 lines.append(
-    "\\caption{\\textbf{On AFDB too, better student representations track better "
+    "\\caption{\\textbf{On AFDB too, better trunk representations track better "
     "generation.} The AFDB counterpart to Table~\\ref{tab:proteina-genrep-corr}: partial "
     "Pearson controlling for training step (raw alongside), oriented so positive means "
     "better representation accompanies better generation. Generation is FID-AFDB and "
