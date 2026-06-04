@@ -422,9 +422,11 @@ In summary, the field has traded hard structural priors for architectural simpli
 
 \section{Representation alignment}
 
-But why is training diffusion-transformer architectures expensive in the first place? One answer comes from Yu et al.~\cite{REPA}, who argue that these models suffer from a \emph{representation bottleneck}. During training, a model is implicitly asked to learn two distinct tasks simultaneously: (1) representation: extracting semantically meaningful encodings from complex data; and (2) generation: constructing data from these encodings. The standard denoising objective alone may not provide sufficient signal for representation learning, leading to slow convergence and the large training budgets these models require in practice. In the context of molecular generation, this representation burden is compounded by the twin challenges outlined above. Models are now forced to encode complex structural geometry from datasets that only sparsely sample the true underlying distribution, all while operating without the aid of architectural priors.
+But why is training diffusion-transformer architectures expensive in the first place? One answer comes from Yu et al.~\cite{REPA}, who argue that these models suffer from a \emph{representation bottleneck}. During training, a model is implicitly asked to learn two distinct tasks simultaneously: (1) representation: extracting semantically meaningful encodings from complex data; and (2) generation: constructing data from these encodings. The standard denoising objective alone may not provide sufficient signal for representation learning, leading to slow convergence and the large training budgets these models require in practice.
 
-Yu et al.~propose Representation Alignment (REPA) as a remedy. The technique adds a regularisation term that aligns a generator's intermediate hidden states with the embeddings of a frozen pretrained encoder. On image diffusion, they report roughly a $17.5\times$ training speed-up against a strong baseline to achieve similar generation quality. REPA has since been extended beyond images to video~\cite{VideoREPA}, audio~\cite{TARO}, and recently to molecular generation~\cite{REED,BoltzREPA}, where it has been demonstrated but not systematically characterised.
+This burden falls harder on the prior-light models we study. In the absence of equivariant architectures, the training objective must now shoulder the additional responsibility of learning structural symmetries. Moreover, the scarcity of high-quality data compounds the problem. The model must learn complex geometry from data that only sparsely samples the true distribution, with no architectural scaffolding to fall back on.
+
+One response to this problem is to supply representational structure from elsewhere. Instead of being entirely left to the training objective, it can instead be injected softly, as an auxiliary training signal. This is the idea behind Representation Alignment (REPA), which Yu et al.~propose as a remedy. The technique adds a regularisation term that aligns a generator's intermediate hidden states with the embeddings of a frozen pretrained encoder. On image diffusion, they report roughly a $17.5\times$ training speed-up against a strong baseline to achieve similar generation quality. REPA has since been extended beyond images to video~\cite{VideoREPA}, audio~\cite{TARO}, and recently to molecular generation~\cite{REED,BoltzREPA}, where it has been demonstrated but not systematically characterised.
 
 \section{Contributions}
 
@@ -1080,6 +1082,58 @@ We take both questions up empirically in Chapters~\ref{ch:profiling}--\ref{ch:pr
 %        only -- the test sits in Ch~\ref{ch:proteina-study} \S6.5
 %        (co-movement) and \S6.6 (encoder-routed effect).
 
+\S\ref{sec:encoder-characterisation} left the encoder-selection question open. Singh et al.~\cite{SpatialStructure} found that, for image diffusion, the spatial structure of an encoder's token representations predicts REPA gain, while global linear-probe accuracy does not. Their spatial-structure metric is built on the image patch grid, and does not transfer cleanly to molecular tokens. We need an instrument that works for a 2D molecular-graph encoder and a protein structure encoder alike. This chapter develops one, profiles seven candidate encoders with it, and turns the profiles into predictions for the two studies that follow.
+
+\section{What makes a good encoder target?}
+\label{sec:profiling-framework}
+
+We profile each encoder along three questions. They are deliberately statistical rather than domain-specific, so the same instrument applies across domains. Each question on its own is misleading. The verdict comes from reading them together.
+
+\textbf{Q1 --- What information does the encoder carry?} REPA can only transfer what the target already holds. We measure two things. The first is per-token information: a linear probe for token identity (atom type, residue type) read off the frozen embedding. The second is geometric and whole-object signal: how far the embedding moves under a small coordinate perturbation, and a within-minus-between cosine that asks whether tokens of the same molecule or protein agree that they belong together. Q1 is an upper bound. If the encoder is blind to 3D geometry, no projector can teach the generator geometry from it.
+
+\textbf{Q2 --- How much of that is reachable?} A target is only useful if a small projector can map the generator's cheap, per-token inputs into the encoder's space. We fit a small MLP from token identity (and index) alone to the encoder embedding, and record the cosine it reaches. We compare this against a mean-direction baseline: the cosine of always predicting the average embedding. The difference is the \emph{projector gap}, the structured headroom that a richer input could exploit above a constant guess. This gap is necessary but not sufficient. A large gap can be the wrong kind of information --- 2D-graph context, or sequence context --- that is invariant to conformation and cannot guide 3D structure. We always read Q2 against Q1.
+
+\textbf{Q3 --- Is the embedding a tractable target?} An informative, reachable embedding can still be a poor target if its geometry is pathological. Our central conditioning measure is RankMe~\cite{RankMe}, the Roy--Vetterli effective rank, which counts how many dimensions the encoder actually uses. It is our domain-agnostic stand-in for the ImageNet linear-probe accuracy that motivated the original REPA. We supplement it with sparsity, dead-dimension counts, and embedding-norm scale. A collapsed embedding, with rank near one, or an exploded one, with very large norms, yields degenerate or noisy alignment gradients regardless of what it encodes.
+
+Together the three questions give a verdict per encoder. Because they are measured before any REPA training, they also give an a-priori prediction. A clean, reachable gap of the right kind should produce REPA gain. A saturated, pathological, or wrong-kind target should not. We apply the framework to molecule encoders first (\S\ref{sec:profiling-mol}), then protein encoders (\S\ref{sec:profiling-protein}), and collect the predictions in \S\ref{sec:profiling-predictions}.
+
+\section{Molecule encoders}
+\label{sec:profiling-mol}
+
+\input{tables/table_profiling_mol}
+
+We profile the two molecular encoders used in Chapter~\ref{ch:tabasco-study}, summarised in Table~\ref{tab:profiling-mol}. They bracket a useful contrast. One sees the 2D bonding graph, the other sees 3D geometry. Neither, the framework finds, is a clean alignment target.
+
+CheMeleon~\cite{CheMeleon} is a message-passing encoder pretrained on 2D molecular graphs. It scores a perfect atom-identity probe, but this is near-trivial for the small molecules of QM9, which hold at most nine heavy atoms. Its decisive failure is on Q1: CheMeleon is conformer-invariant by construction. Embeddings for different 3D conformers of the same molecule are bit-identical, with an L2 distance of 0.000. The encoder carries no 3D information, so REPA against it cannot teach the generator geometry. Q3 compounds the problem. The output is 93.8\% sparse, so the cosine alignment operates over barely a hundred active dimensions, and 500 dimensions are needed to capture 90\% of the embedding variance against a 128-dimensional projector input. A projector gap of $+0.04$ does exist, but it is 2D bond-graph context, conformation-invariant, and useless for guiding 3D structure. The verdict is unusable as a 3D-REPA target.
+
+MACE~\cite{MACE} is a 3D interatomic-potential encoder, pretrained to predict energies, and it is geometry-aware. Its conditioning is clean where CheMeleon's is not: 0\% sparsity, no dead dimensions, no norm explosion, and an effective rank (RankMe 40.6) that fits the projector comfortably. It also discriminates atomic environments three times more sharply than CheMeleon (a same-element cosine spread of 0.260 against 0.093). But its 3D signal is weak. Embeddings for distinct conformers have cosine 0.998 --- sensitive, but barely, because MACE's energy training emphasises local environments over global pose. And it is saturated on Q2. The projector reaches a mean-direction floor of about 0.86 from any input, including random noise, leaving a gap of only $+0.005$. Even a perfect generator could lift the cosine at most 0.14 above the floor, and most of that headroom is local geometry, not global conformation. The verdict is borderline and saturated: the right kind of signal, in vanishingly small supply.
+
+Neither molecule encoder is a clean win. CheMeleon is informative but 2D. MACE is 3D-aware but saturated. The choice is between a target that cannot guide geometry and one whose geometric headroom is nearly exhausted before training begins.
+
+\section{Protein encoders}
+\label{sec:profiling-protein}
+
+\input{tables/table_profiling_protein}
+
+The protein side offers a wider field. We profile five candidate encoders plus a random-initialised reference, summarised in Table~\ref{tab:profiling-protein}. The framework separates them cleanly into usable, borderline, and unusable.
+
+GearNet~\cite{GearNet} is a structure encoder pretrained for CATH fold classification, released with Proteina~\cite{Proteina}, and it is the strongest target. It is genuinely geometric: a 0.5\,\AA{} coordinate perturbation drops the embedding cosine to 0.37, and its within-minus-between protein signal of 0.222 is six times the random-init floor. Its spectrum is well-shaped, with a RankMe of 256 out of 512 against 100 for random init, so the projector has clean gradients to work with. Its projector gap is small in absolute terms ($+0.009$), but it sits on a low floor: the embeddings are spread out, so the projector matches them without needing coordinates, and the headroom that remains is geometric. GearNet is the one encoder whose reachable signal is both clean and of the right kind. The random-init row makes this legible. Architecture alone gives a collapsed spectrum (participation ratio 1.5 against 38) and almost no protein-level signal ($\Delta_{\text{w-b}}$ 0.035); the gap is what pretraining buys.
+
+ProteinMPNN~\cite{ProteinMPNN} encodes each residue's local inverse-folding environment, and it has the cleanest conditioning of any 3D-aware encoder we profiled: 0\% sparsity, no dead dimensions, a RankMe of 85 out of 128, and tightly bounded norms. But its geometric signal is weaker and smoother than GearNet's --- a 1\,\AA{} perturbation leaves the cosine at 0.73, against GearNet's 0.27 --- and its protein-level signal is ten times weaker ($\Delta_{\text{w-b}}$ 0.022). Its inverse-folding pretraining also leaks residue identity into the embedding (probe 0.327), despite a coordinate-only input. The gap of $+0.014$ is real, but sits on a high floor. The verdict is borderline: clean, but carrying less of the geometric signal a generator needs. It serves in Chapter~\ref{ch:proteina-study} as the informative contrast to GearNet.
+
+ESM2~\cite{ESM2} is a sequence-only language model, and it produces the largest projector gap in the field ($+0.053$). This is the framework's central caution made concrete. The gap is large, but it is sequence-context headroom, conformation-invariant by construction, and the kind of signal that cannot guide 3D geometry. The last layer also collapses toward residue identity (probe 0.998), so even the sequence signal is flattened; richer structure sits in mid-layers~24--30. ESM2 is usable, but only with that caveat, and its headroom is the wrong kind for a structure generator.
+
+The remaining two bracket the failure modes. PW-GearNet~\cite{ProteinWorkshop}, pretrained on backbone torsions, is borderline: 3D-aware, with a reasonable gap ($+0.013$), but under-utilised (RankMe 208 of 3072, participation ratio 5.5). MC-GearNet-Edge is unusable, and instructive. Its conditioning has collapsed entirely --- a RankMe of 12 out of 3072, 95\% of the variance in a single dimension, 507 dead dimensions, and a mean embedding norm of $1.5\times10^6$. Whatever it might encode is destroyed by Q3 pathology. It is the clearest case that conditioning alone can veto an otherwise plausible encoder.
+
+\section{What the framework predicts}
+\label{sec:profiling-predictions}
+
+The profiles above are measured before any alignment training, so they are predictions, not post-hoc explanations. We state them explicitly here and test them in the two studies that follow.
+
+For small molecules (Chapter~\ref{ch:tabasco-study}), the framework predicts no measurable REPA gain. CheMeleon cannot teach 3D geometry, and its conditioning is poor. MACE carries the right kind of signal, but is saturated to within $+0.005$ of its floor. Neither encoder offers clean, reachable, geometric headroom, so neither should move the generator.
+
+For protein backbones (Chapter~\ref{ch:proteina-study}), the framework predicts a graded outcome. GearNet should produce the clearest gain, and that gain should be geometric in nature. ProteinMPNN should produce a weaker effect, serving as a falsifying contrast: if REPA gains tracked any alignment rather than the right kind, the two would behave alike. ESM2's large gap should not translate into a proportionally large gain, because its headroom is sequence-context rather than geometry. MC-GearNet should fail outright. The load-bearing test of the framework is whether representation quality predicts generation quality across these encoders, which we take up in \S\ref{sec:proteina-genrep}.
+
 \chapter{REPA on small molecules}
 \label{ch:tabasco-study}
 
@@ -1113,7 +1167,7 @@ We take both questions up empirically in Chapters~\ref{ch:profiling}--\ref{ch:pr
 
 Previously (Chapter~\ref{ch:profiling}), we profiled various encoders in the molecular generation domain for their suitability as a representation alignment (REPA) target. This chapter is the first of two that put this analysis to the test. We begin here with the relatively simpler task of generating small molecules, before moving to much larger molecules in proteins next. In this chapter, we ask: \emph{can REPA accelerate or improve the training of Tabasco~\cite{Tabasco}, a flow-matching transformer-based generator of 3D small molecules?}
 
-\textbf{Our headline finding is that REPA has little impact on small molecule generation in our setup.} This is likely because the regime offers REPA little to work with. Indeed, it is characterised by a near-saturated metric surface, and encoders that carry little signal the model does not already learn. This null result points to a theme that we develop in subsequent chapters as well. REPA appears to work best where the baseline architecture struggles, but does not appear to assist an already strong learner.
+\textbf{Our headline finding is that no REPA variant measurably improves Tabasco's small-molecule generation in our setup.} On structural-quality metrics, the baseline is already at ceiling. On FCD, the one metric with headroom, the REPA variants perform no better than baseline. We defer the \emph{why} to \S\ref{sec:tabasco-diagnosis}, where two properties of this regime --- a saturated evaluation surface and the absence of a usable teacher --- emerge as the explanation and seed the contrast with proteins, which we explore in Chapter~\ref{ch:proteina-study}.
 
 \section{Experimental setup}
 \label{sec:tabasco-setup}
@@ -1547,7 +1601,7 @@ In this subsection, we investigate how REPA impacts different aspects of generat
 \subsection{What we do not claim}
 \label{sec:proteina-scope}
 
-Several tempting claims do not survive our own data, and we flag them here.
+Several tempting claims do not survive our data, and we flag them here.
 
 \begin{itemize}
   \item \emph{No asymptotic generation quality win on experimental data.} REPA accelerates PDB convergence, but the lead is transient. The baseline matches REPA's FID plateau by ${\sim}1.4$M steps and edges below it by $1.6$M (\S\ref{sec:proteina-convergence}). The durable advantage on fidelity is on synthetic (AFDB) data, where the baseline plateaus poorly.
@@ -1810,6 +1864,11 @@ Jackson W.~Burns et al.
 ``Deep Learning Foundation Models from Classical Molecular Descriptors''.
 arXiv preprint (2025).
 \href{https://arxiv.org/abs/2506.15792}{arXiv:2506.15792}.
+
+\bibitem{RankMe}
+Quentin Garrido, Randall Balestriero, Laurent Najman, Yann LeCun.
+\textit{RankMe: Assessing the Downstream Performance of Pretrained Self-Supervised Representations by Their Rank}. ICML 2023.
+\href{https://arxiv.org/abs/2210.02885}{arXiv:2210.02885}.
 
 \bibitem{ProstT5}
 Michael Heinzinger et al.
