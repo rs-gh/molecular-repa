@@ -46,15 +46,15 @@ Caveat: a large gap alone is necessary but not sufficient. CheMeleon's projector
 
 | Encoder           | Embed dim | Rank (note)                          | Sparsity | Atom probe acc | Atom-type Δ within−between | 3D-aware? | Mean-dir | Best projector | **Gap**    |
 |-------------------|----------:|--------------------------------------|---------:|---------------:|---------------------------:|:---------:|---------:|---------------:|-----------:|
-| **CheMeleon** (2048-d) | 2048 | ~138 (entropy on σ², stale)¹    | 93.8% | 1.000 | 0.093 (QM9) | **No** (2D-only) | ~0.43 | 0.471 | **+0.04**  |
+| **CheMeleon** (2048-d) | 2048 | RankMe 1166 (GEOM) / 1195 (QM9)¹ | 93.8% | 1.000 | 0.093 (QM9) | **No** (2D-only) | ~0.43 | 0.471 | **+0.04**  |
 | **MACE-OFF small** (192-d) | 192 | RankMe 40.6                | 0.0% | 1.000 | 0.260 | Yes (weak) | ~0.86 | 0.863 | **+0.005** |
 
-¹ The CheMeleon `investigate.py` was switched to also emit RankMe on 2026-05-04, but the encoder hasn't been re-run since. The 138 number is `exp(H(p))` with `p = σᵢ² / Σσ²` (the *old* proteina convention). Not directly comparable to MACE's 40.6 (which is RankMe = `exp(H(p))` with `p = σᵢ / Σσ`); a CheMeleon re-run is a tracked follow-up.
+¹ Re-run 2026-06-04 (after fixing a venv drift — rogue `rdkit-pypi 2022.9.5` shadowed the locked `rdkit 2025.9.3`, so the LMDBs would not depickle). Now RankMe = `exp(H(p))` with `p = σᵢ / Σσ`, the same metric as MACE's 40.6, so the two are directly comparable. **Higher is not better here**: CheMeleon's rank is high because its variance is *diffuse and sparse* (93.8% zeros, 500 dims for 90% variance), not collapsed — it overflows the 128-d tabasco projector input (a bottleneck), the opposite failure mode to MC-GearNet's collapse. The old stale value was `138 = exp(H(p))` with `p = σᵢ² / Σσ²` (the old proteina convention); discard it.
 
 Columns map to the three questions:
 - **Q1 evidence**: Atom probe acc (Q1.1), atom-type Δ within−between (Q1.3 — same-element / different-environment discrimination), 3D-aware? (Q1.2). Per-encoder files break Q1 down further (molecule-level identity Q1.4, conformer sensitivity, etc.).
 - **Q2 evidence**: Mean-dir, Best projector, **Gap = best − mean-dir** (a structural property of the encoder).
-- **Q3 evidence**: Rank (RankMe for MACE; entropy-on-σ² for CheMeleon until re-run), Sparsity. Per-encoder files add norms, dead dims, and the threshold-based rank for cross-checking.
+- **Q3 evidence**: Rank (RankMe for both, comparable as of the 2026-06-04 CheMeleon re-run), Sparsity. Per-encoder files add norms, dead dims, and the threshold-based rank for cross-checking.
 
 ### What the "Gap" column is — and isn't
 
