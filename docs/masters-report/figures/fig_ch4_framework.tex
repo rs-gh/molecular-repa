@@ -1,0 +1,29 @@
+% Ch4 profiling-framework schematic (Q1/Q2/Q3 funnel). \input{} from sec:profiling-framework.
+% Explicit coordinates only (preamble loads tikz + arrows.meta, no positioning/calc).
+\begin{figure}[tbp]
+\centering
+\begin{tikzpicture}[
+    >={Latex[length=2mm]},
+    box/.style={rectangle, draw, rounded corners=3pt, align=center,
+                inner sep=5pt, font=\small, fill=gray!5},
+    metric/.style={font=\scriptsize, text=black!55},
+    flow/.style={font=\footnotesize\itshape, text=black!60, fill=white, inner sep=1.5pt},
+    arr/.style={-{Latex[length=2.2mm]}, thick, black!75}
+]
+\node (in) at (0,0) {\small a candidate encoder};
+\node[box, text width=7.0cm] (q1) at (0,-1.75)
+   {\textbf{Q1 $\cdot$ Information} \\ what does it encode? \\ \textcolor{black!55}{\scriptsize linear probes: identity, 3D-sensitivity, whole-object}};
+\node[box, text width=6.3cm] (q2) at (0,-4.05)
+   {\textbf{Q2 $\cdot$ Reachability} \\ can a projector recover it? \\ \textcolor{black!55}{\scriptsize the \emph{gap}: cosine above a mean-direction floor}};
+\node[box, text width=5.6cm] (q3) at (0,-6.35)
+   {\textbf{Q3 $\cdot$ Conditioning} \\ is the geometry trainable? \\ \textcolor{black!55}{\scriptsize RankMe, sparsity, norms}};
+\node[align=center, font=\small] (v) at (0,-8.0)
+   {verdict $\;\rightarrow\;$ guides the two studies (Ch.~\ref{ch:tabasco-study}--\ref{ch:proteina-study})};
+\draw[arr] (in) -- (q1);
+\draw[arr] (q1) -- (q2) node[flow, midway] {only the reachable part};
+\draw[arr] (q2) -- (q3) node[flow, midway] {and only if well-conditioned};
+\draw[arr] (q3) -- (v);
+\end{tikzpicture}
+\caption{The protocol we use to decide whether an encoder is a good alignment target.}
+\label{fig:profiling-framework}
+\end{figure}

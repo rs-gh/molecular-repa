@@ -1,0 +1,27 @@
+% Ch4 profiling-diagnostics table. \input{} from sec:profiling-framework.
+% Descriptive: the diagnostics, grouped by the three questions (Q1/Q2/Q3).
+\begin{table}[tbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l >{\raggedright\arraybackslash}p{0.30\textwidth} >{\raggedright\arraybackslash}p{0.40\textwidth}}
+\toprule
+\textbf{Diagnostic} & \textbf{What it captures} & \textbf{How we compute it} \\
+\midrule
+\multicolumn{3}{l}{\textbf{Q1 --- Information}\quad\textit{what the encoder encodes (an upper bound)}} \\
+Identity probe            & token identity (atom or residue type) & linear-probe accuracy on the frozen embeddings \\
+Perturbation sensitivity  & sensitivity to 3D geometry & embedding cosine after a small coordinate perturbation \\
+Within$-$between $\Delta$  & whole-object identity & mean within-object minus between-object cosine \\
+\midrule
+\multicolumn{3}{l}{\textbf{Q2 --- Reachability}\quad\textit{what a projector can transfer}} \\
+Projector gap             & reachable headroom above a constant guess & best cosine from a cheap-input MLP, minus the mean-direction cosine \\
+\midrule
+\multicolumn{3}{l}{\textbf{Q3 --- Conditioning}\quad\textit{whether the geometry is trainable}} \\
+RankMe~\cite{RankMe}      & effective dimensionality & Roy--Vetterli effective rank of the embedding matrix \\
+Sparsity, dead dims       & degenerate dimensions & fraction of exact zeros; permanently inactive dimensions \\
+Norm scale                & numerical conditioning & mean embedding $\ell_2$ norm \\
+\bottomrule
+\end{tabular}
+\caption{The profiling diagnostics, grouped by the three questions of Figure~\ref{fig:profiling-framework}.}
+\label{tab:profiling-diagnostics}
+\end{table}
