@@ -98,11 +98,10 @@ def cross_conformer_cosine(encoder, ds, groups, pass_smiles=True):
     return np.array(vals)
 
 
-def main():
-    use_report_style()
+def compute():
+    """Compute the four arrays (slow: loads both encoders + embeds GEOM)."""
     print("Loading GEOM ...")
     ds = inv.load_dataset("geom")
-
     print("Loading CheMeleon ...")
     chem = inv.get_encoder()
     print("Loading MACE (sets float64 at init; encoder restores) ...")
@@ -118,9 +117,6 @@ def main():
     chem_vals = atom_embeddings(chem, items_a, smiles_a, pass_smiles=True)
     print("  MACE embeddings ...")
     mace_vals = atom_embeddings(mace, items_a, smiles_a, pass_smiles=False)
-    chem_zero = (chem_vals == 0).mean()
-    mace_zero = (mace_vals == 0).mean()
-    print(f"  sparsity: CheMeleon {chem_zero:.3f}  MACE {mace_zero:.3f}")
 
     # ---- multi-conformer groups for panel B ----
     print("Panel B: scanning GEOM for conformer groups ...")
@@ -136,16 +132,41 @@ def main():
     chem_conf = cross_conformer_cosine(chem, ds, groups, pass_smiles=True)
     print("  MACE cross-conformer cosine ...")
     mace_conf = cross_conformer_cosine(mace, ds, groups, pass_smiles=False)
+    return chem_vals, mace_vals, chem_conf, mace_conf
+
+
+def main():
+    use_report_style()
+    cache = REPO / "docs" / "masters-report" / "figures" / ".fig_ch4_cache.npz"
+    if cache.exists():
+        print(f"Loading cached arrays from {cache.name}")
+        z = np.load(cache)
+        chem_vals, mace_vals = z["chem_vals"], z["mace_vals"]
+        chem_conf, mace_conf = z["chem_conf"], z["mace_conf"]
+    else:
+        chem_vals, mace_vals, chem_conf, mace_conf = compute()
+        np.savez(
+            cache,
+            chem_vals=chem_vals,
+            mace_vals=mace_vals,
+            chem_conf=chem_conf,
+            mace_conf=mace_conf,
+        )
+        print(f"Cached arrays to {cache.name}")
+
+    chem_zero = (chem_vals == 0).mean()
+    mace_zero = (mace_vals == 0).mean()
+    print(f"  sparsity: CheMeleon {chem_zero:.3f}  MACE {mace_zero:.3f}")
     print(f"  mean cos: CheMeleon {chem_conf.mean():.5f}  MACE {mace_conf.mean():.5f}")
 
     # ================= plot =================
     fig, (axA, axB) = plt.subplots(1, 2, figsize=(7.4, 3.0))
 
     # --- Panel A: value distribution (density, log-y) ---
-    lo, hi = -1.5, 2.5
-    bins = np.linspace(lo, hi, 80)
+    lo, hi = -2.5, 3.5
+    bins = np.linspace(lo, hi, 90)
     axA.hist(
-        np.clip(mace_vals, lo, hi),
+        np.clip(mace_vals.ravel(), lo, hi),
         bins=bins,
         density=True,
         color=C_MACE,
@@ -153,12 +174,12 @@ def main():
         label=f"MACE ({mace_zero*100:.0f}% zeros)",
     )
     axA.hist(
-        np.clip(chem_vals, lo, hi),
+        np.clip(chem_vals.ravel(), lo, hi),
         bins=bins,
         density=True,
         color=C_CHEM,
         alpha=0.55,
-        label=f"CheMeleon ({chem_zero*100:.1f}% zeros)",
+        label=f"CheMeleon ({chem_zero*100:.0f}% zeros)",
     )
     axA.set_yscale("log")
     axA.set_xlabel("embedding value")
