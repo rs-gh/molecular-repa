@@ -1,22 +1,19 @@
 % Molecule encoder-zoo profiling table. \input{} from report-draft.tex Ch4 (sec:profiling-mol).
-% Numbers from encoder_profiling/tabasco/FINDINGS.md. CheMeleon RankMe re-run 2026-06-04 (rdkit-env fix):
-% QM9 1194.7 / GEOM 1165.6 out of 2048; now the same metric as MACE (Roy--Vetterli effective rank on
-% raw sigma), so directly comparable. GEOM value shown (Ch5 trains on GEOM-drugs).
+% Numbers from encoder_profiling/tabasco/FINDINGS.md. CheMeleon RankMe re-run 2026-06-04 (rdkit-env fix).
 % Floor = mean-direction cosine; Lift = best-projector minus floor (the old "Gap" column).
+% Tight column set: only the diagnostics the prose verdicts actually use.
 \begin{table}[tbp]
 \centering
 \small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{l r cc cc cc l}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{l r c cc c l}
 \toprule
- & & \multicolumn{2}{c}{\textbf{Information}} & \multicolumn{2}{c}{\textbf{Relevance}} & \multicolumn{2}{c}{\textbf{Conditioning}} & \\
-\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}
-\textbf{Encoder} & \textbf{Dim} & 3D & atom-$\Delta$ & Floor & Lift & Sparsity & RankMe & \textbf{Verdict} \\
+\textbf{Encoder} & \textbf{Dim} & \textbf{3D} & \textbf{Floor} & \textbf{Lift} & \textbf{Sparsity} & \textbf{Verdict} \\
 \midrule
-CheMeleon (2D graph)    & 2048 & no       & 0.093 & 0.43 & $+0.04$  & 93.8\% & 1166 & off-task \\
-MACE (3D potential)     & 192  & weak     & 0.260 & 0.86 & $+0.005$ & 0\%    & 40.6 & saturated \\
+CheMeleon (2D graph) & 2048 & \rd{no}   & \gd{0.43} & $+0.04$  & \rd{93.8\%} & too sparse \\
+MACE (3D potential)  & 192  & \rd{weak} & \rd{0.86} & $+0.005$ & \gd{0\%}    & saturated  \\
 \bottomrule
 \end{tabular}
-\caption{Molecule encoder profiles. \emph{3D-aware}: whether the embedding changes across conformers (CheMeleon is bit-identical, L2~$=0$; MACE shifts only slightly, cosine $0.995$). \emph{atom-$\Delta$}: same-element, different-environment cosine-similarity spread. \emph{Floor}: cosine similarity of a constant prediction (high $=$ saturated). \emph{Lift}: cosine similarity a same-form MLP gains above the floor from cheap inputs. \emph{Sparsity} and \emph{RankMe} (effective rank out of \emph{Dim}~\cite{RankMe}) measure conditioning. CheMeleon's lift is real but conformation-invariant 2D context, off-task for guiding 3D geometry; its high RankMe is a diffuse, sparse embedding that overflows the 128-dimensional projector input. MACE carries the right kind of signal, but a high floor leaves a lift of only $+0.005$.}
+\caption{Molecule encoder profiles. \emph{3D}: whether the embedding changes across conformers (CheMeleon is bit-identical, L2~$=0$; MACE shifts only slightly, cosine $0.995$). \emph{Floor}: cosine similarity of a constant prediction (high $=$ saturated). \emph{Lift}: cosine similarity a same-form MLP gains above the floor from cheap inputs. \emph{Sparsity}: fraction of exact zeros. CheMeleon's 93.8\% sparsity makes it an ill-conditioned target; its lift is also conformation-invariant 2D context, off-task for guiding 3D geometry. MACE carries the right kind of signal, but a high floor leaves a lift of only $+0.005$.}
 \label{tab:profiling-mol}
 \end{table}

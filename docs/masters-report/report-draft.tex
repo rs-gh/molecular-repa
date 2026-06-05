@@ -1098,7 +1098,7 @@ We profile every candidate encoder with the protocol summarised in Table~\ref{ta
 
 We ask three things of each encoder, and a good target needs all three.
 
-\textbf{Information} asks: \emph{what does the encoder contain?} This estimates the upper bound on what REPA can add to a model. Alignment cannot teach anything the encoder does not itself hold. For example, a rotation-invariant encoder will struggle to teach a generator where to place atoms in 3D space, independent of whether it captures other chemistry. We probe four axes that between them span what a molecular generator needs --- 3D geometry, token identity, whole-object identity, and (for proteins) secondary structure --- each measured as set out in Table~\ref{tab:profiling-diagnostics}.
+\textbf{Information} asks: \emph{what does the encoder contain?} This estimates the upper bound on what REPA can add to a model. Alignment cannot teach anything the encoder does not itself hold. For a 3D generator, the axis that matters most is 3D geometry. We measure it by how far the embedding moves when we perturb the coordinates. We also report token identity, since a high score there flags an encoder that is mostly an identity lookup that the generator can already perform.
 
 \textbf{Relevance} asks: \emph{how much of a REPA target can the generator match without improving the representation it is trying to learn?}
 
@@ -1127,28 +1127,27 @@ We apply this protocol to molecule encoders first (\S\ref{sec:profiling-mol}), t
 \label{sec:profiling-mol}
 
 \input{tables/table_profiling_mol}
-\input{figures/fig_ch4_mol_encoders}
 
-We profile the two molecular encoders used in Chapter~\ref{ch:tabasco-study}, summarised in Table~\ref{tab:profiling-mol}. They bracket a useful contrast. One sees the 2D bonding graph, the other sees 3D geometry. Neither, the framework finds, is a clean alignment target.
+We profile the two molecular encoders used in Chapter~\ref{ch:tabasco-study}, summarised in Table~\ref{tab:profiling-mol} (full values in Appendix~\ref{app:profiling-full}). They bracket a useful contrast. One sees the 2D bonding graph, the other sees 3D geometry. Neither, the framework finds, is a clean alignment target.
 
-CheMeleon~\cite{CheMeleon} is a message-passing encoder pretrained on 2D molecular graphs. It is conformer-invariant by construction: embeddings for different 3D conformers of a molecule are bit-identical. So whatever its lift recovers is 2D bond-graph context, conformation-invariant, and off-task for a 3D generator. Its sparse, diffuse embedding also overflows the projector. The verdict is off-task.
+CheMeleon~\cite{CheMeleon} is a 2D-graph encoder. Its embeddings are well spread (a low floor), but it fails on two other counts: it is 93.8\% sparse, so alignment runs over a shifting, ill-conditioned subspace, and it is conformer-invariant by construction, so its lift is 2D bond-graph context, off-task for a 3D generator.
 
-MACE~\cite{MACE} is a 3D interatomic-potential encoder pretrained to predict energies, and its conditioning is clean. But its energy training emphasises local environments over global pose, so its 3D signal is weak (conformers stay at cosine 0.995; Figure~\ref{fig:profiling-mol}), and its high floor leaves almost no lift. The verdict is saturated: the right kind of signal, in vanishingly small supply.
+MACE~\cite{MACE} is a 3D interatomic-potential encoder, and its conditioning is clean. But its energy pretraining captures local environments over global pose, so its 3D signal is weak, and a high floor of 0.86 leaves almost no lift. It is saturated: the mean embedding alone matches most of the variance.
 
 \section{Protein encoders}
 \label{sec:profiling-protein}
 
 \input{tables/table_profiling_protein}
 
-The protein side offers a wider field. We profile five candidate encoders plus a random-initialised reference, summarised in Table~\ref{tab:profiling-protein}. The framework separates them cleanly, and surfaces each of the failure modes above.
+The protein side offers a wider field. We profile five candidate encoders plus a random-initialised reference, summarised in Table~\ref{tab:profiling-protein} (full values in Appendix~\ref{app:profiling-full}). The framework separates them cleanly, and surfaces each of the failure modes above.
 
-GearNet~\cite{GearNet} is a structure encoder pretrained for CATH fold classification, released with Proteina~\cite{Proteina}. It is genuinely geometric: a 0.5\,\AA{} coordinate perturbation drops the embedding cosine to 0.37. Its lift is small, but it sits on a low floor, so the embeddings are spread and the remaining headroom is geometric rather than cheap identity. The random-init row makes this legible: architecture alone gives a near-constant, low-rank embedding, and the spread is what pretraining buys. GearNet is the one encoder whose signal is both clean and of the right kind. The verdict is usable.
+GearNet~\cite{GearNet}, pretrained for CATH fold classification and released with Proteina~\cite{Proteina}, is the one clean target. It is genuinely geometric (a 0.5\,\AA{} perturbation drops the cosine to 0.37) and barely a residue-identity lookup (AA-probe 0.137, near chance). Its lift is small only because it sits on a low floor: the embeddings are spread, and the remaining headroom is geometric. The random-init row makes this legible, as architecture alone gives a near-constant, low-rank embedding; the spread is what pretraining buys. The verdict is usable.
 
-ProteinMPNN~\cite{ProteinMPNN} encodes each residue's local inverse-folding environment, and has the cleanest conditioning of any 3D-aware encoder we profiled. But its geometric signal is weaker and smoother than GearNet's (a 1\,\AA{} perturbation leaves the cosine at 0.73, against GearNet's 0.27), and its lift sits on a high floor. The verdict is borderline. It serves in Chapter~\ref{ch:proteina-study} as the informative contrast to GearNet.
+ESM2~\cite{ESM2} is the instructive contrast. A sequence-only language model, it produces the largest lift in the field, yet that lift is sequence context: it ignores coordinates by construction, and its last layer flattens almost entirely to residue identity (AA-probe 0.998 against GearNet's 0.137). Its information is real but the wrong kind. The verdict is off-task.
 
-ESM2~\cite{ESM2} is a sequence-only language model, and it produces the largest lift in the field. This is the framework's central caution made concrete. The lift is large, but it is sequence context, conformation-invariant, and cannot guide 3D geometry. Its last layer also flattens toward residue identity; richer structure sits in mid-layers~24--30. The verdict is off-task: informative, but the wrong kind of information.
+ProteinMPNN~\cite{ProteinMPNN} has the cleanest conditioning of any 3D-aware encoder we profiled, but its geometric signal is weaker and smoother than GearNet's (a 1\,\AA{} perturbation leaves the cosine at 0.73, against 0.27), and inverse-folding pretraining leaks some residue identity (AA-probe 0.327) on a high floor. The verdict is borderline. It serves in Chapter~\ref{ch:proteina-study} as the informative contrast to GearNet. PW-GearNet~\cite{ProteinWorkshop} is similar: 3D-aware with a reasonable lift, but identity-driven and under-utilised. MC-GearNet-Edge is collapsed, with 95\% of its variance in a single dimension; conditioning alone vetoes it.
 
-The remaining two bracket the failure modes. PW-GearNet~\cite{ProteinWorkshop}, pretrained on backbone torsions, is borderline: 3D-aware, with a reasonable lift, but under-utilised. MC-GearNet-Edge is collapsed and instructive: its embedding has a mean norm of $1.5\times10^6$ and 95\% of its variance in a single dimension, so whatever it encodes is destroyed by a conditioning pathology. It is the clearest case that conditioning alone can veto an otherwise plausible encoder.
+The field collapses to one usable target. Of six encoders, only GearNet clears all three properties; each of the others fails a different gate, whether saturation, off-task information, or collapse. The two studies therefore foreground GearNet, with ProteinMPNN as the controlled contrast.
 
 \section{What the profiles imply}
 \label{sec:profiling-predictions}
@@ -1443,7 +1442,7 @@ More practically, we must look for a regime within the domain that satisfies the
 %          training lands. Not crux of the chapter.
 %  - 6.8 (OPT) Brief summary bridging to Ch~\ref{ch:conclusions}.
 
-In this chapter, we expand the scope of our study on representation alignment from small molecules to much larger ones: proteins. Previously (Chapter~\ref{ch:tabasco-study}), our efforts using REPA to generate small molecules yielded little demonstrable improvement, largely because the Tabasco~\cite{Tabasco} baseline was already saturated on most measures of generation quality. However, de novo backbone design represents a more challenging task, as the data distribution of proteins is significantly larger, and the geometry of these structures is correspondingly more complex. In this context, we ask: \emph{can REPA accelerate or improve the training of Proteina~\cite{Proteina}, a flow-matching transformer-based protein backbone generator?}
+In this chapter, we expand the scope of our study on representation alignment from small molecules to much larger ones: proteins. Previously (Chapter~\ref{ch:tabasco-study}), our efforts using REPA to generate small molecules yielded little demonstrable improvement, because the Tabasco~\cite{Tabasco} baseline already saturated most measures of generation quality, and because the encoders used were likely unhelpful. However, de novo backbone design represents a more challenging task, as the data distribution of proteins is significantly larger, and the geometry of these structures is correspondingly more complex. In this context, we ask: \emph{can REPA accelerate or improve the training of Proteina~\cite{Proteina}, a flow-matching transformer-based protein backbone generator?}
 
 \textbf{Our headline finding is that REPA accelerates convergence on the two key measures of protein generation quality.} This holds across both experimental and synthetic training-data regimes (Figure~\ref{fig:proteina-fid}). The one exception is designability on synthetic data, which the baseline already saturates under standard sampling (\S\ref{sec:proteina-datasets}). This chapter characterises \emph{what} happens and attempts to understand \emph{why}. We also pick up the thread from Chapter~\ref{ch:evaluation} on how the molecular domain differs from the image domain REPA was built for, and develop a theme throughout: REPA here is a \emph{family} of interventions rather than a single mechanism. Throughout, our aim is to test whether the mechanism transfers at all. We do not search for its best configuration (\S\ref{sec:proteina-scope}).
 
@@ -2171,6 +2170,13 @@ For each backbone we annotate every residue as helix, strand, or coil with a C$\
 The encoder-routing reading in \S\ref{sec:proteina-anatomy} --- GearNet shifting the designable subset toward $\beta$-sheet, MPNN on AFDB away from it --- rests on the secondary-structure composition of the designable backbones (Table~\ref{tab:ss-composition}). The shifts are small in absolute terms but seed-consistent: on AFDB the GearNet-L9 and MPNN-L9 strand and helix ranges do not overlap across seeds, in opposite directions. The main-text E\%des figures (Table~\ref{tab:proteina-700k}) are the per-seed means of the strand column; we report the spread here rather than in the main table to avoid clutter.
 
 \input{tables/table_ss_composition}
+
+\section{Full encoder profiles}
+\label{app:profiling-full}
+
+Tables~\ref{tab:profiling-mol} and~\ref{tab:profiling-protein} in the main text show only the diagnostics that drive each verdict. Tables~\ref{tab:profiling-full-mol} and~\ref{tab:profiling-full-protein} give the complete set of measured values for every candidate encoder, including the columns omitted from the main text (atom/context probes, participation ratio, and the best-projector cosine the lift is computed from).
+
+\input{tables/table_profiling_full}
 
 % --- removed: original template's Lorem-ipsum filler ---
 \iffalse
