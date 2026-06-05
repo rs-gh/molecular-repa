@@ -12,11 +12,11 @@
 ]
 \node (in) at (0,0) {\small a candidate encoder};
 \node[box, text width=7.0cm] (q1) at (0,-1.75)
-   {\textbf{Q1 $\cdot$ Information} \\ what does it encode? \\ \textcolor{black!55}{\scriptsize linear probes: identity, 3D-sensitivity, whole-object}};
+   {\textbf{Information} \\ what does it encode? \\ \textcolor{black!55}{\scriptsize linear probes: identity, 3D-sensitivity, whole-object}};
 \node[box, text width=6.3cm] (q2) at (0,-4.05)
-   {\textbf{Q2 $\cdot$ Reachability} \\ can a projector recover it? \\ \textcolor{black!55}{\scriptsize the \emph{gap}: cosine above a mean-direction floor}};
+   {\textbf{Recoverability} \\ what can a projector recover? \\ \textcolor{black!55}{\scriptsize cheap-input ladder; a lower bound}};
 \node[box, text width=5.6cm] (q3) at (0,-6.35)
-   {\textbf{Q3 $\cdot$ Conditioning} \\ is the geometry trainable? \\ \textcolor{black!55}{\scriptsize RankMe, sparsity, norms}};
+   {\textbf{Conditioning} \\ is the embedding well-formed? \\ \textcolor{black!55}{\scriptsize RankMe, sparsity, norms}};
 \node[align=center, font=\small] (v) at (0,-8.0)
    {verdict $\;\rightarrow\;$ guides the two studies (Ch.~\ref{ch:tabasco-study}--\ref{ch:proteina-study})};
 \draw[arr] (in) -- (q1);

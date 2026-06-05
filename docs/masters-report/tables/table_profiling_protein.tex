@@ -1,13 +1,13 @@
 % Protein encoder-zoo profiling table. \input{} from report-draft.tex Ch4 (sec:profiling-protein).
 % Numbers from encoder_profiling/proteina/FINDINGS.md headline table (RankMe re-run 2026-05-04, job 28852949).
-% Columns grouped by the three questions: Q1 information / Q2 reachability / Q3 conditioning.
+% Columns grouped by the three properties: information / reachability / conditioning.
 \begin{table}[tbp]
 \centering
 \small
 \setlength{\tabcolsep}{5pt}
 \begin{tabular}{l r cc c r l}
 \toprule
- & & \multicolumn{2}{c}{\textbf{Q1: information}} & \textbf{Q2} & \textbf{Q3} & \\
+ & & \multicolumn{2}{c}{\textbf{Information}} & \textbf{Recoverability} & \textbf{Conditioning} & \\
 \cmidrule(lr){3-4}
 \textbf{Encoder} & \textbf{Dim} & AA-probe & $\Delta_{\text{w-b}}$ & Gap & RankMe & \textbf{Verdict} \\
 \midrule
@@ -19,6 +19,6 @@ PW-GearNet (torsional)      & 3072 & 0.928 & 0.102 & $+0.013$ & 208  & borderlin
 MC-GearNet-Edge             & 3072 & 0.146 & 0.043 & $+0.002$ & 12   & unusable \\
 \bottomrule
 \end{tabular}
-\caption{Protein encoder profiles. \emph{AA-probe}: linear-probe accuracy for residue identity (Q1, per-token information). $\Delta_{\text{w-b}}$: within-minus-between protein cosine (Q1, whole-object identity). \emph{Gap}: projector cosine above the mean-direction floor (Q2, reachable headroom). \emph{RankMe}: Roy--Vetterli effective rank out of \emph{Dim} (Q3, conditioning). Only GearNet carries strong geometric signal cleanly. \textsuperscript{\dag}ESM2's gap is the largest in the table but is sequence-context, not 3D geometry, and the last layer collapses to residue identity --- richer structure sits in mid-layers~24--30.}
+\caption{Protein encoder profiles. \emph{AA-probe}: linear-probe accuracy for residue identity (per-token information). $\Delta_{\text{w-b}}$: within-minus-between protein cosine similarity (whole-object identity). \emph{Gap}: cosine similarity an MLP projector reaches above the mean-direction floor (reachable headroom). \emph{RankMe}: Roy--Vetterli effective rank out of \emph{Dim} (conditioning). Only GearNet carries strong geometric signal cleanly. \textsuperscript{\dag}ESM2's gap is the largest in the table but is sequence-context, not 3D geometry, and the last layer collapses to residue identity --- richer structure sits in mid-layers~24--30.}
 \label{tab:profiling-protein}
 \end{table}

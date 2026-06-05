@@ -1,27 +1,29 @@
 % Ch4 profiling-diagnostics table. \input{} from sec:profiling-framework.
-% Descriptive: the diagnostics, grouped by the three questions (Q1/Q2/Q3).
+% Grouped by the three properties (information / recoverability / conditioning), with the
+% upper-bound / lower-bound framing carried in the group glosses.
 \begin{table}[tbp]
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{l >{\raggedright\arraybackslash}p{0.30\textwidth} >{\raggedright\arraybackslash}p{0.40\textwidth}}
+\begin{tabular}{l >{\raggedright\arraybackslash}p{0.28\textwidth} >{\raggedright\arraybackslash}p{0.42\textwidth}}
 \toprule
 \textbf{Diagnostic} & \textbf{What it captures} & \textbf{How we compute it} \\
 \midrule
-\multicolumn{3}{l}{\textbf{Q1 --- Information}\quad\textit{what the encoder encodes (an upper bound)}} \\
-Identity probe            & token identity (atom or residue type) & linear-probe accuracy on the frozen embeddings \\
-Perturbation sensitivity  & sensitivity to 3D geometry & embedding cosine after a small coordinate perturbation \\
-Within$-$between $\Delta$  & whole-object identity & mean within-object minus between-object cosine \\
-\midrule
-\multicolumn{3}{l}{\textbf{Q2 --- Reachability}\quad\textit{what a projector can transfer}} \\
-Projector gap             & reachable headroom above a constant guess & best cosine from a cheap-input MLP, minus the mean-direction cosine \\
-\midrule
-\multicolumn{3}{l}{\textbf{Q3 --- Conditioning}\quad\textit{whether the geometry is trainable}} \\
-RankMe~\cite{RankMe}      & effective dimensionality & Roy--Vetterli effective rank of the embedding matrix \\
-Sparsity, dead dims       & degenerate dimensions & fraction of exact zeros; permanently inactive dimensions \\
-Norm scale                & numerical conditioning & mean embedding $\ell_2$ norm \\
+\multicolumn{3}{l}{\textbf{Information}\quad\textit{what the encoder encodes --- an upper bound on what REPA can transfer}} \\
+3D geometry          & sensitivity to 3D pose                & cosine similarity after a small coordinate perturbation \\
+Token identity       & atom or residue type                  & linear-probe accuracy \\
+Object identity      & tokens of the same molecule or protein & within- minus between-object cosine similarity \\
+Secondary structure  & helix, sheet, or loop (proteins)      & within- minus between-SS cosine similarity \\
+\addlinespace
+\multicolumn{3}{l}{\textbf{Recoverability}\quad\textit{what a projector recovers from cheap inputs --- a lower bound}} \\
+Cheap-input ladder   & constant $\to$ identity $\to$ identity${+}$position & cosine similarity a same-form MLP reaches at each rung \\
+\addlinespace
+\multicolumn{3}{l}{\textbf{Conditioning}\quad\textit{whether the embedding is well-formed}} \\
+Effective rank       & dimensions actually used              & RankMe (Roy--Vetterli effective rank) \\
+Sparsity, dead dims  & degenerate dimensions                 & fraction of exact zeros; permanently inactive dimensions \\
+Norm scale           & numerical conditioning                & mean embedding $\ell_2$ norm \\
 \bottomrule
 \end{tabular}
-\caption{The profiling diagnostics, grouped by the three questions of Figure~\ref{fig:profiling-framework}.}
+\caption{The profiling diagnostics, grouped by the three properties of Figure~\ref{fig:profiling-framework}.}
 \label{tab:profiling-diagnostics}
 \end{table}
