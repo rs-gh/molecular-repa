@@ -1087,7 +1087,7 @@ We take both questions up empirically in Chapters~\ref{ch:profiling}--\ref{ch:pr
 
 In this chapter, we ask this question in the molecular domain, which presents a different representational paradigm. A 2D image couples \emph{geometry} and \emph{content} into a single representation --- the pixel grid --- so one self-supervised encoder can serve as a near-complete alignment target. However, molecular representations pull them apart, and into more than two pieces. A molecule is simultaneously a continuous 3D geometry, a discrete graph of typed atoms, and a structure organised across scales, from local structure up to the global shape (\S\ref{sec:molecular-domains}). \emph{No single pretrained encoder captures all of this.} An encoder in this domain is typically optimised for one of these tasks in isolation, and sees a molecule through that lens. For example, an interatomic-potential model reads local geometry; a fold classifier reads global topology; and a sequence model reads chemical identity. Representation is therefore multi-factorial, and the encoder we align to selects which factor REPA is most likely to transfer.
 
-Our profiling work in this chapter makes this concrete. We build a suite of diagnostics to assess what information an encoder contains, how learnable that information is, and how well conditioned its geometry is. We use this to profile seven candidate encoders across small molecules and proteins, and then use the results to guide which encoders to align with in the studies of Chapters~\ref{ch:tabasco-study} and~\ref{ch:proteina-study}.
+Our profiling work in this chapter makes this concrete. We build a suite of diagnostics to assess what information an encoder contains, how much of it is relevant to the generative task, and how well conditioned its embeddings are. We use this to profile seven candidate encoders across small molecules and proteins, and then use the results to guide which encoders to align with in the studies of Chapters~\ref{ch:tabasco-study} and~\ref{ch:proteina-study}.
 
 \section{A profiling protocol}
 \label{sec:profiling-framework}
@@ -1106,17 +1106,17 @@ The core model does not have to learn all the information contained in an encode
 
 A target can fail this in two ways:
 \begin{itemize}[topsep=2pt,itemsep=1pt]
-  \item \emph{cheatable}: the target is trivially reconstructible from inputs the trunk already holds, or from a constant prediction. So the model can saturate alignment loss without actually learning a better representation.
+  \item \emph{cheatable}: the target is trivially reconstructible from inputs the trunk already holds. So the model can saturate alignment loss without actually learning a better representation.
   \item \emph{off-task}: matching the target does require representation learning, but what it requires is not what we need. For example, since the protein trunk is not given residue identity, matching an identity-encoding target would force it to infer sequence from backbone. This is a genuine learning task, but a different one from generating geometry, so the pressure may not improve the representation we care about.
 \end{itemize}
 
-We estimate the cheatable fraction directly. We fit a projector of REPA's own form (\S\ref{sec:repa}) to reconstruct the embeddings from a ladder of cheap features that withholds all 3D geometry: a \emph{constant} baseline, then \emph{identity} (a one-hot of the atom or residue type), then \emph{identity${+}$position} (Table~\ref{tab:profiling-diagnostics}). The constant baseline is the optimal input-free prediction; we read the cosine it reaches as the \emph{floor}, and the rise of the fitted rungs above it as the \emph{lift}.
+We estimate the cheatable fraction directly. We fit a projector of REPA's own form (\S\ref{sec:repa}) to reconstruct the embeddings from cheap features that withhold all 3D geometry: first \emph{identity} alone (a one-hot of the atom or residue type), then \emph{identity${+}$position} (Table~\ref{tab:profiling-diagnostics}). Separately, with no projector fit, we also score the \emph{constant} dataset mean, which is the optimal input-free prediction. We read this constant baseline as the \emph{floor}, and the rise of the fitted rungs above it as the \emph{lift}.
 
 Read together, the floor and lift sort an encoder into one of three configurations:
 \begin{itemize}[topsep=2pt,itemsep=1pt]
-  \item \emph{high floor}: the embeddings barely vary, so a constant prediction already matches them. The encoder is saturated or collapsed, so it is likely cheatable.
-  \item \emph{low floor, high lift}: the embeddings vary, but the cheap inputs reconstruct that variation, so it is largely an identity lookup the trunk is already fed. Informative, but likely off-task.
-  \item \emph{low floor, low lift}: the embeddings vary in a way the cheap inputs cannot reconstruct. This is a promising configuration, but a low lift only says the variation is not the cheap identity we tested. In isolation, it does not positively affirm that the encoder encourages geometry-based representation. Hence, we read this against the information probes, to understand what the encoder may teach the model.
+  \item \emph{high floor} --- \textbf{collapse}: the embeddings barely vary, so a constant prediction already matches them. There is no signal to align to.
+  \item \emph{low floor, high lift} --- \textbf{cheatable}: the embeddings vary, but the cheap inputs reconstruct that variation, so it is largely an identity lookup the trunk is already fed.
+  \item \emph{low floor, low lift} --- the one promising configuration, but not yet a verdict. A low lift only says the variation is not the cheap identity we tested; it does not affirm that the variation is the geometry a generator needs. We read it against the information probes, the 3D-awareness probe in particular, to tell a geometric encoder from one varying for some \textbf{off-task} reason.
 \end{itemize}
 
 \textbf{Conditioning} asks: \emph{is the embedding mathematically well-formed enough to be a target?} For example, an embedding whose variance has collapsed onto a few directions (a low effective rank), or that is mostly zero, is a bottleneck. Too little structure passes through for the alignment to transmit anything, no matter the information or the relevance.
