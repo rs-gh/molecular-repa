@@ -15,13 +15,13 @@ Token identity       & atom or residue type                  & linear-probe accu
 Object identity      & tokens of the same molecule or protein & within- minus between-object cosine similarity \\
 Secondary structure  & helix, sheet, or loop (proteins)      & within- minus between-SS cosine similarity \\
 \addlinespace
-\multicolumn{3}{@{}p{\linewidth}@{}}{\textbf{Relevance}\quad\textit{what the trunk can match without improving its representation}} \\
-Encoder collapse & the embeddings barely vary, so a constant prediction already matches them & a high \emph{floor}: the cosine similarity of the constant (dataset-mean) prediction \\
-Cheatability     & the variation that exists is content the trunk is already fed & a high \emph{lift} from identity alone: the rise a REPA-form 3-layer MLP gains from a one-hot of the atom or residue type (cosine-similarity loss, 80/20 split) \\
+\multicolumn{3}{@{}p{\linewidth}@{}}{\textbf{Relevance}\quad\textit{what the generator can match without improving its representation}} \\
+Saturation & the embeddings barely vary, so a constant prediction already matches them & a high \emph{floor}: the cosine similarity of the constant (dataset-mean) prediction \\
+Cheatability     & the variation that exists is content the generator is already fed & a high \emph{lift} from identity alone: the rise a REPA-form 3-layer MLP gains from a one-hot of the atom or residue type (cosine-similarity loss, 80/20 split) \\
 Off-task risk    & the remaining variation is some factor the generator does not need, rather than the 3D geometry it does & a low floor and low lift, read against the 3D-awareness probe \\
 \addlinespace
 \multicolumn{3}{@{}p{\linewidth}@{}}{\textbf{Conditioning}\quad\textit{whether the embedding is well-formed}} \\
-Effective rank       & dimensions actually used              & RankMe (Roy--Vetterli effective rank) \\
+Effective rank       & dimensions actually used              & RankMe~\cite{RankMe} (Roy--Vetterli effective rank) \\
 Sparsity, dead dims  & degenerate dimensions                 & fraction of exact zeros; permanently inactive dimensions \\
 Norm scale           & numerical conditioning                & mean embedding $\ell_2$ norm \\
 \bottomrule
