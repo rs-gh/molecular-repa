@@ -4,7 +4,7 @@
 \small
 \begin{tabular}{l cc cc}
 \toprule
-\textbf{Representation quality} & \multicolumn{2}{c}{\textbf{FID}} & \multicolumn{2}{c}{\textbf{Designability}} \\
+\textbf{Representation quality} & \multicolumn{2}{c}{\textbf{FPSD}} & \multicolumn{2}{c}{\textbf{Designability}} \\
 \cmidrule(lr){2-3} \cmidrule(lr){4-5}
  & partial & raw & partial & raw \\
 \midrule
@@ -13,6 +13,6 @@ Dihedral MAE & +0.44 & -0.03 & +0.77 & +0.36 \\
 CATH-A & +0.22 & +0.11 & +0.49 & +0.38 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Better trunk representations track better generation --- strongly for designability, moderately for FID.} Partial Pearson correlation controlling for training step, with the raw value alongside; oriented so a positive value means better representation accompanies better generation. ($n{=}59$ checkpoints pooled over the baseline, the REPA variants, and the random control; PDB.)}
+\caption{\textbf{Better trunk representations track better generation --- strongly for designability, moderately for FPSD.} Partial Pearson correlation controlling for training step, with the raw value alongside; oriented so a positive value means better representation accompanies better generation. ($n{=}59$ checkpoints pooled over the baseline, the REPA variants, and the random control; PDB.)}
 \label{tab:proteina-genrep-corr}
 \end{table}

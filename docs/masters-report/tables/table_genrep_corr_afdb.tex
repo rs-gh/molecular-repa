@@ -4,7 +4,7 @@
 \small
 \begin{tabular}{l cc cc}
 \toprule
-\textbf{Representation quality} & \multicolumn{2}{c}{\textbf{FID}} & \multicolumn{2}{c}{\textbf{Designability}} \\
+\textbf{Representation quality} & \multicolumn{2}{c}{\textbf{FPSD}} & \multicolumn{2}{c}{\textbf{Designability}} \\
 \cmidrule(lr){2-3} \cmidrule(lr){4-5}
  & partial & raw & partial & raw \\
 \midrule
@@ -13,6 +13,6 @@ Dihedral MAE & +0.03 & -0.03 & +0.37 & +0.09 \\
 CATH-A & +0.42 & +0.43 & +0.29 & +0.34 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{On AFDB too, better trunk representations track better generation.} The AFDB counterpart to Table~\ref{tab:proteina-genrep-corr}: partial Pearson controlling for training step (raw alongside), oriented so positive means better representation accompanies better generation. Generation is FID-AFDB and designability; representation probes are read at $n_\text{train}{=}1000$ on the cross-database blinded set. ($n{=}40$ AFDB checkpoints pooled over the baseline, the REPA variants, and the random control.)}
+\caption{\textbf{On AFDB too, better trunk representations track better generation.} The AFDB counterpart to Table~\ref{tab:proteina-genrep-corr}: partial Pearson controlling for training step (raw alongside), oriented so positive means better representation accompanies better generation. Generation is FPSD-AFDB and designability; representation probes are read at $n_\text{train}{=}1000$ on the cross-database blinded set. ($n{=}40$ AFDB checkpoints pooled over the baseline, the REPA variants, and the random control.)}
 \label{tab:proteina-genrep-corr-afdb}
 \end{table}
