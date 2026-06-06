@@ -149,7 +149,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 10378
+Main chapters word count: 12345
 
 Methodology used to generate that word count:
 
@@ -163,7 +163,7 @@ the word-count rules. Reproduce with:
 \begin{verbatim}
 $ make wordcount
 perl tools/texcount.pl -inc -sum -total -1 report-draft.tex
-10246
+12345
 \end{verbatim}
 \end{quote}
 
@@ -1247,20 +1247,15 @@ The probe set comprises $1{,}000$ molecules from the GEOM-drugs validation split
 
 \textbf{On FCD, the one metric with room to move, both tested variants are worse.} The baseline records the lowest (best) FCD at $5.61$; CheMeleon lands at $7.43$ and MACE at $6.81$ (Table~\ref{tab:tabasco-gen}). We caveat this by noting that each variant is a single run, not a multi-seed average, and we do not have per-set FCD intervals to bound the gaps. Nevertheless, both point estimates favour the baseline.
 
-\textbf{There is no acceleration in generation quality.} REPA's headline result in the image domain is a training speed-up: the same generation quality reached in far fewer steps (\S\ref{sec:repa})~\cite{REPA}. No such speed-up appears here. On every axis we can track over training, the REPA variants and the baseline are indistinguishable from the first few epochs.
-% TODO add (Figure~\ref{fig:tabasco-curves}) after "first few epochs" once the epoch-matched curve plot lands.
-FCD, the one axis with headroom, is not logged over training, so we cannot trace its early trajectory; but its endpoint favours the baseline. REPA neither accelerates the saturated axes nor improves the one with room to move.
+\textbf{There is no acceleration in generation quality.} REPA's headline result in the image domain is a training speed-up: the same generation quality reached in far fewer steps (\S\ref{sec:repa})~\cite{REPA}. No such speed-up appears here. On every axis we can track over training, the REPA variants and the baseline are indistinguishable from the first few epochs (Figure~\ref{fig:tabasco-curves}). FCD, the one axis with headroom, is not logged over training, so we cannot trace its early trajectory; but its endpoint favours the baseline. REPA neither accelerates the saturated axes nor improves the one with room to move.
 
 \textbf{The unequal training does not make this comparison unfair.} The baseline trained roughly twice as long as the REPA variants (${\sim}152$k steps over 33 epochs, versus ${\sim}69$--$73$k for the two REPA runs) for our final point estimates. We stopped the REPA runs early on purpose. With the quality metrics saturated and FCD flat or worse, there was no evidence that further training would change the verdict. Nor did the shorter runs cost the variants anything on the saturated axes, which plateau within the first few epochs for every run.
 
-% TODO Fig 5.1 (label fig:tabasco-curves): epoch-matched validation curves
-%   (validity / connectivity / novelty) from
-%   evaluation/tabasco/.../validation_curves.csv -- the "no separation" visual.
-%   Needs a plotting script; deferred. FCD is NOT tracked over training, so it
-%   cannot appear in this figure (lives only in Table~\ref{tab:tabasco-gen}).
-%   NOTE: the "There is no acceleration in generation quality" finding above WANTS this
-%   figure -- its \ref is currently commented out to avoid a dangling ref; wire
-%   it back in (and add \label{fig:tabasco-curves}) when the plot lands.
+% Fig 5.1: per-epoch validation curves (the "no separation" visual).
+% Script: figures/scripts/fig5_1_tabasco_curves.py (re-plots from the on-disk
+% validation_curves.csv; no WandB needed). FCD is NOT tracked over training,
+% so it cannot appear here (lives only in Table~\ref{tab:tabasco-gen}).
+\input{figures/fig5_1_tabasco_curves}
 
 \input{tables/table_tabasco_gen}
 

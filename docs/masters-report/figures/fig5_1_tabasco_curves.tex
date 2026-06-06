@@ -1,0 +1,7 @@
+% Figure 5.1 -- Tabasco validation curves (no early separation). \input{} from Ch5.
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=\textwidth]{figures/fig5_1_tabasco_curves.png}
+\caption{\textbf{REPA does not accelerate generation quality over the baseline.} Per-epoch generation quality on GEOM-drugs (100 molecules sampled per epoch during training), over the epochs all three runs reach. The baseline and both REPA variants track together and reach near-ceiling on every axis within the first epoch or two, leaving no headroom for alignment to fill. The metric is the in-training estimate, so values differ slightly from the final-checkpoint evaluation of Table~\ref{tab:tabasco-gen}.}
+\label{fig:tabasco-curves}
+\end{figure}
