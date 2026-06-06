@@ -103,6 +103,7 @@ def cell(d, metric, lower, vfmt):
     b400 = t["baseline"].get(EARLY)
     tc = {lab: {s: v for s, v in d2.items() if s <= CAP} for lab, d2 in t.items()}
     bb = (min if lower else max)(tc["baseline"].values())
+    bb_step = (min if lower else max)(tc["baseline"], key=lambda s: tc["baseline"][s])
 
     def pct(target, v):
         return (target - v) / target * 100 if lower else (v - target) / target * 100
@@ -121,10 +122,15 @@ def cell(d, metric, lower, vfmt):
         d2 = tc[lab]
         own = (min if lower else max)(d2.values())
         ostep = (min if lower else max)(d2, key=lambda s: d2[s])
-        pl = pct(bb, own)
-        late = (f"${pl:+.0f}\\%$ ({vfmt(own)} @{fmt_step(ostep)})", pl > 0)
+        # Long-run column is absolute-only: the signed %-vs-baseline-best was
+        # read against a *different* denominator than the acceleration column
+        # (baseline-best vs baseline@400K), so a single row could show +X% next
+        # to -Y% and look like an arithmetic error. We keep the win/lose colour
+        # (better/worse than the bolded baseline-best row) but drop the number.
+        better = (own < bb) if lower else (own > bb)
+        late = (f"{vfmt(own)} (@{fmt_step(ostep)})", better)
         rows.append((name, early, late))
-    return b400, bb, last_true["baseline"], rows
+    return b400, bb, bb_step, last_true["baseline"], rows
 
 
 blocks = [
@@ -169,17 +175,22 @@ lines = [
     "\\small",
     "\\begin{tabular}{l c c}",
     "\\toprule",
-    "\\textbf{Variant} (last ckpt) & \\textbf{Acceleration} (@400K) "
-    "& \\textbf{Long run} (best) \\\\",
+    "\\textbf{Variant} (last ckpt) & \\textbf{Accel.} @400K (vs base) "
+    "& \\textbf{Long run} (abs.\\ best) \\\\",
 ]
 for title, d, metric, lower, vfmt, mark in blocks:
-    b400, bb, base_last, rows = cell(d, metric, lower, vfmt)
+    b400, bb, bb_step, base_last, rows = cell(d, metric, lower, vfmt)
     bb_s = f"{bb:.0f}" if lower else f"{bb:.2f}"
     b4_s = f"{b400:.0f}" if lower else f"{b400:.2f}"
     lines.append("\\midrule")
+    lines.append("\\multicolumn{3}{l}{" + f"\\textit{{{title}}}{mark}" + "} \\\\")
+    # Baseline anchor row (plain, not bold): gives both columns a visible
+    # reference without adding weight across the four blocks. The acceleration
+    # column's deltas divide by this @400K value; the long-run column's
+    # absolutes are compared (by colour) against this best value.
     lines.append(
-        f"\\multicolumn{{3}}{{l}}{{\\textit{{{title}}}{mark} --- baseline (to {fmt_step(base_last)}) "
-        f"@400K {b4_s}, best {bb_s} within 2.0M}} \\\\"
+        f"baseline (to {fmt_step(base_last)}) & {b4_s} (@400K) "
+        f"& {bb_s} (@{fmt_step(bb_step)}) \\\\"
     )
     for name, (etxt, eg), (ltxt, lg) in rows:
         lines.append(f"{name} & {colour(etxt, eg)} & {colour(ltxt, lg)} \\\\")
@@ -188,11 +199,12 @@ lines += [
     "\\bottomrule",
     "\\end{tabular}",
     "\\caption{\\textbf{REPA accelerates generation quality over the baseline.} In some "
-    "regimes it also wins the long run. (Values are percentage deltas from the baseline, "
-    "with the absolute score in parentheses; acceleration is measured at 400K, the anchor "
-    "of Figure~\\ref{fig:proteina-genrep}, and the long run as each variant's best within "
-    "a common 2.0M-step window; generation scores are means over up to three sampling "
-    "seeds; $n{\\le}256$.)}",
+    "regimes it also wins the long run. Acceleration is the \\%-delta vs the baseline at "
+    "400K (the anchor of Figure~\\ref{fig:proteina-genrep}), with the absolute score in "
+    "parentheses; the long run is each variant's absolute best within a common 2.0M-step "
+    "window, coloured against the baseline-best row. Generation scores are means "
+    "over three sampling seeds; $n{\\le}256$; "
+    "\\colorbox{green!20}{green}/\\colorbox{red!15}{red} = better/worse than baseline.}",
     "\\label{tab:proteina-speedup}",
     "\\end{table}",
 ]

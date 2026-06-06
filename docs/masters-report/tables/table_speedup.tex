@@ -4,37 +4,41 @@
 \small
 \begin{tabular}{l c c}
 \toprule
-\textbf{Variant} (last ckpt) & \textbf{Acceleration} (@400K) & \textbf{Long run} (best) \\
+\textbf{Variant} (last ckpt) & \textbf{Accel.} @400K (vs base) & \textbf{Long run} (abs.\ best) \\
 \midrule
-\multicolumn{3}{l}{\textit{AFDB FID $\downarrow$} --- baseline (to 1.7M) @400K 431, best 386 within 2.0M} \\
-GearNet-L4 (1.2M) & \gd{$+24\%$ (328)} & \gd{$+27\%$ (282 @1.2M)} \\
-GearNet-L9 (900K) & \gd{$+28\%$ (313)} & \gd{$+19\%$ (313 @400K)} \\
-MPNN-L4 (1.1M) & \rd{$-10\%$ (477)} & \rd{$-8\%$ (416 @1.0M)} \\
-MPNN-L9 (1.5M) & \gd{$+18\%$ (352)} & \gd{$+9\%$ (352 @400K)} \\
-Random control (500K) & \gd{$+18\%$ (353)} & \gd{$+9\%$ (353 @400K)} \\
+\multicolumn{3}{l}{\textit{AFDB FID $\downarrow$}} \\
+baseline (to 1.7M) & 431 (@400K) & 386 (@1.3M) \\
+GearNet-L4 (1.2M) & \gd{$+24\%$ (328)} & \gd{282 (@1.2M)} \\
+GearNet-L9 (900K) & \gd{$+28\%$ (313)} & \gd{313 (@400K)} \\
+MPNN-L4 (1.1M) & \rd{$-10\%$ (477)} & \rd{416 (@1.0M)} \\
+MPNN-L9 (1.5M) & \gd{$+18\%$ (352)} & \gd{352 (@400K)} \\
+Random control (500K) & \gd{$+18\%$ (353)} & \gd{353 (@400K)} \\
 \midrule
-\multicolumn{3}{l}{\textit{AFDB designability $\uparrow$} --- baseline (to 1.7M) @400K 0.75, best 0.75 within 2.0M} \\
-GearNet-L4 (1.2M) & \gd{$+4\%$ (0.78)} & \gd{$+4\%$ (0.78 @400K)} \\
-GearNet-L9 (900K) & \rd{$-4\%$ (0.72)} & \gd{$+3\%$ (0.77 @800K)} \\
-MPNN-L4 (1.1M) & \rd{$-9\%$ (0.68)} & \rd{$-8\%$ (0.69 @700K)} \\
-MPNN-L9 (1.5M) & \rd{$-6\%$ (0.71)} & \gd{$+2\%$ (0.77 @700K)} \\
-Random control (500K) & \gd{$+9\%$ (0.82)} & \gd{$+9\%$ (0.82 @400K)} \\
+\multicolumn{3}{l}{\textit{AFDB designability $\uparrow$}} \\
+baseline (to 1.7M) & 0.75 (@400K) & 0.75 (@400K) \\
+GearNet-L4 (1.2M) & \gd{$+4\%$ (0.78)} & \gd{0.78 (@400K)} \\
+GearNet-L9 (900K) & \rd{$-4\%$ (0.72)} & \gd{0.77 (@800K)} \\
+MPNN-L4 (1.1M) & \rd{$-9\%$ (0.68)} & \rd{0.69 (@700K)} \\
+MPNN-L9 (1.5M) & \rd{$-6\%$ (0.71)} & \gd{0.77 (@700K)} \\
+Random control (500K) & \gd{$+9\%$ (0.82)} & \gd{0.82 (@400K)} \\
 \midrule
-\multicolumn{3}{l}{\textit{PDB FID $\downarrow$} --- baseline (to 2.4M) @400K 472, best 288 within 2.0M} \\
-GearNet-L4 (1.0M) & \gd{$+7\%$ (440)} & \rd{$-50\%$ (432 @1.0M)} \\
-GearNet-L9 (1.6M) & \gd{$+28\%$ (341)} & \rd{$-11\%$ (319 @700K)} \\
-MPNN-L4 (1.6M) & \rd{$-8\%$ (512)} & \rd{$-14\%$ (329 @1.6M)} \\
-MPNN-L9 (2.0M) & \gd{$+13\%$ (410)} & \rd{$-3\%$ (297 @1.6M)} \\
-Random control (1.2M) & \rd{$-7\%$ (506)} & \rd{$-22\%$ (351 @1.1M)} \\
+\multicolumn{3}{l}{\textit{PDB FID $\downarrow$}} \\
+baseline (to 2.4M) & 472 (@400K) & 288 (@1.6M) \\
+GearNet-L4 (1.0M) & \gd{$+7\%$ (440)} & \rd{432 (@1.0M)} \\
+GearNet-L9 (1.6M) & \gd{$+28\%$ (341)} & \rd{319 (@700K)} \\
+MPNN-L4 (1.6M) & \rd{$-8\%$ (512)} & \rd{329 (@1.6M)} \\
+MPNN-L9 (2.0M) & \gd{$+13\%$ (410)} & \rd{297 (@1.6M)} \\
+Random control (1.2M) & \rd{$-7\%$ (506)} & \rd{351 (@1.1M)} \\
 \midrule
-\multicolumn{3}{l}{\textit{PDB designability $\uparrow$} --- baseline (to 2.4M) @400K 0.26, best 0.67 within 2.0M} \\
-GearNet-L4 (1.0M) & \gd{$+98\%$ (0.52)} & \gd{$+4\%$ (0.70 @700K)} \\
-GearNet-L9 (1.6M) & \gd{$+97\%$ (0.52)} & \rd{$-7\%$ (0.63 @800K)} \\
-MPNN-L4 (1.6M) & \gd{$+124\%$ (0.59)} & \gd{$+5\%$ (0.71 @1.6M)} \\
-MPNN-L9 (2.0M) & \gd{$+149\%$ (0.66)} & \gd{$+21\%$ (0.82 @1.8M)} \\
-Random control (1.2M) & \gd{$+48\%$ (0.39)} & \rd{$-31\%$ (0.46 @900K)} \\
+\multicolumn{3}{l}{\textit{PDB designability $\uparrow$}} \\
+baseline (to 2.4M) & 0.26 (@400K) & 0.67 (@1.6M) \\
+GearNet-L4 (1.0M) & \gd{$+98\%$ (0.52)} & \gd{0.70 (@700K)} \\
+GearNet-L9 (1.6M) & \gd{$+97\%$ (0.52)} & \rd{0.63 (@800K)} \\
+MPNN-L4 (1.6M) & \gd{$+124\%$ (0.59)} & \gd{0.71 (@1.6M)} \\
+MPNN-L9 (2.0M) & \gd{$+149\%$ (0.66)} & \gd{0.82 (@1.8M)} \\
+Random control (1.2M) & \gd{$+48\%$ (0.39)} & \rd{0.46 (@900K)} \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA accelerates generation quality over the baseline.} In some regimes it also wins the long run. (Values are percentage deltas from the baseline, with the absolute score in parentheses; acceleration is measured at 400K, the anchor of Figure~\ref{fig:proteina-genrep}, and the long run as each variant's best within a common 2.0M-step window; generation scores are means over up to three sampling seeds; $n{\le}256$; \colorbox{green!20}{green}/\colorbox{red!15}{red} = improvement/regression.)}
+\caption{\textbf{REPA accelerates generation quality over the baseline.} In some regimes it also wins the long run. Acceleration is the \%-delta vs the baseline at 400K (the anchor of Figure~\ref{fig:proteina-genrep}), with the absolute score in parentheses; the long run is each variant's absolute best within a common 2.0M-step window, coloured against the baseline-best row. Generation scores are means over up to three sampling seeds; $n{\le}256$; \colorbox{green!20}{green}/\colorbox{red!15}{red} = better/worse than baseline.}
 \label{tab:proteina-speedup}
 \end{table}

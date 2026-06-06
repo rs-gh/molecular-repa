@@ -1039,6 +1039,29 @@ We take both questions up empirically in Chapters~\ref{ch:profiling}--\ref{ch:pr
 %          discussion in Ch~\ref{ch:conclusions}.
 %      NotA: We don't resolve this; we adopt the statistical view as a
 %          working hypothesis.
+%
+% --------------------------------------------------------------------------
+% REVIEW-THREAD notes (external AI read of the draft, 2026-06-06). Fold these
+% into the prose when writing Ch3; see memory project_external_review_2026-06.
+% --------------------------------------------------------------------------
+% RT-Ch3-1 (§3.2, KEEP PROMINENT): a reviewer singled out the imaging-vs-
+%   molecular argument -- images couple content+geometry into ONE
+%   representation, molecules DECOUPLE them into multiple factors -- as "real
+%   conceptual work, not filler background." It is load-bearing for the Ch6
+%   encoder-routing finding and the Ch7 spine. Give it room; do not compress
+%   it to a throwaway paragraph. (Safe framing stands: content-geometry
+%   coupling + discrete/continuous duality; do NOT claim "images are
+%   single-factor.")
+% RT-Ch3-2 (§3.6, PRE-EMPT THE VIVA): because Ch4's profiling framework is
+%   now central, a reviewer will ask "why THESE diagnostics?" (RankMe, cosine
+%   self-similarity, floor/lift, the probes). The protocol currently reads as
+%   intuitive but not defended. Seed ONE-TO-TWO sentences here (the probe
+%   principle is introduced in §3.6) justifying that the diagnostics are
+%   principled, not arbitrary -- e.g. each maps to a necessary condition for
+%   transfer (information / relevance / conditioning), and the statistical
+%   proxies (RankMe) are domain-agnostic stand-ins for the vision-specific
+%   structural metrics of Singh et al. The full defence lives in Ch4; Ch3
+%   just plants the flag that there IS one.
 
 \chapter{Encoder targets and profiling}
 \label{ch:profiling}
@@ -1152,7 +1175,7 @@ Of the five candidates, only GearNet clears all three diagnostics, with ProteinM
 \section{Conclusion}
 \label{sec:profiling-predictions}
 
-Our profiles are measured before any alignment training, so the expectations they set are genuinely a-priori, not post-hoc rationalisations. We use them to guide which encoders our studies will showcase. For small molecules (Chapter~\ref{ch:tabasco-study}), we expect no measurable REPA gain. For protein backbones (Chapter~\ref{ch:proteina-study}), we expect that GearNet and ProteinMPNN are most likely to help. The following two chapters put these ideas to the test.
+Our profiles are measured before any alignment training, so the expectations they set are genuinely a priori, not post hoc rationalisations. We use them to guide which encoders our studies will showcase. For small molecules (Chapter~\ref{ch:tabasco-study}), we expect no measurable REPA gain. For protein backbones (Chapter~\ref{ch:proteina-study}), we expect that GearNet and ProteinMPNN are most likely to help. The following two chapters put these ideas to the test.
 
 \chapter{REPA on small molecules}
 \label{ch:tabasco-study}
@@ -1187,7 +1210,7 @@ Our profiles are measured before any alignment training, so the expectations the
 
 Previously (Chapter~\ref{ch:profiling}), we profiled various encoders in the molecular generation domain for their suitability as a representation alignment (REPA) target. This chapter is the first of two that put this analysis to the test. We begin here with the relatively simpler task of generating small molecules, before moving to much larger molecules in proteins next. In this chapter, we ask: \emph{can REPA accelerate or improve the training of Tabasco~\cite{Tabasco}, a flow-matching transformer-based generator of 3D small molecules?}
 
-\textbf{Our headline finding is that no REPA variant measurably improves Tabasco's small-molecule generation in our setup.} On structural-quality metrics, the baseline is already at ceiling. On FCD, the one metric with headroom, the REPA variants perform no better than baseline. We defer the \emph{why} to \S\ref{sec:tabasco-diagnosis}, where two properties of this regime --- a saturated evaluation surface and the absence of a usable teacher --- emerge as the explanation and seed the contrast with proteins, which we explore in Chapter~\ref{ch:proteina-study}.
+\textbf{Our headline finding is that no REPA variant measurably improves, or accelerates the training of, Tabasco's small-molecule generation in our setup.} On structural-quality metrics, the baseline is already at ceiling. On FCD, the one metric with headroom, the REPA variants perform no better than baseline. Nor do they reach any level of quality faster: the baseline leads from the first epochs. We defer the \emph{why} to \S\ref{sec:tabasco-diagnosis}, where two properties of this regime --- a saturated evaluation surface and the absence of a usable teacher --- emerge as the explanation and seed the contrast with proteins, which we explore in Chapter~\ref{ch:proteina-study}.
 
 \section{Experimental setup}
 \label{sec:tabasco-setup}
@@ -1224,12 +1247,20 @@ The probe set comprises $1{,}000$ molecules from the GEOM-drugs validation split
 
 \textbf{On FCD, the one metric with room to move, both tested variants are worse.} The baseline records the lowest (best) FCD at $5.61$; CheMeleon lands at $7.43$ and MACE at $6.81$ (Table~\ref{tab:tabasco-gen}). We caveat this by noting that each variant is a single run, not a multi-seed average, and we do not have per-set FCD intervals to bound the gaps. Nevertheless, both point estimates favour the baseline.
 
-\textbf{The unequal training does not make this comparison unfair.} The baseline trained roughly twice as long as the REPA variants (${\sim}152$k steps over 33 epochs, versus ${\sim}69$--$73$k for the two REPA runs). We stopped the REPA runs early on purpose. With the quality metrics saturated and FCD flat or worse, there was no evidence that further training would change the verdict. Nor did the shorter runs cost the variants anything on the saturated axes. Validity and connectivity plateau within the first few epochs for every run, baseline and variant alike, and the curves are indistinguishable from then on. The metrics that saturate do so early, and FCD favours the baseline across all training steps.
+\textbf{There is no acceleration in generation quality.} REPA's headline result in the image domain is a training speed-up: the same generation quality reached in far fewer steps (\S\ref{sec:repa})~\cite{REPA}. No such speed-up appears here. On every axis we can track over training, the REPA variants and the baseline are indistinguishable from the first few epochs.
+% TODO add (Figure~\ref{fig:tabasco-curves}) after "first few epochs" once the epoch-matched curve plot lands.
+FCD, the one axis with headroom, is not logged over training, so we cannot trace its early trajectory; but its endpoint favours the baseline. REPA neither accelerates the saturated axes nor improves the one with room to move.
 
-% TODO Fig 5.1: epoch-matched validation curves (validity / connectivity / novelty)
-%   from evaluation/tabasco/.../validation_curves.csv -- the "no separation" visual.
+\textbf{The unequal training does not make this comparison unfair.} The baseline trained roughly twice as long as the REPA variants (${\sim}152$k steps over 33 epochs, versus ${\sim}69$--$73$k for the two REPA runs) for our final point estimates. We stopped the REPA runs early on purpose. With the quality metrics saturated and FCD flat or worse, there was no evidence that further training would change the verdict. Nor did the shorter runs cost the variants anything on the saturated axes, which plateau within the first few epochs for every run.
+
+% TODO Fig 5.1 (label fig:tabasco-curves): epoch-matched validation curves
+%   (validity / connectivity / novelty) from
+%   evaluation/tabasco/.../validation_curves.csv -- the "no separation" visual.
 %   Needs a plotting script; deferred. FCD is NOT tracked over training, so it
 %   cannot appear in this figure (lives only in Table~\ref{tab:tabasco-gen}).
+%   NOTE: the "There is no acceleration in generation quality" finding above WANTS this
+%   figure -- its \ref is currently commented out to avoid a dangling ref; wire
+%   it back in (and add \label{fig:tabasco-curves}) when the plot lands.
 
 \input{tables/table_tabasco_gen}
 
@@ -1247,6 +1278,8 @@ MACE presents the contrary problem. It is genuinely 3D, but it encodes only a na
 \input{tables/table_tabasco_probe}
 
 \textbf{Forcing the signal in does not rescue it either.} As a final test, we replaced the additive regulariser with a convex \emph{tradeoff} loss, $(1-\lambda)\cdot\mathcal{L}_{\text{gen}} + \lambda\cdot\mathcal{L}_{\text{REPA}}$. This deliberately down-weights the flow-matching loss to force the model to adopt the encoder's representation. Even so, the effect on generation is negligible. MACE under the tradeoff loss still trails the baseline on FCD ($6.32$ versus $5.61$). Its only mark is on the representation, where it is the only variant to beat the baseline on a majority of the descriptor probes (Table~\ref{tab:tabasco-probe}), but only by a small margin. Even when forced into the architecture, MACE leaves only a tiny trace in representation, and nothing in generation.
+
+We do not claim to have exhausted the REPA design space here. We vary the encoder and the loss form, but hold the alignment layer and projector architecture fixed at the image-domain defaults (\S\ref{sec:repa}). The diagnosis below should therefore be read as the most parsimonious account of the regime, consistent with the encoder profiles of Chapter~\ref{ch:profiling}, rather than a proof that no configuration could help.
 
 \textbf{When is REPA actually useful?} Our results sharpen the question on REPA's effectiveness rather than settling it. Under our setup, REPA does not help small-molecule generation, because the regime offers neither headroom nor a usable teacher. This is not evidence that REPA cannot help with molecular generation in principle. But it does suggest the question has no single answer. Molecular generation is a broad domain of distinct regimes, and whether REPA helps is decided within each, not across the whole. Read that way, its utility points less to a single intervention than to a family of them.
 
@@ -1680,7 +1713,7 @@ We carry this --- and the contrast with the small-molecule study of Chapter~\ref
 %        (GearNet -> distribution, MPNN -> quality); regime-asymmetric
 %        (AFDB durable, PDB step-matched).
 %  - 7.2 An encoder-selection heuristic distilled from profiling +
-%        ablations (RankMe / projector-gap as the cheap a-priori filter;
+%        ablations (RankMe / projector-gap as the cheap a priori filter;
 %        pick the encoder whose representation axis you want REPA to
 %        route to).
 %  - 7.3 Pay-off of the imaging-vs-molecular framing seeded in
@@ -1703,6 +1736,42 @@ We carry this --- and the contrast with the small-molecule study of Chapter~\ref
 %        extrapolation with n128 models; a third domain -- RNA? materials?
 %        a different small-molecule regime?).
 %  - 7.6 Closing note: REPA-as-mechanism vs REPA-as-vision-trick.
+%
+% --------------------------------------------------------------------------
+% REVIEW-THREAD notes (external AI read of the draft, 2026-06-06). Two
+% independent readers converged on the same top-line steer; fold into the
+% prose when writing Ch7. See memory project_external_review_2026-06.
+% --------------------------------------------------------------------------
+% RT-Ch7-1 (FRAMING, TOP PRIORITY -- both reviewers): treat the profiling
+%   framework (Ch4) as a FIRST-CLASS contribution, not merely a supporting
+%   chapter. The most memorable thing in the thesis is "a principled way to
+%   reason about WHICH encoder targets are useful and why," more than the
+%   REPA-helps-proteins / REPA-fails-molecules results themselves. Beat 7.2
+%   already distils the heuristic; make sure 7.1 and 7.6 also FRAME the
+%   framework as the headline intellectual contribution, not an aside.
+% RT-Ch7-2 (REFRAME THE QUESTION -- reviewer 2): the thesis is no longer
+%   really "does REPA work on molecules" but "WHEN can external
+%   representations help molecular generators?", with REPA as the vehicle.
+%   Consider stating this explicitly (a single sentence) -- it is the more
+%   interesting scientific question and it is what the spine already argues
+%   (transferability = representation statistics, not data domain).
+% RT-Ch7-3 (THE PREDICTIVE CLAIM -- both, but SCOPE CAREFULLY): Ch4 made
+%   a-priori predictions (§4.4) and Ch5/Ch6 confirmed them; a reviewer flags
+%   "the framework was predictive" as potentially one of the strongest
+%   results. CAVEAT (our own honest read, agreed 2026-06-06): §4.4 committed
+%   in advance only to (a) no measurable gain for small molecules and (b)
+%   GearNet/ProteinMPNN most likely to help for proteins. It did NOT
+%   pre-register the ROUTING detail (GearNet->fold, MPNN->local) -- that is
+%   closer to post-hoc inference on the data we saw. So phrase any
+%   "predictive framework" sentence to claim ONLY what §4.4 actually
+%   committed to; do not retro-fit the routing as a prediction.
+% RT-Ch7-4 (PROSE DENSITY -- reviewer 2, FINAL-PASS POLISH): the writing is
+%   strong enough that it occasionally over-uses rhetorical phrases
+%   ("family of interventions", "headroom", "usable teachers",
+%   "representation bottleneck", "experimental-synthetic spectrum"). In the
+%   final editing pass, trim ~10-15% of these flourishes -- the strongest
+%   thesis sentence is often the boringly precise one. Applies report-wide,
+%   noted here as the natural place to remember it.
 
 \label{lastcontentpage} % end page count here
 
