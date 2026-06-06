@@ -1,4 +1,4 @@
-% Setup Table S4 -- metric specification across the three measurement families. \input{} from report-draft.tex Ch6.
+% Ch3 eval table -- ALL protein-backbone metrics (representation quality + alignment + generation). \input{} from report-draft.tex Ch3.
 \begin{table}[tbp]
 \centering
 \small
@@ -8,17 +8,17 @@
 \textbf{Metric} & \textbf{Definition} & \textbf{Content} & \textbf{Granularity} \\
 \midrule
 \multicolumn{4}{l}{\textbf{Representation quality}} \\
-IF top-1\,$\uparrow$       & Inverse-folding sequence recovery (top-1 accuracy) & Semantic content & Per residue \\
-Dihedral MAE\,$\downarrow$ & Backbone dihedral-angle error & Low-level geometry & Per residue \\
-CATH-A top-1\,$\uparrow$   & Fold-architecture classification top-1 accuracy (Table~\ref{tab:setup-cath}) & Fold-level structure & Per chain \\
+IF top-1\,$\uparrow$       & Inverse-folding sequence recovery (top-1 accuracy)~\cite{Ingraham2019} & Local chemical env. & Per residue \\
+Dihedral MAE\,$\downarrow$ & Backbone dihedral-angle error~\cite{ProteinWorkshop} & Low-level geometry & Per residue \\
+CATH-A top-1\,$\uparrow$   & Fold-architecture classification top-1 accuracy~\cite{ProteinWorkshop} (Table~\ref{tab:setup-cath}) & Global fold & Per chain \\
 \midrule
 \multicolumn{4}{l}{\textbf{Representation alignment}} \\
 CKNNA\,$\uparrow$~\cite{PlatonicRep} & Mutual-nearest-neighbour kernel alignment & Trunk--encoder similarity & Per residue \\
 \midrule
-\multicolumn{4}{l}{\textbf{Generation quality} (Chapter~\ref{ch:evaluation})} \\
+\multicolumn{4}{l}{\textbf{Generation quality}} \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Quality}} \\
-FID\,$\downarrow$          & Fréchet distance to the reference set (GearNet features) & Distributional fidelity & Whole set \\
+FPSD\,$\downarrow$          & Fr\'echet Protein Structure Distance: distance to the reference set in a structural encoder's (GearNet) feature space & Distributional fidelity & Whole set \\
 Des\,$\uparrow$            & Fraction of samples that are designable & Physical realisability & Whole set \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Tertiary structure --- whole set (T-W)}} \\
@@ -37,10 +37,11 @@ ssJSD-2D\,$\downarrow$     & As above, on the designable subset & SS fidelity (d
 E\%des\,$\uparrow$         & Mean $\beta$-strand (E) fraction & $\beta$-content & Designable subset \\
 \bottomrule
 \end{tabular}
-\caption{The three measurement families used in this chapter: representation quality,
-representation alignment, and generation quality (five reported groups). The whole set is all
-generated backbones; the designable subset is those passing the designability filter. Arrows
-give the good direction. Full per-metric results appear in
-Tables~\ref{tab:proteina-700k} and~\ref{tab:proteina-concentration}.}
-\label{tab:setup-metrics}
+\caption{Protein-backbone metrics (Chapter~\ref{ch:proteina-study}), across three measurement
+families: representation quality (probe recoverability spanning local-to-global structure),
+representation alignment (trunk-to-encoder similarity), and generation quality (the five
+reported groups). The whole set is all generated backbones; the designable subset is those
+passing the designability filter. Arrows give the good direction. Full per-metric results
+appear in Tables~\ref{tab:proteina-700k} and~\ref{tab:proteina-concentration}.}
+\label{tab:eval-protein}
 \end{table}
