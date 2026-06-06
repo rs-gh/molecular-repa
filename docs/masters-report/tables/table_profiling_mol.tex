@@ -14,6 +14,6 @@ CheMeleon (2D graph) & 2048 & 1.00 & \rd{1.00}  & \gd{0.43} & $+0.04$  & \rd{93.
 MACE (3D potential)  & 192  & 1.00 & \rd{0.998} & \rd{0.86} & $+0.005$ & \gd{0\%}    & saturated  \\
 \bottomrule
 \end{tabular}
-\caption{Molecule encoder profiles. \emph{token-ID}: linear-probe accuracy for atom type (trivially $1.00$ for both, since QM9 holds at most nine heavy atoms; uninformative here). \emph{3D}: cosine self-similarity across distinct conformers of the same molecule (lower $=$ more 3D-sensitive). CheMeleon is bit-identical (L2~$=0$, so cosine $1.00$); MACE shifts only slightly. \emph{Floor}: cosine similarity of a constant prediction (high $=$ saturated). \emph{Lift}: cosine similarity a same-form MLP gains above the floor from cheap inputs. \emph{Sparsity}: fraction of exact zeros. CheMeleon's 93.8\% sparsity makes it an ill-conditioned target; its lift is also conformation-invariant 2D context, off-task for guiding 3D geometry. MACE carries the right kind of signal, but a high floor leaves a lift of only $+0.005$.}
+\caption{Molecule encoder profiles. Neither encoder shows promise. \emph{token-ID}: atom-type linear-probe accuracy (trivially $1.00$ for both; uninformative). \emph{3D}: cosine self-similarity across conformers (lower $=$ more 3D-sensitive). \emph{Floor}: constant-prediction cosine (high $=$ saturated). \emph{Lift}: the rise a same-form MLP gains above the floor from cheap inputs. \emph{Sparsity}: fraction of exact zeros.}
 \label{tab:profiling-mol}
 \end{table}
