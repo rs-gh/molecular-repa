@@ -10,7 +10,7 @@
 \textbf{Diagnostic} & \textbf{What it captures} & \textbf{How we compute it} \\
 \midrule
 \multicolumn{3}{@{}p{\linewidth}@{}}{\textbf{Information}\quad\textit{what the encoder encodes --- an upper bound on REPA's transfer}} \\
-3D geometry          & sensitivity to 3D pose                & cosine similarity after a small coordinate perturbation \\
+3D geometry          & sensitivity to 3D pose                & cosine self-similarity across conformers (molecules) or after a 1\,\AA{} coordinate perturbation (proteins) \\
 Token identity       & atom or residue type (high $=$ a lookup the generator already has) & linear-probe accuracy \\
 \addlinespace
 \multicolumn{3}{@{}p{\linewidth}@{}}{\textbf{Relevance}\quad\textit{what the generator can match without improving its representation}} \\

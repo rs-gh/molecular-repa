@@ -10,10 +10,10 @@
 \toprule
 \textbf{Encoder} & \textbf{Dim} & \textbf{3D} & \textbf{Floor} & \textbf{Lift} & \textbf{Sparsity} & \textbf{Verdict} \\
 \midrule
-CheMeleon (2D graph) & 2048 & \rd{no}   & \gd{0.43} & $+0.04$  & \rd{93.8\%} & too sparse \\
-MACE (3D potential)  & 192  & \rd{weak} & \rd{0.86} & $+0.005$ & \gd{0\%}    & saturated  \\
+CheMeleon (2D graph) & 2048 & \rd{1.00}  & \gd{0.43} & $+0.04$  & \rd{93.8\%} & too sparse \\
+MACE (3D potential)  & 192  & \rd{0.998} & \rd{0.86} & $+0.005$ & \gd{0\%}    & saturated  \\
 \bottomrule
 \end{tabular}
-\caption{Molecule encoder profiles. \emph{3D}: whether the embedding changes across conformers (CheMeleon is bit-identical, L2~$=0$; MACE shifts only slightly, cosine $0.995$). \emph{Floor}: cosine similarity of a constant prediction (high $=$ saturated). \emph{Lift}: cosine similarity a same-form MLP gains above the floor from cheap inputs. \emph{Sparsity}: fraction of exact zeros. CheMeleon's 93.8\% sparsity makes it an ill-conditioned target; its lift is also conformation-invariant 2D context, off-task for guiding 3D geometry. MACE carries the right kind of signal, but a high floor leaves a lift of only $+0.005$.}
+\caption{Molecule encoder profiles. \emph{3D}: cosine self-similarity across distinct conformers of the same molecule (lower $=$ more 3D-sensitive). CheMeleon is bit-identical (L2~$=0$, so cosine $1.00$); MACE shifts only slightly. \emph{Floor}: cosine similarity of a constant prediction (high $=$ saturated). \emph{Lift}: cosine similarity a same-form MLP gains above the floor from cheap inputs. \emph{Sparsity}: fraction of exact zeros. CheMeleon's 93.8\% sparsity makes it an ill-conditioned target; its lift is also conformation-invariant 2D context, off-task for guiding 3D geometry. MACE carries the right kind of signal, but a high floor leaves a lift of only $+0.005$.}
 \label{tab:profiling-mol}
 \end{table}

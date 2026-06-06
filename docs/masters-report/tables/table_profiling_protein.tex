@@ -6,19 +6,19 @@
 \begin{table}[tbp]
 \centering
 \small
-\setlength{\tabcolsep}{5pt}
+\setlength{\tabcolsep}{4.5pt}
 \begin{tabular}{l r c c cc r l}
 \toprule
 \textbf{Encoder} & \textbf{Dim} & \textbf{AA-probe} & \textbf{3D} & \textbf{Floor} & \textbf{Lift} & \textbf{RankMe} & \textbf{Verdict} \\
 \midrule
-GearNet (CATH-trained)      & 512  & \gd{0.137} & \gd{strong} & \gd{0.43} & $+0.009$ & 256  & usable \\
-\quad\emph{random-init}     & 512  & \gd{0.127} & \rd{none}   & \rd{0.95} & $+0.003$ & 100  & \emph{saturated} \\
-ProteinMPNN (inv-fold)      & 128  & 0.327 & \rd{weak}   & \rd{0.84} & $+0.014$ & 85   & borderline \\
-ESM2-650M (last layer)      & 1280 & \rd{0.998} & \rd{none}   & 0.67 & $+0.053$ & 1031 & off-task\textsuperscript{\dag} \\
-PW-GearNet (torsional)      & 3072 & \rd{0.928} & \gd{yes}    & \rd{0.71} & $+0.013$ & 208  & borderline \\
-MC-GearNet-Edge             & 3072 & \gd{0.146} & ---    & \rd{0.86} & $+0.002$ & 12   & collapsed \\
+GearNet (CATH-trained)      & 512  & \gd{0.137} & \gd{0.27} & \gd{0.43} & $+0.009$ & 256  & usable \\
+\quad\emph{random-init}     & 512  & \gd{0.127} & \rd{1.00} & \rd{0.95} & $+0.003$ & 100  & \emph{saturated} \\
+ProteinMPNN (inv-fold)      & 128  & 0.327 & \rd{0.73} & \rd{0.84} & $+0.014$ & 85   & borderline \\
+ESM2-650M (last layer)      & 1280 & \rd{0.998} & N/A       & 0.67 & $+0.053$ & 1031 & off-task\textsuperscript{\dag} \\
+PW-GearNet (torsional)      & 3072 & \rd{0.928} & \rd{0.86} & \rd{0.71} & $+0.013$ & 208  & borderline \\
+MC-GearNet-Edge             & 3072 & \gd{0.146} & \rd{0.77} & \rd{0.86} & $+0.002$ & 12   & collapsed \\
 \bottomrule
 \end{tabular}
-\caption{Protein encoder profiles. \emph{AA-probe}: linear-probe accuracy for residue identity (high $=$ an identity lookup, which a structure generator already has). \emph{3D}: geometric sensitivity to a coordinate perturbation (\emph{none} for sequence-only encoders by construction; MC-GearNet's is moot under collapse). \emph{Floor}: cosine similarity of a constant prediction (high $=$ saturated). \emph{Lift}: cosine similarity a same-form MLP gains above the floor from cheap inputs. \emph{RankMe}: Roy--Vetterli effective rank out of \emph{Dim}~\cite{RankMe}. Only GearNet pairs genuine 3D sensitivity with a low floor; the random-init row shows what pretraining buys. \textsuperscript{\dag}ESM2's lift is the largest in the table, but it is sequence context, not 3D geometry: off-task for a structure generator.}
+\caption{Protein encoder profiles. \emph{AA-probe}: linear-probe accuracy for residue identity (high $=$ an identity lookup, which a structure generator already has). \emph{3D}: cosine self-similarity after a 1\,\AA{} coordinate perturbation (lower $=$ more 3D-sensitive; N/A for sequence-only ESM2; MC-GearNet's is moot under collapse). \emph{Floor}: cosine similarity of a constant prediction (high $=$ saturated). \emph{Lift}: cosine similarity a same-form MLP gains above the floor from cheap inputs. \emph{RankMe}: Roy--Vetterli effective rank out of \emph{Dim}~\cite{RankMe}. Only GearNet pairs genuine 3D sensitivity with a low floor; the random-init row shows what pretraining buys. \textsuperscript{\dag}ESM2's lift is the largest in the table, but it is sequence context, not 3D geometry: off-task for a structure generator.}
 \label{tab:profiling-protein}
 \end{table}

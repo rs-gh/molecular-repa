@@ -51,14 +51,16 @@ Caveat: a large gap alone is necessary but not sufficient. ESM2's +0.053 gap is 
 
 ## Headline comparison
 
-| Encoder                         | Embed dim | RankMe       | PR    | Dims@95% | AA probe | Δ within−between | Mean-dir | Best projector | **Gap**    |
-|---------------------------------|----------:|-------------:|------:|---------:|---------:|-----------------:|---------:|---------------:|-----------:|
-| **ca-gearnet** (CATH-cls)       |       512 |        256.4 |  37.9 |      119 |    0.137 |            0.222 |    0.425 |          0.434 | **+0.009** |
-| ca-gearnet-random (3-seed avg)  |       512 | 99.8 ± 4.5   |   1.5 |     38.7 |    0.127 |            0.035 |    0.952 |          0.954 |   +0.003   |
-| **esm2-650M** (last layer)      |      1280 |       1030.5 |  43.3 |      993 |    0.998 |            0.098 |    0.671 |          0.723 | **+0.053** |
-| **mc-gearnet-edge**             |      3072 |         12.0 |   1.0 |        1 |    0.146 |            0.043 |    0.855 |          0.858 |   +0.002   |
-| **pw-gearnet** (torsional)      |      3072 |        207.7 |   5.5 |       36 |    0.928 |            0.102 |    0.710 |          0.723 |   +0.013   |
-| **proteinmpnn-ca** (inv-fold)   |       128 |         84.9 |  33.3 |       92 |    0.327 |            0.022 |    0.835 |          0.850 |   +0.014   |
+| Encoder                         | Embed dim | RankMe       | PR    | Dims@95% | AA probe | 3D@1Å | Δ within−between | Mean-dir | Best projector | **Gap**    |
+|---------------------------------|----------:|-------------:|------:|---------:|---------:|------:|-----------------:|---------:|---------------:|-----------:|
+| **ca-gearnet** (CATH-cls)       |       512 |        256.4 |  37.9 |      119 |    0.137 |  0.27 |            0.222 |    0.425 |          0.434 | **+0.009** |
+| ca-gearnet-random (3-seed avg)  |       512 | 99.8 ± 4.5   |   1.5 |     38.7 |    0.127 |  1.00 |            0.035 |    0.952 |          0.954 |   +0.003   |
+| **esm2-650M** (last layer)      |      1280 |       1030.5 |  43.3 |      993 |    0.998 |   N/A |            0.098 |    0.671 |          0.723 | **+0.053** |
+| **mc-gearnet-edge**             |      3072 |         12.0 |   1.0 |        1 |    0.146 |  0.77 |            0.043 |    0.855 |          0.858 |   +0.002   |
+| **pw-gearnet** (torsional)      |      3072 |        207.7 |   5.5 |       36 |    0.928 |  0.86 |            0.102 |    0.710 |          0.723 |   +0.013   |
+| **proteinmpnn-ca** (inv-fold)   |       128 |         84.9 |  33.3 |       92 |    0.327 |  0.73 |            0.022 |    0.835 |          0.850 |   +0.014   |
+
+**3D@1Å** = cosine self-similarity after a 1 Å Gaussian coordinate perturbation (lower = more 3D-sensitive; N/A for sequence-only ESM2). Recorded 2026-06-06 from saved per-encoder `results/*/results.json` (`sigma_1.0A`); GearNet 0.27 is the modal value across three runs (0.269/0.271/0.287, σ≈0.055). The main-text Table 4.3 currently shows a categorical 3D column; these numerics can replace it or move to the appendix.
 
 Columns map to the three questions:
 - **Q1 evidence**: AA probe acc (Q1.1 residue identity), Δ within−between (Q1.4 protein-level identity); per-encoder files break this down further into 3D sensitivity (Q1.2) and structural/sequence context (Q1.3).
