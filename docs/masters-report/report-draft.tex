@@ -149,7 +149,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 14480
+Main chapters word count: 14343
 
 Methodology used to generate that word count:
 
@@ -163,7 +163,7 @@ the word-count rules. Reproduce with:
 \begin{verbatim}
 $ make wordcount
 perl tools/texcount.pl -inc -sum -total -1 report-draft.tex
-14480
+14343
 \end{verbatim}
 \end{quote}
 
@@ -1154,11 +1154,11 @@ Protein backbones are larger and more variable than small molecules (Chapter~\re
 \section{Intepreting trade-offs to evaluate models}
 \label{sec:eval-tradeoffs}
 
-Ultimately, how do we use these metrics, which often trade off against each other, to compare models? In our analysis, we distinguish between two phenomena. The first is whether a model occupies a different spot on the same trade-off envelope: more diverse here, more designable there. In this case, which model is ``better'' is a use-case choice, not a property of the model itself. The second is whether a model pushes the envelope itself: playing the same trade-off game, but at a higher level, winning on one axis without conceding the other. This makes a model canonically better. We investigate both que in the studies that follow, and in Chapter~\ref{ch:proteina-study} the second is the heart of the finding --- REPA does not merely move the baseline along the designability--diversity envelope, it pushes the whole envelope outward.
+Ultimately, how do we use these metrics, which often trade-off against each other, to compare models? In our analysis, we distinguish between two phenomena. The first is whether a model merely occupies a different spot on the same trade-off envelope, in which case, which model is ``better'' is a use-case choice. The second is whether a model pushes the envelope itself. In this case, it plays the same trade-off game, but at a higher level, winning on one axis without conceding the other. This makes a model canonically better. We use this framework in the studies that follow, and in Chapter~\ref{ch:proteina-study}, we find evidence to support the latter, stronger claim in the context of REPA for protein generation.
 
 We also note that generative metrics are noisy, so a gap between two point estimates is not necessarily a finding. We report bootstrap intervals and seed sweeps where possible to guard against this.
 
-A closing question follows from \S\ref{sec:eval-multifactorial}. We motivated the multi-axis view by contrasting images with molecules, as if the difference were one of \emph{domain}. But the contrast was never really about pixels versus atoms. It was about the \emph{encoder} we align to: whether it carries structure the generator does not already learn cheaply, and whether the metric surface has headroom for that gain to register. These are properties of a representation, not of a data domain --- and they vary \emph{within} a domain, since two encoders over the same molecules can differ sharply in what they encode and how well-conditioned they are (Chapter~\ref{ch:profiling}). So the question we actually carry forward is not ``which domains does REPA help in?'' but ``what measurable properties of an encoder predict whether it helps?'' --- a question the domain label cannot answer. We make those properties measurable in Chapter~\ref{ch:profiling}, test them in the two studies, and return to the broader claim in Chapter~\ref{ch:conclusions}.
+The complex dynamics of these metrics further motivate the question: \emph{when can an encoder transfer useful representational information in this domain?} We examine this question in Chapter~\ref{ch:profiling}, which informs the experiments we present in Chapters~\ref{ch:tabasco-study} and ~\ref{ch:proteina-study}.
 
 \chapter{Encoder targets and profiling}
 \label{ch:profiling}
