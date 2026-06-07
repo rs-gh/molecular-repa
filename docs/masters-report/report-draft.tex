@@ -149,7 +149,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 15212
+Main chapters word count: 15368
 
 Methodology used to generate that word count:
 
@@ -1713,7 +1713,7 @@ We now turn to the first of our two trade-offs (\S\ref{sec:protein-tradeoffs}): 
 
 \input{tables/table_concentration}
 
-\textbf{On PDB, even the baseline displays fold concentration early in training, but grows out of it.} After $700$K training steps, the PDB baseline and its REPA variants alike concentrate their $\beta$-rich designable samples. However, by 1.0M steps, the baseline has diversified while REPA stays concentrated (Table~\ref{tab:proteina-concentration}). This suggests that REPA does not \emph{engender} the concentration, but rather fails to grow out of the early-training regime that the baseline leaves behind.
+\textbf{On PDB, even the baseline displays fold concentration early in training, but grows out of it.} After $700$K training steps, both the PDB baseline and its REPA variants concentrate their $\beta$-rich designable samples, though REPA already does so somewhat more than the baseline. By 1.0M steps, however, the baseline has diversified while REPA stays concentrated, widening the gap (Table~\ref{tab:proteina-concentration}). This suggests that REPA does not \emph{engender} the concentration so much as fail to grow out of an early-training regime that the baseline leaves behind. We read this as a single-seed directional pattern rather than a precise effect size.
 
 \textbf{Nevertheless, REPA's whole-set gains persist deep into training.} At 1.0M steps, the strongest variant on each dataset keeps its fidelity and coverage lead --- REPA-MPNN-L9 on PDB (FPSD $-$81, fold-score $+0.29$) and REPA-GN-L4 on AFDB ($-$228, $+3.68$) --- even as their distinct designable-fold counts fall below baseline ($-$51 and $-$39 clusters).
 
@@ -1754,13 +1754,13 @@ Several tempting claims do not survive our data, and we flag them here.
 
 \textbf{We show that REPA accelerates Proteina's convergence on generation quality, and suggest that this works through representation.} Every trained encoder teaches the trunk to represent structural characteristics that the flow-matching loss never learns on its own. This representation gain is mirrored in the generation gain, encoder by encoder, on the axis each encoder is strongest. A random-weights control suggests that the mechanism is indeed genuine structural transfer, not the side effect of an auxiliary loss. Its alignment loss drops more than any trained encoder, yet this buys the least representation quality, and no generation gain at all (\S\ref{sec:proteina-rep}).
 
-\textbf{REPA moves along the designability-diversity envelope rather than pushing it out.} It broadens the folds the model generates over the whole set, but may concentrate its designable output onto fewer modes, most sharply among $\beta$-rich folds (\S\ref{sec:proteina-anatomy}). This cost is not intrinsic to the construction, though we do not investigate the mechanism. Given that the baseline also displays the same pattern in early training, it may be the case that REPA fails to leave this early-training regime. Examples from image-diffusion literature early-stop REPA for a similar reason~\cite{HASTE}.
+\textbf{It is likely that REPA improves the distribution learned by the model.} Two observations point this way. The representation gap opens early and never closes (\S\ref{sec:proteina-rep}), and the generation advantage holds for the learned encoders even in the deterministic ODE limit, which reads the learned distribution with no injected noise (\S\ref{sec:proteina-sampler}). The REPA advantage also holds across all sampler noise ablations, suggesting again that the gain is built into the model, rather than recovered at inference.
 
-\textbf{REPA pushes the designability-fidelity envelope.} REPA reaches a higher level of both designability and fidelity than baseline at every sampler noise scale (\S\ref{sec:proteina-sampler}). The read-out at the deterministic ODE floor, which samples the learned distribution directly, suggests that the REPA loss helps the model learn a better distribution to begin with.
+\textbf{The same encoder pull that broadens the whole set may be what keeps the designable set concentrated.} Relative to baseline, REPA broadens the folds the model generates over the whole set, but may concentrate the designable subset onto fewer modes. This concentration appears early in the baseline as well as in REPA. The two then part ways: the baseline grows out of the early regime and diversifies, while REPA stays concentrated, so the cost relative to baseline widens deep into training rather than appearing there for the first time. One interpretation may be that the encoder is a fixed target, so once the trunk has extracted the representational signal it had to offer, continued alignment keeps pulling toward the encoder's own distribution, which for our structure encoders is comparatively narrow. In this framing, the gain and the cost are not separate phenomena, but early and late phases of one pull. Indeed, the image-diffusion literature reports a similar arc, and early-stops alignment for it~\cite{HASTE}. Nevertheless, in this report, we do not investigate the mechanism behind the data we observe, and we do not claim early-stopping would help here.
 
-\textbf{REPA helps most where the baseline struggles most.} On experimental data, the FPSD acceleration is real but transient, and the baseline eventually catches up. On synthetic data, the FPSD baseline plateaus poorly, and the REPA lead is durable. The intervention is identical in both cases, and the asymmetry tracks the baseline's convergence.
+\textbf{REPA helps most where the baseline struggles most.} On experimental data, the FPSD acceleration is real but transient, and the baseline eventually catches up. On synthetic data, the FPSD baseline plateaus poorly, and the REPA lead is durable. The intervention is identical in both cases, and the asymmetry tracks the baseline's capacity.
 
-\textbf{REPA is a family of encoder-mediated interventions, not a single mechanism.} In a domain with multi-factorial representation, choosing an alignment target implicitly chooses what factor gets boosted. There is no single best encoder. Each one buys a different representational factor, and the optimal outcome is likely use-case specific.
+\textbf{REPA is a family of encoder-mediated interventions, not a single mechanism.} Our results suggest that in a domain with multi-factorial representation, choosing an alignment target implicitly chooses what factor gets boosted. There is no single best encoder. Each one buys a different representational factor, so the optimal outcome is likely use-case specific.
 
 We carry these results, and the contrast with the small-molecule study of Chapter~\ref{ch:tabasco-study}, into this report's conclusion in Chapter~\ref{ch:conclusions}.
 
