@@ -2,10 +2,10 @@
 \begin{table}[tbp]
 \centering
 \small
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{l >{\raggedright\arraybackslash}p{0.44\textwidth} >{\raggedright\arraybackslash}p{0.18\textwidth} l}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l >{\raggedright\arraybackslash}p{0.43\textwidth} >{\raggedright\arraybackslash}p{0.17\textwidth} l}
 \toprule
-\textbf{Metric} & \textbf{Definition} & \textbf{Captures} & \textbf{Score} \\
+\textbf{Metric} & \textbf{Definition} & \textbf{Content} & \textbf{Score} \\
 \midrule
 \multicolumn{4}{l}{\textbf{Representation quality} --- probe recoverability of RDKit descriptors~\cite{RDKit}} \\
 MolWt\,$\uparrow$    & Molecular weight & Global size & $R^2$ \\
@@ -21,18 +21,14 @@ Connectivity\,$\uparrow$ & Fraction forming a single connected component & Fragm
 Uniqueness\,$\uparrow$   & Fraction not duplicating another generation & Trivial repetition & Fraction \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Set coverage}} \\
-Diversity\,$\uparrow$ & Mean pairwise dissimilarity across the set & Mode collapse & Fraction \\
+Diversity\,$\uparrow$ & Mean pairwise dissimilarity across the generated set & Mode collapse & Fraction \\
 Novelty\,$\uparrow$   & Fraction of the set absent from the training data & Memorisation & Fraction \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Distributional realism}} \\
-FCD\,$\downarrow$~\cite{FCD} & Fr\'echet ChemNet Distance: Fr\'echet distance to a reference set in a property-prediction network's feature space & Distribution mismatch & Distance \\
+FCD\,$\downarrow$~\cite{FCD} & Fr\'echet ChemNet Distance: Fr\'echet distance over the whole set in a property-prediction network's feature space & Distribution mismatch & Distance \\
 \bottomrule
 \end{tabular}
 \caption{Small-molecule metrics (Chapter~\ref{ch:tabasco-study}), following the conventions of
-recent 3D molecular generators~\cite{Tabasco,EQGATdiff,SemlaFlow}. Representation quality is
-probe recoverability of global RDKit descriptors (held-out $R^2$); generation quality spans
-per-molecule structural quality, set-level coverage, and distributional realism. Arrows give
-the good direction. The structural-quality metrics are bounded above and saturate against a
-strong baseline; FCD is the one generation axis with no hard ceiling.}
+recent 3D molecular generators~\cite{Tabasco,EQGATdiff,SemlaFlow}. Arrows give the good direction.}
 \label{tab:eval-smallmol}
 \end{table}

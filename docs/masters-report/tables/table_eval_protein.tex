@@ -3,45 +3,41 @@
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{l >{\raggedright\arraybackslash}p{0.38\textwidth} >{\raggedright\arraybackslash}p{0.20\textwidth} l}
+\begin{tabular}{l >{\raggedright\arraybackslash}p{0.43\textwidth} >{\raggedright\arraybackslash}p{0.17\textwidth} l}
 \toprule
-\textbf{Metric} & \textbf{Definition} & \textbf{Content} & \textbf{Granularity} \\
+\textbf{Metric} & \textbf{Definition} & \textbf{Content} & \textbf{Score} \\
 \midrule
 \multicolumn{4}{l}{\textbf{Representation quality}} \\
-IF top-1\,$\uparrow$       & Inverse-folding sequence recovery (top-1 accuracy)~\cite{Ingraham2019} & Local chemical env. & Per residue \\
-Dihedral MAE\,$\downarrow$ & Backbone dihedral-angle error~\cite{ProteinWorkshop} & Low-level geometry & Per residue \\
-CATH-A top-1\,$\uparrow$   & Fold-architecture classification top-1 accuracy~\cite{ProteinWorkshop} (Table~\ref{tab:setup-cath}) & Global fold & Per chain \\
+IF top-1\,$\uparrow$       & Per-residue inverse-folding sequence recovery~\cite{Ingraham2019} & Local chemical env. & Top-1 acc. \\
+Dihedral MAE\,$\downarrow$ & Per-residue backbone dihedral-angle error~\cite{ProteinWorkshop} & Low-level geometry & MAE \\
+CATH-A top-1\,$\uparrow$   & Per-chain fold-architecture classification~\cite{ProteinWorkshop} (Table~\ref{tab:setup-cath}) & Global fold & Top-1 acc. \\
 \midrule
 \multicolumn{4}{l}{\textbf{Representation alignment}} \\
-CKNNA\,$\uparrow$~\cite{PlatonicRep} & Mutual-nearest-neighbour kernel alignment & Trunk--encoder similarity & Per residue \\
+CKNNA\,$\uparrow$~\cite{PlatonicRep} & Per-residue mutual-nearest-neighbour kernel alignment, trunk vs.\ encoder & Trunk--encoder similarity & Score \\
 \midrule
 \multicolumn{4}{l}{\textbf{Generation quality}} \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Quality}} \\
-FPSD\,$\downarrow$          & Fr\'echet Protein Structure Distance: distance to the reference set in a structural encoder's (GearNet) feature space & Distributional fidelity & Whole set \\
-Des\,$\uparrow$            & Fraction of samples that are designable & Physical realisability & Whole set \\
+FPSD\,$\downarrow$          & Fr\'echet Protein Structure Distance: distance over the whole set in a structural encoder's (GearNet) feature space & Distributional fidelity & Distance \\
+Des\,$\uparrow$            & Fraction of generated backbones that are designable & Physical realisability & Fraction \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Tertiary structure --- whole set (T-W)}} \\
-fJSD-A\,$\downarrow$       & Jensen--Shannon divergence vs.\ reference CATH-A distribution & Fold-distribution fidelity & Whole set \\
-fS-A\,$\uparrow$           & Spread of generated folds across CATH-architecture classes & Whole-set fold diversity & Whole set \\
+fJSD-A\,$\downarrow$       & Jensen--Shannon divergence vs.\ reference CATH-A distribution & Fold-distribution fidelity & Divergence \\
+fS-A\,$\uparrow$           & Spread of generated folds across CATH-architecture classes & Whole-set fold diversity & Count \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Tertiary structure --- designable subset (T-D)}} \\
-\#Clust\,$\uparrow$        & Number of TM$\,\ge\,$0.5 structural clusters & Designable diversity & Designable subset \\
-pwTM\,$\downarrow$         & Mean pairwise TM-score, designable subset & Designable diversity & Designable subset \\
+\#Clust\,$\uparrow$        & Number of TM$\,\ge\,$0.5 structural clusters & Designable diversity & Count \\
+pwTM\,$\downarrow$         & Mean pairwise TM-score & Designable diversity & TM-score \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Secondary structure --- whole set (S-W)}} \\
-ssJSD-2D\,$\downarrow$     & Jensen--Shannon divergence of the (helix-frac, strand-frac) distribution & Secondary-structure fidelity & Whole set \\
+ssJSD-2D\,$\downarrow$     & Jensen--Shannon divergence of the (helix-frac, strand-frac) distribution & Secondary-structure fidelity & Divergence \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Secondary structure --- designable subset (S-D)}} \\
-ssJSD-2D\,$\downarrow$     & As above, on the designable subset & SS fidelity (designable) & Designable subset \\
-E\%des\,$\uparrow$         & Mean $\beta$-strand (E) fraction & $\beta$-content & Designable subset \\
+ssJSD-2D\,$\downarrow$     & As above, on the designable subset & SS fidelity (designable) & Divergence \\
+E\%des\,$\uparrow$         & Mean $\beta$-strand (E) fraction & $\beta$-content & Fraction \\
 \bottomrule
 \end{tabular}
-\caption{Protein-backbone metrics (Chapter~\ref{ch:proteina-study}), across three measurement
-families: representation quality (probe recoverability spanning local-to-global structure),
-representation alignment (trunk-to-encoder similarity), and generation quality (the five
-reported groups). The whole set is all generated backbones; the designable subset is those
-passing the designability filter. Arrows give the good direction. Full per-metric results
-appear in Tables~\ref{tab:proteina-700k} and~\ref{tab:proteina-concentration}.}
+\caption{Protein-backbone metrics (Chapter~\ref{ch:proteina-study}). Arrows give the good direction;
+full per-metric results appear in Tables~\ref{tab:proteina-700k} and~\ref{tab:proteina-concentration}.}
 \label{tab:eval-protein}
 \end{table}
