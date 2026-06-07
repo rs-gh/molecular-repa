@@ -127,8 +127,8 @@ fid_panel(
     axes[0, 0],
     trajec(pdb, "_res_PDB_FID"),
     PDB_FAMS,
-    title="(a) PDB-trained: FID $\\downarrow$",
-    ylabel="FID-PDB (1.1K refs, log scale)",
+    title="(a) PDB-trained: FPSD $\\downarrow$",
+    ylabel="FPSD-PDB (1.1K refs, log scale)",
 )
 des_panel(
     axes[0, 1],
@@ -143,8 +143,8 @@ fid_panel(
     axes[1, 0],
     trajec(afdb, "_res_AFDB_FID"),
     AFDB_FAMS,
-    title="(c) AFDB-trained: FID $\\downarrow$",
-    ylabel="FID-AFDB (4.5K refs, log scale)",
+    title="(c) AFDB-trained: FPSD $\\downarrow$",
+    ylabel="FPSD-AFDB (4.5K refs, log scale)",
 )
 des_panel(
     axes[1, 1],

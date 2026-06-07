@@ -224,8 +224,8 @@ fig, axes = plt.subplots(1, 2, figsize=(13, 5.0))
 panel(
     axes[0],
     gen_trajec("_res_PDB_FID"),
-    ylabel="FID (1.1K refs)",
-    title="(a) FID-PDB $\\downarrow$",
+    ylabel="FPSD (1.1K refs)",
+    title="(a) FPSD-PDB $\\downarrow$",
 )
 
 # Right = designability rate (higher is better)

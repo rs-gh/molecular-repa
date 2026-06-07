@@ -2,9 +2,10 @@
 % (baseline + a representative REPA variant per dataset), coloured by REPA-vs-
 % baseline delta. \input{} from Ch6. Single step isolates the sampler (gamma)
 % axis from the training-time axis; gamma=0.45 column matches Table 6.6 (the
-% PDB MPNN-L4 / AFDB GearNet-L4 rows). pwTM is the designable-subset metric.
-% Colour: Des higher / FID,pwTM lower = green (REPA better), red = worse;
-% |delta| below ~0.02 (Des,pwTM) / ~5 (FID) left uncoloured.
+% PDB MPNN-L4 / AFDB GearNet-L4 rows). Two rows per block: FPSD (whole-set
+% fidelity) and Des (designability) -- the designability-fidelity frontier the
+% sampler dial slides along. Colour: Des higher / FPSD lower = green (REPA
+% better), red = worse; |delta| below ~0.02 (Des) / ~5 (FPSD) left uncoloured.
 \begin{table}[tbp]
 \centering
 \small
@@ -21,9 +22,6 @@ FPSD\,$\downarrow$, REPA & \gd{279} & \gd{561} & \gd{371} & \gd{349} & \gd{350} 
 \addlinespace
 Des\,$\uparrow$, base   & 0.04 & 0.84 & 0.56 & 0.46 & 0.36 & 0.01 \\
 Des\,$\uparrow$, REPA   & \gd{0.16} & \rd{0.78} & \gd{0.66} & \gd{0.64} & \gd{0.52} & \gd{0.11} \\
-\addlinespace
-pwTM (des.)\,$\downarrow$, base & 0.26 & 0.75 & 0.29 & 0.27 & 0.24 & 0.43 \\
-pwTM (des.)\,$\downarrow$, REPA & \rd{0.33} & \gd{0.44} & \rd{0.36} & \rd{0.35} & \rd{0.34} & \gd{0.34} \\
 \midrule
 \multicolumn{7}{l}{\textit{AFDB-trained --- baseline vs.\ REPA GearNet-L4}}\\
 FPSD\,$\downarrow$, base & 220 & 641 & 522 & 494 & 475 & 366 \\
@@ -31,11 +29,8 @@ FPSD\,$\downarrow$, REPA & \gd{148} & \gd{586} & \gd{328} & \gd{298} & \gd{292} 
 \addlinespace
 Des\,$\uparrow$, base   & 0.12 & 0.91 & 0.72 & 0.72 & 0.69 & 0.21 \\
 Des\,$\uparrow$, REPA   & \gd{0.35} & \gd{0.96} & \gd{0.84} & \gd{0.77} & \gd{0.72} & \gd{0.28} \\
-\addlinespace
-pwTM (des.)\,$\downarrow$, base & 0.20 & 0.69 & 0.25 & 0.22 & 0.22 & 0.15 \\
-pwTM (des.)\,$\downarrow$, REPA & 0.19 & 0.68 & \rd{0.31} & \rd{0.26} & \rd{0.25} & 0.17 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA tracks the same designability--diversity trade-off as the baseline across sampler settings, at a higher level.} (Absolute values at step 700K; baseline vs.\ a representative REPA variant per dataset; pwTM is over the designable subset; \colorbox{green!20}{green}/\colorbox{red!15}{red} = REPA better/worse than baseline, small $|\Delta|$ uncoloured; $\gamma{=}0.45$ is Proteina's default; $n{\le}256$.)}
+\caption{\textbf{REPA tracks the same designability--fidelity trade-off as the baseline across sampler settings, at a higher level.} (Absolute values at step 700K, with both rows absolute and the REPA row coloured against the baseline; baseline vs.\ a representative REPA variant per dataset; FPSD is whole-set fidelity, Des is designability; $\gamma{=}0.45$ is Proteina's default.)}
 \label{tab:proteina-sampler}
 \end{table}

@@ -120,7 +120,7 @@ REP = [
     ("CATH-A", best_layer(REP_CT, "cath", "cath_accuracy", True, cath_level="A"), True),
 ]
 GEN_M = [
-    ("FID", gen_metric("_res_PDB_FID"), False),
+    ("FPSD", gen_metric("_res_PDB_FID"), False),  # display label is FPSD; data key unchanged
     ("Designability", gen_metric("_res_designability_rate"), True),
 ]
 
@@ -177,12 +177,12 @@ lines.append("\\bottomrule")
 lines.append("\\end{tabular}")
 lines.append(
     "\\caption{\\textbf{Better trunk representations track better generation --- "
-    "strongly for designability, moderately for FID.} Partial Pearson correlation "
+    "strongly for designability, moderately for FPSD.} Partial Pearson correlation "
     "controlling for training step, with the raw value alongside; oriented so a positive "
     "value means better representation accompanies better generation. ($n{=}"
     + n_str
     + "$ checkpoints pooled over the baseline, the REPA variants, and the random "
-    "control; PDB.)}"
+    "control.)}"
 )
 lines.append("\\label{tab:proteina-genrep-corr}")
 lines.append("\\end{table}")

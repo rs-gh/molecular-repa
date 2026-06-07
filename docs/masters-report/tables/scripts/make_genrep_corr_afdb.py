@@ -4,7 +4,7 @@ tables/table_genrep_corr.tex (Ch6 S6.2.3).
 Mirrors make_genrep_corr.py exactly (same partial-Pearson-controlling-for-step
 machinery, same orientation), but for AFDB-TRAINED models: representation probes
 from the AFDB-trained rows of the n256_xclean_pdb_afdb sweep (n_train=1000,
-seed 42), generation from the AFDB convergence sweep (FID-AFDB, designability).
+seed 42), generation from the AFDB convergence sweep (FPSD-AFDB, designability).
 This lets S6.2.3 state the rep<->gen coupling on BOTH regimes rather than PDB
 only. Steps are parsed from the run-name suffix so rep and gen keys align.
 
@@ -118,7 +118,7 @@ REP = [
     ("CATH-A", best_layer("cath", "cath_accuracy", True, cath_level="A"), True),
 ]
 GEN_M = [
-    ("FID", gen_metric("_res_AFDB_FID"), False),
+    ("FPSD", gen_metric("_res_AFDB_FID"), False),  # display label is FPSD; data key unchanged
     ("Designability", gen_metric("_res_designability_rate"), True),
 ]
 
@@ -169,7 +169,7 @@ lines.append(
     "\\caption{\\textbf{On AFDB too, better trunk representations track better "
     "generation.} The AFDB counterpart to Table~\\ref{tab:proteina-genrep-corr}: partial "
     "Pearson controlling for training step (raw alongside), oriented so positive means "
-    "better representation accompanies better generation. Generation is FID-AFDB and "
+    "better representation accompanies better generation. Generation is FPSD-AFDB and "
     "designability; representation probes are read at $n_\\text{train}{=}1000$ on the "
     "cross-database blinded set. ($n{=}" + n_str + "$ AFDB checkpoints pooled over the "
     "baseline, the REPA variants, and the random control.)}"

@@ -14,7 +14,7 @@ PDB are separate models), so the undertrained random control is visible inline a
 no separate column is needed. The 2.0M window caps the baseline's longer training
 (PDB to 2.4M) without dropping any headline number.
 
-PDB FID (dagger): REPA leads at 400K but its ceiling sits below the baseline's late
+PDB FPSD (dagger): REPA leads at 400K but its ceiling sits below the baseline's late
 best --- accelerates, does not win. AFDB designability (ddagger): saturated proxy,
 random scores highest, so its green long-run deltas do not reflect REPA.
 
@@ -135,7 +135,7 @@ def cell(d, metric, lower, vfmt):
 
 blocks = [
     (
-        "AFDB FID $\\downarrow$",
+        "AFDB FPSD $\\downarrow$",
         "n256_convergence_afdb",
         "_res_AFDB_FID",
         True,
@@ -151,7 +151,7 @@ blocks = [
         "",
     ),
     (
-        "PDB FID $\\downarrow$",
+        "PDB FPSD $\\downarrow$",
         "n256_convergence_pdb",
         "_res_PDB_FID",
         True,
@@ -202,9 +202,7 @@ lines += [
     "regimes it also wins the long run. Acceleration is the \\%-delta vs the baseline at "
     "400K (the anchor of Figure~\\ref{fig:proteina-genrep}), with the absolute score in "
     "parentheses; the long run is each variant's absolute best within a common 2.0M-step "
-    "window, coloured against the baseline-best row. Generation scores are means "
-    "over three sampling seeds; $n{\\le}256$; "
-    "\\colorbox{green!20}{green}/\\colorbox{red!15}{red} = better/worse than baseline.}",
+    "window, coloured against the baseline-best row.}",
     "\\label{tab:proteina-speedup}",
     "\\end{table}",
 ]
