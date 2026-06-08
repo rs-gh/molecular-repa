@@ -149,7 +149,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 15246
+Main chapters word count: 14975
 
 Methodology used to generate that word count:
 
@@ -678,7 +678,7 @@ The term \emph{generative modelling} suggests \emph{creating} new artefacts from
 
 Flow matching (FM)~\cite{FlowMatching} realises this mapping as a continuous-time transport. The model designer defines a \emph{probability path} between a noise sample and a data sample --- a continuous interpolation between them --- and the model learns to carry the noise sample along this path. Concretely, it parameterises a time-dependent \emph{velocity field} $v_\theta(x, t)$ that gives the instantaneous direction of motion at each location $x$ and time $t \in [0, 1]$. At inference, integrating the learned ordinary differential equation (ODE) $\dot{x}_t = v_\theta(x_t, t)$ from $t = 0$ to $t = 1$ pushes a fresh noise sample forward into a fresh data sample.
 
-A common choice of probability path is the linear interpolant, $x_t = (1-t)\, x_0 + t\, x_1$ for $x_0 \sim p_0$ and $x_1 \sim p_1$. The model's target is the \emph{marginal} velocity field at $(x, t)$: the average direction of motion over all noise-data pairs whose paths pass through that point. However, supervising this marginal directly is intractable, since the contributing pairs are not known in advance. Flow matching sidesteps this difficulty with a key observation~\cite{FlowMatching}: although the marginal field may be intractable, the \emph{conditional} velocity along the path of any specific noise-data pair is relatively trivial. Indeed, for the linear interpolant, it is simply $\dot{x}_t = x_1 - x_0$. Regressing the model on these conditional velocities, averaged over many sampled pairs, recovers the marginal field in expectation, and gives the training loss as a mean-squared regression:
+A common choice of probability path is the linear interpolant, $x_t = (1-t)\, x_0 + t\, x_1$ for $x_0 \sim p_0$ and $x_1 \sim p_1$. The model's target is the \emph{marginal} velocity field at $(x, t)$: the average direction of motion over all noise-data pairs whose paths pass through that point. However, supervising this marginal directly is intractable, since the contributing pairs are not known in advance. The key observation~\cite{FlowMatching} is that the \emph{conditional} velocity along the path of any specific noise-data pair is tractable: for the linear interpolant, simply $\dot{x}_t = x_1 - x_0$. Regressing the model on these conditional velocities, averaged over many sampled pairs, recovers the marginal field in expectation, and gives the training loss as a mean-squared regression:
 \[
   \mathcal{L}_{\text{FM}} \,=\, \mathbb{E}_{t,\, x_0,\, x_1} \left\| v_\theta(x_t, t) - (x_1 - x_0) \right\|^2.
 \]
@@ -690,7 +690,7 @@ Generating samples from a trained flow-matching model amounts to integrating the
 
 Conditional generation augments $v_\theta$ with context tokens --- such as a class label, a sequence length, or a structural motif --- with conditioning supplied at both training and sampling time. In this report, we focus on unconditional generation only.
 
-For a more complete treatment of flow matching, we refer the reader to Lipman et al.~\cite{FlowMatching} for the original presentation, and to the recent Lipman et al.\ guide~\cite{FMGuide}.
+For fuller treatments, see Lipman et al.~\cite{FlowMatching,FMGuide}.
 
 % ==========================================================================
 % PROSE -- §2.2 first draft. Mechanics of representation alignment: loss
@@ -771,7 +771,7 @@ For a more complete treatment of flow matching, we refer the reader to Lipman et
 \label{fig:repa-construction}
 \end{figure}
 
-Chapter~\ref{ch:intro} introduced the argument made by Yu et al.~\cite{REPA} about the \emph{representation bottleneck} in diffusion-transformer models. Their analysis applies to flow-matching models as well, given the equivalence between the two objectives discussed above (\S\ref{sec:flow-matching}). The flow-matching objective implicitly asks a model to learn two things at once: a useful representation of the data, and a velocity field that interprets this representation. This twin burden, they argue, leads to slow convergence and large training budgets.
+Chapter~\ref{ch:intro} introduced the argument made by Yu et al.~\cite{REPA} about the \emph{representation bottleneck} in diffusion-transformer models. It applies to flow-matching models too, by the equivalence above (\S\ref{sec:flow-matching}). The flow-matching objective implicitly asks a model to learn two things at once: a useful representation of the data, and a velocity field that interprets this representation. This twin burden, they argue, leads to slow convergence and large training budgets.
 
 Their proposed solution, Representation Alignment (REPA), addresses the first half of this burden by adding a regularisation term to the training loss. Figure~\ref{fig:repa-construction} shows the construction. The regularisation pulls $z_\ell$, the generator's intermediate hidden state at a chosen \emph{alignment layer} $\ell$, towards the embeddings produced by a frozen pretrained encoder $f_{\text{enc}}$ run on the clean data sample $x_1$. The hidden state $z_\ell$ is a sequence of $N$ token vectors. In the context of images, each token represents an image patch; in the molecular setting, each token represents an atom or residue that is part of the larger molecule (\S\ref{sec:primer}). A small trainable \emph{projector head} $h_\phi$ --- a three-layer multi-layer perceptron (MLP) in the original paper --- maps $z_\ell$ into the encoder's feature space, so that $h_\phi(z_\ell)$ and $f_{\text{enc}}(x_1)$ can be compared. This alignment is asymmetric. The encoder provides a fixed target throughout training, while the generator parameters $\theta$ and the projector $\phi$ are updated.
 
@@ -788,11 +788,11 @@ The final training objective is the flow-matching loss from \S\ref{sec:flow-matc
 
 This construction exposes several design choices, some of whose effects we revisit in the ablations of Chapter~\ref{ch:proteina-study}:
 \begin{itemize}
-  \item The choice of encoder $f_{\text{enc}}$. Different encoders may capture distinct aspects of the data distribution.
-  \item The alignment layer $\ell$ at which we attach the projector. Yu et al. experimentally determined that mid-network layers work best for image diffusion, but the optimal choice is not obvious a priori.
-  \item The alignment-loss weight $\lambda$, which balances the alignment signal against the generative objective. Once again, Yu et al. experimentally determined an optimal value of $0.5$ for image diffusion, but this may not hold universally.
-  \item The choice of similarity metric $\operatorname{sim}$. Yu et al.\ compared cosine similarity and mean-squared error for image diffusion, and found the former more effective. We adopt cosine similarity in this report as well.
-  \item The averaging mode. Averaging tokens within each sample first weights every molecule equally, while pooling tokens across the batch gives larger molecules proportionally more REPA signal.
+  \item The encoder $f_{\text{enc}}$, since different encoders capture distinct aspects of the data.
+  \item The alignment layer $\ell$ at which the projector attaches. Yu et al.\ found mid-network layers best for images, but the optimum is domain-dependent.
+  \item The alignment-loss weight $\lambda$, which balances alignment against the generative objective. Yu et al.\ used $0.5$ for images.
+  \item The similarity metric $\operatorname{sim}$. We adopt cosine similarity, which Yu et al.\ found more effective than mean-squared error.
+  \item The averaging mode. Averaging within each sample weights every molecule equally, while pooling across the batch gives larger molecules proportionally more REPA signal.
 \end{itemize}
 
 We adopt the core REPA construction as in Yu et al.\ for this report. However, a small family of methodological variants on REPA has since emerged. Dispersive regularisers~\cite{DiffuseDisperse} replace the external encoder with an internal contrastive term, while flexible-target formulations~\cite{REED} broaden which encoder features the loss attaches to. Separately, REPA-style alignment has been applied beyond the image setting, to video~\cite{VideoREPA}, audio~\cite{TARO}, materials~\cite{CrystalREPA}, and molecules~\cite{BoltzREPA}. We defer exploration of these variants to future work.
@@ -892,7 +892,7 @@ A \emph{protein} is a chain of amino-acid residues, ranging from around 50 to se
 
 A protein's \emph{secondary structure} is its local pattern of $\alpha$-helices and $\beta$-strands; its \emph{tertiary structure} is the global three-dimensional fold those elements form when they pack together. A CATH code~\cite{CATH} (Class, Architecture, Topology, Homology) classifies this fold hierarchically. \emph{Class} captures broad secondary-structure content (mostly-$\alpha$, mostly-$\beta$, or mixed), \emph{Architecture} the gross spatial arrangement of those elements, and \emph{Topology} their specific connectivity.
 
-For the structure-generation problem we study, it is customary to only model the backbone, with sequence identity recovered downstream using a separate \emph{inverse-folding} model such as ProteinMPNN~\cite{ProteinMPNN}. A further compression is the \emph{CA-trace}, which uses only the set of C$_\alpha$ coordinates for every residue to represent the entire protein. This parameterisation retains enough information to recover fold topology and reduces computational cost relative to the more complete representation, which is typically referred to as \emph{all-atom} modelling. Proteina~\cite{Proteina} adopts this C$_\alpha$ parameterisation, representing each backbone as a sequence of per-residue tokens carrying continuous C$_\alpha$ Cartesian coordinates. The models reported in the original presentation are largely trained on high-confidence synthetic structures from the AlphaFold Database (AFDB)~\cite{AFDB}.
+For the structure-generation problem we study, it is customary to model only the backbone, with sequence identity recovered downstream by a separate \emph{inverse-folding} model such as ProteinMPNN~\cite{ProteinMPNN}. The \emph{CA-trace} compresses this further, using only the C$_\alpha$ coordinate of each residue. It retains enough information to recover fold topology, at lower cost than the fuller \emph{all-atom} representation. Proteina~\cite{Proteina} adopts this C$_\alpha$ parameterisation, representing each backbone as a sequence of per-residue tokens carrying continuous C$_\alpha$ Cartesian coordinates. The models reported in the original presentation are largely trained on high-confidence synthetic structures from the AlphaFold Database (AFDB)~\cite{AFDB}.
 
 Again, the CA-trace is one of several protein parameterisations. \emph{Sequence-only} models such as the ESM lineage~\cite{ESM2} operate on amino-acid strings, capturing rich functional priors but little 3D structure. \emph{Full-atom} representations close the gap to physical realism at substantial compute cost. \emph{Equivariant} parameterisations, such as torsion angles and oriented residue frames, encode SE(3) symmetries by construction and underlie the equivariant generators noted above, but have historically bottlenecked scaling. We refer the reader to Notin et al.~\cite{NotinProteinDesign} for a broader survey.
 
