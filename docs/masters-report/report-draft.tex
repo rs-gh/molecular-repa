@@ -149,7 +149,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 15368
+Main chapters word count: 15246
 
 Methodology used to generate that word count:
 
@@ -437,7 +437,7 @@ In this light, the core question we investigate in this report is: \emph{can pri
 We document two lines of enquiry.
 \begin{itemize}
   \item[(i)] \emph{Does REPA work in the molecular domain?}: We conduct empirical studies on training flow-based generators with REPA in two regimes: Tabasco~\cite{Tabasco} for small molecules, and Proteina~\cite{Proteina} for protein backbones. We find that REPA does not measurably improve Tabasco, but it improves training efficiency and advances the generation quality envelope for Proteina.
-  \item[(ii)] \emph{When does REPA work?}: Following Singh et al.~\cite{SpatialStructure} in the realm of image generation, we develop a profiling framework to characterise the suitability of an encoder as a representation target. We measure three properties of an encoder: (1) its \emph{information}, the upper bound on the structural content it holds (linear-probe recoverability against domain structural labels); (2) the \emph{relevance} of that information to the generation task, namely how much of the target a generator can already match from the inputs it is fed, without improving its representation (projector-based reconstruction from cheap features); and (3) the \emph{conditioning} of its embeddings for the alignment objective, whether they are geometrically well-formed enough to transmit anything (effective rank).
+  \item[(ii)] \emph{When does REPA work?}: Following Singh et al.~\cite{SpatialStructure} in the realm of image generation, we develop a profiling framework to characterise the suitability of an encoder as a representation target. For every encoder, we measure its \emph{information} content, the \emph{relevance} of that content for the generation task, and the mathematical \emph{conditioning} of its embeddings for the alignment objective.
 \end{itemize}
 
 We do not propose a new architecture or alignment loss, and our two studies are not a controlled experiment over the conditions that govern REPA's effectiveness. Instead, they are best read as paired case studies in regimes where those conditions differ.
@@ -1093,9 +1093,9 @@ Moreover, the need for a suite of evaluation metrics reflects how molecules are 
 
 In a 2D image, \emph{geometry} and \emph{content} are coupled in one representation. The pixel grid is at once an object's shape and its identity. There is a single contiguous feature space, so one self-supervised encoder can serve as a near-complete description of it. This coupling is what lets image generation lean on a single strong encoder, and lets image quality be summarised, to a first approximation, by a single Fr\'echet distance in that encoder's feature space.
 
-However, molecules pull geometry and content apart, and into more than two pieces. A molecule is at once a discrete graph of typed atoms drawn from a periodic-table-sized alphabet, and a continuous 3D geometry. This is a discrete--continuous duality with no clean analogue in the pixel grid. The two concepts are only loosely tied: one bonding graph admits many conformers, and similar geometries can host different atom types. Geometry is itself organised across scales, from local environments up to global shape. For example, with proteins the hierarchy is explicit, running from primary sequence through secondary-structure elements to the tertiary fold.
+However, molecules pull geometry and content apart, and into more than two pieces. A molecule is at once a discrete graph of typed atoms drawn from a periodic-table-sized alphabet, and a continuous 3D geometry. This is a discrete--continuous duality with no clean analogue in the pixel grid. The two concepts are only loosely tied: one bonding graph admits many conformers, and similar geometries can host different atom types. Geometry is itself \emph{multi-scale}, organised from local environments up to global shape. For example, with proteins the hierarchy is explicit, running from primary sequence through secondary-structure elements to the tertiary fold.
 
-As a consequence, both representation and generation quality are multi-factorial in this domain. No single encoder captures content and geometry at every scale at once, as we see in Chapter~\ref{ch:profiling}. Moreover, no single metric can score a generated set along all those factors at once. A model can match the distribution of folds while getting local geometry subtly wrong; it can place atoms in valid positions while collapsing the diversity of shapes it produces. These are independent failures, so mode collapse is harder to reason about than in the image domain, where one number suffices to track what goes wrong.
+As a consequence, both representation and generation quality are \emph{multi-factorial} and \emph{multi-scale} in this domain. No single encoder captures content and geometry at every scale at once, as we see in Chapter~\ref{ch:profiling}. Moreover, no single metric can score a generated set along all those factors at once. A model can match the distribution of folds while getting local geometry subtly wrong; it can place atoms in valid positions while collapsing the diversity of shapes it produces. These are independent failures, so mode collapse is harder to reason about than in the image domain, where one number suffices to track what goes wrong.
 
 The metric suite we propose in this chapter is an attempt at handling this complexity. We decompose quality along the factors the domain pulls apart, and interpret metrics holistically to understand the complete picture. For each domain we report two complementary families: \emph{representation quality}, which scores what the model encodes internally, and \emph{generation quality}, which scores its outputs. We present them in that order throughout the report, since representation is what REPA's mechanism acts on (\S\ref{sec:repa}) and generation is the outcome we hope it improves.
 
@@ -1358,7 +1358,7 @@ The probe set comprises $1{,}000$ molecules from the GEOM-drugs validation split
 
 \textbf{The null result suggests this regime offers neither headroom nor usable teachers.} Under the original hypothesis, REPA~\cite{REPA} alleviates a representation bottleneck and therefore accelerates improvements on generation quality. However, this needs two conditions. First, there must be \emph{headroom}: a gap in what the generator represents or produces, for the alignment to fill. Second, there must be a \emph{usable teacher}: an encoder that encodes representational information that differs from what the trunk already has and transfers to the generative task. In this regime, neither condition holds.
 
-\textbf{The first condition fails on the metric surface.} The generation quality axes are saturated, as \S\ref{sec:tabasco-results} showed.
+\textbf{The first condition fails on the metric surface.} The generation quality axes are saturated, as \S\ref{sec:tabasco-results} showed. The representation side is saturated too --- the trunk already encodes what our descriptors capture --- so this regime happens to be closed on both.
 
 \textbf{The second condition fails on both encoders, for opposite reasons (Table~\ref{tab:tabasco-probe}).} We use linear probes to determine the representational content each frozen encoder carries against what the trunk already has. CheMeleon decodes the descriptors almost perfectly in isolation ($R^2$ up to $0.99$). But the baseline trunk \emph{already decodes them well} ($0.64$--$0.92$), because they are 2D-graph quantities and the trunk sees the graph. CheMeleon's signal therefore overlaps with what the model already has. Moreover, FCD ultimately scores the inferred 2D graph --- the very information the trunk already holds --- so even on the one metric with headroom, CheMeleon adds nothing new.
 
@@ -1873,7 +1873,7 @@ In this concluding chapter, we collect threads from across our report to build a
 Our report documents two regimes, small molecules and protein backbones, and presents a different answer for each. On small molecules, no REPA variant left
 a measurable mark on Tabasco (Chapter~\ref{ch:tabasco-study}). On protein backbones, REPA accelerated Proteina's convergence on the two key measures of generation quality, likely by improving the representations learned by the model (Chapter~\ref{ch:proteina-study}).
 
-What explains these divergent behaviours? At root, the two regimes represent completely different chemistry. A small drug-like molecule and a folded protein backbone are not the same kind of object, even if their in-silico parameterisations appear to squash these distinctions at first glance. That chemistry sets the combinatorial space a generator must cover: modest and topology-dominated for small molecules, vast and hierarchical for proteins. The former presents a more learnable target, so its generators mature sooner. Indeed, by the time we test REPA, the evaluation metrics for small-molecule generation sit at ceiling, and the baseline Tabasco model already learns the information contained in our external encoders. Protein generation, working in a far larger space, is far from this point. It still has significant room for improvement on the evaluation surface, and pre-trained protein encoders carry structural information that a flow-matching objective could not otherwise learn. As we argue in the small-molecule study (\S\ref{sec:tabasco-diagnosis}), REPA is useful only in the presence of both, so it helped only on proteins.
+What explains these divergent behaviours? At root, the two regimes represent completely different chemistry. A small drug-like molecule and a folded protein backbone are not the same kind of object, even if their in-silico parameterisations appear to squash these distinctions at first glance. That chemistry sets the combinatorial space a generator must cover: modest and topology-dominated for small molecules, vast and hierarchical for proteins. The former presents a more learnable target, so its generators mature sooner. Indeed, by the time we test REPA, the evaluation metrics for small-molecule generation sit at ceiling, and the baseline Tabasco model already learns the information contained in our external encoders. Protein generation, working in a far larger space, is far from this point, and therefore benefits from the intervention.
 
 The protein-backbone result is ultimately a statement about training efficiency, and it pays off along two axes.
 
@@ -1881,124 +1881,33 @@ The first is \emph{acceleration}: for a fixed compute budget, REPA reaches bette
 
 The second axis is \emph{asymptotics}: whether that early lead survives all the way to convergence. Here the answer is not uniform, and it tracks the headroom the baseline itself leaves rather than anything REPA does. Where the baseline plateaus poorly, the lead is permanent, as on AFDB fidelity; where the baseline is a genuinely strong learner, it eventually closes, as on PDB fidelity (\S\ref{sec:proteina-convergence}).
 
-Both axes point the same way as a data-efficiency story. REPA always buys a faster climb, and can offer a lasting advantage when the baseline struggles most. This suggests where to take it next. The field's frontier --- larger synthetic corpora, longer backbones, the all-atom setting --- is where the generation problem is hardest and an unaided baseline has the most ground to make up. This may also be where REPA's payoff is greatest, and where it should be tested next.
+Both axes point the same way as a data-efficiency story. REPA always buys a faster climb, and can offer a lasting advantage when the baseline struggles most. The field's frontier --- larger synthetic corpora, longer backbones, the all-atom setting --- is where the generation problem is hardest and an unaided baseline has ground to make up. This may also be where REPA's payoff is greatest, and where it should be tested next.
 
 \section{When does REPA work?}
 \label{sec:concl-when}
 
-The cleaner contribution is an answer to the second question that does not
-require running the experiment to know. If a single idea outlives this report,
-we hope it is the encoder-profiling framework of Chapter~\ref{ch:profiling}.
-The framework asks three questions of a candidate encoder before any alignment
-training. Does it carry the information we need (\emph{information})? Can a
-projector reach that information without the generator already holding it
-(\emph{relevance})? Are its embeddings well-conditioned enough to transmit
-anything (\emph{conditioning})? Each maps to a necessary condition for
-transfer, and each is scored in domain-agnostic terms --- linear-probe
-recoverability, the lift a projector adds above the constant-prediction floor,
-and effective rank. The same protocol runs on a small-molecule potential and a
-protein fold-classifier without modification. It is the molecular counterpart
-to the question Singh et al.~\cite{SpatialStructure} pose for vision, answered
-with measurements that do not assume a pixel grid.
+The discussion above already hints at our answer, which is that REPA works when two
+conditions hold together. The evaluation surface must leave \emph{headroom} for
+a gain to register, and the encoder must be a \emph{suitable teacher} --- it
+must carry structural information the generator does not already learn cheaply.
 
-The framework matters because it was \emph{predictive}. We profiled every
-encoder before training, so its verdicts were genuine a-priori expectations
-(\S\ref{sec:profiling-predictions}). It committed in advance to two things: no
-measurable REPA gain on small molecules, and GearNet and ProteinMPNN as the
-protein encoders most likely to help. Both held. We are careful about scope.
-The framework predicted \emph{that} these encoders would help, not the finer
-routing of \emph{which} axis each would help on --- GearNet to fold-level
-distribution, ProteinMPNN to per-residue quality. That routing is a reading of
-the data we observed, not a commitment we made beforehand. The a-priori claim
-is the coarser one, and it is the one that came true.
+In this framework, our small-molecules study showed little promise because generation and representation quality metrics were already saturated, and the trunk already learned everything our encoders carried. Indeed, the problem of generating structurally plausible small molecules in-silico appears largely solved. To set appropriate expectations about what this means, we note that structural plausibility is only one desideratum among the many a real design campaign cares about (\S\ref{sec:primer}), and it is arguably the most tractable of them. The properties that actually determine a molecule's utility --- how it binds a target, metabolises, or synthesises --- are downstream of plausibility and far less settled. Moreover, all of this is measured in an in-silico sandbox that is itself a coarse stand-in for real chemistry. The saturated metrics do not suggest that we have mastered small-molecule generation, but that one tractable sub-problem of it looks solved under proxies that are far removed from the wet lab. But this suffices to leave REPA nothing to add.
 
-Profiling and the protein ablations together distil into a recipe for choosing
-a target in a new setting. First, filter cheaply and a priori. Reject encoders
-that saturate, that are cheatable from inputs the generator already holds, or
-that are ill-conditioned. The random-weights control is the case the filter
-exists to catch: its near-constant embedding is trivially matched, so the trunk
-aligns to it almost perfectly and learns nothing (\S\ref{sec:proteina-rep}).
-High alignment is not the goal; transferable information is. Second, among the
-encoders that survive, treat the choice not as a default but as a decision
-about which representational factor you want the gain routed to. There is no
-single best encoder in a domain whose representation is multi-factorial.
+Protein backbone generation presents a more challenging task, where both representation and generation metrics are unsaturated, and determining teacher suitability remains difficult. In Chapter~\ref{ch:evaluation}, we propose a new framework in which to interpret the vast array of relevant metrics, which are complex both in isolation and in their relationships with each other. We also identify the two key dynamics, the \emph{designability-fidelity} trade-off and the \emph{designability-diversity} trade-off, that characterise the quality of a generator. In Chapter~\ref{ch:profiling}, we then propose a set of heuristics to estimate the utility of an encoder as a REPA teacher. We investigate the \emph{information} content of a suite of pre-trained encoders, the \emph{relevance} of that content to the generative task, and the mathematical \emph{conditioning} of their embeddings, and use the most promising candidates in the studies that follow. We note that the approach we propose here is domain-agnostic. The questions we raise are purely statistical, and can be asked of any encoder in any domain with a few modifications.
 
-That last point is the report's conceptual root, and it is where the
-imaging-versus-molecular contrast of Chapter~\ref{ch:evaluation} pays off. In
-an image, geometry and content are coupled into one representation, so a single
-strong encoder is a near-complete target and quality reduces, to a first
-approximation, to one Fr\'echet distance. Molecules pull geometry and content
-apart, and across scales, so no single encoder captures every factor. That is
-why an encoder \emph{choice} exists here and barely does in vision, and why our
-framework had to be built around it. The choice is a real and independent axis
-of control: the direction REPA shifts the learned distribution is set by the
-encoder and holds across every sampler noise level we tested, while the sampler
-dial only slides a fixed model along its own trade-off
-(\S\ref{sec:proteina-anatomy}, \S\ref{sec:proteina-sampler}). Encoder and
-sampler are orthogonal knobs. Seen this way, whether REPA transfers is less a
-fact about the data domain than about the representation an encoder offers --- a
-reframing we lean on lightly, since two domains do not establish it as a law.
-
-\section{What this leaves for others}
-\label{sec:concl-toolkit}
-
-Several pieces of this report are built to be picked up independently of REPA.
-The profiling protocol is the obvious one: a cheap, encoder-agnostic battery
-for asking whether any frozen encoder has something to teach a generator,
-applicable wherever an alignment target is being considered. Alongside it, the
-evaluation chapter contributes machinery that outlives the specific question we
-asked --- the tertiary/secondary $\times$ whole-set/designable taxonomy that
-makes a distribution-versus-designability trade-off legible
-(\S\ref{sec:eval-protein}), the ssJSD-2D secondary-structure metric
-(Appendix~\ref{app:ssjsd}), and the leakage-controlled probe splits that
-separate genuine representation gains from train--validation overlap
-(Appendix~\ref{app:leakage}). None of these depends on REPA being the
-intervention under test. We offer them as a small toolkit for anyone reasoning
-about representation quality in molecular generation.
-
-\section{Limitations}
-\label{sec:concl-limitations}
-
-The central limitation is the one the framing already concedes: our evidence is
-two domains, not a controlled sweep over the conditions that govern transfer.
-We have one regime where the conditions are weak and REPA leaves no mark, and
-one where they are met alongside other favourable factors and REPA helps. That
-is consistent with the framework but does not isolate the conditions
-experimentally. Several narrower limits bound the claims. Compute capped our
-protein runs short of full convergence on some variants, and our encoder
-coverage, though broad, is not exhaustive. We never trained the encoder and
-generator jointly, nor moved beyond C$\alpha$ backbones to the all-atom
-setting. The sampler-robustness evidence is strongest for GearNet at
-submission. And designability carries a proxy caveat we have flagged
-throughout: its folding models share lineage with the synthetic data, so the
-synthetic-regime designability numbers are read with that in mind
-(\S\ref{sec:proteina-datasets}).
+However, the molecular domain presents unique challenges in how multi-factorial and multi-scale its representations are, especially in contrast to images (\S\ref{sec:eval-multifactorial}). In this light, our work also presents a new view on REPA: it is not a single mechanism, but rather a \emph{family of interventions}. Every pre-trained encoder emphasises a different factor, so the choice of alignment target is also a choice over the structural factor one seeks to enhance.
 
 \section{Open questions}
-\label{sec:concl-future}
+\label{sec:conc-open-questions}
 
-We close by handing the floor on. The most direct test of the framework is a
-third domain. If the two conditions really govern transfer, then RNA,
-materials, or a small-molecule regime with genuine evaluation headroom should
-obey them, and profiling should call the outcome before training. A
-falsification there would be as informative as a confirmation. Closer to hand,
-the protein study opens several threads: training the encoder jointly rather
-than freezing it; an early-stopped alignment schedule, since REPA's gains
-arrive early and its fold-concentration cost arrives late
-(\S\ref{sec:proteina-anatomy}); length extrapolation past the training crop
-using our smaller-scale models; and the encoders profiling flagged as viable
-but that we did not carry into a full study.
+We close by looking ahead, and proposing new directions based on our work.
 
-The larger question we would like to see taken up is the one the
-multi-factorial view raises. If representation in a domain decomposes into
-factors that no single encoder spans, then ``which encoder'' stops being a
-hyperparameter and becomes a design decision about what you want a model to
-learn. REPA is one vehicle for acting on that decision; it is unlikely to be
-the only one. The contribution we hope to make to the conversation is less the
-verdict that REPA helps proteins and not small molecules, and more a way of
-asking, cheaply and in advance, whether an external representation has anything
-to teach a generator before the compute is spent finding out. That question
-travels further than the two answers we found for it.
+\textbf{Does REPA work in other scientific domains?} Our report opened by placing
+this work in the wider arc of generative machine learning for the sciences (Chapter~\ref{ch:intro}). The same paradigm of prior-light models, sparse data, and multi-scale representation recurs across the sciences. For example, in fluid mechanics, diffusion models are learning to generate turbulent flow fields~\cite{TurbulenceDiffusion}. Alleviating the representation bottleneck could open the door for more efficient and performant models here, following our work with proteins.
+
+\textbf{Does our encoder profiling framework generalise?} Singh et al.~\cite{SpatialStructure} ask the which-encoder question for vision, and answer it with structural metrics tied to the image grid. We attempt to generalise this analysis into a set of domain-agnostic heuristics. An open question is whether these are two views of a single, canonical characterisation of what makes a good alignment target. We propose retrospectively analysing published REPA work across domains, to see if the framework offers useful guidance.
+
+We read our contribution not as a verdict that REPA accelerates protein backbone generation, but as a principled framework for assessing how to improve generative models for science more broadly. In the context of that aspiration, we hope to raise more interesting research questions than we answer, and to push the evolution of this exciting space.
 
 \label{lastcontentpage} % end page count here
 
@@ -2127,6 +2036,12 @@ Claudio Zeni et al.
 ``A generative model for inorganic materials design''.
 \textit{Nature} 639 (2025), pp.~624--632.
 \href{https://doi.org/10.1038/s41586-025-08628-5}{doi:10.1038/s41586-025-08628-5}.
+
+\bibitem{TurbulenceDiffusion}
+Tim Whittaker, Romuald~A. Janik, Yaron Oz.
+``Turbulence scaling from deep learning diffusion generative models''.
+\textit{Journal of Computational Physics} 514 (2024), 113239.
+\href{https://doi.org/10.1016/j.jcp.2024.113239}{doi:10.1016/j.jcp.2024.113239}.
 
 % --- Surveys ---
 
