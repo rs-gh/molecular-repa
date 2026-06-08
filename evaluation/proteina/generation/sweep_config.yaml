@@ -577,6 +577,26 @@ n256_pdb_sampler_ablation_ext:
   output_dir: results/variance/n256_sampler_ablation
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
 
+# 2026-06-09: full-variant-grid backfill for Ch6 sampler/ODE tables (6.6/6.7).
+# Goal: show ALL 6 PDB variants (incl random) at 700k (priority), 1M, 400k, with
+# MPNN-L9 as the PDB headline. Gap cells only (dedup skips present ones):
+#   700k: MPNN-L9 (ode,sde 0/0.35/0.5/1.0), GN-L9 (sde 0.35,0.5)
+#   1M:   random-L4 (ode,sde 0/0.35/0.5/1.0)
+#   400k: GN-L9 (sde 0.35,0.5)
+# Same output_dir as base. Submit once per sampler tag (dedup + checkpoint-
+# existence skip the cells that don't apply to a given step):
+#   python run_sweep.py --config n256_pdb_sampler_ablation_fullgrid --dry_run
+#   sbatch --array=0-N run_sweep.sh --config n256_pdb_sampler_ablation_fullgrid --sampling_mode vf            # ODE
+#   sbatch --array=0-N run_sweep.sh --config n256_pdb_sampler_ablation_fullgrid --sampling_mode sc --sc_scale_noise 0.0
+#   sbatch --array=0-N run_sweep.sh --config n256_pdb_sampler_ablation_fullgrid --sampling_mode sc --sc_scale_noise 0.35
+#   sbatch --array=0-N run_sweep.sh --config n256_pdb_sampler_ablation_fullgrid --sampling_mode sc --sc_scale_noise 0.5
+#   sbatch --array=0-N run_sweep.sh --config n256_pdb_sampler_ablation_fullgrid --sampling_mode sc --sc_scale_noise 1.0
+n256_pdb_sampler_ablation_fullgrid:
+  <<: *paper_defaults
+  runs: "repa_mpnn_l9_256_per_residue_step700k,repa_l9_256_per_residue_bs24_2gpu_step700k,repa_l9_256_per_residue_bs24_2gpu_step400k,repa_l4_256_per_residue_random_bs24_2gpu_step1000k"
+  output_dir: results/variance/n256_sampler_ablation
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
 # 2026-05-28: PDB convergence extension 6 — L9-GN stopped at 1.4M, MPNN-L9
 # trained to 1.7M. Cheap variant (1 seed × 7 tasks). Same output_dir as base.
 n256_convergence_pdb_ext6:

@@ -1215,6 +1215,15 @@ RUN_SCHEDULES = {
         9,
         [400000],
     ),
+    # 700k added 2026-06-09 for the sampler-ablation backfill (MPNN-L9 is the PDB
+    # headline variant; its 700k EMA ckpt exists on disk, the registry just
+    # skipped 400k->800k). Needed to populate Table 6.6/6.7 at 700k.
+    "repa_mpnn_l9_256_per_residue_step700k": (
+        "proteina_60m_repa_mpnn_l9_256_per_residue",
+        True,
+        9,
+        [700000],
+    ),
     "repa_l4_256_per_residue_random_bs24_2gpu_step100k": (
         "proteina_60m_repa_l4_256_per_residue_random_bs24_2gpu",
         True,
@@ -1847,6 +1856,7 @@ GEN_RUN_CONFIGS = {
     "repa_mpnn_l9_256_per_residue_step100k": "inference/paper/inference_fid_60m_paper",
     "repa_mpnn_l9_256_per_residue_step200k": "inference/paper/inference_fid_60m_paper",
     "repa_mpnn_l9_256_per_residue_step400k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l9_256_per_residue_step700k": "inference/paper/inference_fid_60m_paper",
     "repa_l4_256_per_residue_random_bs24_2gpu_step100k": "inference/paper/inference_fid_60m_paper",
     "repa_l4_256_per_residue_random_bs24_2gpu_step200k": "inference/paper/inference_fid_60m_paper",
     "repa_l4_256_per_residue_random_bs24_2gpu_step400k": "inference/paper/inference_fid_60m_paper",
