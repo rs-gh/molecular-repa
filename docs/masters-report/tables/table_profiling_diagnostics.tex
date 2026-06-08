@@ -11,11 +11,11 @@
 \midrule
 \multicolumn{3}{@{}p{\linewidth}@{}}{\textbf{Information}\quad\textit{what the encoder encodes --- an upper bound on REPA's transfer}} \\
 3D geometry          & sensitivity to 3D pose                & cosine self-similarity across conformers (molecules) or after a 1\,\AA{} coordinate perturbation (proteins) \\
-Token identity       & atom or residue type (high $=$ a lookup the generator already has) & linear-probe accuracy \\
+Token identity       & atom or residue type (high $=$ a lookup the molecular generator already has; off-task for the protein generator, which is not given residue identity) & linear-probe accuracy \\
 \addlinespace
 \multicolumn{3}{@{}p{\linewidth}@{}}{\textbf{Relevance}\quad\textit{what the generator can match without improving its representation}} \\
 Saturation & the embeddings barely vary, so a constant prediction already matches them & a high \emph{floor}: the average cosine similarity of each token embedding to the dataset mean \\
-Cheatability     & the variation that exists is content the generator is already fed & a high \emph{lift} from identity alone: the rise a REPA-form 3-layer MLP gains from a one-hot of the atom or residue type (cosine-similarity loss, 80/20 split) \\
+Cheatability     & the variation that exists is content the generator is already fed (for molecules; for proteins this identity variation is read as off-task, not cheatable) & a high \emph{lift} from identity alone: the rise a REPA-form 3-layer MLP gains from a one-hot of the atom or residue type (cosine-similarity loss, 80/20 split) \\
 Off-task risk    & the remaining variation is some factor the generator does not need, rather than the 3D geometry it does & a low floor and low lift, read against the 3D-awareness probe \\
 \addlinespace
 \multicolumn{3}{@{}p{\linewidth}@{}}{\textbf{Conditioning}\quad\textit{whether the embedding is well-formed}} \\

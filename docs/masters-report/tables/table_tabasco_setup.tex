@@ -9,6 +9,7 @@
 \midrule
 \multicolumn{2}{l}{\textit{Base architecture}} \\
 Backbone (\emph{trunk}) & Tabasco: 3.7M-param, 16-layer non-equivariant transformer (hidden dim 128, 8 heads, SiLU, cross-attention) \\
+Inputs (what the trunk sees) & per-atom token index $+$ atom-type one-hot $+$ noisy 3D coordinates \\
 \midrule
 \multicolumn{2}{l}{\textit{REPA alignment}} \\
 Encoder targets        & CheMeleon (2D, 2048-d) $\cdot$ MACE (3D, 192-d) \\

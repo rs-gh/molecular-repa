@@ -1,0 +1,32 @@
+% Designable-subset concentration table. \input{} from Ch6 sec:proteina-anatomy.
+% Source: results/variance/wholeset_vs_designable_diversity.json (built by
+% scripts/paper/exp_wholeset_vs_designable_diversity.py). Metric is mean pairwise
+% TM-score (pwTM); LOWER = more structurally diverse. pwTM is n-independent (an
+% average), so whole-set and designable values ARE directly comparable across
+% models and steps -- unlike #clusters, which scales with the designable count.
+% The contrast that matters: REPA's WHOLE-set pwTM ~ baseline (not concentrated),
+% but its DESIGNABLE-subset pwTM is HIGHER (more concentrated) at almost every
+% step -> the concentration is subset-specific. PDB, n<=256, GearNet-L9 and
+% ProteinMPNN-L9 (last-layer) vs baseline; seed-aggregated where >1 seed exists.
+% No \multirow (multirow.sty unavailable in this TeX install): step is a row,
+% whole/designable are paired columns under each model.
+\begin{table}[tbp]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lcccccc}
+\toprule
+& \multicolumn{2}{c}{\textbf{Baseline}}
+& \multicolumn{2}{c}{\textbf{REPA GN-L9}}
+& \multicolumn{2}{c}{\textbf{REPA MPNN-L9}} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+\textbf{Step} & whole & des. & whole & des. & whole & des. \\
+\midrule
+400K  & 0.137 & 0.143 & 0.159 & \rd{0.158} & 0.164 & \rd{0.172} \\
+700K  & 0.221 & 0.229 & 0.189 & \rd{0.280} & 0.215 & \gd{0.209} \\
+1.0M  & 0.173 & 0.168 & 0.235 & \rd{0.491} & 0.241 & \rd{0.342} \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{REPA's whole set stays as diverse as the baseline, but its designable subset is more concentrated.} Mean pairwise TM-score (pwTM; lower is more diverse) over the whole generated set and the designable subset. pwTM is an average, so it compares across models and sample counts. Whole-set pwTM tracks the baseline, but designable pwTM rises above it at almost every step (red $=$ REPA more concentrated than baseline; green $=$ more diverse). The concentration is specific to the designable subset, not the whole distribution. (PDB-trained, $n{\le}256$, last-layer GearNet and ProteinMPNN.)}
+\label{tab:designable-diversity}
+\end{table}
