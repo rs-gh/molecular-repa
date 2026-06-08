@@ -1,7 +1,9 @@
 % Table -- ODE (deterministic) designability floor at 700K, all variants vs baseline.
 % \input{} from Ch6. Single step (700K) to match the rest of the sampler section;
 % at 700K every learned encoder lifts the floor on both datasets, only random fails.
-% PDB L9-MPNN omitted: no 700K ODE-sampler data (only 1.0M).
+% PDB L9-MPNN (dagger) shown at 1.0M: no 700K ODE-sampler data exists for it; its
+% delta (+0.15) is vs baseline@1.0M (Des 0.044), NOT baseline@700K. Single-seed
+% like the rest of the table. ODE Des: MPNN-L9@1.0M=0.196, baseline@1.0M=0.044.
 \begin{table}[tbp]
 \centering
 \small
@@ -16,6 +18,7 @@ REPA L4-random & $-$0.02 \\
 REPA L4-GN     & \gd{+0.16} \\
 REPA L9-GN     & \gd{+0.04} \\
 REPA L4-MPNN   & \gd{+0.12} \\
+REPA L9-MPNN\,$^{\dagger}$ & \gd{+0.15} \\
 \midrule
 \multicolumn{2}{l}{\textit{AFDB-trained}}\\
 Baseline       & 0.12 \\
@@ -24,6 +27,6 @@ REPA L9-GN     & \gd{+0.21} \\
 REPA L9-MPNN   & \gd{+0.10} \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{REPA's learned distribution is more designable even without sampling noise.} The ODE limit samples the trunk's learned distribution directly, which suggests REPA learns a better underlying distribution rather than merely benefiting from sampler noise. (ODE designability at step 700K; $|\Delta|{<}0.025$ uncoloured. Single-seed.)}
+\caption{\textbf{Every REPA-learned model yields more designable proteins than baseline when sampled deterministically.} The ODE limit samples the trunk's learned distribution directly, which suggests REPA learns a better underlying distribution rather than merely benefiting from sampler noise. (ODE designability at step 700K; $|\Delta|{<}0.025$ uncoloured. Single-seed. $^{\dagger}$PDB ProteinMPNN-L9 has no 700K ODE data, so it is shown at 1.0M, with its $\Delta$ taken against the baseline at 1.0M.)}
 \label{tab:proteina-ode}
 \end{table}
