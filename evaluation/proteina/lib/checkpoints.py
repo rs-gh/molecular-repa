@@ -1559,6 +1559,14 @@ RUN_SCHEDULES = {
         4,
         [500000],
     ),
+    # 2026-06-10: AFDB-random training resumed past its old 500k cap; the 700k
+    # EMA ckpt now exists. Added for the Table 6.6 (ODE) AFDB-block backfill.
+    "repa_l4_afdb_256_random_step700k": (
+        "proteina_60m_repa_l4_256_afdb_per_residue_random_bs24_2gpu",
+        True,
+        4,
+        [700000],
+    ),
     # PDB random (store max 1200k):
     "repa_l4_256_per_residue_random_bs24_2gpu_step900k": (
         "proteina_60m_repa_l4_256_per_residue_random_bs24_2gpu",
@@ -1918,6 +1926,7 @@ GEN_RUN_CONFIGS = {
     "repa_l4_afdb_256_random_step200k": "inference/paper/inference_fid_60m_paper",
     "repa_l4_afdb_256_random_step400k": "inference/paper/inference_fid_60m_paper",
     "repa_l4_afdb_256_random_step500k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_afdb_256_random_step700k": "inference/paper/inference_fid_60m_paper",
     "repa_l4_256_per_residue_random_bs24_2gpu_step900k": "inference/paper/inference_fid_60m_paper",
     "repa_l4_256_per_residue_random_bs24_2gpu_step1000k": "inference/paper/inference_fid_60m_paper",
     "repa_l4_256_per_residue_random_bs24_2gpu_step1100k": "inference/paper/inference_fid_60m_paper",

@@ -656,3 +656,16 @@ n256_convergence_pdb_ext8:
   runs: "repa_l4_256_per_residue_random_bs24_2gpu_step900k,repa_l4_256_per_residue_random_bs24_2gpu_step1000k,repa_l4_256_per_residue_random_bs24_2gpu_step1100k,repa_l4_256_per_residue_random_bs24_2gpu_step1200k"
   output_dir: results/paper/n256_convergence_pdb
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# 2026-06-10: Table 6.6 (ODE designability) AFDB-block backfill. The AFDB block
+# was missing the random control + L4-MPNN that the PDB block has. Both 700k EMA
+# ckpts now exist (AFDB-random training resumed past its old 500k cap). ODE-only
+# (vf) at rep_idx=0; one task per run. Merges into the AFDB sampler-ablation
+# jsonl so FPSD + designability + designable-pwTM all land for the ODE table.
+#   python run_sweep.py --config n256_afdb_ode_table66_backfill --dry_run
+#   sbatch --array=0-1 run_sweep.sh --config n256_afdb_ode_table66_backfill --sampling_mode vf
+n256_afdb_ode_table66_backfill:
+  <<: *paper_defaults
+  runs: "repa_mpnn_l4_afdb_256_step700k,repa_l4_afdb_256_random_step700k"
+  output_dir: results/variance/n256_afdb_sampler_ablation
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"

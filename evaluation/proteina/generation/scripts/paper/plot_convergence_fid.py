@@ -107,13 +107,17 @@ RUN_FAMILIES = {
     ],
 }
 
-# Per-dataset metrics (FID + fJSD at each CATH level). lower_is_better=True.
+# FID + fJSD metrics; each is evaluated against BOTH the PDB and AFDB reference
+# sets, so every dataset row gets 8 reference-conditional panels.
+# Tuples: (suffix-in-column-name, panel-title-without-reference). The reference
+# label ("PDB" / "AFDB") is added at plotting time.
 DATASET_METRICS = [
     ("FID", "FID-1.1K"),
     ("fJSD_A", "fJSD (Architecture)"),
     ("fJSD_C", "fJSD (Class)"),
     ("fJSD_T", "fJSD (Topology)"),
 ]
+REFERENCES = ["PDB", "AFDB"]
 
 # Dataset-agnostic fold-class entropy panels.
 FS_METRICS = [
@@ -171,7 +175,9 @@ def plot_curve(ax, xs, ys, color, ls, marker, label):
 
 
 def main() -> None:
-    n_cols = len(DATASET_METRICS) + len(FS_METRICS)
+    # Each FID/fJSD metric is shown against both PDB and AFDB references, so the
+    # dataset-conditional column count doubles.
+    n_cols = len(DATASET_METRICS) * len(REFERENCES) + len(FS_METRICS)
     fig, axes = plt.subplots(
         nrows=len(DATASETS),
         ncols=n_cols,
@@ -181,41 +187,31 @@ def main() -> None:
 
     for row_i, (ds_name, jsonl_path) in enumerate(DATASETS.items()):
         rows = load_jsonl(jsonl_path)
-        # FID + fJSD columns
-        for col_i, (suffix, title) in enumerate(DATASET_METRICS):
-            ax = axes[row_i, col_i]
-            col = f"_res_{ds_name}_{suffix}"
-            for prefix, label, color, ls, marker in RUN_FAMILIES[ds_name]:
-                xs, ys = extract(rows, prefix, col)
-                if not xs:
-                    continue
-                plot_curve(ax, xs, ys, color, ls, marker, label)
-            ax.set_xscale("log")
-            ax.set_yscale(
-                "log"
-            )  # FID/fJSD have wide dynamic range; log keeps late-regime separation visible
-            ax.set_xlabel("Training step")
-            ax.set_ylabel("value (lower = closer, log y)")
-            ax.set_title(f"{ds_name} — {title} ↓")
-            ax.invert_yaxis()  # up = better
-            _style_axes(ax, log_y=True)
-            if SHOW_PRETRAINED:
-                pre_val = pretrained_overlay.load_gen().get(f"_res_{ds_name}_{suffix}")
-                if pre_val is not None:
-                    ax.axhline(
-                        pre_val,
-                        color=pretrained_overlay.PRETRAINED_COLOR,
-                        linestyle="--",
-                        linewidth=2.6,
-                        alpha=0.9,
-                        label=pretrained_overlay.PRETRAINED_LABEL
-                        if col_i == 0
-                        else None,
-                        zorder=1,
-                    )
+        # FID + fJSD columns × (PDB ref, AFDB ref)
+        col_i = 0
+        for suffix, title in DATASET_METRICS:
+            for ref in REFERENCES:
+                ax = axes[row_i, col_i]
+                col = f"_res_{ref}_{suffix}"
+                for prefix, label, color, ls, marker in RUN_FAMILIES[ds_name]:
+                    xs, ys = extract(rows, prefix, col)
+                    if not xs:
+                        continue
+                    plot_curve(ax, xs, ys, color, ls, marker, label)
+                ax.set_xscale("log")
+                ax.set_yscale(
+                    "log"
+                )  # FID/fJSD have wide dynamic range; log keeps late-regime separation visible
+                ax.set_xlabel("Training step")
+                ax.set_ylabel("value (lower = closer, log y)")
+                ax.set_title(f"{ds_name} train — {title} vs {ref} ↓")
+                _style_axes(ax, log_y=True)
+                if col_i == 0:
+                    ax.legend(loc="best", fontsize=7)
+                col_i += 1
         # fS columns — same row's RUN_FAMILIES so comparisons stay within data regime
         for j, (col, title) in enumerate(FS_METRICS):
-            ax = axes[row_i, len(DATASET_METRICS) + j]
+            ax = axes[row_i, col_i + j]
             for prefix, label, color, ls, marker in RUN_FAMILIES[ds_name]:
                 xs, ys = extract(rows, prefix, col)
                 if not xs:
