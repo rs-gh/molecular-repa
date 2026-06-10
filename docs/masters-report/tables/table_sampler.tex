@@ -1,11 +1,15 @@
-% Table -- sampler-noise robustness at a FIXED step (700K), ABSOLUTE values
+% Table -- sampler-noise robustness at a FIXED step (400K), ABSOLUTE values
 % (baseline + a representative REPA variant per dataset), coloured by REPA-vs-
-% baseline delta. \input{} from Ch6. Single step isolates the sampler (gamma)
-% axis from the training-time axis; gamma=0.45 column matches Table 6.6 (the
-% PDB L4-MPNN / AFDB L4-GearNet rows). Two rows per block: FPSD (whole-set
-% distribution match) and Des (designability) -- the designability-vs-distribution-match frontier the
-% sampler dial slides along. Colour: Des higher / FPSD lower = green (REPA
-% better), red = worse; |delta| below ~0.02 (Des) / ~5 (FPSD) left uncoloured.
+% baseline delta. \input{} from Ch6. Re-timed 700K -> 400K (2026-06-10): 400K is
+% the acceleration anchor of Table~\ref{tab:proteina-speedup}/Fig 6.1, so a fixed
+% 400K step shows that REPA's *acceleration* (not just its steady-state lead)
+% holds across the sampler (gamma) axis. PDB representative switched to L9-MPNN
+% (the PDB acceleration headline at 400K, +149% designability vs baseline);
+% AFDB stays L4-GearNet. gamma=0.45 column is sourced from the default-sampler
+% convergence data; the other gamma columns from the sampler-ablation sweep.
+% Two rows per block: FPSD (whole-set distribution match) and Des (designability).
+% Colour: Des higher / FPSD lower = green (REPA better), red = worse; |delta|
+% below ~0.02 (Des) / ~5 (FPSD) left uncoloured.
 \begin{table}[tbp]
 \centering
 \small
@@ -14,23 +18,23 @@
 \toprule
  & \multicolumn{6}{c}{\textbf{Sampler setting}} \\
 \cmidrule(lr){2-7}
-\textbf{Metric (700K)} & ODE & $\gamma{=}0$ & $\gamma{=}0.35$ & $\gamma{=}0.45$ & $\gamma{=}0.5$ & $\gamma{=}1.0$ \\
+\textbf{Metric (400K)} & ODE & $\gamma{=}0$ & $\gamma{=}0.35$ & $\gamma{=}0.45$ & $\gamma{=}0.5$ & $\gamma{=}1.0$ \\
 \midrule
-\multicolumn{7}{l}{\textit{PDB-trained --- baseline vs.\ REPA L4-MPNN}}\\
-FPSD\,$\downarrow$, base & 353 & 782 & 462 & 437 & 425 & 508 \\
-FPSD\,$\downarrow$, REPA & \gd{279} & \gd{561} & \gd{371} & \gd{349} & \gd{350} & \gd{424} \\
+\multicolumn{7}{l}{\textit{PDB-trained --- baseline vs.\ REPA L9-MPNN}}\\
+FPSD\,$\downarrow$, base & 420 & 881 & 508 & 472 & 488 & 730 \\
+FPSD\,$\downarrow$, REPA & \gd{344} & \rd{1102} & \gd{430} & \gd{410} & \gd{405} & \gd{601} \\
 \addlinespace
-Des\,$\uparrow$, base   & 0.04 & 0.84 & 0.56 & 0.46 & 0.36 & 0.01 \\
-Des\,$\uparrow$, REPA   & \gd{0.16} & \rd{0.78} & \gd{0.66} & \gd{0.64} & \gd{0.52} & \gd{0.11} \\
+Des\,$\uparrow$, base   & 0.01 & 0.84 & 0.38 & 0.26 & 0.20 & 0.00 \\
+Des\,$\uparrow$, REPA   & 0.02 & \gd{0.99} & \gd{0.72} & \gd{0.66} & \gd{0.58} & \gd{0.04} \\
 \midrule
 \multicolumn{7}{l}{\textit{AFDB-trained --- baseline vs.\ REPA L4-GearNet}}\\
-FPSD\,$\downarrow$, base & 220 & 641 & 522 & 494 & 475 & 366 \\
-FPSD\,$\downarrow$, REPA & \gd{148} & \gd{586} & \gd{328} & \gd{298} & \gd{292} & \gd{276} \\
+FPSD\,$\downarrow$, base & 501 & 712 & 429 & 429 & 436 & 613 \\
+FPSD\,$\downarrow$, REPA & \gd{144} & \gd{654} & \gd{359} & \gd{329} & \gd{317} & \gd{283} \\
 \addlinespace
-Des\,$\uparrow$, base   & 0.12 & 0.91 & 0.72 & 0.72 & 0.69 & 0.21 \\
-Des\,$\uparrow$, REPA   & \gd{0.35} & \gd{0.96} & \gd{0.84} & \gd{0.77} & \gd{0.72} & \gd{0.28} \\
+Des\,$\uparrow$, base   & 0.03 & 0.80 & 0.78 & 0.74 & 0.68 & 0.09 \\
+Des\,$\uparrow$, REPA   & \gd{0.26} & \gd{0.99} & \gd{0.86} & \gd{0.78} & \gd{0.74} & \gd{0.27} \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{At almost every sampler setting, REPA reaches a higher level of both FPSD and designability than the baseline.} (Absolute values at step 700K; the REPA row is coloured against the baseline. Baseline vs.\ a representative REPA variant per dataset; FPSD is whole-set distribution match, Des is designability; $\gamma{=}0.45$ is Proteina's default. The lone exception is PDB designability at the degenerate $\gamma{=}0$ setting, where the baseline saturates by repeating a few folds.)}
+\caption{\textbf{REPA's early-training acceleration holds across the sampler-noise axis.} The representative REPA variant per dataset beats the baseline on both FPSD and designability at almost every $\gamma$; the lone exception is PDB FPSD at the degenerate $\gamma{=}0$. (Absolute values at step 400K; REPA coloured against the baseline.)}
 \label{tab:proteina-sampler}
 \end{table}

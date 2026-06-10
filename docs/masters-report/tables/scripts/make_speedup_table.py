@@ -135,22 +135,6 @@ def cell(d, metric, lower, vfmt):
 
 blocks = [
     (
-        "AFDB FPSD $\\downarrow$",
-        "n256_convergence_afdb",
-        "_res_AFDB_FID",
-        True,
-        lambda v: f"{v:.0f}",
-        "",
-    ),
-    (
-        "AFDB designability $\\uparrow$",
-        "n256_convergence_afdb",
-        "_res_designability_rate",
-        False,
-        lambda v: f"{v:.2f}",
-        "",
-    ),
-    (
         "PDB FPSD $\\downarrow$",
         "n256_convergence_pdb",
         "_res_PDB_FID",
@@ -161,6 +145,22 @@ blocks = [
     (
         "PDB designability $\\uparrow$",
         "n256_convergence_pdb",
+        "_res_designability_rate",
+        False,
+        lambda v: f"{v:.2f}",
+        "",
+    ),
+    (
+        "AFDB FPSD $\\downarrow$",
+        "n256_convergence_afdb",
+        "_res_AFDB_FID",
+        True,
+        lambda v: f"{v:.0f}",
+        "",
+    ),
+    (
+        "AFDB designability $\\uparrow$",
+        "n256_convergence_afdb",
         "_res_designability_rate",
         False,
         lambda v: f"{v:.2f}",

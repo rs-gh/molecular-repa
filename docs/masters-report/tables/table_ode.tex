@@ -1,32 +1,43 @@
-% Table -- ODE (deterministic) designability floor at 700K, all variants vs baseline.
-% \input{} from Ch6. Single step (700K) to match the rest of the sampler section;
-% at 700K every learned encoder lifts the floor on both datasets, only random fails.
-% PDB L9-MPNN (dagger) shown at 1.0M: no 700K ODE-sampler data exists for it; its
-% delta (+0.15) is vs baseline@1.0M (Des 0.044), NOT baseline@700K. Single-seed
-% like the rest of the table. ODE Des: L9-MPNN@1.0M=0.196, baseline@1.0M=0.044.
+% Table -- ODE (deterministic) floor at 700K: designability, FPSD and designable
+% diversity for all variants vs baseline. \input{} from the Ch6 Discussion
+% (dataset-interaction beat). Reverted 1.0M -> 700K (2026-06-10): the 1.0M ODE
+% sweep is too sparse (AFDB has only 2 variants) to carry the table; 700K is
+% complete on both datasets. ABSOLUTE values; REPA cells coloured against the
+% SAME-step baseline -- green = better (Des higher / FPSD lower), red = worse.
+% Designable pwTM (mean pairwise TM over the designable subset; HIGHER = more
+% structurally concentrated) is the designability--diversity trade-off axis under
+% investigation, so it is left uncoloured. Sources (ODE / vf, sampler_tag=ode):
+% FPSD = _res_{PDB,AFDB}_FID, Des = _res_designability_rate, pwTM =
+% _res_diversity_pairwise_tm_mean from the n256 PDB/AFDB sampler-ablation jsonls.
+% Single-seed: FPSD at one seed on n=256 is noisy, and pwTM over tiny designable
+% counts is unreliable. $\dagger$ PDB L9-MPNN has no 700K ODE data, so it is shown
+% at 1.0M with its colour vs baseline@1.0M (Des 0.04, FPSD 307, pwTM 0.15).
+% $\ast$ AFDB L4-random and L4-MPNN ODE evals are not available.
 \begin{table}[tbp]
 \centering
 \small
-\setlength{\tabcolsep}{9pt}
-\begin{tabular}{lc}
+\setlength{\tabcolsep}{8pt}
+\begin{tabular}{lccc}
 \toprule
-\textbf{Variant (700K)} & \textbf{ODE designability} \\
+\textbf{Variant (700K, ODE)} & \textbf{Des}\,$\uparrow$ & \textbf{FPSD}\,$\downarrow$ & \textbf{des.\ pwTM} \\
 \midrule
-\multicolumn{2}{l}{\textit{PDB-trained \quad (baseline = absolute; REPA = $\Delta$ vs.\ baseline)}}\\
-Baseline       & 0.04 \\
-REPA L4-random & $-$0.02 \\
-REPA L4-GearNet     & \gd{+0.16} \\
-REPA L9-GearNet     & \gd{+0.04} \\
-REPA L4-MPNN   & \gd{+0.12} \\
-REPA L9-MPNN\,$^{\dagger}$ & \gd{+0.15} \\
+\multicolumn{4}{l}{\textit{PDB-trained}}\\
+Baseline           & 0.04 & 353 & 0.26 \\
+REPA L4-random     & \rd{0.02} & \rd{458} & 0.09 \\
+REPA L4-GearNet    & \gd{0.20} & \rd{413} & 0.34 \\
+REPA L9-GearNet    & \gd{0.08} & \gd{315} & 0.37 \\
+REPA L4-MPNN       & \gd{0.16} & \gd{279} & 0.33 \\
+REPA L9-MPNN\,$^{\dagger}$ & \gd{0.20} & \gd{295} & 0.42 \\
 \midrule
-\multicolumn{2}{l}{\textit{AFDB-trained}}\\
-Baseline       & 0.12 \\
-REPA L4-GearNet     & \gd{+0.23} \\
-REPA L9-GearNet     & \gd{+0.21} \\
-REPA L9-MPNN   & \gd{+0.10} \\
+\multicolumn{4}{l}{\textit{AFDB-trained}}\\
+Baseline           & 0.12 & 220 & 0.20 \\
+REPA L4-random\,$^{\ast}$ & --- & --- & --- \\
+REPA L4-GearNet    & \gd{0.35} & \gd{148} & 0.19 \\
+REPA L9-GearNet    & \gd{0.33} & \gd{147} & 0.19 \\
+REPA L4-MPNN\,$^{\ast}$ & --- & --- & --- \\
+REPA L9-MPNN       & \gd{0.22} & \gd{160} & 0.15 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Every REPA-learned model yields more designable proteins than baseline when sampled deterministically.} The ODE limit samples the trunk's learned distribution directly, which suggests REPA learns a better underlying distribution rather than merely benefiting from sampler noise. (ODE designability at step 700K; $|\Delta|{<}0.025$ uncoloured. Single-seed. $^{\dagger}$PDB L9-MPNN has no 700K ODE data, so it is shown at 1.0M, with its $\Delta$ taken against the baseline at 1.0M.)}
+\caption{\textbf{Under deterministic (ODE) sampling, REPA lifts the floor above the baseline --- cleanly and durably on AFDB, mixed on PDB.} Sampling the trunk's learned distribution directly, with no sampler noise, isolates what the model has learned. On AFDB every trained encoder raises both designability and distribution match (FPSD), a lift that holds across training. On PDB the trained encoders raise designability at 700K, but the distribution-match gain is mixed and the lift regresses by 1.0M. Designable pwTM (mean pairwise TM over the designable subset; higher $=$ more concentrated) is shown to track the designability--diversity trade-off. (Absolute values at step 700K; REPA cells coloured against the same-step baseline --- green better, red worse --- for Des and FPSD only. Single-seed. $^{\dagger}$PDB L9-MPNN has no 700K ODE data, shown at 1.0M. $^{\ast}$AFDB L4-random and L4-MPNN ODE evals not available.)}
 \label{tab:proteina-ode}
 \end{table}
