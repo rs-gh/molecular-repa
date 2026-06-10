@@ -12,7 +12,7 @@ Each panel:
   - "Up-right wins": SS-JSD axis is inverted so right = lower JSD = closer to
     reference. Repa-dominates iff red front lies above-right of blue.
 
-Output: ``figures/paper/n256_convergence/pareto_des_div_nov.{png,pdf}``
+Output: ``figures/paper/n256_convergence/pareto_des_div_nov.png``
 """
 
 from __future__ import annotations

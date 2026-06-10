@@ -312,6 +312,30 @@
     "n_lengths": 4
   },
   {
+    "case": "pdb_REPA_L4_random_700K",
+    "bin": "\u03b2<10",
+    "n_clusters_total": 44,
+    "pwtm_weighted": 0.15239484481591878,
+    "n_samples": 45,
+    "n_lengths": 7
+  },
+  {
+    "case": "pdb_REPA_L4_random_700K",
+    "bin": "10-25",
+    "n_clusters_total": 21,
+    "pwtm_weighted": 0.189276465057348,
+    "n_samples": 21,
+    "n_lengths": 7
+  },
+  {
+    "case": "pdb_REPA_L4_random_700K",
+    "bin": "\u03b2\u226525",
+    "n_clusters_total": 9,
+    "pwtm_weighted": 0.32975572156906124,
+    "n_samples": 10,
+    "n_lengths": 7
+  },
+  {
     "case": "afdb_baseline_700K",
     "bin": "\u03b2<10",
     "n_clusters_total": 62,

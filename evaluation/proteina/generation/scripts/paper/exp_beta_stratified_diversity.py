@@ -65,6 +65,14 @@ CASES = [
     ("pdb_REPA_L4_MPNN_400K", "repa_mpnn_l4_256_per_residue_step400k_step_400000"),
     ("pdb_REPA_L4_MPNN_700K", "repa_mpnn_l4_256_per_residue_step700k_step_700000"),
     ("pdb_REPA_L4_MPNN_1000K", "repa_mpnn_l4_256_per_residue_step1000k_step_1000000"),
+    # random-encoder control (added 2026-06-09 for full-variant-grid concentration
+    # table 6.8). Lets us say the β-concentration is REPA-wide vs variant-specific.
+    # 700k sde_n0.45 generations exist in eval_output (ss_cache/ss_fractions.npz +
+    # designability_index.csv present); post-processing only, no GPU.
+    (
+        "pdb_REPA_L4_random_700K",
+        "repa_l4_256_per_residue_random_bs24_2gpu_step700k_step_700000",
+    ),
     # --- AFDB ---
     ("afdb_baseline_700K", "baseline_afdb_256_step700k_step_700000"),
     ("afdb_baseline_1.0M", "baseline_afdb_256_step1000k_step_1000000"),

@@ -6,7 +6,7 @@ binned-mean trend line per group makes "REPA below baseline at this
 designability" readable at a glance — if the red trend lies under blue across
 all bins, REPA strictly improves SS preservation conditional on designability.
 
-Output: ``figures/paper/n256_convergence/ssjsd_vs_des.{png,pdf}``
+Output: ``figures/paper/n256_convergence/ssjsd_vs_des.png``
 """
 
 from __future__ import annotations

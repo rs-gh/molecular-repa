@@ -10,7 +10,7 @@ secondary-structure preference drift over training. Restricting to the
 designable subset isolates "what kind of proteins are we actually getting"
 from noisy/unfolded outputs.
 
-Output: ``figures/paper/n256_convergence/helix_sheet_ratio.{png,pdf}``
+Output: ``figures/paper/n256_convergence/helix_sheet_ratio.png``
 """
 
 from __future__ import annotations

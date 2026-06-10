@@ -640,3 +640,19 @@ n256_convergence_pdb_ext7:
   runs: "repa_l4_256_per_residue_random_bs24_2gpu_step900k,repa_l4_256_per_residue_random_bs24_2gpu_step1000k,repa_l4_256_per_residue_random_bs24_2gpu_step1100k,repa_l4_256_per_residue_random_bs24_2gpu_step1200k,baseline_256_bs24_2gpu_step1900k,baseline_256_bs24_2gpu_step2000k,baseline_256_bs24_2gpu_step2100k,baseline_256_bs24_2gpu_step2200k,baseline_256_bs24_2gpu_step2300k,baseline_256_bs24_2gpu_step2400k,repa_mpnn_l9_256_per_residue_step1800k,repa_mpnn_l9_256_per_residue_step1900k,repa_mpnn_l9_256_per_residue_step2000k,repa_l9_256_per_residue_bs24_2gpu_step1500k,repa_l9_256_per_residue_bs24_2gpu_step1600k"
   output_dir: results/paper/n256_convergence_pdb
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# 2026-06-10: multi-seed backfill for the PDB L4-random control past 800k. The
+# 900k-1200k anchors were swept single-seed (rep_idx=0, seed=42, tag=None) in
+# ext7; this fills reps 1 & 2 (seeds 1042/2042, tag=sde_n0.45) so Fig 6.1's grey
+# control gets a min/max band past 800k. Rep0/seed42 already exists — do NOT
+# re-run it. Same output_dir as base so rows merge into the paper jsonl.
+#   python run_sweep.py --config n256_convergence_pdb_ext8 --dry_run
+#   EVAL_SEED=1042 sbatch --array=0-3 run_sweep.sh --config n256_convergence_pdb_ext8 \
+#     --sampling_mode sc --sc_scale_noise 0.45 --rep_idx 1
+#   EVAL_SEED=2042 sbatch --array=0-3 run_sweep.sh --config n256_convergence_pdb_ext8 \
+#     --sampling_mode sc --sc_scale_noise 0.45 --rep_idx 2
+n256_convergence_pdb_ext8:
+  <<: *paper_defaults
+  runs: "repa_l4_256_per_residue_random_bs24_2gpu_step900k,repa_l4_256_per_residue_random_bs24_2gpu_step1000k,repa_l4_256_per_residue_random_bs24_2gpu_step1100k,repa_l4_256_per_residue_random_bs24_2gpu_step1200k"
+  output_dir: results/paper/n256_convergence_pdb
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
