@@ -44,13 +44,13 @@ def label(fam):
     if fam.startswith("baseline"):
         return "baseline"
     if "mpnn_l9" in fam:
-        return "MPNN-L9"
+        return "L9-MPNN"
     if "mpnn_l4" in fam:
-        return "MPNN-L4"
+        return "L4-MPNN"
     if fam in ("repa_l9", "repa_l9_afdb"):
-        return "GearNet-L9"
+        return "L9-GearNet"
     if fam in ("repa_l4", "repa_l4_afdb"):
-        return "GearNet-L4"
+        return "L4-GearNet"
     return None
 
 
@@ -94,7 +94,7 @@ def colour(txt, good):
     return f"\\gd{{{txt}}}" if good else f"\\rd{{{txt}}}"
 
 
-VARIANT_ORDER = ["GearNet-L4", "GearNet-L9", "MPNN-L4", "MPNN-L9", "Random control"]
+VARIANT_ORDER = ["L4-GearNet", "L9-GearNet", "L4-MPNN", "L9-MPNN", "Random control"]
 
 
 def cell(d, metric, lower, vfmt):

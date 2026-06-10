@@ -14,7 +14,7 @@ Inputs (what the trunk sees) & per-atom token index $+$ atom-type one-hot $+$ no
 \multicolumn{2}{l}{\textit{REPA alignment}} \\
 Encoder targets        & CheMeleon (2D, 2048-d) $\cdot$ MACE (3D, 192-d) \\
 Injection depth $\ell$ & final (last) layer \\
-Combination mode       & additive (alignment as plain regulariser) \\
+Combination mode       & additive $\mathcal{L}_{\text{gen}}{+}\lambda\mathcal{L}_{\text{REPA}}$ (default) $\cdot$ tradeoff (convex) $(1{-}\lambda)\mathcal{L}_{\text{gen}}{+}\lambda\mathcal{L}_{\text{REPA}}$ \\
 Projector              & single shared 3-layer MLP \\
 Similarity metric $\operatorname{sim}$ & cosine similarity \\
 Averaging mode         & per atom \\
@@ -23,6 +23,7 @@ Alignment weight $\lambda$ & 0.8 \\
 \multicolumn{2}{l}{\textit{Training \& sampling}} \\
 Learning rate          & $2\times10^{-3}$ \\
 Batch size             & 256 \\
+Weight decay           & none \\
 EMA decay              & 0.999 \\
 Sampler                & SDE (Langevin) interpolant, 100 integration steps \\
 \quad Prior noise scale & $1.0$ (unit Gaussian) \\
@@ -30,6 +31,6 @@ Sampler                & SDE (Langevin) interpolant, 100 integration steps \\
 \quad White-noise scale & $0.01$ \\
 \bottomrule
 \end{tabular}
-\caption{Model and training configuration. This chapter presents two encoder targets.}
+\caption{Model and training configuration. This chapter presents two encoder targets; the tradeoff combination mode is examined in \S\ref{sec:tabasco-diagnosis}.}
 \label{tab:tabasco-setup}
 \end{table}

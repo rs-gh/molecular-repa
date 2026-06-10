@@ -24,7 +24,7 @@ _REP = f"{ROOT}/evaluation/proteina/representation/results/paper"
 # sweep. IF/dihedral are blinded; CATH-A is read on the same set (no separate
 # cleantrain-AFDB sweep exists), which we note in the caption.
 # n1000 rows live in the main dir (early ckpts) + the _n1000_compare dir (tail
-# ckpts re-evaluated 2026-06-02: GN-L9 700-1000K, GN-L4 1300K, baseline
+# ckpts re-evaluated 2026-06-02: L9-GearNet 700-1000K, L4-GearNet 1300K, baseline
 # 1700-1800K, L4-random 100-500K). Union both; (run,step) sets are disjoint.
 REP_CSVS = [
     f"{_REP}/n256_xclean_pdb_afdb/pretrained_sweep_results.csv",
@@ -118,7 +118,11 @@ REP = [
     ("CATH-A", best_layer("cath", "cath_accuracy", True, cath_level="A"), True),
 ]
 GEN_M = [
-    ("FPSD", gen_metric("_res_AFDB_FID"), False),  # display label is FPSD; data key unchanged
+    (
+        "FPSD",
+        gen_metric("_res_AFDB_FID"),
+        False,
+    ),  # display label is FPSD; data key unchanged
     ("Designability", gen_metric("_res_designability_rate"), True),
 ]
 

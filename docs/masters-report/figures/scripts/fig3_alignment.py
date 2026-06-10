@@ -134,7 +134,7 @@ setup_axes(
 ax.set_xticks(list(range(0, 10)))
 legend(ax, loc="upper left")
 
-# RIGHT — Platonic: REPA-L9-GN to GearNet vs MPNN vs ESM2
+# RIGHT — Platonic: REPA-L9-GearNet to GearNet vs MPNN vs ESM2
 ax = axes[1]
 b_pts = by_layer("baseline", "gearnet")
 if b_pts:
@@ -158,10 +158,12 @@ for target, label, color, marker in TARGETS:
     pts = by_layer("repa_gearnet_l9", target)
     if not pts:
         continue
-    plot_curve(ax, pts, color, marker, f"REPA L9-GN $\\rightarrow$ {label}", 10, ms=6)
+    plot_curve(
+        ax, pts, color, marker, f"REPA L9-GearNet $\\rightarrow$ {label}", 10, ms=6
+    )
 setup_axes(
     ax,
-    title="(b) REPA-L9-GN propagates alignment off-diagonally (Platonic) $\\uparrow$",
+    title="(b) REPA-L9-GearNet propagates alignment off-diagonally (Platonic) $\\uparrow$",
     xlabel="Trunk layer index",
 )
 ax.set_xticks(list(range(0, 10)))

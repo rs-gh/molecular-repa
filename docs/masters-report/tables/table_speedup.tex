@@ -7,35 +7,35 @@
 \textbf{Variant} (last ckpt) & \textbf{Accel.} @400K (vs base) & \textbf{Long run} (abs.\ best) \\
 \midrule
 \multicolumn{3}{l}{\textit{AFDB FPSD $\downarrow$}} \\
-baseline (to 1.7M) & 431 (@400K) & 386 (@1.3M) \\
-GearNet-L4 (1.2M) & \gd{$+24\%$ (328)} & \gd{282 (@1.2M)} \\
-GearNet-L9 (900K) & \gd{$+28\%$ (313)} & \gd{313 (@400K)} \\
-MPNN-L4 (1.1M) & \rd{$-10\%$ (477)} & \rd{416 (@1.0M)} \\
-MPNN-L9 (1.5M) & \gd{$+18\%$ (352)} & \gd{352 (@400K)} \\
-Random control (500K) & \gd{$+18\%$ (353)} & \gd{353 (@400K)} \\
+baseline (to 1.8M) & 431 (@400K) & 386 (@1.3M) \\
+L4-GearNet (1.3M) & \gd{$+24\%$ (328)} & \gd{282 (@1.2M)} \\
+L9-GearNet (900K) & \gd{$+28\%$ (313)} & \gd{313 (@400K)} \\
+L4-MPNN (1.1M) & \rd{$-10\%$ (477)} & \rd{416 (@1.0M)} \\
+L9-MPNN (1.5M) & \gd{$+18\%$ (352)} & \gd{352 (@400K)} \\
+Random control (500K) & \gd{$+16\%$ (361)} & \gd{361 (@400K)} \\
 \midrule
 \multicolumn{3}{l}{\textit{AFDB designability $\uparrow$}} \\
-baseline (to 1.7M) & 0.75 (@400K) & 0.75 (@400K) \\
-GearNet-L4 (1.2M) & \gd{$+4\%$ (0.78)} & \gd{0.78 (@400K)} \\
-GearNet-L9 (900K) & \rd{$-4\%$ (0.72)} & \gd{0.77 (@800K)} \\
-MPNN-L4 (1.1M) & \rd{$-9\%$ (0.68)} & \rd{0.69 (@700K)} \\
-MPNN-L9 (1.5M) & \rd{$-6\%$ (0.71)} & \gd{0.77 (@700K)} \\
-Random control (500K) & \gd{$+9\%$ (0.82)} & \gd{0.82 (@400K)} \\
+baseline (to 1.8M) & 0.75 (@400K) & 0.75 (@400K) \\
+L4-GearNet (1.3M) & \gd{$+4\%$ (0.78)} & \gd{0.78 (@400K)} \\
+L9-GearNet (900K) & \rd{$-4\%$ (0.72)} & \gd{0.77 (@800K)} \\
+L4-MPNN (1.1M) & \rd{$-9\%$ (0.68)} & \rd{0.69 (@700K)} \\
+L9-MPNN (1.5M) & \rd{$-6\%$ (0.71)} & \gd{0.77 (@700K)} \\
+Random control (500K) & \gd{$+5\%$ (0.79)} & \gd{0.85 (@500K)} \\
 \midrule
 \multicolumn{3}{l}{\textit{PDB FPSD $\downarrow$}} \\
-baseline (to 2.4M) & 472 (@400K) & 288 (@1.6M) \\
-GearNet-L4 (1.0M) & \gd{$+7\%$ (440)} & \rd{432 (@1.0M)} \\
-GearNet-L9 (1.6M) & \gd{$+28\%$ (341)} & \rd{319 (@700K)} \\
-MPNN-L4 (1.6M) & \rd{$-8\%$ (512)} & \rd{329 (@1.6M)} \\
-MPNN-L9 (2.0M) & \gd{$+13\%$ (410)} & \rd{297 (@1.6M)} \\
+baseline (to 2.4M) & 472 (@400K) & 288 (@1.8M) \\
+L4-GearNet (1.0M) & \gd{$+7\%$ (440)} & \rd{432 (@1.0M)} \\
+L9-GearNet (1.6M) & \gd{$+28\%$ (341)} & \rd{319 (@700K)} \\
+L4-MPNN (1.6M) & \rd{$-8\%$ (512)} & \rd{329 (@1.6M)} \\
+L9-MPNN (2.0M) & \gd{$+13\%$ (410)} & \rd{297 (@1.6M)} \\
 Random control (1.2M) & \rd{$-7\%$ (506)} & \rd{351 (@1.1M)} \\
 \midrule
 \multicolumn{3}{l}{\textit{PDB designability $\uparrow$}} \\
 baseline (to 2.4M) & 0.26 (@400K) & 0.67 (@1.6M) \\
-GearNet-L4 (1.0M) & \gd{$+98\%$ (0.52)} & \gd{0.70 (@700K)} \\
-GearNet-L9 (1.6M) & \gd{$+97\%$ (0.52)} & \rd{0.63 (@800K)} \\
-MPNN-L4 (1.6M) & \gd{$+124\%$ (0.59)} & \gd{0.71 (@1.6M)} \\
-MPNN-L9 (2.0M) & \gd{$+149\%$ (0.66)} & \gd{0.82 (@1.8M)} \\
+L4-GearNet (1.0M) & \gd{$+98\%$ (0.52)} & \gd{0.70 (@700K)} \\
+L9-GearNet (1.6M) & \gd{$+97\%$ (0.52)} & \rd{0.63 (@800K)} \\
+L4-MPNN (1.6M) & \gd{$+124\%$ (0.59)} & \gd{0.71 (@1.6M)} \\
+L9-MPNN (2.0M) & \gd{$+149\%$ (0.66)} & \gd{0.82 (@1.8M)} \\
 Random control (1.2M) & \gd{$+48\%$ (0.39)} & \rd{0.46 (@900K)} \\
 \bottomrule
 \end{tabular}

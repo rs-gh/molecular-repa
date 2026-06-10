@@ -6,8 +6,8 @@
 % models and steps -- unlike #clusters, which scales with the designable count.
 % The contrast that matters: REPA's WHOLE-set pwTM ~ baseline (not concentrated),
 % but its DESIGNABLE-subset pwTM is HIGHER (more concentrated) at almost every
-% step -> the concentration is subset-specific. PDB, n<=256, GearNet-L9 and
-% ProteinMPNN-L9 (last-layer) vs baseline; seed-aggregated where >1 seed exists.
+% step -> the concentration is subset-specific. PDB, n<=256, L9-GearNet and
+% L9-MPNN (last-layer) vs baseline; seed-aggregated where >1 seed exists.
 % No \multirow (multirow.sty unavailable in this TeX install): step is a row,
 % whole/designable are paired columns under each model.
 \begin{table}[tbp]
@@ -17,8 +17,8 @@
 \begin{tabular}{lcccccc}
 \toprule
 & \multicolumn{2}{c}{\textbf{Baseline}}
-& \multicolumn{2}{c}{\textbf{REPA GN-L9}}
-& \multicolumn{2}{c}{\textbf{REPA MPNN-L9}} \\
+& \multicolumn{2}{c}{\textbf{REPA L9-GearNet}}
+& \multicolumn{2}{c}{\textbf{REPA L9-MPNN}} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
 \textbf{Step} & whole & des. & whole & des. & whole & des. \\
 \midrule

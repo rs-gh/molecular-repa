@@ -9,7 +9,7 @@ the only place AFDB probes exist at n_train=1000.
 
 ALL variants with n1000 data in the window are included automatically, so the
 table grows as the n1000 probe eval catches up on later AFDB checkpoints. With
-WINDOW=(700,1200) the GearNet-L9 and random-control rows are absent: GN-L9's
+WINDOW=(700,1200) the L9-GearNet and random-control rows are absent: L9-GearNet's
 n1000 probes currently stop at 600K (700-1000K exist only at n5000) and the
 random control trained only to 500K.
 
@@ -25,7 +25,7 @@ from statistics import mean
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
 _REP = f"{ROOT}/evaluation/proteina/representation/results/paper"
 # n1000 rows live in the main dir (early ckpts) + the _n1000_compare dir (tail
-# ckpts re-evaluated 2026-06-02: GN-L9 700-1000K, GN-L4 1300K, baseline
+# ckpts re-evaluated 2026-06-02: L9-GearNet 700-1000K, L4-GearNet 1300K, baseline
 # 1700-1800K, L4-random 100-500K). Union both; (run,step) sets are disjoint.
 REP_CSVS = [
     f"{_REP}/n256_xclean_pdb_afdb/pretrained_sweep_results.csv",
@@ -48,8 +48,8 @@ _STEP = re.compile(r"_step(\d+)k$")
 # canonical row order + display labels (baseline first); auto-skipped if no data
 VARIANTS = [
     ("baseline_afdb_256", "Baseline"),
-    ("repa_l4_afdb_256", "REPA L4-GN"),
-    ("repa_l9_afdb_256", "REPA L9-GN"),
+    ("repa_l4_afdb_256", "REPA L4-GearNet"),
+    ("repa_l9_afdb_256", "REPA L9-GearNet"),
     ("repa_l4_afdb_256_random", "REPA L4-random"),
     ("repa_mpnn_l4_afdb_256", "REPA L4-MPNN"),
     ("repa_mpnn_l9_afdb_256", "REPA L9-MPNN"),

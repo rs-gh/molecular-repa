@@ -1,7 +1,7 @@
 """Generate tables/table_rep_quality_full.tex --- the FULL six-variant PDB
 representation-quality ablation (Appendix). Extends the four-row main-text
 Table~\\ref{tab:proteina-rep} with the remaining encoder x depth combinations
-(L4-GN, L4-MPNN), so a reader following the Ch6 "remaining combinations" and
+(L4-GearNet, L4-MPNN), so a reader following the Ch6 "remaining combinations" and
 "trained-L4 beats random-L4" pointers lands on a complete table.
 
 Same recipe as the AFDB sibling (make_rep_quality_afdb.py) and the main PDB
@@ -28,11 +28,11 @@ _REP = f"{ROOT}/evaluation/proteina/representation/results/paper"
 # from the cleantrain set. Union the main dir with the _n1000_compare tail dir.
 CSVS_XCLEAN = [
     f"{_REP}/n256_xclean_afdb_pdb/pretrained_sweep_results.csv",
-    f"{_REP}/_n1000_compare/n256_xclean_afdb_pdb/pretrained_sweep_results.csv",
+    f"{_REP}/_n1000_compare/n256_xclean_afdb/pretrained_sweep_results.csv",
 ]
 CSVS_CLEANTRAIN = [
     f"{_REP}/n256_convergence_cleantrain_pdb/pretrained_sweep_results.csv",
-    f"{_REP}/_n1000_compare/n256_convergence_cleantrain_pdb/pretrained_sweep_results.csv",
+    f"{_REP}/_n1000_compare/n256_cleantrain_pdb/pretrained_sweep_results.csv",
 ]
 
 OUT = f"{ROOT}/docs/masters-report/tables/table_rep_quality_full.tex"
@@ -44,9 +44,9 @@ _STEP = re.compile(r"_step(\d+)k$")
 VARIANTS = [
     ("baseline_256_bs24_2gpu", "Baseline"),
     ("repa_l4_256_per_residue_random_bs24_2gpu", "REPA L4-random"),
-    ("repa_l4_256_per_residue_bs24_2gpu", "REPA L4-GN"),
+    ("repa_l4_256_per_residue_bs24_2gpu", "REPA L4-GearNet"),
     ("repa_mpnn_l4_256_per_residue", "REPA L4-MPNN"),
-    ("repa_l9_256_per_residue_bs24_2gpu", "REPA L9-GN"),
+    ("repa_l9_256_per_residue_bs24_2gpu", "REPA L9-GearNet"),
     ("repa_mpnn_l9_256_per_residue", "REPA L9-MPNN"),
 ]
 # (label, probe_kind, col, higher_better, cath_level, csv_list)
@@ -170,7 +170,7 @@ L.append(
     "The remaining encoder$\\times$depth combinations behind the four-row main-text "
     "Table~\\ref{tab:proteina-rep}. The encoder-routed pattern holds throughout: ProteinMPNN "
     "wins the per-residue probes (IF, dihedral), GearNet wins the fold probes (CATH C/A/T). "
-    "At matched layer~4, the trained GearNet (L4-GN) beats the random control (L4-random) on "
+    "At matched layer~4, the trained GearNet (L4-GearNet) beats the random control (L4-random) on "
     "every probe, so the learned-versus-random gap is not an artefact of injection depth. "
     "(Baseline absolute; REPA rows are $\\Delta$-from-baseline. Best-layer linear probe, "
     "$n_\\text{train}{=}1000$, seed 42, mean over the "

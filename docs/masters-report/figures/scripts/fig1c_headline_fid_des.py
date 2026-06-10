@@ -30,7 +30,6 @@ from style import (
     classify_family,
     setup_axes,
     plot_trajectory,
-    legend,
     log_step_axis,
     use_report_style,
 )
@@ -108,13 +107,11 @@ def fid_panel(ax, tj, fams, title, ylabel):
     ax.yaxis.set_major_locator(mticker.FixedLocator([250, 300, 400, 500, 700, 1000]))
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y, _: f"{int(y)}"))
     ax.yaxis.set_minor_locator(mticker.NullLocator())
-    legend(ax, loc="upper right")
 
 
 def des_panel(ax, tj, fams, title, ylabel):
     draw(ax, tj, fams, title, ylabel)
     ax.set_ylim(0.0, 1.0)
-    legend(ax, loc="lower right")
 
 
 pdb = load(PDB_JSONL)
@@ -154,6 +151,26 @@ des_panel(
     ylabel="Designability rate",
 )
 
-plt.tight_layout()
+# One shared legend below the grid (dedup by label across all four panels).
+handles, labels = [], []
+seen = set()
+for ax in axes.flat:
+    for h, lbl in zip(*ax.get_legend_handles_labels()):
+        if lbl not in seen:
+            seen.add(lbl)
+            handles.append(h)
+            labels.append(lbl)
+fig.legend(
+    handles,
+    labels,
+    loc="lower center",
+    ncol=len(labels),
+    fontsize=9,
+    frameon=True,
+    framealpha=0.85,
+    bbox_to_anchor=(0.5, -0.02),
+)
+
+fig.tight_layout(rect=(0, 0.04, 1, 1))
 plt.savefig(OUT, dpi=150, bbox_inches="tight")
 print(f"Saved {OUT}")

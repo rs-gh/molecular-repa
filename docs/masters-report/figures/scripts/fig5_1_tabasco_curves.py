@@ -1,17 +1,17 @@
 """Fig 5.1 -- Tabasco validation curves: no early separation under REPA.
 
 Three structural-quality axes (the columns of Table 5.2's quality block),
-plotted per training epoch for the baseline and the two additive REPA
+plotted against training step for the baseline and the two additive REPA
 variants the chapter discusses:
 
   Validity            -- fraction of generated molecules that are valid
   Connectivity        -- fraction fully connected
   Atom-type dist.     -- agreement of the atom-type histogram with data
 
-The point is that all three curves pile together from the first few epochs:
-REPA neither accelerates nor improves the saturated axes. We crop to the common
-epoch range (every series reaches epoch 14), so the comparison is strictly
-apples-to-apples. FCD -- the one axis with headroom -- is deliberately ABSENT:
+The point is that all three curves pile together from the first few thousand
+steps: REPA neither accelerates nor improves the saturated axes. We crop to the
+common range every series reaches (epoch 14 = step 68,684; identical across runs
+since the batch size is constant), so the comparison is strictly apples-to-apples. FCD -- the one axis with headroom -- is deliberately ABSENT:
 it is not logged over training (only the final-checkpoint value in Table 5.2
 exists), which is exactly the caveat the prose makes.
 
@@ -90,8 +90,11 @@ def main():
 
     for ax, (key, title) in zip(axes, PANELS):
         for csv_model, label, colour, marker in SERIES:
+            # Crop by EPOCH (the common range every series reaches) but plot
+            # against the true logged optimiser step, for consistency with the
+            # step-based axes of Ch6 and the speed-up framing of S5.3.
             rows = [r for r in by.get(csv_model, []) if int(r["epoch"]) <= MAX_EPOCH]
-            xs = [int(r["epoch"]) for r in rows]
+            xs = [int(r["trainer/global_step"]) for r in rows]
             ys = [float(r[key]) for r in rows]
             ax.plot(
                 xs,
@@ -105,11 +108,16 @@ def main():
                 alpha=0.95,
             )
         setup_axes(
-            ax, title=title, xlabel="Epoch", ylabel="$\\uparrow$ higher is better"
+            ax,
+            title=title,
+            xlabel="Training step",
+            ylabel="$\\uparrow$ higher is better",
         )
         ax.set_xlim(left=0)
-        # Epoch is integer-valued; force whole-number ticks (no 2.5, 7.5, ...).
-        ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+        # Thousands-of-steps ticks ("20K", "40K", ...) to match Ch6's style.
+        ax.xaxis.set_major_formatter(
+            mticker.FuncFormatter(lambda x, _: "0" if x == 0 else f"{x / 1000:.0f}K")
+        )
 
     # One shared legend below the row.
     handles, labels = axes[0].get_legend_handles_labels()

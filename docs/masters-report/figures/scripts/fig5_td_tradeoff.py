@@ -145,7 +145,7 @@ plot_panel(
     axes[1],
     "AFDB",
     ["baseline", "L4_GN", "L9_MPNN"],
-    title="AFDB: MPNN-L9 stays on diagonal (no concentration)",
+    title="AFDB: L9-MPNN stays on diagonal (no concentration)",
 )
 
 plt.tight_layout()

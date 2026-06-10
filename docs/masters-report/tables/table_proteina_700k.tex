@@ -26,19 +26,19 @@
 \multicolumn{10}{l}{\textit{PDB-trained, $n{\le}256$, 700K, 3 seeds; FPSD is FPSD-PDB (in-distribution).}}\\
 Baseline       & 0.46 & 437   & 1.11 & 5.48 & 77   & 0.27 & 0.35 & 0.40 & 0.22 \\
 REPA L4-random & \rd{$-$0.08} & \rd{+34}  & \gd{$-$0.55} & \gd{+0.05} & \rd{$-$23} & \gd{$-$0.10} & \gd{$-$0.13} & \gd{$-$0.01} & \rd{$-$0.11} \\
-REPA L4-GN     & \gd{+0.24} & \rd{+71}  & \gd{$-$0.38} & \gd{+1.63} & \gd{+1}  & \rd{+0.11} & \gd{$-$0.21} & \gd{$-$0.12} & +0.00 \\
-REPA L9-GN     & \gd{+0.14} & \gd{$-$118} & \gd{$-$0.57} & \gd{+2.31} & \gd{+27} & \gd{$-$0.02} & \gd{$-$0.19} & \gd{$-$0.10} & \rd{$-$0.04} \\
+REPA L4-GearNet     & \gd{+0.24} & \rd{+71}  & \gd{$-$0.38} & \gd{+1.63} & \gd{+1}  & \rd{+0.11} & \gd{$-$0.21} & \gd{$-$0.12} & +0.00 \\
+REPA L9-GearNet     & \gd{+0.14} & \gd{$-$118} & \gd{$-$0.57} & \gd{+2.31} & \gd{+27} & \gd{$-$0.02} & \gd{$-$0.19} & \gd{$-$0.10} & \rd{$-$0.04} \\
 REPA L4-MPNN   & \gd{+0.18} & \gd{$-$88}  & \gd{$-$0.13} & \gd{+0.48} & \rd{$-$4}  & \rd{+0.08} & \gd{$-$0.16} & \gd{$-$0.14} & \gd{+0.01} \\
 REPA L9-MPNN   & \gd{+0.05} & \gd{$-$19}  & \gd{$-$0.32} & \gd{+0.37} & \gd{+33} & \gd{$-$0.01} & \gd{$-$0.14} & \gd{$-$0.11} & \rd{$-$0.07} \\
 \midrule
-\multicolumn{10}{l}{\textit{AFDB-trained, $n{\le}256$, 700K, 2--3 seeds (MPNN-L4: 1 seed); FPSD is FPSD-AFDB.}}\\
+\multicolumn{10}{l}{\textit{AFDB-trained, $n{\le}256$, 700K, 2--3 seeds (L4-MPNN: 1 seed); FPSD is FPSD-AFDB.}}\\
 Baseline       & 0.72 & 494 & 2.45 & 4.59 & 128  & 0.22 & 0.15 & 0.16 & 0.15 \\
-REPA L4-GN     & \gd{+0.05} & \gd{$-$195} & \gd{$-$1.56} & \gd{+2.27} & \rd{$-$35} & \rd{+0.04} & \gd{$-$0.11} & \gd{$-$0.07} & \rd{$-$0.02} \\
-REPA L9-GN     & \gd{+0.01} & \gd{$-$172} & \gd{$-$1.29} & \gd{+2.76} & \rd{$-$50} & \rd{+0.11} & \gd{$-$0.12} & \gd{$-$0.06} & \gd{+0.04} \\
+REPA L4-GearNet     & \gd{+0.05} & \gd{$-$195} & \gd{$-$1.56} & \gd{+2.27} & \rd{$-$35} & \rd{+0.04} & \gd{$-$0.11} & \gd{$-$0.07} & \rd{$-$0.02} \\
+REPA L9-GearNet     & \gd{+0.01} & \gd{$-$172} & \gd{$-$1.29} & \gd{+2.76} & \rd{$-$50} & \rd{+0.11} & \gd{$-$0.12} & \gd{$-$0.06} & \gd{+0.04} \\
 REPA L4-MPNN   & \rd{$-$0.03} & \gd{$-$22} & \gd{$-$0.39} & \gd{+0.03} & \rd{$-$1}  & \gd{$-$0.07} & \gd{$-$0.02} & \rd{+0.05} & \rd{$-$0.01} \\
 REPA L9-MPNN   & \gd{+0.05} & \gd{$-$139} & \gd{$-$0.93} & \gd{+0.31} & \gd{+21} & \gd{$-$0.03} & \rd{+0.01} & \rd{+0.02} & \rd{$-$0.04} \\
 \bottomrule
 \end{tabular}}
-\caption{\textbf{Across the metric suite, almost every REPA variant improves whole-set fidelity and diversity over baseline.} The effect is broad enough that even the random-weights control matches the reference distribution better. However, only the learned encoders also lift per-sample quality (FPSD and designability). (Step 700K; header arrows mark the good direction; whole-set diversity is read from fS-A, designable diversity from \#Clust and pwTM.)}
+\caption{\textbf{Across the metric suite, almost every REPA variant improves whole-set distribution match and diversity over baseline.} The effect is broad enough that even the random-weights control matches the reference distribution better. However, only the learned encoders also lift per-sample quality (FPSD and designability). (Step 700K; header arrows mark the good direction; whole-set diversity is read from fS-A, designable diversity from \#Clust and pwTM.)}
 \label{tab:proteina-700k}
 \end{table}

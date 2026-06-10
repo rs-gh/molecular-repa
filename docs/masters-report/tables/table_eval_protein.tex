@@ -18,11 +18,11 @@ CKNNA\,$\uparrow$~\cite{PlatonicRep} & Per-residue mutual-nearest-neighbour kern
 \multicolumn{4}{l}{\textbf{Generation quality}} \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Quality}} \\
-FPSD\,$\downarrow$          & Fr\'echet Protein Structure Distance: distance over the whole set in a structural encoder's (GearNet) feature space & Distributional fidelity & Distance \\
+FPSD\,$\downarrow$          & Fr\'echet Protein Structure Distance: distance over the whole set in a structural encoder's (GearNet) feature space & Distributional realism & Distance \\
 Des\,$\uparrow$            & Fraction of generated backbones that are designable & Physical realisability & Fraction \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Tertiary structure --- whole set (T-W)}} \\
-fJSD-A\,$\downarrow$       & Jensen--Shannon divergence vs.\ reference CATH-A distribution & Fold-distribution fidelity & Divergence \\
+fJSD-A\,$\downarrow$       & Jensen--Shannon divergence vs.\ reference CATH-A distribution & Fold-distribution match & Divergence \\
 fS-A\,$\uparrow$           & Spread of generated folds across CATH-architecture classes & Whole-set fold diversity & Count \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Tertiary structure --- designable subset (T-D)}} \\
@@ -30,10 +30,10 @@ fS-A\,$\uparrow$           & Spread of generated folds across CATH-architecture 
 pwTM\,$\downarrow$         & Mean pairwise TM-score & Designable diversity & TM-score \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Secondary structure --- whole set (S-W)}} \\
-ssJSD-2D\,$\downarrow$     & Jensen--Shannon divergence of the (helix-frac, strand-frac) distribution & Secondary-structure fidelity & Divergence \\
+ssJSD-2D\,$\downarrow$     & Jensen--Shannon divergence of the (helix-frac, strand-frac) distribution & Secondary-structure match & Divergence \\
 \addlinespace
 \multicolumn{4}{l}{\textit{Secondary structure --- designable subset (S-D)}} \\
-ssJSD-2D\,$\downarrow$     & As above, on the designable subset & SS fidelity (designable) & Divergence \\
+ssJSD-2D\,$\downarrow$     & As above, on the designable subset & SS match (designable) & Divergence \\
 E\%des\,$\uparrow$         & Mean $\beta$-strand (E) fraction & $\beta$-content & Fraction \\
 \bottomrule
 \end{tabular}

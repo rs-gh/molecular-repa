@@ -29,10 +29,10 @@ ENCODERS = [("gearnet", "GearNet"), ("mpnn", "ProteinMPNN"), ("esm2", "ESM2")]
 # model rows + the encoder each was aligned to (None for baseline)
 MODELS = [
     ("baseline", "Baseline", None),
-    ("repa_gearnet_l4", "REPA GN-L4", "gearnet"),
-    ("repa_gearnet_l9", "REPA GN-L9", "gearnet"),
-    ("repa_mpnn_l4", "REPA MPNN-L4", "mpnn"),
-    ("repa_mpnn_l9", "REPA MPNN-L9", "mpnn"),
+    ("repa_gearnet_l4", "REPA L4-GearNet", "gearnet"),
+    ("repa_gearnet_l9", "REPA L9-GearNet", "gearnet"),
+    ("repa_mpnn_l4", "REPA L4-MPNN", "mpnn"),
+    ("repa_mpnn_l9", "REPA L9-MPNN", "mpnn"),
 ]
 
 
