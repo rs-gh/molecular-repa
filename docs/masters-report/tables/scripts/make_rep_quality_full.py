@@ -1,194 +1,193 @@
 """Generate tables/table_rep_quality_full.tex --- the FULL six-variant PDB
-representation-quality ablation (Appendix). Extends the four-row main-text
-Table~\\ref{tab:proteina-rep} with the remaining encoder x depth combinations
-(L4-GearNet, L4-MPNN), so a reader following the Ch6 "remaining combinations" and
-"trained-L4 beats random-L4" pointers lands on a complete table.
+representation-quality ablation (Appendix), at a single late checkpoint.
 
-Same recipe as the AFDB sibling (make_rep_quality_afdb.py) and the main PDB
-table: best-layer linear probe, n_train=1000, seed 42, mean over the 700K-1.2M
-converged window, Delta-from-baseline, green/darker-green = improvement/best.
-PDB-TRAINED models; IF/dihedral read on the cross-database blinded set
-(n256_xclean_afdb_pdb), CATH on the leakage-controlled cleantrain set
-(n256_convergence_cleantrain_pdb) -- exactly the two sources the main-text
-table cites. The baseline absolutes reproduce that table to printed digits.
+Same recipe as the main-text table (make_rep_quality.py): step 1.0M, the latest
+training step the multi-seed variants share, compared at one shared step rather
+than a window. Extends the four-row main table with the remaining encoder x depth
+combinations (L4-GearNet, L4-MPNN). Those two were only ever probed at a single
+seed, so they carry no seed range and are marked with a dagger; the other four
+rows are 3-seed. We avoid a 1.3M point because baseline@1.3M is a transient
+down-swing on all probes (see make_rep_quality.py).
 
-Run from repo root:  python docs/masters-report/tables/scripts/make_rep_quality_full.py
+Best-layer linear probe, n_train=1000. Baseline absolute; REPA rows are
+Delta-from-baseline, with +/- half the seed range where >1 seed exists. Colour
+marks significance against the combined seed spread (single-seed rows use the
+baseline spread alone): green better (darker = column-best), red worse,
+uncoloured = within seed noise. IF/dihedral on the cross-database blinded set,
+CATH on the cleantrain set. Requires \\gd/\\gb/\\rd macros.
+
+Run from repo root:
+  python docs/masters-report/tables/scripts/make_rep_quality_full.py
 """
 
 import csv
-import os
+import collections
 import re
-from collections import defaultdict
+import os
 from statistics import mean
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-_REP = f"{ROOT}/evaluation/proteina/representation/results/paper"
-
-# Per-probe sources: IF/dihedral from the cross-DB blinded (xclean) set; CATH
-# from the cleantrain set. Union the main dir with the _n1000_compare tail dir.
-CSVS_XCLEAN = [
-    f"{_REP}/n256_xclean_afdb_pdb/pretrained_sweep_results.csv",
-    f"{_REP}/_n1000_compare/n256_xclean_afdb/pretrained_sweep_results.csv",
-]
-CSVS_CLEANTRAIN = [
-    f"{_REP}/n256_convergence_cleantrain_pdb/pretrained_sweep_results.csv",
-    f"{_REP}/_n1000_compare/n256_cleantrain_pdb/pretrained_sweep_results.csv",
-]
-
+ROOT = "/home/sr2173/git/molecular-repa"
+REP = f"{ROOT}/evaluation/proteina/representation/results/paper"
 OUT = f"{ROOT}/docs/masters-report/tables/table_rep_quality_full.tex"
-
+STEP = 1000000
 N_TRAIN = "1000"
-WINDOW = (700, 1200)  # k steps
-_STEP = re.compile(r"_step(\d+)k$")
 
-VARIANTS = [
-    ("baseline_256_bs24_2gpu", "Baseline"),
-    ("repa_l4_256_per_residue_random_bs24_2gpu", "REPA L4-random"),
-    ("repa_l4_256_per_residue_bs24_2gpu", "REPA L4-GearNet"),
-    ("repa_mpnn_l4_256_per_residue", "REPA L4-MPNN"),
-    ("repa_l9_256_per_residue_bs24_2gpu", "REPA L9-GearNet"),
-    ("repa_mpnn_l9_256_per_residue", "REPA L9-MPNN"),
+CATH = [
+    f"{REP}/n256_convergence_cleantrain_pdb/pretrained_sweep_results.csv",
+    f"{REP}/_n1000_compare/n256_cleantrain_pdb/pretrained_sweep_results.csv",
+    f"{REP}/_n1000_bands/n256_cleantrain_pdb/pretrained_sweep_results.csv",
 ]
-# (label, probe_kind, col, higher_better, cath_level, csv_list)
-PROBES = [
-    ("IF", "inverse_folding", "if_top1_acc", True, None, CSVS_XCLEAN),
-    ("dih", "dihedral", "dih_mae_total_deg", False, None, CSVS_XCLEAN),
-    ("C", "cath", "cath_accuracy", True, "C", CSVS_CLEANTRAIN),
-    ("A", "cath", "cath_accuracy", True, "A", CSVS_CLEANTRAIN),
-    ("T", "cath", "cath_accuracy", True, "T", CSVS_CLEANTRAIN),
+XCL = [
+    f"{REP}/n256_xclean_afdb_pdb/pretrained_sweep_results.csv",
+    f"{REP}/_n1000_compare/n256_xclean_afdb/pretrained_sweep_results.csv",
+    f"{REP}/_n1000_bands/n256_xclean_afdb/pretrained_sweep_results.csv",
 ]
 
-
-def _rows(csvs):
-    for path in csvs:
-        if os.path.exists(path):
-            yield from csv.DictReader(open(path))
+VARS = [
+    ("Baseline", "baseline_256_bs24_2gpu"),
+    ("REPA L4-random", "repa_l4_256_per_residue_random_bs24_2gpu"),
+    ("REPA L4-GearNet", "repa_l4_256_per_residue_bs24_2gpu"),
+    ("REPA L4-MPNN", "repa_mpnn_l4_256_per_residue"),
+    ("REPA L9-GearNet", "repa_l9_256_per_residue_bs24_2gpu"),
+    ("REPA L9-MPNN", "repa_mpnn_l9_256_per_residue"),
+]
+METR = [
+    (XCL, "inverse_folding", "if_top1_acc", None, True, 3),
+    (XCL, "dihedral", "dih_mae_total_deg", None, False, 1),
+    (CATH, "cath", "cath_accuracy", "C", True, 3),
+    (CATH, "cath", "cath_accuracy", "A", True, 3),
+    (CATH, "cath", "cath_accuracy", "T", True, 3),
+]
 
 
 def fam(run):
-    return _STEP.sub("", run)
+    return re.sub(r"_step\d+k$", "", str(run))
 
 
-def step_k(run):
-    m = _STEP.search(run)
-    return int(m.group(1)) if m else None
-
-
-def window_mean(probe_kind, col, higher_better, cath_level, csvs):
-    per_step = defaultdict(list)
-    for r in _rows(csvs):
-        run = r.get("run", "")
-        if "afdb" in run or str(r.get("n_train")) != N_TRAIN:
-            continue  # PDB-trained only
-        if (r.get("probe_seed") or "42") != "42" or r.get("probe_kind") != probe_kind:
+def cell_stats(csvs, kind, col, level, higher, run):
+    by = collections.defaultdict(list)
+    for p in csvs:
+        if not os.path.exists(p):
             continue
-        if cath_level and r.get("cath_level") != cath_level:
-            continue
-        s, v = step_k(run), r.get(col)
-        if s is None or not v or not (WINDOW[0] <= s <= WINDOW[1]):
-            continue
-        try:
-            per_step[(fam(run), s)].append(float(v))
-        except ValueError:
-            continue
-    best = {k: (max(vs) if higher_better else min(vs)) for k, vs in per_step.items()}
-    out = defaultdict(list)
-    for (family, _), v in best.items():
-        out[family].append(v)
-    return {family: mean(vs) for family, vs in out.items()}
+        for r in csv.DictReader(open(p)):
+            if str(r.get("n_train")) != N_TRAIN or r.get("probe_kind") != kind:
+                continue
+            if level and r.get("cath_level") != level:
+                continue
+            if fam(r["run"]) != run or int(r["step"]) != STEP:
+                continue
+            v = r.get(col)
+            if v:
+                by[r.get("probe_seed") or "42"].append(float(v))
+    per = [(max(v) if higher else min(v)) for v in by.values()]
+    if not per:
+        return None
+    return (mean(per), (max(per) - min(per)) / 2.0, len(per))
 
 
-data = {pl: window_mean(pk, col, hb, cl, cs) for pl, pk, col, hb, cl, cs in PROBES}
-present = [(k, d) for k, d in VARIANTS if any(k in data[pl] for pl in data)]
-BASE = "baseline_256_bs24_2gpu"
-base = {pl: data[pl].get(BASE) for pl in data}
+data = {}
+for j, m in enumerate(METR):
+    for _, run in VARS:
+        data[(j, run)] = cell_stats(m[0], m[1], m[2], m[3], m[4], run)
 
-EPS = {"IF": 0.005, "dih": 0.5, "C": 0.01, "A": 0.01, "T": 0.01}
-
-
-def fmt_abs(pl, val):
-    return (
-        "--"
-        if val is None
-        else (f"{val:.3f}" if pl in ("IF", "C", "A", "T") else f"{val:.1f}")
-    )
+# sanity: trained-L4 must beat random-L4 on CATH-A (the table's key claim)
+l4gn = data[(3, "repa_l4_256_per_residue_bs24_2gpu")][0]
+l4rnd = data[(3, "repa_l4_256_per_residue_random_bs24_2gpu")][0]
+assert l4gn > l4rnd, (l4gn, l4rnd)
 
 
-def fmt_delta(pl, val, hb, best_fam, family):
-    if val is None or base[pl] is None:
-        return "--"
-    d = val - base[pl]
-    improved = ((d > 0) if hb else (d < 0)) and abs(d) >= EPS[pl]
-    body = (
-        f"{'+' if d >= 0 else '$-$'}{abs(d):.3f}"
-        if pl in ("IF", "C", "A", "T")
-        else f"{'+' if d >= 0 else '$-$'}{abs(d):.1f}"
-    )
-    if not improved:
-        return body
-    return f"\\{'gb' if family == best_fam else 'gd'}{{{body}}}"
+def fnum(x, prec):
+    return f"{x:.{prec}f}"
 
 
-col_best = {}
-for pl, pk, col, hb, cl, cs in PROBES:
-    bf, bi = None, 0.0
-    for k, _ in present:
-        if k == BASE or k not in data[pl] or base[pl] is None:
-            continue
-        imp = (data[pl][k] - base[pl]) * (1 if hb else -1)
-        if imp > bi:
-            bi, bf = imp, k
-    col_best[pl] = bf
+def fdelta(x, prec):
+    return f"{'+' if x >= 0 else '-'}{abs(x):.{prec}f}"
 
-L = [
-    "% Auto-generated by tables/scripts/make_rep_quality_full.py --- do not hand-edit."
-]
-L += [
+
+base_run = VARS[0][1]
+single_seed = []
+lines = [
+    "% Auto-generated by tables/scripts/make_rep_quality_full.py --- do not hand-edit.",
+    f"% Full six-variant PDB ablation at a single late checkpoint ({STEP // 1000}k).",
     "\\begin{table}[tbp]",
     "\\centering",
     "\\small",
-    "\\setlength{\\tabcolsep}{6pt}",
+    "\\setlength{\\tabcolsep}{5pt}",
     "\\begin{tabular}{lccccc}",
     "\\toprule",
     " & & & \\multicolumn{3}{c}{\\textbf{CATH top-1 acc.\\,$\\uparrow$}} \\\\",
     "\\cmidrule(lr){4-6}",
-    "\\textbf{Variant} & \\textbf{IF top-1\\,$\\uparrow$} & \\textbf{dihedral MAE\\,(\\,$^\\circ$\\,)\\,$\\downarrow$} & C & A & T \\\\",
+    "\\textbf{Variant} & \\textbf{IF top-1\\,$\\uparrow$} "
+    "& \\textbf{dihedral MAE\\,(\\,$^\\circ$\\,)\\,$\\downarrow$} & C & A & T \\\\",
     "\\midrule",
 ]
-for k, disp in present:
-    if k == BASE:
-        cells = [fmt_abs(pl, base[pl]) for pl in [p[0] for p in PROBES]]
-    else:
-        cells = [
-            fmt_delta(pl, data[pl].get(k), hb, col_best[pl], k)
-            for pl, pk, col, hb, cl, cs in PROBES
-        ]
-    L.append(f"{disp} & " + " & ".join(cells) + " \\\\")
-L += ["\\bottomrule", "\\end{tabular}"]
-L.append(
-    "\\caption{\\textbf{Full PDB representation-quality ablation across all six variants.} "
-    "The remaining encoder$\\times$depth combinations behind the four-row main-text "
-    "Table~\\ref{tab:proteina-rep}. The encoder-routed pattern holds throughout: ProteinMPNN "
-    "wins the per-residue probes (IF, dihedral), GearNet wins the fold probes (CATH C/A/T). "
-    "At matched layer~4, the trained GearNet (L4-GearNet) beats the random control (L4-random) on "
-    "every probe, so the learned-versus-random gap is not an artefact of injection depth. "
-    "(Baseline absolute; REPA rows are $\\Delta$-from-baseline. Best-layer linear probe, "
-    "$n_\\text{train}{=}1000$, $n{=}1$ seed, mean over the "
-    f"{WINDOW[0]}K--{WINDOW[1]/1000:.1f}M window; IF/dihedral on the cross-database blinded set, "
-    "CATH on the cleantrain set. In-window step coverage is uneven across rows.)}"
+
+for name, run in VARS:
+    nseed = max(
+        (data[(j, run)][2] for j in range(len(METR)) if data[(j, run)]), default=0
+    )
+    label = name + ("$^{\\dagger}$" if 0 < nseed < 2 else "")
+    if 0 < nseed < 2 and name != "Baseline":
+        single_seed.append(name.replace("REPA ", ""))
+    cells = []
+    for j, m in enumerate(METR):
+        prec, higher = m[5], m[4]
+        st = data[(j, run)]
+        if st is None:
+            cells.append("---")
+            continue
+        mn, half, n = st
+        if name == "Baseline":
+            cells.append(f"${fnum(mn, prec)}_{{\\pm{fnum(half, prec)}}}$")
+            continue
+        bmn, bhalf, _ = data[(j, base_run)]
+        delta = mn - bmn
+        improving = (delta > 0) if higher else (delta < 0)
+        sig = abs(delta) > (half + bhalf)
+        best = True
+        for _, run2 in VARS[1:]:
+            if run2 == run or not data[(j, run2)]:
+                continue
+            d2 = data[(j, run2)][0] - bmn
+            imp2 = (d2 > 0) if higher else (d2 < 0)
+            if imp2 and abs(d2) > abs(delta):
+                best = False
+        sub = f"_{{\\pm{fnum(half, prec)}}}" if n >= 2 else ""
+        txt = f"${fdelta(delta, prec)}{sub}$"
+        if sig and improving:
+            cells.append(f"\\gb{{{txt}}}" if best else f"\\gd{{{txt}}}")
+        elif sig and not improving:
+            cells.append(f"\\rd{{{txt}}}")
+        else:
+            cells.append(txt)
+    lines.append(f"{label} & " + " & ".join(cells) + " \\\\")
+
+dagger = (
+    " ($^{\\dagger}$%s single-seed.)" % " and ".join(single_seed) if single_seed else ""
 )
-L += ["\\label{tab:proteina-rep-full}", "\\end{table}"]
+lines += [
+    "\\bottomrule",
+    "\\end{tabular}",
+    "\\caption{\\textbf{Full PDB representation-quality ablation across all six "
+    "variants.} The remaining encoder$\\times$depth combinations behind the "
+    "four-row main-text Table~\\ref{tab:proteina-rep}, at the same 1.0M checkpoint. "
+    "The encoder-routed pattern holds throughout: GearNet wins the fold probes "
+    "(CATH C/A/T), ProteinMPNN edges the inverse-folding probe (IF). At matched "
+    "layer~4, the trained GearNet (L4-GearNet) beats the random control (L4-random) "
+    "on every probe, so the learned-versus-random gap is not an artefact of "
+    "injection depth. (Single checkpoint at 1.0M; baseline absolute, REPA rows "
+    "$\\Delta$-from-baseline, with $\\pm$ half the seed range where $>1$ seed exists; "
+    "$n{=}3$ seeds except where marked. Best-layer linear probe at "
+    "$n_\\text{train}{=}1000$ (cross-database set for IF/dihedral, cleantrain for "
+    "CATH); colour marks significance against the combined seed spread, green "
+    "better (darker $=$ column-best), red worse, uncoloured within seed noise."
+    + dagger
+    + ")}",
+    "\\label{tab:proteina-rep-full}",
+    "\\end{table}",
+]
 
 with open(OUT, "w") as f:
-    f.write("\n".join(L) + "\n")
-print(f"Saved {OUT}")
-print("variants:", [d for _, d in present])
-for pl in [p[0] for p in PROBES]:
-    print(
-        f"  {pl:4} base={base[pl]}  "
-        + "  ".join(
-            f"{k.split('_')[1] if '_' in k else k}:{data[pl][k]:.3f}"
-            for k in data[pl]
-            if k != BASE
-        )
-    )
+    f.write("\n".join(lines) + "\n")
+print("wrote", OUT, "| single-seed rows:", single_seed)
+print("\n".join(lines))
