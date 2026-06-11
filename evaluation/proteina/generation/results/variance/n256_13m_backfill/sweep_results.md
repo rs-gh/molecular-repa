@@ -1,0 +1,3 @@
+| run | step | _res_PDB_FID | _res_PDB_fJSD_C | _res_PDB_fJSD_A | _res_PDB_fJSD_T | _res_AFDB_FID | _res_AFDB_fJSD_C | _res_AFDB_fJSD_A | _res_AFDB_fJSD_T | _res_fS_C | _res_fS_A | _res_fS_T | _res_designability_rate | _res_scRMSD_mean | _res_scRMSD_median | _res_designability_n | _res_diversity_clusters_mean | _res_diversity_pairwise_tm_mean | _res_diversity_n | _res_diversity_designable_filtered |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| repa_l4_256_per_residue_bs24_2gpu_step1300k | 1300000 | 513.7062 | 0.3052 | 0.8162 | 2.1492 | 627.2060 | 0.8646 | 1.6703 | 2.8103 | 2.6039 | 7.9501 | 23.2764 | 0.6560 | 3.8528 | 1.4860 | 250 | 17.8000 | 0.3317 | 164 | True |

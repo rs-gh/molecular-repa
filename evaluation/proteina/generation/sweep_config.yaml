@@ -669,3 +669,26 @@ n256_afdb_ode_table66_backfill:
   runs: "repa_mpnn_l4_afdb_256_step700k,repa_l4_afdb_256_random_step700k"
   output_dir: results/variance/n256_afdb_sampler_ablation
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# 2026-06-11: Table 6.7 (ODE floor) retiming 700k -> 1.3M centerpoint. The 700k
+# table is complete on both datasets but the report centerpiece is 1.3M; these
+# fill the missing 1.3M ODE cells so the whole table can move to 1.3M. ODE-only
+# (vf) at rep_idx=0; one task per run. Merges into the sampler-ablation jsonls.
+# PDB: random-L4 + GearNet-L4 + GearNet-L9 (MPNN-L4/L9 already have 1.3M ODE).
+# AFDB: GearNet-L9 + MPNN-L4 (baseline/GearNet-L4/MPNN-L9 already at 1.3M ODE;
+#   L4-random has no 1.3M ckpt — training stopped at 800k, stays "---").
+#   python run_sweep.py --config n256_pdb_ode_table67_1p3m_backfill  --dry_run
+#   sbatch --array=0-2 run_sweep.sh --config n256_pdb_ode_table67_1p3m_backfill  --sampling_mode vf --rep_idx 0
+#   python run_sweep.py --config n256_afdb_ode_table67_1p3m_backfill --dry_run
+#   sbatch --array=0-1 run_sweep.sh --config n256_afdb_ode_table67_1p3m_backfill --sampling_mode vf --rep_idx 0
+n256_pdb_ode_table67_1p3m_backfill:
+  <<: *paper_defaults
+  runs: "repa_l4_256_per_residue_random_bs24_2gpu_step1300k,repa_l4_256_per_residue_bs24_2gpu_step1300k,repa_l9_256_per_residue_bs24_2gpu_step1300k"
+  output_dir: results/variance/n256_sampler_ablation
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+n256_afdb_ode_table67_1p3m_backfill:
+  <<: *paper_defaults
+  runs: "repa_l9_afdb_256_step1300k,repa_mpnn_l4_afdb_256_step1300k"
+  output_dir: results/variance/n256_afdb_sampler_ablation
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"

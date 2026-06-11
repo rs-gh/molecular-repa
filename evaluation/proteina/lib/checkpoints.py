@@ -1273,6 +1273,13 @@ RUN_SCHEDULES = {
         4,
         [1100000],
     ),
+    # 2026-06-11: Table 6.7 (ODE floor) 1.3M-centerpoint backfill — AFDB L4-MPNN.
+    "repa_mpnn_l4_afdb_256_step1300k": (
+        "proteina_60m_repa_mpnn_l4_256_afdb_per_residue",
+        True,
+        4,
+        [1300000],
+    ),
     "repa_mpnn_l9_afdb_256_step1400k": (
         "proteina_60m_repa_mpnn_l9_256_afdb_per_residue",
         True,
@@ -1291,6 +1298,13 @@ RUN_SCHEDULES = {
         True,
         4,
         [1000000],
+    ),
+    # 2026-06-11: Table 6.7 (ODE floor) 1.3M-centerpoint backfill — PDB L4-GearNet.
+    "repa_l4_256_per_residue_bs24_2gpu_step1300k": (
+        "proteina_60m_repa_l4_256_per_residue_bs24_2gpu",
+        True,
+        4,
+        [1300000],
     ),
     "repa_l9_256_per_residue_bs24_2gpu_step1000k": (
         "proteina_60m_repa_l9_256_per_residue_bs24_2gpu",
@@ -1528,6 +1542,13 @@ RUN_SCHEDULES = {
         9,
         [1000000],
     ),
+    # 2026-06-11: Table 6.7 (ODE floor) 1.3M-centerpoint backfill — AFDB L9-GearNet.
+    "repa_l9_afdb_256_step1300k": (
+        "proteina_60m_repa_l9_256_afdb_per_residue",
+        True,
+        9,
+        [1300000],
+    ),
     # First eval anchor for the AFDB random-init-GearNet run (training started
     # 2026-05; only 100k ckpt exists at submission time).
     "repa_l4_afdb_256_random_step100k": (
@@ -1591,6 +1612,13 @@ RUN_SCHEDULES = {
         True,
         4,
         [1200000],
+    ),
+    # 2026-06-11: Table 6.7 (ODE floor) 1.3M-centerpoint backfill — PDB L4-random.
+    "repa_l4_256_per_residue_random_bs24_2gpu_step1300k": (
+        "proteina_60m_repa_l4_256_per_residue_random_bs24_2gpu",
+        True,
+        4,
+        [1300000],
     ),
     # baseline_256 PDB (store max 2400k; was only swept to 1800k):
     "baseline_256_bs24_2gpu_step1900k": (
@@ -1876,6 +1904,11 @@ GEN_RUN_CONFIGS = {
     "repa_mpnn_l4_afdb_256_step1100k": "inference/paper/inference_fid_60m_paper",
     "repa_mpnn_l9_afdb_256_step1400k": "inference/paper/inference_fid_60m_paper",
     "repa_mpnn_l9_afdb_256_step1500k": "inference/paper/inference_fid_60m_paper",
+    # ── Table 6.7 (ODE floor) 1.3M-centerpoint backfill (added 2026-06-11) ── #
+    "repa_l4_256_per_residue_random_bs24_2gpu_step1300k": "inference/paper/inference_fid_60m_paper",
+    "repa_l4_256_per_residue_bs24_2gpu_step1300k": "inference/paper/inference_fid_60m_paper",
+    "repa_l9_afdb_256_step1300k": "inference/paper/inference_fid_60m_paper",
+    "repa_mpnn_l4_afdb_256_step1300k": "inference/paper/inference_fid_60m_paper",
     # ── n=256 convergence extension 2 (added 2026-05-25) ─────────────────── #
     "repa_l4_256_per_residue_bs24_2gpu_step1000k": "inference/paper/inference_fid_60m_paper",
     "repa_l9_256_per_residue_bs24_2gpu_step1000k": "inference/paper/inference_fid_60m_paper",
