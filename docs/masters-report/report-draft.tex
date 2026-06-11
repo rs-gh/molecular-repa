@@ -210,8 +210,7 @@ University.]
 
 \chapter*{Abstract}
 
-Write a summary of the whole thing. Make sure it fits on one page.
-
+TODO
 \ifsubmission\else
 % not included in submission for blind marking:
 
@@ -1268,7 +1267,7 @@ Of the five candidates, only GearNet clears all three diagnostics, with ProteinM
 \section{Informing our experiments}
 \label{sec:profiling-predictions}
 
-Our profiles are measured before any alignment training, so the expectations they set are genuinely a-priori, not post-hoc rationalisations. We use them to guide which encoders our studies will showcase. For small molecules (Chapter~\ref{ch:tabasco-study}), we expect no measurable REPA gain. For protein backbones (Chapter~\ref{ch:proteina-study}), we expect that GearNet and ProteinMPNN are most likely to help. The following two chapters put these ideas to the test.
+Our profiles are measured before any alignment training, so the expectations they set are a-priori, not post-hoc rationalisations. We use them to guide which encoders our studies will showcase. For small molecules (Chapter~\ref{ch:tabasco-study}), we expect no measurable REPA gain. For protein backbones (Chapter~\ref{ch:proteina-study}), we expect that GearNet and ProteinMPNN are most likely to help. The following two chapters put these ideas to the test.
 
 \chapter{REPA on small molecules}
 \label{ch:tabasco-study}
@@ -1654,7 +1653,7 @@ With this experimental testbed in place, the rest of the chapter investigates wh
 
 \textbf{Every trained-encoder REPA variant improves representational capacity, consistently and durably.} Each lifts all three probes substantially above the baseline, from the very beginning of training, and the difference persists. This is an asymptotic gap that the baseline never closes across 1.8M steps, not just a head start or an accelerated convergence pattern. This gap confirms one of the hypotheses posited in the original REPA presentation~\cite{REPA}: an alignment target during training can fill the representational headroom left by the flow-matching objective.
 
-\textbf{Every encoder routes representation gain differently.} REPA-GearNet consistently wins the fold probes, while REPA-MPNN wins the per-residue probes (Table~\ref{tab:proteina-rep}). This pattern follows what we would expect a priori, given the tasks that each encoder has been specifically trained for. This ties into our emerging theme on the multi-factorial nature of representation learning in the molecular domain~(Chapter~\ref{ch:evaluation}). No single encoder captures every factor, so the choice of alignment target is also a choice over the representational factor a model designer wishes to emphasise. We establish this routing on PDB-trained models and report the AFDB results in Appendix~\ref{app:rep-afdb}.
+\textbf{Every encoder routes representation gain differently.} REPA-GearNet consistently wins the fold probes, while REPA-MPNN edges the per-residue inverse-folding probe (Table~\ref{tab:proteina-rep}). This pattern follows what we would expect a priori, given the tasks that each encoder has been specifically trained for. This ties into our emerging theme on the multi-factorial nature of representation learning in the molecular domain~(Chapter~\ref{ch:evaluation}). No single encoder captures every factor, so the choice of alignment target is also a choice over the representational factor a model designer wishes to emphasise. We establish this routing on PDB-trained models and report the AFDB results in Appendix~\ref{app:rep-afdb}.
 
 \input{tables/table_rep_quality}
 
