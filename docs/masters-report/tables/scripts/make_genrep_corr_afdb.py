@@ -176,7 +176,7 @@ lines.append(
     "better representation accompanies better generation. Generation is FPSD-AFDB and "
     "designability; representation probes are read at $n_\\text{train}{=}1000$ on the "
     "cross-database blinded set. ($n{=}" + n_str + "$ AFDB checkpoints pooled over the "
-    "baseline, the REPA variants, and the random control; generation seed-mean, $n{=}1$--$3$ seeds; probe single-seed; "
+    "baseline, the REPA variants, and the random control; generation is a $3$-seed mean, with single-seed checkpoints only for the under-trained variants (AFDB L9-GearNet, L4-MPNN) and trajectory tails; probe single-seed; "
     "$1{,}125$ backbones/seed, $250$ for designability.)}"
 )
 lines.append("\\label{tab:proteina-genrep-corr-afdb}")

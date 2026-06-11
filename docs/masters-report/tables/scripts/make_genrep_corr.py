@@ -186,7 +186,8 @@ lines.append(
     "value means better representation accompanies better generation. ($n{=}"
     + n_str
     + "$ checkpoints pooled over the baseline, the REPA variants, and the random "
-    "control; generation seed-mean, $n{=}1$--$3$ seeds; probe single-seed; "
+    "control; generation is a $3$-seed mean, with only the single-seed late-tail "
+    "checkpoints at $n{=}1$; probe single-seed; "
     "$1{,}125$ backbones/seed, $250$ for designability.)}"
 )
 lines.append("\\label{tab:proteina-genrep-corr}")
