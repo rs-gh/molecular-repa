@@ -87,6 +87,51 @@ CASES = [
 
 SAMPLER_TAG = "sde_n0.45"
 
+# --- Auto-discover all-variant coverage at the report's standard steps --------
+# Overrides the hand-curated CASES above so the all-model grid stays in sync with
+# what is actually on disk in eval_output. Re-run after new evals land (e.g. job
+# 30352629's 1.3M structures) to pick them up automatically. A (variant, step)
+# is included only if a default-sampler rep dir with both ss_fractions.npz and
+# designability_index.csv exists. CPU-only post-processing.
+_VARIANTS = [
+    ("pdb_baseline", "baseline_256_bs24_2gpu"),
+    ("pdb_REPA_L4_random", "repa_l4_256_per_residue_random_bs24_2gpu"),
+    ("pdb_REPA_L4_GN", "repa_l4_256_per_residue_bs24_2gpu"),
+    ("pdb_REPA_L9_GN", "repa_l9_256_per_residue_bs24_2gpu"),
+    ("pdb_REPA_L4_MPNN", "repa_mpnn_l4_256_per_residue"),
+    ("pdb_REPA_L9_MPNN", "repa_mpnn_l9_256_per_residue"),
+    ("afdb_baseline", "baseline_afdb_256"),
+    ("afdb_REPA_L4_random", "repa_l4_afdb_256_random"),
+    ("afdb_REPA_L4_GN", "repa_l4_afdb_256"),
+    ("afdb_REPA_L9_GN", "repa_l9_afdb_256"),
+    ("afdb_REPA_L4_MPNN", "repa_mpnn_l4_afdb_256"),
+    ("afdb_REPA_L9_MPNN", "repa_mpnn_l9_afdb_256"),
+]
+_STEPS = [(400000, "400K"), (700000, "700K"), (1000000, "1.0M"), (1300000, "1.3M")]
+
+
+def _has_inputs(run_base, step):
+    pat = str(
+        EVAL_OUT
+        / (
+            f"inference_paper_inference_fid_60m_paper_sweep_{run_base}"
+            f"_step{step // 1000}k_step_{step}__{SAMPLER_TAG}__rep*"
+        )
+    )
+    return any(
+        (Path(rd) / "ss_cache/ss_fractions.npz").exists()
+        and (Path(rd) / "designability_index.csv").exists()
+        for rd in glob(pat)
+    )
+
+
+CASES = [
+    (f"{label}_{slabel}", f"{run_base}_step{step // 1000}k_step_{step}")
+    for label, run_base in _VARIANTS
+    for step, slabel in _STEPS
+    if _has_inputs(run_base, step)
+]
+
 
 def load_atom37(pdb_path: Path) -> np.ndarray:
     """Load atom37 coords from a generated PDB. Uses a minimal Cα-only loader
