@@ -182,7 +182,11 @@ lines.append(
     "noise-dominated, so we lean on the fold result. ($n{\\le}256$ AFDB-trained; best-layer "
     "linear probe at $n_\\text{train}{=}1000$ on the cross-database blinded set; mean over the "
     f"{WINDOW[0]}K--{WINDOW[1]/1000:.1f}M window; $\\Delta$ from baseline; $n{{=}}1$ seed. "
-    "The random control is omitted: it trained only to 500K, below this window.)}"
+    "The PDB tables (Tables~\\ref{tab:proteina-rep} and~\\ref{tab:proteina-rep-full}) report a "
+    "single 1.0M checkpoint, whose three seeds smooth out per-step probe noise; AFDB-trained "
+    "models were probed at a single seed, so here we average a converged window instead --- the "
+    "only smoothing available. The random control is omitted: it trained only to 500K, below "
+    "this window.)}"
 )
 lines.append("\\label{tab:proteina-rep-afdb}")
 lines.append("\\end{table}")
