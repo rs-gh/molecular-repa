@@ -1,0 +1,50 @@
+% Centerpiece Table -- 1.3M snapshot (post-1M-dip). \input{} from Ch6.
+% Requires \gd/\rd macros and \usepackage[table]{xcolor} from the preamble.
+% Built 2026-06-10 from existing eval data; 4 cells pending fresh gen-eval on
+% existing checkpoints (PDB L4-random, PDB L4-GearNet; AFDB L9-GearNet, AFDB
+% L4-MPNN) -- SLURM job 30352629 (array 0-3), output ->
+% results/variance/n256_13m_backfill/. 1 cell unfillable (AFDB L4-random: no
+% checkpoint past 800K). Column set follows the 700K table (no whole-set pwTM
+% column: not computed at 1.3M). When job lands: rerun jsonl_to_tsv / clean +
+% the centerpiece builder at step 1300000, fill the 4 rows, then swap the
+% report \input from table_proteina_1m -> table_proteina_13m.
+\begin{table}[tbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccccc}
+\toprule
+& \multicolumn{2}{c}{\textbf{Quality}}
+& \multicolumn{2}{c}{\textbf{T-W}}
+& \multicolumn{2}{c}{\textbf{T-D}}
+& \textbf{S-W}
+& \multicolumn{2}{c}{\textbf{S-D}} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-8}\cmidrule(lr){9-10}
+\textbf{Variant (1.3M)}
+& Des\,$\uparrow$ & FPSD\,$\downarrow$
+& fJSD-A\,$\downarrow$ & fS-A\,$\uparrow$
+& \#Clust\,$\uparrow$ & pwTM\,$\downarrow$
+& ssJSD2D\,$\downarrow$
+& ssJSD2D\,$\downarrow$ & $\beta$-strand\,\%\,$\uparrow$ \\
+\midrule
+\multicolumn{10}{l}{\textit{PDB-trained.}}\\
+Baseline       & 0.56 & 416 & 0.95 & 6.06 & 107 & 0.16 & 0.31 & 0.43 & 0.09 \\
+REPA L4-random \textit{\scriptsize(1.2M)} & \rd{$-$0.32} & \rd{+21} & \gd{$-$0.37} & \rd{$-$0.07} & \rd{$-$54} & \rd{+0.03} & \gd{$-$0.16} & \gd{$-$0.06} & \gd{+0.03} \\
+REPA L4-GearNet \textit{\scriptsize(1.0M)} & \rd{$-$0.10} & \rd{+17} & \gd{$-$0.41} & \gd{+1.29} & \rd{$-$20} & +0.01 & \gd{$-$0.16} & \gd{$-$0.04} & $-$0.01 \\
+REPA L9-GearNet & \rd{$-$0.07} & \gd{$-$22} & \gd{$-$0.26} & \gd{+1.44} & \rd{$-$49} & \rd{+0.12} & \gd{$-$0.22} & \gd{$-$0.22} & \gd{+0.17} \\
+REPA L4-MPNN   & \gd{+0.06} & \rd{+73} & \gd{$-$0.13} & \gd{+0.44} & \rd{$-$15} & \rd{+0.08} & \gd{$-$0.14} & \gd{$-$0.13} & \gd{+0.10} \\
+REPA L9-MPNN   & \gd{+0.22} & \gd{$-$29} & \gd{$-$0.10} & \gd{+0.84} & \gd{+9} & \rd{+0.12} & \gd{$-$0.18} & \gd{$-$0.21} & \gd{+0.13} \\
+\midrule
+\multicolumn{10}{l}{\textit{AFDB-trained.}}\\
+Baseline       & 0.64 & 386 & 1.63 & 5.45 & 114 & 0.18 & 0.10 & 0.20 & 0.13 \\
+REPA L4-random \textit{\scriptsize(0.5M)} & \gd{+0.21} & \gd{$-$15} & \gd{$-$0.07} & \rd{$-$0.35} & \gd{+39} & +0.01 & \rd{+0.06} & $-$0.01 & +0.01 \\
+REPA L4-GearNet & \gd{+0.11} & \gd{$-$71} & \gd{$-$0.67} & \gd{+2.14} & +0.0 & +0.02 & \gd{$-$0.06} & \gd{$-$0.09} & +0.03 \\
+REPA L9-GearNet \textit{\scriptsize(1.0M)} & \gd{+0.08} & \gd{$-$93} & \gd{$-$0.50} & \gd{+1.54} & \rd{$-$30} & \rd{+0.07} & \gd{$-$0.07} & \gd{$-$0.14} & \gd{+0.06} \\
+REPA L4-MPNN \textit{\scriptsize(1.1M)} & \gd{+0.05} & \rd{+72} & \rd{+0.30} & \rd{$-$0.48} & \rd{$-$10} & \rd{+0.07} & +0.01 & \gd{$-$0.06} & +0.01 \\
+REPA L9-MPNN   & \gd{+0.12} & +1 & \gd{$-$0.09} & \rd{$-$0.37} & \gd{+37} & $-$0.00 & \rd{+0.05} & \gd{$-$0.04} & $-$0.02 \\
+\bottomrule
+\end{tabular}}
+\caption{\textbf{Read within each regime: on AFDB REPA lifts the whole-set distribution cleanly; on PDB the whole-set gains come with a more concentrated designable subset.} Whole-set distribution match (FPSD, fJSD-A) and diversity (fS-A) favour REPA in both regimes; within the designable subset, REPA's pwTM rises above the baseline across the PDB variants but not the AFDB ones. Compare rows within a regime block, not across them. FPSD uses the training dataset as its reference in each case. This is a fixed checkpoint across all variants; Figure~\ref{fig:proteina-diversity-trend} tracks the representative variant across training. (Rows tagged with a step, e.g.\ \textit{\scriptsize(1.0M)}, are placeholders from that variant's latest available checkpoint, pending the 1.3M eval; AFDB L4-random has no checkpoint past 800K.)}
+\label{tab:proteina-13m}
+\end{table}

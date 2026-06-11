@@ -198,8 +198,8 @@ for title, d, metric, lower, vfmt, mark in blocks:
 lines += [
     "\\bottomrule",
     "\\end{tabular}",
-    "\\caption{\\textbf{REPA accelerates generation quality over the baseline.} In some "
-    "regimes it also wins the long run. Acceleration is the \\%-delta vs the baseline at "
+    "\\caption{\\textbf{Most REPA variants accelerate generation quality over the baseline.} In some "
+    "regimes they also win the long run. Acceleration is the \\%-delta vs the baseline at "
     "400K (the anchor of Figure~\\ref{fig:proteina-genrep}), with the absolute score in "
     "parentheses; the long run is each variant's absolute best within a common 2.0M-step "
     "window, coloured against the baseline-best row.}",

@@ -1,28 +1,40 @@
 % Table -- beta-stratified designable concentration (the T-D trade-off). \input{} from Ch6.
-% Absolute pwTM (not deltas) so the matched-beta contrast and the baseline-vs-REPA
-% trajectory are directly readable. Colour marks REPA cells vs the baseline in the
-% same block/step/bin: red = more concentrated, green = more diverse, |delta|<0.05 uncoloured.
+% Rebuilt 2026-06-10 as an all-variant grid at 400K and 1.3M (was 3-variant at
+% 700K/1.0M). Source: results/variance/beta_stratified_diversity.json, built by
+% scripts/paper/exp_beta_stratified_diversity.py (now auto-discovering all
+% variants on disk). Absolute pwTM (not deltas) so the matched-beta contrast and
+% the baseline-vs-REPA trajectory are directly readable. Colour marks REPA cells
+% vs the baseline in the same block/step/bin: red = more concentrated, green =
+% more diverse, |delta|<0.05 uncoloured. ``---'' = no structures on disk yet:
+% PDB L4-random/L4-GearNet/L9-GearNet and AFDB L4-random at 1.3M are pending job
+% 30352629; AFDB L9-GearNet and L4-MPNN have no usable eval_output structures.
 \begin{table}[tbp]
 \centering
 \small
 \setlength{\tabcolsep}{7pt}
 \begin{tabular}{lcccccc}
 \toprule
-\textbf{Designable pwTM\,$\downarrow$} & \multicolumn{3}{c}{\textbf{700K steps}} & \multicolumn{3}{c}{\textbf{1.0M steps}} \\
+\textbf{Designable pwTM\,$\downarrow$} & \multicolumn{3}{c}{\textbf{400K steps}} & \multicolumn{3}{c}{\textbf{1.3M steps}} \\
 \cmidrule(lr){2-4}\cmidrule(lr){5-7}
 \textbf{Variant} & $\beta{<}10$ & $10$--$25$ & $\beta{\ge}25$ & $\beta{<}10$ & $10$--$25$ & $\beta{\ge}25$ \\
 \midrule
 \multicolumn{7}{l}{\textit{PDB-trained}}\\
-Baseline             & 0.15 & 0.22 & 0.50 & 0.15 & 0.23 & 0.13 \\
-REPA L9-GearNet           & 0.16 & \rd{0.27} & \rd{0.73} & 0.14 & 0.24 & \rd{0.87} \\
-REPA L9-MPNN         & 0.16 & 0.21 & \rd{0.67} & \rd{0.26} & 0.22 & \rd{0.67} \\
+Baseline       & 0.16 & 0.15 & 0.21 & 0.15 & 0.23 & 0.13 \\
+REPA L4-random   & 0.17 & \rd{0.20} & \rd{0.36} & --- & --- & --- \\
+REPA L4-GearNet  & 0.18 & \rd{0.28} & \rd{0.69} & --- & --- & --- \\
+REPA L9-GearNet  & 0.19 & \rd{0.21} & 0.21 & --- & --- & --- \\
+REPA L4-MPNN     & 0.19 & \rd{0.22} & \rd{0.66} & 0.16 & 0.25 & \rd{0.46} \\
+REPA L9-MPNN     & 0.16 & \rd{0.21} & \rd{0.29} & 0.19 & 0.23 & \rd{0.69} \\
 \midrule
 \multicolumn{7}{l}{\textit{AFDB-trained}}\\
-Baseline             & 0.14 & 0.29 & 0.17 & 0.16 & 0.26 & 0.15 \\
-REPA L9-GearNet           & \rd{0.37} & 0.31 & \rd{0.82} & \rd{0.40}$^{*}$ & \rd{0.32}$^{*}$ & \rd{0.76}$^{*}$ \\
-REPA L9-MPNN \textit{(falsifier)} & 0.15 & 0.27 & \gd{0.11} & 0.15 & 0.24 & 0.15 \\
+Baseline       & 0.19 & 0.22 & 0.16 & 0.13 & 0.26 & 0.14 \\
+REPA L4-random   & 0.16 & \rd{0.29} & 0.14 & --- & --- & --- \\
+REPA L4-GearNet  & 0.16 & 0.26 & 0.17 & \rd{0.22} & 0.26 & \rd{0.20} \\
+REPA L9-GearNet  & --- & --- & --- & --- & --- & --- \\
+REPA L4-MPNN     & --- & --- & --- & --- & --- & --- \\
+REPA L9-MPNN     & 0.15 & 0.23 & 0.15 & 0.14 & 0.24 & \rd{0.20} \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{A REPA-learned distribution may collapse onto fewer distinct folds within its designable subset.} The effect is strongest in the $\beta$-strand-rich folds. (Designable-subset pairwise TM, lower\,=\,more diverse; columns bin the designable subset by $\beta$-strand fraction (\%); here, unlike elsewhere, colour marks REPA \emph{vs.}\ baseline at the same step and bin: red\,=\,more concentrated, green\,=\,more diverse, $|\Delta|{<}0.05$ uncoloured. Single-seed; $^{*}$900K steps.)}
+\caption{\textbf{On PDB, REPA concentrates its $\beta$-rich designable subset onto fewer folds --- across almost the entire variant family, not one encoder.} The effect is strongest in the most $\beta$-rich bin ($\beta{\ge}25$): almost every variant sits above the baseline at 400K, and REPA-L9-MPNN remains well above it at 1.3M. These are two snapshots, not a monotonic trend. On AFDB the effect is much weaker, near the baseline across variants. (Designable-subset pairwise TM, lower\,=\,more diverse; columns bin the designable subset by $\beta$-strand fraction (\%); here, unlike elsewhere, colour marks REPA \emph{vs.}\ baseline at the same step and bin: red\,=\,more concentrated, green\,=\,more diverse, $|\Delta|{<}0.05$ uncoloured. Single-seed; ``---'' = eval pending or no structures on disk.)}
 \label{tab:proteina-concentration}
 \end{table}
