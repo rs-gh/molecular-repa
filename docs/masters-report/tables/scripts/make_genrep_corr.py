@@ -120,7 +120,11 @@ REP = [
     ("CATH-A", best_layer(REP_CT, "cath", "cath_accuracy", True, cath_level="A"), True),
 ]
 GEN_M = [
-    ("FPSD", gen_metric("_res_PDB_FID"), False),  # display label is FPSD; data key unchanged
+    (
+        "FPSD",
+        gen_metric("_res_PDB_FID"),
+        False,
+    ),  # display label is FPSD; data key unchanged
     ("Designability", gen_metric("_res_designability_rate"), True),
 ]
 
@@ -182,7 +186,8 @@ lines.append(
     "value means better representation accompanies better generation. ($n{=}"
     + n_str
     + "$ checkpoints pooled over the baseline, the REPA variants, and the random "
-    "control.)}"
+    "control; generation seed-mean, $n{=}1$--$3$ seeds; probe single-seed; "
+    "$1{,}125$ backbones/seed, $250$ for designability.)}"
 )
 lines.append("\\label{tab:proteina-genrep-corr}")
 lines.append("\\end{table}")

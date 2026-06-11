@@ -202,7 +202,8 @@ lines += [
     "regimes they also win the long run. Acceleration is the \\%-delta vs the baseline at "
     "400K (the anchor of Figure~\\ref{fig:proteina-genrep}), with the absolute score in "
     "parentheses; the long run is each variant's absolute best within a common 2.0M-step "
-    "window, coloured against the baseline-best row.}",
+    "window, coloured against the baseline-best row. ($n{=}1$--$3$ seeds, seed-mean; "
+    "$1{,}125$ backbones/seed, $250$ for designability.)}",
     "\\label{tab:proteina-speedup}",
     "\\end{table}",
 ]

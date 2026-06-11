@@ -80,7 +80,7 @@ def main():
         r"alignment target. Every REPA row exceeds the baseline in every column, the "
         r"Platonic-convergence signature discussed in \S\ref{sec:proteina-alignment}. "
         r"Absolute values are small (an order of magnitude below image-domain REPA), so we read "
-        r"the pattern, not the magnitude.}"
+        r"the pattern, not the magnitude. ($n{=}1$ seed; bootstrap medians.)}"
     )
     lines.append(r"\label{tab:cknna-matrix}")
     lines.append(r"\end{table}")

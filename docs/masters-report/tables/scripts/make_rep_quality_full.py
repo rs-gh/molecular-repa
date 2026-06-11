@@ -173,10 +173,9 @@ L.append(
     "At matched layer~4, the trained GearNet (L4-GearNet) beats the random control (L4-random) on "
     "every probe, so the learned-versus-random gap is not an artefact of injection depth. "
     "(Baseline absolute; REPA rows are $\\Delta$-from-baseline. Best-layer linear probe, "
-    "$n_\\text{train}{=}1000$, seed 42, mean over the "
+    "$n_\\text{train}{=}1000$, $n{=}1$ seed, mean over the "
     f"{WINDOW[0]}K--{WINDOW[1]/1000:.1f}M window; IF/dihedral on the cross-database blinded set, "
-    "CATH on the cleantrain set. \\colorbox{green!20}{green}/\\colorbox{green!42}{darker} = "
-    "improvement/best per probe. In-window step coverage is uneven across rows.)}"
+    "CATH on the cleantrain set. In-window step coverage is uneven across rows.)}"
 )
 L += ["\\label{tab:proteina-rep-full}", "\\end{table}"]
 

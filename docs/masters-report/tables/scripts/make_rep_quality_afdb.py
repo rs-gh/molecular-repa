@@ -181,8 +181,7 @@ lines.append(
     "clear MPNN-led per-residue gain on PDB. At this checkpoint density the per-residue reads are "
     "noise-dominated, so we lean on the fold result. ($n{\\le}256$ AFDB-trained; best-layer "
     "linear probe at $n_\\text{train}{=}1000$ on the cross-database blinded set; mean over the "
-    f"{WINDOW[0]}K--{WINDOW[1]/1000:.1f}M window; $\\Delta$ from baseline; "
-    "\\colorbox{green!20}{green}/\\colorbox{green!42}{darker} = improvement/best per probe. "
+    f"{WINDOW[0]}K--{WINDOW[1]/1000:.1f}M window; $\\Delta$ from baseline; $n{{=}}1$ seed. "
     "The random control is omitted: it trained only to 500K, below this window.)}"
 )
 lines.append("\\label{tab:proteina-rep-afdb}")
