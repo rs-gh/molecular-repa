@@ -1,0 +1,29 @@
+% Table -- deterministic (ODE) floor at the 1.3M snapshot, baseline vs the
+% strongest variant per regime. \input{} from Ch6 sec:proteina-anatomy.
+% Replaces the old 4-panel ODE trajectory figure. The all-variant 700K ODE
+% snapshot lives in Appendix Table~\ref{tab:proteina-ode}.
+% Source: ODE rows of sweep_results.jsonl at step 1.3M
+% (_res_designability_rate; _res_PDB_FID for PDB rows, _res_AFDB_FID for AFDB
+% rows -- FPSD against the training dataset, as in Table~\ref{tab:proteina-13m}).
+% Colour marks REPA vs its same-regime baseline: green better, red worse.
+% Single-seed (ODE was not multi-seeded). Requires \gd/\rd macros.
+\begin{table}[tbp]
+\centering
+\small
+\setlength{\tabcolsep}{10pt}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Variant (1.3M, ODE)} & Des\,$\uparrow$ & FPSD\,$\downarrow$ \\
+\midrule
+\multicolumn{3}{l}{\textit{PDB-trained}}\\
+Baseline        & 0.07 & 297 \\
+REPA L9-MPNN    & \gd{0.23} & \rd{413} \\
+\midrule
+\multicolumn{3}{l}{\textit{AFDB-trained}}\\
+Baseline        & 0.18 & 233 \\
+REPA L4-GearNet & \gd{0.29} & \gd{177} \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{At the deterministic (ODE) floor, the AFDB model is genuinely better; the PDB model redistributes.} ODE sampling reads the learned field, not the sampler. On AFDB, REPA improves designability and distribution match (FPSD) together. On PDB, it improves designability but worsens FPSD. Baseline and strongest variant per regime, at 1.3M. All-variant 700K picture in Appendix~\ref{app:ode}. ($n{=}1$ seed; $1{,}125$ backbones/seed, $250$ for designability.)}
+\label{tab:proteina-ode-floor}
+\end{table}

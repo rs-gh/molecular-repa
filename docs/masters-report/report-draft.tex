@@ -209,8 +209,18 @@ University.]
 \vspace{\fill}
 
 \chapter*{Abstract}
+The evolution of generative machine learning for de-novo molecular design has increasingly favoured prior-light models, trading hard structural symmetries for architectural simplicity and synthetic data scale. While this enables broader scaling, it dilutes the structural signal available to the model during training. This exacerbates the \emph{representation bottleneck}, where the objective must simultaneously learn how to represent complex geometry and generate samples. In practice, this dual burden leads to slow convergence and expensive training budgets.
 
-TODO
+Our report investigates Representation Alignment (REPA), a technique from the imaging domain that injects soft inductive biases by aligning a generator's hidden states with the embeddings of a frozen, pretrained encoder. We systematically characterise when and why it succeeds in the molecular domain.
+
+Our findings highlight how REPA's efficacy depends on two conditions. The first is headroom, a gap in what the baseline already represents or produces for the alignment to fill. The second is a usable teacher, an encoder that carries structural information the baseline does not already learn on its own, and that transfers to the generative task.
+
+To determine teacher suitability, we first introduce a domain-agnostic profiling framework that evaluates candidate encoders across three dimensions: information content, relevance to the generative task, and embedding conditioning. We use these profiles to select alignment targets, then conduct empirical studies on two flow-matching transformer architectures: Tabasco for small molecules and Proteina for protein backbones.
+
+On Tabasco, REPA yields no measurable improvements in generation quality or training efficiency, which we attribute to small molecules meeting neither condition. The baseline already saturates the relevant quality metrics, and candidate encoders carry no signal that transfers usefully to the 3D generative task. Conversely, protein backbones meet both conditions, and REPA accelerates Proteina's convergence on key generation metrics. We also show that in the long run, the best performing teacher encoder is downstream of the data regime. Experimental and synthetic datasets leave headroom in different places, so the alignment target that pays off shifts between them.
+
+Ultimately, we show that REPA is not a single mechanism in the molecular domain, but a family of encoder-mediated interventions. We also offer a principled, domain-agnostic framework for selecting alignment targets to guide REPA beyond molecules.
+
 \ifsubmission\else
 % not included in submission for blind marking:
 

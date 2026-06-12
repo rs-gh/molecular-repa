@@ -123,3 +123,6 @@ docs/masters-report/tables/preview/
 
 # Ch4 figure embedding cache (regenerable, multi-MB)
 docs/masters-report/figures/.fig_ch4_cache.npz
+
+# Poster-vs-default figure comparison scratch (regenerable)
+docs/masters-report/figures/cmp/

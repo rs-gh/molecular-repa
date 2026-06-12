@@ -7,21 +7,17 @@ Conventions (locked 2026-05-28):
   Bands:    shaded +/- 1 SD across seeds where >=2 seeds exist
 """
 
+import os
 import re
 
 
-def use_report_style():
-    """Match figure text to the report body font (Computer Modern / Latin Modern).
+def _apply_report_fonts():
+    """Impose the Computer Modern serif look on the current rcParams.
 
-    The report loads no font package, so LaTeX typesets it in Computer Modern
-    Roman. matplotlib ships the matching ``cmr10`` TTF and a ``cm`` mathtext
-    fontset, so we can match the look without shelling out to LaTeX (fast, no
-    external dependency, can never fail a figure regen).
-
-    Caveats handled here:
-      * cmr10 has no proper minus glyph -> ``axes.unicode_minus=False``.
-      * cmr10 has no arrow/unicode-symbol glyphs; write arrows as mathtext
-        (e.g. ``$\\downarrow$``) in labels, not literal "down" Unicode.
+    cmr10 has no proper minus glyph (-> ``axes.unicode_minus=False``) and no
+    arrow/unicode-symbol glyphs (write arrows as mathtext, e.g. ``$\\downarrow$``,
+    not literal Unicode). Pulled out so both the report and poster entrypoints
+    re-impose the same fonts *after* any seaborn theme has been applied.
     """
     import matplotlib as mpl
 
@@ -34,6 +30,41 @@ def use_report_style():
             "axes.unicode_minus": False,
         }
     )
+
+
+def use_report_style():
+    """Match figure text to the report body font (Computer Modern / Latin Modern).
+
+    The report loads no font package, so LaTeX typesets it in Computer Modern
+    Roman. matplotlib ships the matching ``cmr10`` TTF and a ``cm`` mathtext
+    fontset, so we can match the look without shelling out to LaTeX (fast, no
+    external dependency, can never fail a figure regen).
+
+    Set ``FIG_POSTER=1`` in the environment to redirect every script that calls
+    this to :func:`use_poster_style` instead, so the same figure scripts emit a
+    slide/poster-ready variant without any per-figure edits.
+    """
+    if os.environ.get("FIG_POSTER"):
+        use_poster_style()
+        return
+    _apply_report_fonts()
+
+
+def use_poster_style():
+    """Larger-text variant for slides / a defense poster (opt-in, not the thesis).
+
+    Layers seaborn's ``poster`` context (bigger fonts, thicker lines) on top of
+    the locked semantic palette and CM serif font. The palette and marker system
+    survive untouched because figures get their colours from
+    :func:`classify_family`, not from seaborn's default cycle -- so green still
+    means L9 everywhere. ``font_scale`` is pulled back below 1.0 because the
+    report figsizes are tuned for column width, not an A0 sheet; bump the
+    per-script ``figsize`` if a title or legend still crowds the data.
+    """
+    import seaborn as sns
+
+    sns.set_theme(context="poster", style="whitegrid", font_scale=0.85)
+    _apply_report_fonts()  # re-impose CM serif on top of the seaborn theme
 
 
 # Locked palette
