@@ -692,3 +692,21 @@ n256_afdb_ode_table67_1p3m_backfill:
   runs: "repa_l9_afdb_256_step1300k,repa_mpnn_l4_afdb_256_step1300k"
   output_dir: results/variance/n256_afdb_sampler_ablation
   metrics: "fid,designability,diversity,novelty_foldseek,ss"
+
+# 2026-06-12: Table 6.6 (1.3M centerpiece) multi-seed re-run. The original
+# ckpts_file backfill (job 30393014) ran these 4 ckpts SINGLE-SEED (42 only) and
+# WITHOUT ss_reference (ckpts_file mode bypasses paper_defaults), so the rows had
+# no ssJSD2D and could not join the n=3 centerpiece. This profile re-evals them
+# through paper_defaults (→ ss_reference wired → ssJSD2D emitted) at all three
+# generation seeds, default sde sampler n=0.45, into a FRESH dir so the stale
+# single-seed n256_13m_backfill rows don't shadow them in the seed-keyed table
+# builders. Retire n256_13m_backfill/sweep_results.jsonl once this lands.
+#   python evaluation/proteina/generation/scripts/run_sweep.py --config n256_13m_centerpiece_n3 --dry_run
+#   EVAL_SEED=42   sbatch --array=0-3 hpc-scripts/proteina/evaluation/generation/run_sweep.sh --config n256_13m_centerpiece_n3 --sampling_mode sc --sc_scale_noise 0.45 --rep_idx 0
+#   EVAL_SEED=1042 sbatch --array=0-3 hpc-scripts/proteina/evaluation/generation/run_sweep.sh --config n256_13m_centerpiece_n3 --sampling_mode sc --sc_scale_noise 0.45 --rep_idx 1
+#   EVAL_SEED=2042 sbatch --array=0-3 hpc-scripts/proteina/evaluation/generation/run_sweep.sh --config n256_13m_centerpiece_n3 --sampling_mode sc --sc_scale_noise 0.45 --rep_idx 2
+n256_13m_centerpiece_n3:
+  <<: *paper_defaults
+  runs: "repa_l4_256_per_residue_bs24_2gpu_step1300k,repa_l4_256_per_residue_random_bs24_2gpu_step1300k,repa_l9_afdb_256_step1300k,repa_mpnn_l4_afdb_256_step1300k"
+  output_dir: results/variance/n256_13m_centerpiece_n3
+  metrics: "fid,designability,diversity,novelty_foldseek,ss"
