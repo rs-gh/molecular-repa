@@ -149,7 +149,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 14731
+Main chapters word count: 14768
 
 Methodology used to generate that word count:
 
@@ -164,7 +164,6 @@ the word-count rules outlined at
 \begin{verbatim}
 $ make wordcount
 perl tools/texcount.pl -inc -sum -total -1 report-draft.tex
-14731
 \end{verbatim}
 \end{quote}
 
@@ -209,9 +208,9 @@ University.]
 \vspace{\fill}
 
 \chapter*{Abstract}
-The evolution of generative machine learning for de-novo molecular design has increasingly favoured prior-light models, trading hard structural symmetries for architectural simplicity and synthetic data scale. While this enables broader scaling, it dilutes the structural signal available to the model during training. This exacerbates the representation bottleneck during training, as the objective must simultaneously learn how to represent complex geometry and generate samples using the same objective function. In practice, this dual burden leads to slow convergence and expensive training budgets.
+The evolution of generative machine learning for de-novo molecular design has increasingly favoured prior-light models, trading hard structural symmetries for architectural simplicity and synthetic data scale. While this enables broader scaling, it dilutes the structural signal available to the model during training. This exacerbates the model's representation bottleneck, as it must simultaneously learn how to represent complex geometry and generate samples using the same objective. In practice, this dual burden leads to slow convergence and expensive training budgets.
 
-Our report investigates Representation Alignment (REPA), a technique from the imaging domain that injects soft inductive biases by aligning a generator's hidden states with the embeddings of a frozen, pretrained encoder. We systematically characterise when and why it succeeds in the molecular domain.
+In this context, our report investigates Representation Alignment (REPA), a technique from the imaging domain that alleviates the representation bottleneck. REPA injects soft inductive biases by aligning a generator's hidden states with the embeddings of a frozen, pre-trained encoder. We characterise when and why it succeeds in the molecular domain.
 
 Our findings highlight how REPA's efficacy depends on two conditions. The first is headroom, a gap in what the baseline already represents or produces for the alignment to fill. The second is a usable teacher, an encoder that carries structural information the baseline does not already learn on its own, and that transfers to the generative task.
 
@@ -421,7 +420,7 @@ The evolution of generative machine learning in scientific domains is defined by
 
 \section{A history of trade-offs}
 
-The dominant ideas in generative modelling are \emph{denoising diffusion} and its offshoot \emph{flow matching}~\cite{DDPM,FlowMatching}, which found breakthrough success in the realm of image generation. This paradigm has since been adapted for de-novo design challenges across scientific fields, such as generating protein backbones~\cite{RFdiffusion,Chroma,Proteina}, inorganic materials~\cite{MatterGen}, and drug-like small molecules~\cite{Tabasco}. Training these models is typically expensive in both data and compute, with state-of-the-art image generators routinely training on billions of examples~\cite{LAION5B}. However, the corpus of available high-quality molecular data sits orders of magnitude below this. Experimental determination is slow and expensive, which means datasets are correspondingly small. For example, protein structure generators have largely been trained on at most half a million structures~\cite{Proteina}, which may explain why they have not yet matched the maturity of their vision-domain counterparts.
+The dominant ideas in generative modelling are \emph{denoising diffusion} and its offshoot \emph{flow matching}~\cite{DDPM,FlowMatching}, which found breakthrough success in the realm of image generation. This paradigm has since been adapted for de-novo design challenges across scientific fields, such as generating drug-like small molecules~\cite{Tabasco}, protein backbones~\cite{RFdiffusion,Chroma,Proteina}, and inorganic materials~\cite{MatterGen}. Training these models is typically expensive in both data and compute, with state-of-the-art image generators routinely training on billions of examples~\cite{LAION5B}. However, the corpus of available high-quality molecular data sits orders of magnitude below this. Experimental determination is slow and expensive, which means datasets are correspondingly small. For example, protein structure generators have largely been trained on at most half a million structures~\cite{Proteina}, which may explain why they have not yet matched the maturity of their vision-domain counterparts.
 
 Historically, researchers compensated for the small scale of high-quality molecular data by encoding structural priors directly into model architectures~\cite{BronsteinGDL}. SE(3)-equivariant architectures, for example, enforce the rotational and translational symmetries expected of molecules by construction~\cite{ThomasTFN}. But hard structural priors come with a computational cost, and the operations required to encode geometry are a bottleneck to scaling models.
 
@@ -429,11 +428,11 @@ A recent wave of research has moved entirely the other way: drop hard priors, us
 
 Given the difficulty of procuring data in scientific domains, data scale must necessarily come from non-experimental sources, which may be of lower quality. For example, recent efforts in protein generation have leaned on synthetic structures from folding-model predictions~\cite{Proteina,AFDB} to expand training datasets into the tens of millions. However, even these enhanced corpora are arguably insufficient. Metagenomic databases catalogue over two billion natural protein sequences~\cite{MGnify}, and the theoretical sequence space at a median protein length~\cite{BrocchieriKarlin} is hundreds of orders of magnitude greater still. Even at the frontier of the field's data scale, we sample but a sliver of the distribution we wish to model.
 
-In summary, the field has traded hard structural priors for architectural simplicity, and curated data for synthetic scale. However, this trade-off dilutes the structural signal available to a model. Furthermore, even our best attempts at creating large datasets may not be large enough. These twin challenges amplify the need for techniques that make training still more efficient without sacrificing quality.
+In summary, the field has traded hard structural priors for architectural simplicity, and curated data for synthetic scale. However, this trade-off dilutes the structural signal available to a model. Furthermore, even if we accept lower data quality, our best attempts at creating large datasets may still not be large enough. These twin challenges amplify the need for techniques that make training still more efficient without sacrificing quality.
 
 \section{Representation alignment}
 
-But why is training diffusion-transformer architectures expensive in the first place? One answer comes from Yu et al.~\cite{REPA}, who argue that these models suffer from a \emph{representation bottleneck}. During training, a model is implicitly asked to learn two distinct tasks simultaneously: (1) representation: extracting semantically meaningful encodings from complex data; and (2) generation: constructing data from these encodings. The standard denoising objective alone may not provide sufficient signal for representation learning, leading to slow convergence and the large training budgets these models require in practice.
+But why is training diffusion-transformer architectures expensive in the first place? One answer comes from Yu et al.~\cite{REPA}, who argue that these models suffer from a \emph{representation bottleneck}. During training, a model is implicitly asked to learn two distinct tasks simultaneously. The first is representation: extracting semantically meaningful encodings from complex data. The second is generation: constructing data from these encodings. The standard denoising objective alone may not provide sufficient signal for representation learning, leading to slow convergence and the large training budgets these models require.
 
 This burden falls harder on the prior-light models we study. In the absence of equivariant architectures, the training objective must now shoulder the additional responsibility of learning structural symmetries. Moreover, the scarcity of high-quality data compounds the problem. The model must learn complex geometry from data that only sparsely samples the true distribution, with no architectural scaffolding to fall back on.
 
@@ -446,7 +445,7 @@ In this light, the core question we investigate in this report is: \emph{can pri
 
 We document two lines of enquiry.
 \begin{itemize}
-  \item[(i)] \emph{Does REPA work in the molecular domain?}: We conduct empirical studies on training flow-based generators with REPA in two regimes: Tabasco~\cite{Tabasco} for small molecules, and Proteina~\cite{Proteina} for protein backbones. We find that REPA does not measurably improve Tabasco, but it improves training efficiency and advances the generation quality envelope for Proteina.
+  \item[(i)] \emph{Does REPA work in the molecular domain?}: We conduct empirical studies on training flow-based generators with REPA in two regimes: Tabasco~\cite{Tabasco} for small molecules, and Proteina~\cite{Proteina} for protein backbones. We find that REPA does not measurably improve Tabasco, but it accelerates generation quality and improves training efficiency for Proteina.
   \item[(ii)] \emph{When does REPA work?}: Following Singh et al.~\cite{SpatialStructure} in the realm of image generation, we develop a profiling framework to characterise the suitability of an encoder as a representation target. For every encoder, we measure its \emph{information} content, the \emph{relevance} of that content for the generation task, and the mathematical \emph{conditioning} of its embeddings for the alignment objective.
 \end{itemize}
 
@@ -1876,7 +1875,7 @@ The protein-backbone result is ultimately a statement about training efficiency,
 
 The first is \emph{acceleration}: for a fixed compute budget, REPA reaches better generation quality in both the experimental (PDB) and synthetic (AFDB) regimes. Early in training, every variant already leads the baseline on designability, and most lead on distribution match (FPSD) in both regimes (\S\ref{sec:proteina-convergence}). A cheap auxiliary signal buys faster convergence, which is highly valuable in a data-scarce, prior-light field.
 
-The second axis is \emph{asymptotics}: whether that early lead survives all the way to convergence. Here the answer is not uniform, and it tracks the headroom the baseline itself leaves rather than anything REPA does. Where the baseline plateaus poorly, the lead is permanent, as on AFDB distribution match; where the baseline is a genuinely strong learner, it eventually closes, as on PDB distribution match (\S\ref{sec:proteina-convergence}).
+The second axis is \emph{asymptotics}: whether that early lead survives to convergence. Here the answer is not uniform, and it follows the data regime. The two regimes leave their headroom in different places. Synthetic (AFDB) data yields designability cheaply, but leaves the fold distribution hard to match. Experimental (PDB) data is the reverse, with a baseline that already matches the distribution but leaves room on designability (\S\ref{sec:proteina-distribution}). REPA's lasting gain lands wherever that gap is. On AFDB the distribution-match lead is permanent, because the baseline plateaus there. On PDB that same lead eventually closes, as the baseline catches up (\S\ref{sec:proteina-convergence}).
 
 Both axes point the same way as a data-efficiency story. REPA always buys a faster climb, and can offer a lasting advantage when the baseline struggles most. The field's frontier --- larger synthetic corpora, longer backbones, the all-atom setting --- is where the generation problem is hardest and an unaided baseline has ground to make up. This may also be where REPA's payoff is greatest, and where it should be tested next.
 
@@ -1899,12 +1898,11 @@ However, the molecular domain presents unique challenges in how multi-factorial 
 
 We close by looking ahead, and proposing new directions based on our work.
 
-\textbf{Does REPA work in other scientific domains?} Our report opened by placing
-this work in the wider arc of generative machine learning for the sciences (Chapter~\ref{ch:intro}). The same paradigm of prior-light models, sparse data, and multi-scale representation recurs across the sciences. For example, in fluid mechanics, diffusion models are learning to generate turbulent flow fields~\cite{TurbulenceDiffusion}. Alleviating the representation bottleneck could open the door for more efficient and performant models here, following our work with proteins.
+\textbf{Does REPA work in other scientific domains?} Our report opened by placing this work in the wider arc of generative machine learning for the sciences (Chapter~\ref{ch:intro}). The same paradigm of prior-light models, sparse data, and multi-scale representation recurs across many scientific fields. For example, in fluid mechanics, diffusion models are learning to generate turbulent flow fields~\cite{TurbulenceDiffusion}. Alleviating the representation bottleneck could open the door for more efficient and performant models here, following our work with proteins.
 
 \textbf{Does our encoder profiling framework generalise?} Singh et al.~\cite{SpatialStructure} ask the which-encoder question for vision, and answer it with structural metrics tied to the image grid. We attempt to generalise this analysis into a set of domain-agnostic heuristics. An open question is whether these are two views of a single, canonical characterisation of what makes a good alignment target. We propose retrospectively analysing published REPA work across domains, to see if the framework offers useful guidance.
 
-We read our contribution not as a verdict that REPA accelerates protein backbone generation, but as a principled framework for assessing how to improve generative models for science more broadly. In the context of that aspiration, we hope to raise more interesting research questions than we answer, and to push the evolution of this exciting space.
+We read our contribution not as a verdict that REPA accelerates protein backbone generation, but as a principled framework for assessing how to improve generative models for science more broadly. With that aspiration, we hope to raise more interesting research questions than we answer, and to push the evolution of this exciting space.
 
 \label{lastcontentpage} % end page count here
 
