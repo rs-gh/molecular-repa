@@ -114,7 +114,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 14688
+Main chapters word count: 14731
 
 Methodology used to generate that word count:
 
@@ -123,12 +123,13 @@ The count is produced with \texttt{texcount} over the \LaTeX{} source, following
 \verb|\input| files. It is scoped to the core chapters by \verb|%TC:ignore|
 directives that exclude the front matter, bibliography, and appendix. The
 reported figure sums body text, section headings, and figure/table captions
-(i.e.\ narrative text); tabular data listings are not counted, in keeping with
-the word-count rules. Reproduce with:
+(i.e.\ narrative text); data listings are not counted, in keeping with
+the word-count rules outlined at
+\url{https://www.cst.cam.ac.uk/teaching/masters/projects/acs/guidelines}. Reproduce with:
 \begin{verbatim}
 $ make wordcount
 perl tools/texcount.pl -inc -sum -total -1 report-draft.tex
-14343
+14731
 \end{verbatim}
 \end{quote}
 
@@ -170,8 +171,17 @@ University.]
 \vspace{\fill}
 
 \chapter*{Abstract}
+The evolution of generative machine learning for de-novo molecular design has increasingly favoured prior-light models, trading hard structural symmetries for architectural simplicity and synthetic data scale. While this enables broader scaling, it dilutes the structural signal available to the model during training. This exacerbates the \emph{representation bottleneck}, where the objective must simultaneously learn how to represent complex geometry and generate samples. In practice, this dual burden leads to slow convergence and expensive training budgets.
 
-Write a summary of the whole thing. Make sure it fits on one page.
+Our report investigates Representation Alignment (REPA), a technique from the imaging domain that injects soft inductive biases by aligning a generator's hidden states with the embeddings of a frozen, pretrained encoder. We systematically characterise when and why it succeeds in the molecular domain.
+
+Our findings highlight how REPA's efficacy depends on two conditions. The first is headroom, a gap in what the baseline already represents or produces for the alignment to fill. The second is a usable teacher, an encoder that carries structural information the baseline does not already learn on its own, and that transfers to the generative task.
+
+To determine teacher suitability, we first introduce a domain-agnostic profiling framework that evaluates candidate encoders across three dimensions: information content, relevance to the generative task, and embedding conditioning. We use these profiles to select alignment targets, then conduct empirical studies on two flow-matching transformer architectures: Tabasco for small molecules and Proteina for protein backbones.
+
+On Tabasco, REPA yields no measurable improvements in generation quality or training efficiency, which we attribute to small molecules meeting neither condition. The baseline already saturates the relevant quality metrics, and candidate encoders carry no signal that transfers usefully to the 3D generative task. Conversely, protein backbones meet both conditions, and REPA accelerates Proteina's convergence on key generation metrics. We also show that in the long run, the best performing teacher encoder is downstream of the data regime. Experimental and synthetic datasets leave headroom in different places, so the alignment target that pays off shifts between them.
+
+Ultimately, we show that REPA is not a single mechanism in the molecular domain, but a family of encoder-mediated interventions. We also offer a principled, domain-agnostic framework for selecting alignment targets to guide REPA beyond molecules.
 
 \ifsubmission\else
 
@@ -427,17 +437,17 @@ This survey leaves open the two questions of \S\ref{sec:contributions}. First, \
 
 ``Goodness'' is usually task-specific, and a de-novo design pipeline (\S\ref{sec:primer}) asks several things of a generated candidate pool at once. A useful set must at least be \emph{valid}: realistic enough to survive downstream filters; \emph{diverse}: spread across the design space, not collapsed onto a few modes; and \emph{designable}: amenable to synthesis. These axes trade off against each other. A model can buy validity by memorising a handful of safe scaffolds, at the cost of diversity; or buy diversity by spreading its mass thinly, at the cost of designability. No axis is dispensable, and maximising any one in isolation is uninformative, as these metrics are themselves proxies for the pipeline's real-world filter steps.
 
-\section{Representation and generation are multi-factorial}
+\section{Representation and generation are multi-factorial and multi-scale problems}
 \label{sec:eval-multifactorial}
 
 
-Moreover, the need for a suite of evaluation metrics reflects how molecules are \emph{represented} in-silico. This is in stark contrast with the image domain, which originated the generative machine learning methods we adopt (\S\ref{sec:flow-matching}).
+Moreover, the need for a suite of evaluation metrics reflects how molecules are represented in-silico. Molecules present a stark contrast with images, which originated the generative machine learning methods we adopt (\S\ref{sec:flow-matching}).
 
 In a 2D image, \emph{geometry} and \emph{content} are coupled in one representation. The pixel grid is at once an object's shape and its identity. There is a single contiguous feature space, so one self-supervised encoder can serve as a near-complete description of it. This coupling is what lets image generation lean on a single strong encoder, and lets image quality be summarised, to a first approximation, by a single Fr\'echet distance in that encoder's feature space~\cite{FID}.
 
-However, molecules pull geometry and content apart, and into more than two pieces. A molecule is at once a discrete graph of typed atoms drawn from a periodic-table-sized alphabet, and a continuous 3D geometry. This is a discrete--continuous duality with no clean analogue in the pixel grid. The two concepts are only loosely tied: one bonding graph admits many conformers, and similar geometries can host different atom types. Geometry is itself \emph{multi-scale}, organised from local environments up to global shape. For example, with proteins the hierarchy is explicit, running from primary sequence through secondary-structure elements to the tertiary fold.
+However, molecules pull geometry and content apart, and into more than two pieces. A molecule is at once a discrete graph of typed atoms drawn from a periodic-table-sized alphabet, and a continuous 3D geometry. This is a discrete--continuous duality with no clean analogue in the pixel grid. The two concepts are only loosely tied: one bonding graph admits many conformers, and similar geometries can host different atom types. Geometry is itself organised hierarchically from local environments up to global shape. Indeed, the taxonomy used to describe protein structure makes this explicit, running from primary sequence through secondary-structure elements to the tertiary fold.
 
-As a consequence, both representation and generation quality are \emph{multi-factorial} and \emph{multi-scale} in this domain. No single encoder captures content and geometry at every scale at once, as we see in Chapter~\ref{ch:profiling}. Moreover, no single metric can score a generated set along all those factors at once. A model can match the distribution of folds while getting local geometry subtly wrong; it can place atoms in valid positions while collapsing the diversity of shapes it produces. These are independent failures, so mode collapse is harder to reason about than in the image domain, where one number suffices to track what goes wrong.
+As a consequence, both representation and generation quality are \emph{multi-factorial} and \emph{multi-scale} in this domain. No single encoder captures every factor of content and geometry at every scale at once, as we see in Chapter~\ref{ch:profiling}. Moreover, no single metric can score a generated set along all those factors at once. A model can match the distribution of folds while getting local geometry subtly wrong; it can place atoms in valid positions while collapsing the diversity of shapes it produces. These are independent failures, so mode collapse is harder to reason about than in the image domain, where one number suffices to track what goes wrong.
 
 The metric suite we propose in this chapter is an attempt at handling this complexity. We decompose quality along the factors the domain pulls apart, and interpret metrics holistically to understand the complete picture. For each domain we report two complementary families: \emph{representation quality}, which scores what the model encodes internally, and \emph{generation quality}, which scores its outputs. We present them in that order throughout the report, since representation is what REPA's mechanism acts on (\S\ref{sec:repa}) and generation is the outcome we hope it improves.
 
@@ -472,17 +482,19 @@ Protein backbones are larger and more variable than small molecules (Chapter~\re
 
 \textbf{Representation alignment.} This asks not what the generator encodes, but how geometrically close it sits to a frozen encoder. We measure it with CKNNA~\cite{PlatonicRep}, a mutual-nearest-neighbour kernel alignment, following the original REPA analysis~\cite{REPA} and a recent molecular extension~\cite{BoltzREPA}. We use it as a diagnostic lens on how REPA acts rather than a quantity we optimise.
 
-\textbf{Generation quality.} Measures of generation quality draw on two lineages. The \emph{canonical} ones --- designability, and various counts of novelty and diversity --- score or tally individual generations, and predate modern generative models. The \emph{model-based} ones, introduced to this domain by Proteina~\cite{Proteina}, borrow the idea from image generation of comparing a generated set against a reference in a learned feature space. We headline on one from each: designability as the canonical measure of per-sample quality, and the Fr\'echet Protein Structure Distance (FPSD) as the model-based measure of set-level fidelity. We outline these metrics, add a secondary-structure metric of our own, and then set out the framework that organises them all.
+\textbf{Generation quality.} Measures of generation quality draw on two lineages. The \emph{canonical} ones --- designability, and various counts of novelty and diversity --- score or tally individual generations, and predate modern generative models. The \emph{model-based} ones, introduced to this domain by Proteina~\cite{Proteina}, borrow the idea from image generation of comparing a generated set against a reference in a learned feature space. We headline on one from each: designability as the canonical measure of per-sample quality, and the Fr\'echet Protein Structure Distance (FPSD) as the model-based measure of set-level distributional realism. We outline these two metrics, add a secondary-structure metric of our own, and then set out a framework that organises them all.
 
 \textbf{Designability.} This metric estimates the fraction of generated backbones that are realisable as real proteins. It involves an in-silico round-trip through the protein design loop (\S\ref{sec:protein}). Each backbone is inverse-folded with ProteinMPNN~\cite{ProteinMPNN}, a model trained to predict an amino-acid sequence that would fold into a given backbone, to propose candidate sequences. These sequences are then re-folded with ESMFold, a model trained to predict 3D structure from sequence. A backbone is termed designable when the self-consistency root-mean-squared deviation (scRMSD) between the generated backbone and its re-folded prediction falls below 2\,\AA{}.
 
 One caveat affects interpretation: designability is an in-silico proxy, not ground-truth physical realism, so it inherits the biases of the folding models it relies on. The inverse-folding and folding steps share model lineage with AlphaFold2~\cite{AlphaFold2}, and hence with the synthetic AlphaFold Database (AFDB), whose structures are themselves AF2 predictions. Generators trained on AFDB therefore score systematically higher on designability by construction, as we explore in Chapter~\ref{ch:proteina-study}.
 
-\textbf{FPSD.} The Fr\'echet Protein Structure Distance~\cite{Proteina} is the protein analogue of the imaging FID. First, it embeds the generated and reference sets using an external encoder: in this case, a GearNet~\cite{GearNet} model trained on a fold classification task. Then, it models each set of embeddings as a Gaussian, and reports the Fr\'echet distance between the two --- a scalar that drops to zero as the generated distribution matches the reference in both mean and covariance. Because the encoder reads fold-level geometry, FPSD scores how well a generated set reproduces the reference distribution of folds.
+\textbf{Designable $\beta$-strand \%.} A model can inflate designability by emitting easy, highly foldable all-$\alpha$ backbones, since idealised helical bundles re-fold with low scRMSD almost by construction. On the contrary, $\beta$-strand content is harder to render designable. As a guard-rail, we track the mean fraction of residues in $\beta$-strand ($f_E$) over the designable subset, and read it alongside designability. A designable set that retains $\beta$-rich folds is evidence that its designability is genuine, rather than bought with trivial helical artefacts. (We use the C$\alpha$-only secondary-structure assignment of Appendix~\ref{app:ssjsd}.)
 
-\textbf{ssJSD-2D.} We introduce this secondary-structure metric in our report. Like FPSD and fJSD, it is a \emph{fidelity} metric, scoring the generated secondary-structure distribution against a real reference. Proteina already measures this, but only at the level of mean helix and strand content, which is blind to a model that matches the average composition while collapsing its spread. In contrast, ssJSD-2D is a Jensen--Shannon divergence over the full joint (helix-fraction, strand-fraction) distribution against the reference, so it rewards reproducing the whole spread of secondary-structure content, not just its centre (Appendix~\ref{app:ssjsd}).
+\textbf{FPSD.} The Fr\'echet Protein Structure Distance~\cite{Proteina} is the protein analogue of the imaging FID. First, it embeds the generated and reference sets using an external encoder: in this case, a GearNet~\cite{GearNet} model trained on a fold classification task. Then, it models each set of embeddings as a Gaussian, and reports the Fr\'echet distance between the two --- a scalar that drops to zero as the generated distribution matches the reference in both mean and covariance. Because the encoder reads fold-level geometry, FPSD scores how well a generated set reproduces the reference distribution of folds. As a distributional distance, FPSD also rewards matching the spread of the reference, not just its centre. It therefore carries some diversity signal of its own, which is why it and our dedicated diversity metrics often move together. This GearNet fold classifier is also one of our two REPA alignment targets in our study of protein backbones (Chapter~\ref{ch:proteina-study}). A model aligned to it might then be expected to gain on FPSD mechanically, by being pulled toward the metric's own feature space. We check this in \S\ref{sec:proteina-convergence} and find it does not hold.
 
-\textbf{A two-axis taxonomy.} We propose reading all these metrics through a framework that organises them by structural and distributional relevance. Two axes do the work: \emph{tertiary} versus \emph{secondary} structure, and the \emph{whole set} versus the \emph{designable subset}. The result is a grid of metric groups, which the result tables in Chapter~\ref{ch:proteina-study} lay out as supercolumns. \emph{Tertiary-whole (T-W)} asks whether the distribution of global folds matches a reference over all backbones; its flagship is FPSD, alongside fJSD (a Jensen--Shannon divergence between the generated and reference fold-class distributions) and a fold-spread score (fS)~\cite{Proteina}. Both fJSD and fS are defined at each level of the CATH hierarchy (\S\ref{sec:protein}); we headline on the architecture level (fJSD-A, fS-A). \emph{Tertiary-designable (T-D)} asks the same diversity question, but only of backbones that pass designability, via cluster count and pairwise TM-score (pwTM). The metric differs from T-W's by design: the designable subset is far smaller than the whole set, so a distributional measure like fS is less reliable over it, whereas pwTM is a pairwise average that stays robust at small sizes. \emph{Secondary-whole (S-W)} and \emph{secondary-designable (S-D)} apply ssJSD-2D over the same two populations.
+\textbf{ssJSD-2D.} We introduce this secondary-structure metric in our report. Like FPSD and fJSD, it is a \emph{distributional} metric, scoring the generated secondary-structure distribution against a real reference. Proteina already measures this, but only at the level of mean helix and strand content, which is blind to a model that matches the average composition while collapsing its spread. In contrast, ssJSD-2D is a Jensen--Shannon divergence over the full joint (helix-fraction, strand-fraction) distribution against the reference, so it rewards reproducing the whole spread of secondary-structure content, not just its centre. The per-residue helix, strand, and coil labels come from the P-SEA algorithm~\cite{PSEA}, run on C$\alpha$ coordinates alone, as implemented in Biotite~\cite{Biotite} (Appendix~\ref{app:ssjsd}).
+
+\textbf{A two-axis taxonomy.} We propose reading all these metrics through a framework that organises them by structural and distributional relevance. Two axes do the work: \emph{tertiary} versus \emph{secondary} structure, and the \emph{whole set} versus the \emph{designable subset}. The result is a grid of metric groups, which the result tables in Chapter~\ref{ch:proteina-study} lay out as supercolumns. \emph{Tertiary-whole (T-W)} asks whether the distribution of global folds matches a reference over all backbones; its flagship is FPSD, alongside fJSD (a Jensen--Shannon divergence between the generated and reference fold-class distributions) and a fold-spread score (fS)~\cite{Proteina}. Both fJSD and fS are defined at each level of the CATH hierarchy (\S\ref{sec:protein}); we headline on the architecture level (fJSD-A, fS-A). \emph{Tertiary-designable (T-D)} asks the same diversity question, but only of backbones that pass designability. Its canonical measure in the protein-backbone literature is the cluster count, the number of distinct structural clusters the designable set falls into~\cite{Proteina}. That count is sensitive to the number of designable backbones, however, which varies across our models --- a model that simply passes more backbones forms more clusters without being any more diverse. We therefore use the pairwise TM-score (pwTM) throughout instead. As a pairwise average, pwTM stays robust at the small sizes of the designable subset, where a distributional measure like fS is unreliable. \emph{Secondary-whole (S-W)} and \emph{secondary-designable (S-D)} apply ssJSD-2D over the same two populations.
 
 \textbf{A caveat on noise.} We also note that generative metrics are noisy, so a gap between two point estimates is not necessarily a finding. We report bootstrap intervals and seed sweeps where possible to guard against this.
 
@@ -555,7 +567,7 @@ MACE~\cite{MACE} is an equivariant message-passing network built on many-body at
 
 Proteins offer a wider choice of pre-trained encoders. We profile five candidates plus a random-initialised reference, summarised in Table~\ref{tab:profiling-protein} (full values in Appendix~\ref{app:profiling-full}).
 
-GearNet~\cite{GearNet}, our lead candidate, is a message-passing network. It passes messages over a residue graph wired by spatial and sequential proximity. The checkpoint we profile is pre-trained for CATH fold classification and released with Proteina~\cite{Proteina}. It is genuinely 3D-aware (a 1\,\AA{} perturbation drops the cosine self-similarity to 0.27) and barely a residue-identity lookup (AA-probe 0.137). Its lift is small only because it sits on a low floor. The embeddings are spread, and the remaining headroom is likely geometric. The random-init row suggests that the architecture alone gives a near-constant, low-rank embedding, and the training significantly improves on this.
+GearNet~\cite{GearNet}, our lead candidate, is a message-passing network. It passes messages over a residue graph wired by spatial and sequential proximity. The checkpoint we profile is pre-trained for CATH fold classification and released with Proteina~\cite{Proteina}. It is genuinely 3D-aware (a 1\,\AA{} perturbation drops the cosine self-similarity to 0.27) and barely a residue-identity lookup (AA-probe 0.137). The embeddings are spread, and the remaining headroom is likely geometric. The random-init row suggests that the architecture alone gives a near-constant, low-rank embedding, and the training significantly improves on this.
 
 ESM2~\cite{ESM2} offers an instructive contrast, as a transformer-based protein language model trained by masked-residue prediction over sequence alone. It produces the largest lift in the field, yet that lift is sequence context. It ignores coordinates by construction, and its last layer flattens almost entirely to residue identity (AA-probe 0.998 against GearNet's 0.137). This information is real but likely unhelpful to a backbone generator.
 
@@ -568,15 +580,15 @@ Of the five candidates, only GearNet clears all three diagnostics, with ProteinM
 \section{Informing our experiments}
 \label{sec:profiling-predictions}
 
-Our profiles are measured before any alignment training, so the expectations they set are genuinely a-priori, not post-hoc rationalisations. We use them to guide which encoders our studies will showcase. For small molecules (Chapter~\ref{ch:tabasco-study}), we expect no measurable REPA gain. For protein backbones (Chapter~\ref{ch:proteina-study}), we expect that GearNet and ProteinMPNN are most likely to help. The following two chapters put these ideas to the test.
+Our profiles are measured before any alignment training, so the expectations they set are a-priori, not post-hoc rationalisations. We use them to guide which encoders our studies will showcase. For small molecules (Chapter~\ref{ch:tabasco-study}), we expect no measurable REPA gain. For protein backbones (Chapter~\ref{ch:proteina-study}), we expect that GearNet and ProteinMPNN are most likely to help. The following two chapters put these ideas to the test.
 
 \chapter{REPA on small molecules}
 \label{ch:tabasco-study}
 
 
-Having profiled candidate encoders for their suitability as a representation alignment (REPA) target in Chapter~\ref{ch:profiling}, we now put that analysis to the test, beginning withsmall molecules. We ask: \emph{can REPA accelerate or improve the training of Tabasco~\cite{Tabasco}, a flow-matching transformer-based generator of 3D drug-like small molecules?}
+Having profiled candidate encoders for their suitability as a representation alignment (REPA) target in Chapter~\ref{ch:profiling}, we now put that analysis to the test, beginning with small molecules. We ask: \emph{can REPA accelerate or improve the training of Tabasco~\cite{Tabasco}, a flow-matching transformer-based generator of 3D drug-like small molecules?}
 
-\textbf{Our headline finding is that no REPA variant measurably improves, or accelerates the training of, Tabasco's small-molecule generation.} On structural-quality metrics, the baseline is already at ceiling. On FCD, the one metric with headroom, the REPA variants perform no better than baseline. Nor do they reach any level of quality faster: the baseline leads from the first epochs. We explore \emph{why} in \S\ref{sec:tabasco-diagnosis}, where two properties of this regime --- a saturated evaluation surface and the absence of a usable teacher --- emerge as an explanation and seed the contrast with proteins (Chapter~\ref{ch:proteina-study}).
+\textbf{Our headline finding is that no REPA variant measurably improves, or accelerates the training of, Tabasco's small-molecule generation.} On structural-quality metrics, the baseline is already at ceiling. On FCD, the one metric with headroom, the REPA variants perform no better than baseline. Nor do they reach any level of quality faster: the baseline leads from the beginning of training. We explore \emph{why} in \S\ref{sec:tabasco-diagnosis}, where two properties of this regime --- a saturated evaluation surface and the absence of a usable teacher --- emerge as an explanation and seed the contrast with proteins (Chapter~\ref{ch:proteina-study}).
 
 \section{Experimental setup}
 \label{sec:tabasco-setup}
@@ -591,7 +603,7 @@ We train on GEOM-drugs~\cite{GEOMdrugs}, a dataset of drug-like molecular confor
 
 The baseline is the unmodified Tabasco flow-matching transformer (\S\ref{sec:small-mol}): a 3.7M-parameter non-equivariant model that denoises 3D atom coordinates and atom types jointly. Our REPA variants add a trainable projector that aligns the trunk's hidden states to a frozen encoder, evaluated on the clean ($t$=1) molecule (\S\ref{sec:repa}). The trunk carries two hidden-state streams, one for coordinates and one for atom types. We concatenate them and pass the pair through a single shared projector, so the alignment acts on one combined representation. It enters the loss as a plain additive regulariser, leaving the flow-matching objective untouched.
 
-\textbf{Encoder ablations.} The two encoders we study come from the profiling of Chapter~\ref{ch:profiling}, and span a useful contrast. \emph{CheMeleon}~\cite{CheMeleon} is a 2D molecular-graph encoder. It is conformer-invariant, so it sees only the bonding graph and not the 3D pose. Meanwhile, \emph{MACE}~\cite{MACE} is a 3D interatomic-potential encoder. It is geometry-aware, but, as the profiling showed, its output is a narrow descriptor of local atomic environments. Hence, the former carries rich 2D-graph information, while the latter encodes 3D geometry.
+\textbf{Encoder ablations.} The two encoders we study come from the profiling of Chapter~\ref{ch:profiling}, and span a useful contrast. \emph{CheMeleon}~\cite{CheMeleon} is a 2D molecular-graph encoder. It is conformer-invariant, so it sees only the bonding graph and not the 3D pose. Meanwhile, \emph{MACE}~\cite{MACE,MACEOFF} is a 3D interatomic-potential encoder. It is geometry-aware, but, as the profiling showed, its output is a narrow descriptor of local atomic environments. Hence, the former carries rich 2D-graph information, while the latter encodes 3D geometry.
 
 \input{tables/table_tabasco_setup}
 
@@ -600,11 +612,11 @@ The baseline is the unmodified Tabasco flow-matching transformer (\S\ref{sec:sma
 
 \textbf{Representation quality.} We use the small-molecule probe battery of Chapter~\ref{ch:evaluation} (Table~\ref{tab:eval-smallmol}): a linear ridge regression from mean-pooled per-atom features to four RDKit descriptors~\cite{RDKit}, scored by held-out $R^2$. We apply it to both the frozen encoders, to see what each REPA target carries on its own, and the generator trunk, to see what the model itself comes to encode, and rely on it in the diagnosis of \S\ref{sec:tabasco-diagnosis}.
 
+The probe set comprises $1{,}000$ molecules from the GEOM-drugs validation split. We fit the regression on $800$ of these and report $R^2$ on the held-out $200$.
+
 \textbf{Generation quality.} We report the standard small-molecule generation metrics of Chapter~\ref{ch:evaluation} (Table~\ref{tab:eval-smallmol}): validity, connectivity, and uniqueness (structural quality); diversity and novelty (set coverage); and the Fr\'echet ChemNet Distance (FCD), the one distributional axis with headroom.
 
 We compute every metric on a set of $1{,}000$ molecules sampled from the trained model using the SDE interpolant described in Table~\ref{tab:tabasco-setup}. We mimic the molecular size distribution of GEOM-drugs in this set, and use the training set as the reference for our FCD metric.
-
-The probe set comprises $1{,}000$ molecules from the GEOM-drugs validation split. We fit the regression on $800$ of these and report $R^2$ on the held-out $200$.
 
 \section{Results: no measurable gain}
 \label{sec:tabasco-results}
@@ -613,9 +625,9 @@ The probe set comprises $1{,}000$ molecules from the GEOM-drugs validation split
 
 \textbf{On FCD, the one metric with room to move, both tested variants are worse.} The baseline records the lowest (best) FCD at $5.61$; CheMeleon lands at $7.43$ and MACE at $6.81$ (Table~\ref{tab:tabasco-gen}). We caveat this by noting that each variant is a single run, not a multi-seed average, and we do not have per-set FCD intervals to bound the gaps. Nevertheless, both point estimates favour the baseline.
 
-\textbf{There is no acceleration in generation quality.} REPA's headline result in the image domain is a training speed-up: the same generation quality reached in far fewer steps (\S\ref{sec:repa})~\cite{REPA}. No such speed-up appears here. On every axis we can track over training, the REPA variants and the baseline are indistinguishable from the first few epochs (Figure~\ref{fig:tabasco-curves}). FCD, the one axis with headroom, is not logged over training, so we cannot trace its early trajectory; but its endpoint favours the baseline.
+\textbf{There is no acceleration in generation quality.} REPA's headline result in the image domain is a training speed-up: the same generation quality reached in far fewer steps (\S\ref{sec:repa})~\cite{REPA}. No such speed-up appears here. On every axis, the REPA variants and the baseline are indistinguishable from the first few thousand steps (Figure~\ref{fig:tabasco-curves}).
 
-\textbf{The unequal training does not make this comparison unfair.} The baseline trained roughly twice as long as the REPA variants (${\sim}152$k steps over 33 epochs, versus ${\sim}69$--$73$k for the two REPA runs) for our final point estimates. We stopped the REPA runs early on purpose. With the quality metrics saturated and FCD flat or worse, there was no evidence that further training would change the verdict. Nor did shorter runs cost the variants anything on the saturated axes, which always plateau within the first few epochs.
+\textbf{The unequal training does not make this comparison unfair.} The baseline trained roughly twice as long as the REPA variants (${\sim}152$k steps over 33 epochs, versus ${\sim}69$--$73$k for the two REPA runs) for our final point estimates. We stopped the REPA runs early on purpose. With the quality metrics saturated and FCD flat or worse, there was no evidence that further training would change the verdict. Nor did shorter runs cost the variants anything on the saturated axes, which always plateau within the first few thousand steps.
 
 \input{figures/fig5_1_tabasco_curves}
 
@@ -628,19 +640,17 @@ The probe set comprises $1{,}000$ molecules from the GEOM-drugs validation split
 
 \textbf{The first condition fails on the metric surface.} The generation quality axes are saturated, as \S\ref{sec:tabasco-results} showed. The representation side is saturated too --- the trunk already encodes what our descriptors capture --- so this regime happens to be closed on both.
 
-\textbf{The second condition fails on both encoders, for opposite reasons (Table~\ref{tab:tabasco-probe}).} We use linear probes to determine the representational content each frozen encoder carries against what the trunk already has. CheMeleon decodes the descriptors almost perfectly in isolation ($R^2$ up to $0.99$). But the baseline trunk \emph{already decodes them well} ($0.64$--$0.92$), because they are 2D-graph quantities and the trunk sees the graph. CheMeleon's signal therefore overlaps with what the model already has. Moreover, FCD ultimately scores the inferred 2D graph --- the very information the trunk already holds --- so even on the one metric with headroom, CheMeleon adds nothing new.
+\textbf{The second condition fails on both encoders, for opposite reasons (Table~\ref{tab:tabasco-probe}).} From our linear probes, we learn that CheMeleon decodes the descriptors almost perfectly in isolation ($R^2$ up to $0.99$). But the baseline trunk \emph{already decodes them well} ($0.64$--$0.92$), because they are 2D-graph quantities and the trunk sees the graph. CheMeleon's signal therefore overlaps with what the model already has. Moreover, FCD ultimately scores the inferred 2D graph --- the very information the trunk already holds --- so even on the one metric with headroom, CheMeleon adds nothing new.
 
 MACE presents the contrary problem. It is genuinely 3D, but it encodes only a narrow, energy-tuned slice of \emph{local} atomic chemistry. The global descriptors we probe sit outside that slice, so they are largely undecodable from its mean-pooled embedding ($R^2$ near zero, save a weak $0.31$ on LogP). Its signal differs from the trunk's, but does not transfer. To calibrate the scale, note that an untrained random-weight encoder (Dummy) already decodes molecular weight at $R^2 = 0.82$, simply because weight tracks atom count. MACE falls below even this floor on three of the four descriptors.
 
 \input{tables/table_tabasco_probe}
 
-\textbf{Forcing the signal in does not rescue it either.} As a final test, we replaced the additive regulariser with a convex \emph{tradeoff} loss, $(1-\lambda)\cdot\mathcal{L}_{\text{gen}} + \lambda\cdot\mathcal{L}_{\text{REPA}}$. This deliberately down-weights the flow-matching loss to force the model to adopt the encoder's representation. Even so, the effect on generation is negligible. MACE under the tradeoff loss still trails the baseline on FCD ($6.32$ versus $5.61$). Its only mark is on the representation, where it is the only variant to beat the baseline on a majority of the descriptor probes (Table~\ref{tab:tabasco-probe}), but only by a small margin. Even when forced into the architecture, MACE leaves only a tiny trace in representation, and nothing in generation.
+\textbf{Forcing the signal in does not rescue it either.} As a final test, we replaced the additive regulariser with a convex \emph{tradeoff} loss, $(1-\lambda)\cdot\mathcal{L}_{\text{gen}} + \lambda\cdot\mathcal{L}_{\text{REPA}}$. This deliberately down-weights the flow-matching loss to force the model to adopt the encoder's representation. Even so, the effect on generation is negligible. MACE under the tradeoff loss still trails the baseline on FCD ($6.32$ versus $5.61$; Table~\ref{tab:tabasco-gen}). Its only mark is on the representation, where it is the only variant to beat the baseline on a majority of the descriptor probes (Table~\ref{tab:tabasco-probe}), but only by a small margin. Even when forced into the architecture, MACE leaves only a tiny trace in representation, and nothing in generation.
 
-We do not claim to have exhausted the REPA design space here. We vary the encoder and the loss form, but hold the alignment layer and projector architecture fixed at the image-domain defaults (\S\ref{sec:repa}). The diagnosis below should therefore be read as the most parsimonious account of the regime, consistent with the encoder profiles of Chapter~\ref{ch:profiling}, rather than a proof that no configuration could help.
+\textbf{When is REPA actually useful?} Our results sharpen the question on REPA's effectiveness rather than settling it. Under our setup, REPA does not help because the regime offers neither headroom nor a usable teacher. This is not evidence that REPA cannot help with molecular generation in principle. Indeed, we do not claim to have exhausted the REPA design space, and there may be other configurations that work well. But it does suggest the question has no single answer. Molecular generation is a broad domain of distinct regimes, and whether REPA helps may be decided within each, not across the whole. Read that way, REPA is not a single intervention, but a family of them.
 
-\textbf{When is REPA actually useful?} Our results sharpen the question on REPA's effectiveness rather than settling it. Under our setup, REPA does not help small-molecule generation, because the regime offers neither headroom nor a usable teacher. This is not evidence that REPA cannot help with molecular generation in principle. But it does suggest the question has no single answer. Molecular generation is a broad domain of distinct regimes, and whether REPA helps is decided within each, not across the whole. Read that way, its utility points less to a single intervention than to a family of them.
-
-More practically, we must look for a regime within the domain that satisfies these two conditions. Protein backbone generation presents an intriguing possibility on both fronts, and that is where we turn next.
+Practically, we must look for a regime within the domain that satisfies these two conditions. Protein backbone generation presents an intriguing possibility on both fronts, and that is where we turn next.
 
 \chapter{REPA on protein backbones}
 \label{ch:proteina-study}
@@ -650,7 +660,9 @@ In this chapter, we expand the scope of our study on representation alignment fr
 
 \textbf{Our headline finding is that REPA accelerates convergence on the two key measures of protein generation quality.} This holds across both experimental and synthetic training-data regimes (Figure~\ref{fig:proteina-fid}). The one exception is designability on synthetic data, which the baseline already saturates under standard sampling (\S\ref{sec:proteina-datasets}). This chapter characterises \emph{what} happens and attempts to understand \emph{why}. We note that our objective here is to test whether the mechanism transfers at all, not to search for the optimal REPA configuration.
 
-\emph{Reading figures and tables in this chapter.} Unless otherwise specified, figures plot data from the PDB-trained $n\le 256$ data-regime (\S\ref{sec:proteina-datasets}); we display the mean over three sampling seeds, with shaded bands showing the min/max. (Figure~\ref{fig:proteina-fid} spans both data regimes, and Figure~\ref{fig:proteina-cknna}'s bands are bootstrap intervals.) In tables, the baseline is usually an absolute value and each REPA row a $\Delta$ from it; \colorbox{green!20}{green} marks a change in the metric's good direction and \colorbox{red!15}{red} a change against it; \colorbox{green!42}{darker green} signals the best entry in a column; small $|\Delta|$ are left uncoloured.
+\emph{A caveat on unequal training.} Given resource constraints, not every variant was trained for the same number of steps, or evaluated with the same number of seeds. We prioritised training and evaluating promising candidates. We flag where this shapes a comparison and read trends rather than single points.
+
+\emph{Reading figures and tables in this chapter.} Unless otherwise specified, figures plot data from the PDB-trained $n\le 256$ data-regime (\S\ref{sec:proteina-datasets}); trajectories show the seed mean, with shaded bands giving the min/max range. Each float notes its seed count in a trailing parenthetical. In tables, the baseline is usually an absolute value and each REPA row a $\Delta$ from it; \colorbox{green!20}{green} marks a change in the metric's good direction and \colorbox{red!15}{red} a change against it; \colorbox{green!42}{darker green} signals the best entry in a column; small $|\Delta|$ are left uncoloured.
 
 \input{figures/fig01_fid_des_convergence}
 
@@ -662,19 +674,18 @@ We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant
 \subsection{Datasets}
 \label{sec:proteina-datasets}
 
-We train in two data regimes that bracket the data-scarcity problem motivating this report (Chapter~\ref{ch:intro}). The Protein Data Bank (PDB)~\cite{PDB} is the experimental record: high-quality and ground-truth, but \emph{scarce}, on the order of hundreds of thousands of structures. The AlphaFold Database (AFDB)~\cite{AFDB} is the synthetic alternative: hundreds of millions of AF2-predicted structures, \emph{abundant} but model-output and helix-biased. The field's response to scarcity is precisely to substitute synthetic scale for experimental quality, so studying REPA in both regimes instruments that substitution directly; we treat them as two ends of a quality--scale axis, not a gold standard and a compromise. (We use the manually-curated Swiss-Prot subset of AFDB as a reproducible stand-in for the Foldseek-clustered TrEMBL subset on which Proteina was trained in the original presentation~\cite{Proteina}. This corpus contained data that has since been pruned from AFDB, and is hence inaccessible.)
+We train in two data regimes that mirror the data-scarcity context motivating this report (Chapter~\ref{ch:intro}). The Protein Data Bank (PDB)~\cite{PDB} is the high-quality experimental source, but it is relatively scarce, containing on the order of hundreds of thousands of structures. The AlphaFold Database (AFDB)~\cite{AFDB} is the synthetic alternative containing hundreds of millions of AF2-predicted structures, but it is almost entirely unverified. We treat the datasets as two ends of a quality--scale axis. (We use the manually-curated Swiss-Prot subset of AFDB as a reproducible stand-in for the Foldseek-clustered TrEMBL subset on which Proteina was trained in the original presentation~\cite{Proteina}. This corpus contained data that has since been pruned from AFDB, and is hence inaccessible.)
 
 Following Proteina~\cite{Proteina}, we train on the subset of chains with at most 256 residues; we represent this length-regime by $n{\le}256$. (We note that this represents only a property of the training datasets, not a bound on the length of the proteins that models trained on these datasets can generate.) Following this filter, the two training sets are comparable in size (PDB: 273{,}771 / 3{,}190 / 323 train/val/test chains; AFDB: 229{,}670 / 4{,}521 / 235). Appendix~\ref{ch:appendix} (Table~\ref{tab:setup-datasets}) contains further details on dataset composition. During training, we augment each backbone with a single random global rotation per sample.
 
-\textbf{Different datasets in this domain carry different biases.} Trends in designability offer a clear example, as training on AFDB raises the in-silico-designability floor well above PDB at every setting we tested (\S\ref{sec:proteina-convergence}). This is the designability-proxy lineage effect of Chapter~\ref{ch:evaluation}: the test re-folds with models sharing AlphaFold2's lineage, so AlphaFold-like backbones are plausibly re-folded most confidently. A second caveat concerns leakage: the PDB random split has substantial train--validation sequence overlap, which inflates in-distribution scores unless a clean split is used (Appendix~\ref{app:leakage}). We flag both so the metrics in this chapter are read with care.
-
+\textbf{Different datasets in this domain carry different biases.} Trends in designability offer a clear example, as training on AFDB raises the in-silico-designability floor well above PDB at every setting we tested (\S\ref{sec:proteina-convergence}). This is the designability-proxy lineage effect of Chapter~\ref{ch:evaluation}: the test re-folds with models sharing AlphaFold2's lineage, so AlphaFold-like backbones are plausibly re-folded most confidently. We also note that both datasets feature some amount of structural similarity across training and evaluation subsets. We attempt to control for this in our evaluation protocol, as noted in \S\ref{sec:eval-protocol}.
 \subsection{Models}
 
 The base Proteina model comprises a stack of ten transformer layers (zero-indexed) that feeds a flow matching objective. Our experiments add a REPA loss to this design, as outlined in Table~\ref{tab:setup-model}.
 
-\textbf{Encoder and injection-depth ablations.} Our narrative concentrates on the two encoders identified as most viable in Chapter~\ref{ch:profiling}: \emph{GearNet}~\cite{GearNet}, a structure encoder pretrained for CATH fold classification (checkpoint released with Proteina~\cite{Proteina}); and \emph{ProteinMPNN}~\cite{ProteinMPNN}, which encodes each residue's local inverse-folding environment. Each encoder is attached to the trunk in two layer-depth configurations: layer~4 (middle layer) and layer~9 (last layer). The remaining encoder and depth combinations are collected in Appendix~\ref{ch:appendix}. Figures presented in this chapter will typically feature the best performing model to serve as an illustrative example.
+\textbf{Encoder and injection-depth ablations.} Our narrative concentrates on the two encoders identified as most viable in Chapter~\ref{ch:profiling}: \emph{GearNet}~\cite{GearNet}, a structure encoder pretrained for CATH fold classification (checkpoint released with Proteina~\cite{Proteina}); and \emph{ProteinMPNN}~\cite{ProteinMPNN}, which encodes each residue's local inverse-folding environment. Each encoder is attached to the trunk in two layer-depth configurations: layer~4 (middle layer) and layer~9 (last layer). The remaining encoder and depth combinations are collected in Appendix~\ref{app:rep-full} (Table~\ref{tab:proteina-rep-full}). Figures presented in this chapter will typically feature the best performing model to serve as an illustrative example.
 
-\textbf{Separating regularisation from mechanism.} A random-weights GearNet attached at layer 4, identical in architecture but never trained, serves as a control architecture in this chapter. We use this model to separate whatever REPA achieves merely due to the regularisation effect of adding an auxiliary loss from what it achieves through the encoder's \emph{learned} structural knowledge. Crucially, a trained encoder at the same layer~4 still outperforms the random one, so the learned-versus-random gap is not an artefact of injection depth (Appendix~\ref{ch:appendix}).
+\textbf{Separating regularisation from mechanism.} A random-weights GearNet attached at layer 4, identical in architecture but never trained, serves as a control architecture in this chapter. We use this model to separate whatever REPA achieves merely due to the regularisation effect of adding an auxiliary loss from what it achieves through the encoder's \emph{learned} structural knowledge. Crucially, a trained encoder at the same layer~4 still outperforms the random one, so the learned-versus-random gap is not an artefact of injection depth (Appendix~\ref{app:rep-full}).
 
 \textbf{Hyperparameters.} Our defaults largely follow the original image-domain REPA recipe~\cite{REPA}.
 
@@ -689,17 +700,18 @@ The original hypothesis that motivated REPA for imaging~\cite{REPA} was that all
 
 \textbf{Representation alignment.} This measures how close the trunk sits to a structural encoder, via CKNNA (\S\ref{sec:eval-probe}; protocol below). As in the original REPA analysis~\cite{REPA} and a recent molecular extension~\cite{BoltzREPA}, we use it as a diagnostic --- a mechanistic lens on \emph{how} REPA might produce its representation gains --- rather than a quantity we optimise or build claims on.
 
-\textbf{Generation quality.} This is what ultimately matters, and we report it through the two-axis taxonomy of Chapter~\ref{ch:evaluation} --- tertiary/secondary structure crossed with whole set/designable subset --- laid out as supercolumns in our result tables: per-sample quality, then T-W, T-D, S-W, and S-D (Table~\ref{tab:eval-protein}). Two headlines anchor the rest: designability and FPSD. The whole-set-versus-designable-subset split, and the fidelity-versus-diversity reading that cuts across it, recur throughout this chapter.
+\textbf{Generation quality.} This is what ultimately matters, and we report it through the two-axis taxonomy of Chapter~\ref{ch:evaluation} --- tertiary/secondary structure crossed with whole set/designable subset --- laid out as supercolumns in our result tables: per-sample quality, then T-W, T-D, S-W, and S-D (Table~\ref{tab:eval-protein}). We report two headline metrics: designability and FPSD. We use this taxonomy to analyse REPA's effect on both the whole generated distribution and the designable subset, along with the trade-off the latter implies.
 
-Most of these metrics follow Proteina~\cite{Proteina}; the one we add, ssJSD-2D, is defined in Chapter~\ref{ch:evaluation} (full description in Appendix~\ref{app:ssjsd}). As we explore in \S\ref{sec:proteina-anatomy}, REPA improves fidelity and whole-set diversity together, but may trade off tertiary-structure diversity \emph{within} the designable subset.
+Most of these metrics follow Proteina~\cite{Proteina}; the one we add, ssJSD-2D, is defined in Chapter~\ref{ch:evaluation} (full description in Appendix~\ref{app:ssjsd}). As we explore in \S\ref{sec:proteina-anatomy}, REPA improves distribution match and whole-set diversity together, but may trade off tertiary-structure diversity \emph{within} the designable subset.
 
 \subsection{Evaluation protocol}
+\label{sec:eval-protocol}
 
 \textbf{Representation probing.} Following the probe principle of \S\ref{sec:eval-probe}, we fit probes to a frozen checkpoint's hidden states on clean inputs ($t{=}1$): the inverse-folding and dihedral probes per residue, the CATH probe per chain on mean-pooled representations. IF is a 20-way classification, CATH-A a $\sim$40-way one.
 
 Each probe is fit on $1{,}000$ training chains. We evaluate the per-residue probes (inverse folding and dihedral) on a \emph{blinded} set of $\sim$325 proteins ($\sim$43k residues) held to under 30\% sequence identity to all training data, which removes both model- and probe-side leakage. The per-chain CATH probe needs many distinct chains spread across fold classes, which that small slice cannot supply, so we relax it to a \emph{probe-clean} evaluation on a larger validation set of $\sim$3{,}190 chains. We detail this scheme, and the model/probe leakage distinction it controls for, in Appendix~\ref{app:leakage}, and read rank-order and $\Delta$-from-baseline throughout this chapter.
 
-\textbf{Representation alignment.} Recall that CKNNA scores how far two representations share their nearest-neighbour structure (\S\ref{sec:eval-probe}). We compute it on clean ($t$=1) data from a fixed held-out batch, between the hidden states at every trunk layer and three domain-relevant encoders: GearNet, ProteinMPNN, and ESM2~\cite{ESM2}. We use $k{=}10$ neighbours over $10{,}000$ residues, and bracket each value with a subsample-without-replacement bootstrap (50 draws at 80\%; sampling with replacement would inflate the score through duplicate neighbour pairs). The absolute CKNNA values we record are small, an order of magnitude below image-domain REPA~\cite{REPA}, so we read the direction and layer structure of the effect, and its separation from the baseline, not its raw magnitude.
+\textbf{Representation alignment.} Earlier, we outlined how CKNNA scores how closely two representations share their nearest-neighbour structure (\S\ref{sec:eval-probe}). We compute it on clean ($t$=1) data from a fixed held-out batch, between the hidden states at every trunk layer and three domain-relevant encoders: GearNet, ProteinMPNN, and ESM2~\cite{ESM2}. We use $k{=}10$ neighbours over $10{,}000$ residues, and bracket each value with a subsample-without-replacement bootstrap (50 draws at 80\%; sampling with replacement would inflate the score through duplicate neighbour pairs). The absolute CKNNA values we record are small, an order of magnitude below image-domain REPA~\cite{REPA}, so we read the direction and layer structure of the effect, and its separation from the baseline, not its raw magnitude.
 
 \textbf{Generation sampling.} Our generation evaluation follows the Proteina protocol~\cite{Proteina}, at a reduced sample budget.
 
@@ -714,19 +726,19 @@ With this experimental testbed in place, the rest of the chapter investigates wh
 \subsection{REPA improves representation quality asymptotically}
 \label{sec:proteina-rep}
 
-\textbf{At baseline, the flow-matching objective helps the model encode some useful representational information.} We probe our models along the three orthogonal axes of \S\ref{sec:proteina-metrics} --- local chemical environment (inverse folding), local geometry (backbone dihedrals), and global fold (CATH classification, with CATH-A as our headline metric; Figure~\ref{fig:proteina-rep}). The trained baseline consistently does better than both random features and an untrained Proteina trunk. This suggests that the flow-matching objective does indeed learn to \emph{represent} protein backbones as it learns to \emph{generate} them.
+\textbf{At baseline, the flow-matching objective helps the model encode some useful representational information.} Figure~\ref{fig:proteina-rep} shows the results of probing our models along the three orthogonal axes of \S\ref{sec:proteina-metrics}: local chemical environment (inverse folding), local geometry (backbone dihedrals), and global fold (CATH classification, with CATH-A as our headline metric). The trained baseline consistently does better than both random features and an untrained Proteina trunk. This suggests that the flow-matching objective does indeed learn to \emph{represent} protein backbones as it learns to \emph{generate} them.
 
 \input{figures/fig02_representation}
 
-\textbf{Every trained-encoder variant improves representational capacity, consistently and durably.} Each lifts all three probes substantially above the baseline, from the very beginning of training. That difference then persists. This is an asymptotic gap that the baseline never closes across 1.8M steps, not just a head start or an accelerated convergence pattern. This gap confirms one of the hypotheses posited in the original REPA presentation~\cite{REPA}: an alignment target during training can fill the representational headroom left by the flow-matching objective.
+\textbf{Every trained-encoder REPA variant improves representational capacity, consistently and durably.} Each lifts all three probes substantially above the baseline, from the very beginning of training, and the difference persists. This is an asymptotic gap that the baseline never closes across 1.8M steps, not just a head start or an accelerated convergence pattern. This gap confirms one of the hypotheses posited in the original REPA presentation~\cite{REPA}: an alignment target during training can fill the representational headroom left by the flow-matching objective.
 
-\textbf{Every encoder routes representation gain differently.} REPA-GearNet consistently wins the fold probes, while REPA-MPNN wins the per-residue probes (Table~\ref{tab:proteina-rep}). This pattern follows what we would expect a priori, given the tasks that each encoder has been specifically trained for. This ties into our emerging theme on the multi-factorial nature of representation learning in the molecular domain~(Chapter~\ref{ch:evaluation}). No single encoder captures every factor, so the choice of alignment target is also a choice over the representational factor a model designer wishes to emphasise. We establish this routing on PDB-trained models and report the AFDB results in Appendix~\ref{ch:appendix}.
+\textbf{Every encoder routes representation gain differently.} REPA-GearNet consistently wins the fold probes, while REPA-MPNN edges the per-residue inverse-folding probe (Table~\ref{tab:proteina-rep}). This pattern follows what we would expect a priori, given the tasks that each encoder has been specifically trained for. This ties into our emerging theme on the multi-factorial nature of representation learning in the molecular domain~(Chapter~\ref{ch:evaluation}). No single encoder captures every factor, so the choice of alignment target is also a choice over the representational factor a model designer wishes to emphasise. We establish this routing on PDB-trained models and report the AFDB results in Appendix~\ref{app:rep-afdb}.
 
 \input{tables/table_rep_quality}
 
-\textbf{REPA offers a mechanistic effect beyond just regularisation.} Our random-weights control improves on the baseline for the fold probes (CATH), but not for the per-residue ones. Where it helps, this may be because \emph{any} regularisation generically improves representation capacity. It may also be that even an untrained message-passing network imposes some geometric priors that aid the trunk. However, the trained encoders consistently perform far better. This sharpens the case for a genuine mechanistic effect, as regularisation alone is not the whole story.
+\textbf{REPA offers a mechanistic effect beyond just regularisation.} Our random-weights control improves on the baseline for the fold probes (CATH), but not for the per-residue ones. Where it helps, this may be because \emph{any} regularisation generically improves representation capacity, or because even an untrained message-passing network imposes some geometric priors that aid the trunk. However, the trained encoders consistently perform far better. This sharpens the case for a genuine mechanistic effect, as regularisation alone is not the whole story.
 
-\textbf{The random control behaves as we expected a saturated target would.} In \S\ref{sec:profiling-protein} we characterised the random-init encoder as saturated, based on its high-floor signature. This makes the alignment loss cheatable, in that the trunk can optimise the loss without learning anything useful (\S\ref{sec:profiling-framework}). Our results bear this out. The random encoder's cosine similarity saturates higher than the trained one's --- ${\approx}0.89$ against ${\approx}0.80$ for a trained GearNet at the same layer~4 on PDB. Yet this near-perfect alignment buys the least representation quality of any variant, and no FPSD or designability gain (\S\ref{sec:proteina-convergence}).
+\textbf{The random control behaves as we expected a saturated target would.} In \S\ref{sec:profiling-protein} we characterised the random-init encoder as saturated, based on its high-floor signature. This makes the alignment loss cheatable, in that the trunk can optimise the loss without learning anything useful (\S\ref{sec:profiling-framework}). Our results bear this out. The random encoder's cosine similarity saturates higher than every trained model's --- ${\approx}0.89$ against ${\approx}0.80$ for a trained GearNet at the same layer~4 on PDB. Yet this near-perfect alignment buys the least representation quality of any variant, and no FPSD or designability gain (\S\ref{sec:proteina-convergence}).
 
 \subsection{A diagnostic check on alignment}
 \label{sec:proteina-alignment}
@@ -737,67 +749,54 @@ Following Yu et al.~\cite{REPA} and recent in-domain work~\cite{BoltzREPA}, we i
 
 \input{figures/fig03_alignment}
 
-\textbf{Aligning to one encoder nudges the trunk towards others as well.} Every REPA variant we tested raises alignment to all three encoders, including those it was not aligned to (full model$\times$encoder matrix in Table~\ref{tab:cknna-matrix}, Appendix~\ref{app:cknna}). A GearNet-aligned trunk, for example, also moves closer to ProteinMPNN and ESM2~\cite{ESM2} (Figure~\ref{fig:proteina-cknna}b), suggesting that REPA-induced alignment is not merely circular self-alignment.
+\textbf{Aligning to one encoder nudges the trunk towards others as well.} Every REPA variant we tested raises alignment to all three encoders, including those it was not aligned to (full model$\times$encoder matrix in Appendix~\ref{app:cknna}). A GearNet-aligned trunk, for example, also moves closer to ProteinMPNN and ESM2~\cite{ESM2} (Figure~\ref{fig:proteina-cknna}b), suggesting that REPA-induced alignment is not merely circular self-alignment. One possible explanation for this phenomenon is the \emph{Platonic representation hypothesis}~\cite{PlatonicRep}. This idea that suggests models trained on related data converge toward a shared representation. In this framework, REPA may be nudging the trunk toward a common structural representation that several encoders approximate, rather than toward any single encoder.
 
-One possible explanation for this phenomenon is the \emph{Platonic representation hypothesis}~\cite{PlatonicRep}. This idea suggests models trained on related data converge toward a shared representation. In this framework, REPA may be nudging the trunk toward a common structural representation that several encoders approximate, rather than toward any single encoder.
-
-\subsection[REPA accelerates generation quality by climbing the representation--generation envelope faster]{REPA accelerates generation quality by climbing the\\ representation--generation envelope faster}
+\subsection{In the short run, REPA accelerates generation quality in both experimental and synthetic data regimes}
 \label{sec:proteina-convergence}
 \label{sec:proteina-genrep}
 
-In this subsection, we outlined our headline results using the \emph{Quality} metrics of our suite, FPSD and designability (as in Table~\ref{tab:eval-protein}). A deeper analysis of generation quality along tertiary- and secondary-structure decomposition follows in \S\ref{sec:proteina-anatomy}.
+Here, we outline our headline results using the \emph{Quality} metrics of our suite, FPSD and designability (as in Table~\ref{tab:eval-protein}). A deeper analysis of generation quality along tertiary- and secondary-structure decomposition follows in \S\ref{sec:proteina-anatomy}.
 
-\textbf{REPA gives generation quality an early head start.} At 400K steps, every variant already leads the baseline on PDB designability, by $+48\%$ to $+149\%$. Most variants also lead on FPSD in both regimes, with the best at $+28\%$. AFDB designability is the lone exception, for the proxy reason given in \S\ref{sec:proteina-datasets} (Table~\ref{tab:proteina-speedup}).
+\textbf{Every REPA variant gives generation quality an early head start.} Table~\ref{tab:proteina-speedup} shows how at 400K steps, every variant already leads the baseline on PDB designability, by $+48\%$ to $+149\%$. Most variants also lead on FPSD in both regimes, with the best at $+28\%$. AFDB designability is the lone exception, for the proxy reason given in \S\ref{sec:proteina-datasets}.
 
 \input{tables/table_speedup}
 
-\textbf{This acceleration is consistent with the representation-bottleneck hypothesis.} Yu et al.~\cite{REPA} hypothesise that a model's representation quality and its generation quality are coupled, because it is learning both at once. In our PDB-trained models, this coupling is clear. Across checkpoints, representation and generation quality are positively correlated, and the strongest of these correlations survive controlling for training step (Table~\ref{tab:proteina-genrep-corr}). The same coupling holds on AFDB-trained models, and in the same encoder-matched form (Appendix~\ref{app:genrep-afdb}). If the two move together, then securing good representations early should secure good generation early as well.
-
-\textbf{REPA climbs the representation--generation envelope faster than the baseline.} REPA reaches an asymptotically higher representation quality almost as soon as training begins (\S\ref{sec:proteina-rep}, Figure~\ref{fig:proteina-rep}). On the representation--generation curve posited by the bottleneck hypothesis, this places it further along than the baseline at matched compute (Figure~\ref{fig:proteina-genrep}, shown for the strongest PDB variant). Hence, it reaches a given level of generation quality at less training. We interpret REPA as simply traversing this curve faster, rather than finding a new shortcut.
-
-\input{figures/fig04_fid_des_gen_vs_rep}
-
-\textbf{This representation--generation link is encoder-matched, suggesting the effect is encoder-specific, not generic regularisation.} Each encoder's generation gain lands on the axis where its representations are strongest. GearNet, the better fold encoder (\S\ref{sec:proteina-rep}), gives the larger gain in fold \emph{distribution} (Table~\ref{tab:proteina-700k}). MPNN, the better local encoder, gives the larger acceleration in \emph{designability} (Table~\ref{tab:proteina-speedup}). Such axis-matching would be unlikely under a generic auxiliary loss, but we do not claim a formal proof of causality.
-
-\input{tables/table_genrep_corr}
-
-\textbf{Broadly, REPA's lasting advantage tracks the headroom the baseline leaves.} Where the baseline plateaus poorly, REPA's lead is large and permanent, as on AFDB FPSD. Where the baseline is a slow learner, the lead narrows yet still holds, as on PDB designability. Only where the baseline is a genuinely strong learner, as on PDB FPSD, does it eventually close the gap. AFDB designability, again, leaves little headroom over the baseline. However, as we noted earlier (\S\ref{sec:proteina-datasets}), this is likely a quirk of the relationship between how designability is measured and how AFDB was generated, and not due to any special merit. Tellingly, even the random control scores highly here.
-
-\subsection{REPA's gains are robust to sampler noise}
-\label{sec:proteina-sampler}
-
-\textbf{The FPSD and designability gains we observe hold across a sampler noise ablation.} At almost every $\gamma$ setting, REPA reaches a higher level of \emph{both} FPSD and designability than the baseline (Table~\ref{tab:proteina-sampler}). The exception is the degenerate $\gamma{=}0$ regime, where the baseline saturates designability by repeating a few folds. This suggests that REPA's gains are built into the learned model, not merely recovered at inference.
+\textbf{For the strongest variant per dataset, this early acceleration holds across the whole sampler-noise axis.} The lead is not an artefact of one inference recipe. Taking the strongest variant per dataset (Table~\ref{tab:proteina-speedup}), it reaches a higher level of \emph{both} FPSD and designability than the baseline at almost every sampler setting (Table~\ref{tab:proteina-sampler}). The lone exception is the degenerate $\gamma{=}0$ regime, where heavy noise correction inflates both models' divergence. This shows the acceleration is built into the learned model, not merely recovered at inference.
 
 \input{tables/table_sampler}
 
-\textbf{REPA raises the deterministic-sampling floor, the strongest sign of a better velocity field.} The probability-flow ODE samples the trunk's learned distribution without injected noise (\S\ref{sec:flow-matching}), the closest view of the true learned distribution before any correction. Under the baseline, that distribution is barely designable: Des $0.04$ on PDB and $0.12$ on AFDB. But REPA's learned distribution is already far more designable at ODE, across every learned encoder (Table~\ref{tab:proteina-ode}). This suggests REPA mechanistically improves the distribution the trunk learns.
+\textbf{FPSD does not merely reward alignment to its own encoder.} FPSD reads generated sets through a GearNet fold classifier (\S\ref{sec:eval-protein}), which is one of the encoders we align to. A GearNet-aligned trunk might then gain on FPSD for free, pulled toward the metric's feature space. This does not bear out. On PDB, the best FPSD belongs to an MPNN-aligned model, not a GearNet-aligned one (Table~\ref{tab:proteina-13m}). The metric is rewarding a real distributional improvement, not self-alignment, which also lends credence to the GearNet-led FPSD wins we report on AFDB.
 
-\input{tables/table_ode}
+\textbf{This acceleration is consistent with the representation-bottleneck hypothesis.} Yu et al.~\cite{REPA} hypothesise that a model's representation quality and its generation quality are coupled, because it is learning both at once. In our PDB-trained models, this coupling is clear. Across checkpoints, representation and generation quality are positively correlated, and the strongest of these correlations survive controlling for training step (Table~\ref{tab:proteina-genrep-corr}). The same coupling holds on AFDB-trained models, and in the same encoder-matched form (Appendix~\ref{app:genrep-afdb}). If the two move together, then securing good representations early should secure good generation early as well. REPA reaches an asymptotically higher representation quality almost as soon as training begins (\S\ref{sec:proteina-rep}, Figure~\ref{fig:proteina-rep}), so this pattern is expected.
 
-Having established REPA's advantages on our headline metrics, we now seek to understand the nuances of what the models learn.
+\textbf{This representation--generation link is encoder-matched, suggesting the effect is encoder-specific, not generic regularisation.} Each encoder's generation gain lands on the axis where its representations are strongest. GearNet, the better fold encoder (\S\ref{sec:proteina-rep}), gives the larger acceleration in fold distribution; MPNN, the better local encoder, gives the larger acceleration in designability (Table~\ref{tab:proteina-speedup}). Such axis-matching would be unlikely under a generic auxiliary loss, but we do not claim proof of causality.
+
+\input{tables/table_genrep_corr}
+
+\textbf{REPA climbs the representation--
+generation envelope faster than the baseline.} On the representation--generation curve posited by the bottleneck hypothesis, the early representation gains place REPA variants further along than the baseline at matched compute (Figure~\ref{fig:proteina-genrep}, shown for the strongest PDB variant). Hence, it reaches a given level of generation quality at less training. We interpret REPA as simply traversing this curve faster, rather than finding a new shortcut.
+
+\input{figures/fig04_fid_des_gen_vs_rep}
 
 
-\subsection{REPA consistently dominates baseline on whole-set, but not on designable-subset metrics}
+\subsection{In the long run, REPA gains are data-regime dependent}
 \label{sec:proteina-distribution}
 \label{sec:proteina-anatomy}
+\label{sec:proteina-modulation}
 
-Two facts sit side by side here, and they are not in tension. Over the whole generated set, REPA genuinely improves the distribution: more diverse, and closer to the reference. But within the \emph{designable} subset, it may only be moving along the designability--diversity envelope (\S\ref{sec:protein-tradeoffs}), trading some of that subset's diversity for the designability it gains.
+The short-run REPA-induced acceleration we observe in our headline metrics, FPSD and designability, is universal. Nearly every variant across both data regimes displays the same pattern (\S\ref{sec:proteina-convergence}). The long run is more contingent. Deep into training, REPA's gain becomes \emph{data-regime dependent}, which highlights the experimental--synthetic distinction that motivates our report and our experimental design (Chapter~\ref{ch:intro}, \S\ref{sec:proteina-datasets}). The choice of alignment target matters too, but the encoder that helps is dictated by the regime rather than chosen independently of it.
 
-\input{tables/table_proteina_700k}
+\textbf{Each data regime leaves a different gap, and REPA fills the one it is given.} On synthetic (AFDB) data, designability comes readily, partly by construction (\S\ref{sec:proteina-datasets}), while matching the fold distribution is the harder problem. On experimental (PDB) data the reverse holds, as the baseline already matches the distribution well, but leaves room on designability. REPA's long-run gain then shows up wherever the gap is: on distribution match for AFDB, on designability for PDB (Figure~\ref{fig:proteina-fid}).
 
-\textbf{REPA consistently improves whole-set fidelity and diversity, and the gain is durable.} Under almost every REPA variant tested, the generated set matches the reference fold distribution more closely (fJSD-A) and spreads more widely across fold classes (fS-A); secondary-structure fidelity (ssJSD-2D) improves likewise. Curiously, this holds for the random-weights control too, but only the learned encoders translate it into higher FPSD and designability (Table~\ref{tab:proteina-700k}). The advantage is not a transient head start. The whole-set lead persists deep into training, with the strongest variant on each dataset still ahead at 1.0M steps --- REPA-MPNN-L9 on PDB (FPSD $-$81, fold-score $+0.29$) and REPA-GN-L4 on AFDB ($-$228, $+3.68$) --- even as its designable-subset diversity stays below baseline.
+\input{tables/table_proteina_13m}
 
-\textbf{However, REPA's designable subset displays fold concentration.} Despite the whole-set gains, within the designable subset, REPA's pwTM rises above the baseline at almost every checkpoint, and sharply so by 1.0M steps (Table~\ref{tab:designable-diversity}).
+\textbf{On synthetic data, REPA learns a genuinely better model.} At the 1.3M snapshot, the strongest long-run AFDB variant (Table~\ref{tab:proteina-speedup}, long-run column), REPA-L4-GearNet, beats the baseline on Quality and whole-model (T-W, S-W) metrics at once, \emph{at no meaningful cost to designable-subset metrics} (T-D and S-D) (Table~\ref{tab:proteina-13m}). This represents a true pushing of the designability--diversity envelope (\S\ref{sec:protein-tradeoffs}). The $0.02$ rise in designable pwTM is within the baseline's own seed-to-seed scatter (Appendix~\ref{app:13m-ranges}), while the designability quality gains clear it. This makes REPA-L4-GearNet the canonically better model under that framework, not merely a different point on the same envelope. We note that this is learned model behaviour, not a sampler artefact. The same pattern survives the deterministic ODE limit, which reads the velocity field with no injected noise (Appendix~\ref{app:ode}).
 
-\input{tables/table_designable_diversity}
-
-\textbf{The concentration is encoder-dependent and severe for $\beta$-rich folds.} In our data, the concentration appears especially severe for $\beta$-strand-rich samples (Table~\ref{tab:proteina-concentration}). The REPA construction appears to generate the \emph{same} $\beta$-rich folds repeatedly, while the baseline spans many. Notably, the AFDB-MPNN variant does not display this: its designable subset stays as diverse as the baseline's in every $\beta$-bin (Table~\ref{tab:proteina-concentration}). One explanation is that encoder routing leads to different secondary- and tertiary-structure distributions; this MPNN configuration nudges the learned distribution towards helices, which may be why it escapes this largely strand-heavy phenomenon (Appendix~\ref{app:ss-composition}).
+\textbf{On experimental data, REPA finds a different spot on the designability--diversity envelope.} At the 1.3M snapshot, across variants, REPA delivers whole-model gains (T-W, S-W) while pushing the designable subset toward $\beta$-strand content (S-D) (Table~\ref{tab:proteina-13m}). However, designable diversity (T-D) drops, as the model appears to collapse onto fewer distinct $\beta$-rich folds (Table~\ref{tab:proteina-concentration}). This $\beta$-driven dynamic of secondary-structure enhancement and loss of tertiary-structure diversity is far stronger on PDB. The performance of the strongest long-run variant, REPA-L9-MPNN (Table~\ref{tab:proteina-speedup}, long-run column), makes the resultant trade-off clear: it trades diversity for designability. On PDB, REPA finds another spot on this envelope, instead of pushing the frontier out as with AFDB.
 
 \input{tables/table_concentration}
 
-\textbf{On PDB, even the baseline concentrates early in training, but grows out of it.} After $700$K training steps, both the PDB baseline and its REPA variants concentrate their $\beta$-rich designable samples, though REPA already does so more. By 1.0M steps, the baseline has diversified while REPA stays concentrated, widening the gap (Table~\ref{tab:proteina-concentration}). This suggests REPA does not \emph{engender} the concentration so much as fail to grow out of an early-training regime the baseline leaves behind. We read the late checkpoints as a single-seed directional pattern, not a precise effect size.
-
-\textbf{Does alignment outlive its purpose?} Given REPA's early acceleration in generation quality and the later-stage fold concentration we observe, the best approach may be to stop alignment after early training. A similar arc is reported in the image-diffusion literature, where REPA helps early and is best early-stopped~\cite{HASTE}. We do not test such a schedule and make no argument of this form, but on this reading an early stop may let REPA diversify like the baseline while keeping the whole-set gains.
+\textbf{The optimal alignment target follows from the data regime.} Alignment with GearNet lifts the fold distribution, while alignment with ProteinMPNN lifts per-sample designability (\S\ref{sec:proteina-convergence}). PDB's gap is in designability, so ProteinMPNN wins there, with REPA-L9-MPNN proving the best long-run PDB variant. AFDB's gap is in distribution match, so REPA-L4-GearNet proves stronger. For REPA in a multi-factorial and multi-scale domain like molecules, the data regime dictates which encoder pays off.
 
 \subsection{What we do not claim}
 \label{sec:proteina-scope}
@@ -805,13 +804,10 @@ Two facts sit side by side here, and they are not in tension. Over the whole gen
 Several tempting claims do not survive our data, and we flag them here.
 
 \begin{itemize}
-  \item \emph{No asymptotic generation quality win on experimental data.} REPA accelerates PDB convergence, but the lead is transient. The baseline matches REPA's FPSD plateau by ${\sim}1.4$M steps and edges below it by $1.6$M (\S\ref{sec:proteina-convergence}). The durable advantage on fidelity is on synthetic (AFDB) data, where the baseline plateaus poorly.
-  \item \emph{Unclear designability gains on synthetic data.} At the recommended sampler setting, AFDB designability is already biased upwards by construction and near-saturated for the baseline, so a reliable whole-set gain is hard to establish (\S\ref{sec:proteina-datasets}). The deterministic ODE floor of \S\ref{sec:proteina-distribution} is the exception.
-  \item \emph{No reliable novelty gain.} The signal is too noisy to call in either direction.
-  \item \emph{No general ``$\beta$-preservation''.} The secondary-structure shift is encoder$\times$dataset conditional, and MPNN-AFDB reverses it (\S\ref{sec:proteina-anatomy}).
+  \item \emph{No asymptotic generation quality win on experimental data.} REPA accelerates PDB convergence, but the lead is transient. The baseline matches REPA's FPSD plateau by ${\sim}1.4$M steps and edges below it by $1.6$M (\S\ref{sec:proteina-convergence}). The durable advantage on distribution match is on synthetic (AFDB) data, where the baseline plateaus poorly.
   \item \emph{Co-movement, not mediation.} Representation and generation quality move together. We do not claim one formally causes the other, but we note that the pattern is consistent with the representation bottleneck hypothesis (\S\ref{sec:proteina-genrep}).
   \item \emph{Unconditional generation only.} Every experiment here is unconditional: we specify a target length but never a fold class or other structural motif. We do not claim these dynamics carry over to the conditional setting (\S\ref{sec:flow-matching}).
-  \item \emph{No claim of optimality.} We do not search the configuration space for the best setup of layer, weight, or encoder. The question here is whether the mechanism works at all, not how to tune it for maximum gain (\S\ref{sec:proteina-setup}).
+  \item \emph{No claim of optimality.} We do not search the configuration space for the best setup of layer, weight, or encoder. With limited compute, variants were also trained to different horizons, so some late comparisons rest on fewer checkpoints than others; we flag these in the text. The question here is whether the mechanism works at all, not how to tune it for maximum gain (\S\ref{sec:proteina-setup}).
 \end{itemize}
 
 \section{Discussion}
@@ -819,13 +815,13 @@ Several tempting claims do not survive our data, and we flag them here.
 
 \textbf{We show that REPA accelerates Proteina's convergence on generation quality, and suggest that this works through representation.} Every trained encoder teaches the trunk to represent structural characteristics that the flow-matching loss never learns on its own. This representation gain is mirrored in the generation gain, encoder by encoder, on the axis each encoder is strongest. A random-weights control suggests that the mechanism is indeed genuine structural transfer, not the side effect of an auxiliary loss. Its alignment loss drops more than any trained encoder, yet this buys the least representation quality, and no generation gain at all (\S\ref{sec:proteina-rep}).
 
-\textbf{It is likely that REPA improves the distribution learned by the model.} Two observations point this way. The representation gap opens early and never closes (\S\ref{sec:proteina-rep}), and the generation advantage holds for the learned encoders even in the deterministic ODE limit, which reads the learned distribution with no injected noise (\S\ref{sec:proteina-distribution}). The REPA advantage also holds across all sampler noise ablations, suggesting again that the gain is built into the model, rather than recovered at inference.
+\textbf{Unlike small molecules, protein backbone generation meets the conditions for REPA.} Our small-molecule study set out two conditions for REPA to help (\S\ref{sec:tabasco-diagnosis}). There must be headroom, a gap in what the generator represents or produces for the alignment to fill. And there must be a usable teacher, an encoder whose signal differs from what the trunk already learns and transfers to the generative task. Small molecules met neither, and we observed a null result (Chapter~\ref{ch:tabasco-study}). Proteins meet both. The null there and the success here are two sides of the same coin.
 
-\textbf{The same encoder pull that broadens the whole set may be what keeps the designable set concentrated.} Relative to baseline, REPA broadens the folds the model generates over the whole set, but may concentrate the designable subset onto fewer modes. This concentration appears early in the baseline as well as in REPA. The two then part ways: the baseline grows out of the early regime and diversifies, while REPA stays concentrated, so the cost relative to baseline widens deep into training rather than appearing there for the first time. One interpretation may be that the encoder is a fixed target, so once the trunk has extracted the representational signal it had to offer, continued alignment keeps pulling toward the encoder's own distribution, which for our structure encoders is comparatively narrow. In this framing, the gain and the cost are not separate phenomena, but early and late phases of one pull. Indeed, the image-diffusion literature reports a similar arc, and early-stops alignment for it~\cite{HASTE}. Nevertheless, in this report, we do not investigate the mechanism behind the data we observe, and we do not claim early-stopping would help here.
+\textbf{In molecular generation, REPA is a family of encoder-mediated interventions, not a single mechanism.} There is no single best pre-trained encoder. Each buys a different representational factor, so the best choice is likely use-case specific --- or, as in our case, data-regime specific (\S\ref{sec:proteina-modulation}). The dataset establishes the bottleneck, and the encoder routed to that factor is the one that helps.
 
-\textbf{REPA helps most where the baseline struggles most.} On experimental data, the FPSD acceleration is real but transient, and the baseline eventually catches up. On synthetic data, the FPSD baseline plateaus poorly, and the REPA lead is durable. The intervention is identical in both cases, and the asymmetry tracks the baseline's capacity.
+\textbf{Geometric convergence between encoders need not make them interchangeable.} The alignment signal we measure is small, so we raise this only as a talking point (\S\ref{sec:proteina-alignment}). Nevertheless, we observe that aligning to one encoder nudged the trunk toward the others too, which may read as a pull toward a shared structural representation, in the spirit of the Platonic representation hypothesis~\cite{PlatonicRep}. Yet the encoders are plainly not interchangeable. Each routes its gain to a different factor (\S\ref{sec:proteina-anatomy}). The two sit together if the encoders share a common core but differ in what they emphasise above it, and REPA transfers both.
 
-\textbf{REPA is a family of encoder-mediated interventions, not a single mechanism.} Our results suggest that in a domain with multi-factorial representation, choosing an alignment target implicitly chooses what factor gets boosted. There is no single best encoder. Each one buys a different representational factor, so the optimal outcome is likely use-case specific.
+\textbf{One thread we leave open is whether alignment outlives its early purpose.} REPA helps most early, and on PDB the distribution-match lead is transient while the designable subset concentrates mid-training (\S\ref{sec:proteina-anatomy}). One reading is that the encoder is a fixed target, so once the trunk has taken what it offers, continued alignment keeps pulling it toward the encoder's own, narrower distribution. A similar early-helps arc is reported for image diffusion, where alignment is best stopped early~\cite{HASTE}. We see a superficially similar pattern, but our evidence on whether the late cost is permanent is too thin to say the same remedy applies here.
 
 We carry these results, and the contrast with the small-molecule study of Chapter~\ref{ch:tabasco-study}, into this report's conclusion in Chapter~\ref{ch:conclusions}.
 
@@ -848,9 +844,9 @@ What explains these divergent behaviours? At root, the two regimes represent com
 
 The protein-backbone result is ultimately a statement about training efficiency, and it pays off along two axes.
 
-The first is \emph{acceleration}: for a fixed compute budget, REPA reaches better generation quality in both the experimental (PDB) and synthetic (AFDB) regimes. Early in training, every variant already leads the baseline on designability, and most lead on fidelity (FPSD) in both regimes (\S\ref{sec:proteina-convergence}). A cheap auxiliary signal buys faster convergence, which is highly valuable in a data-scarce, prior-light field.
+The first is \emph{acceleration}: for a fixed compute budget, REPA reaches better generation quality in both the experimental (PDB) and synthetic (AFDB) regimes. Early in training, every variant already leads the baseline on designability, and most lead on distribution match (FPSD) in both regimes (\S\ref{sec:proteina-convergence}). A cheap auxiliary signal buys faster convergence, which is highly valuable in a data-scarce, prior-light field.
 
-The second axis is \emph{asymptotics}: whether that early lead survives all the way to convergence. Here the answer is not uniform, and it tracks the headroom the baseline itself leaves rather than anything REPA does. Where the baseline plateaus poorly, the lead is permanent, as on AFDB fidelity; where the baseline is a genuinely strong learner, it eventually closes, as on PDB fidelity (\S\ref{sec:proteina-convergence}).
+The second axis is \emph{asymptotics}: whether that early lead survives all the way to convergence. Here the answer is not uniform, and it tracks the headroom the baseline itself leaves rather than anything REPA does. Where the baseline plateaus poorly, the lead is permanent, as on AFDB distribution match; where the baseline is a genuinely strong learner, it eventually closes, as on PDB distribution match (\S\ref{sec:proteina-convergence}).
 
 Both axes point the same way as a data-efficiency story. REPA always buys a faster climb, and can offer a lasting advantage when the baseline struggles most. The field's frontier --- larger synthetic corpora, longer backbones, the all-atom setting --- is where the generation problem is hardest and an unaided baseline has ground to make up. This may also be where REPA's payoff is greatest, and where it should be tested next.
 
@@ -934,13 +930,13 @@ Xiangdong Zhang, Jiaqi Liao, Shaofeng Zhang, Fanqing Meng, Xiangpeng Wan, Junchi
 \href{https://arxiv.org/abs/2505.23656}{arXiv:2505.23656}.
 
 \bibitem{TARO}
-Tri Ton, Jiajing Hong, Chang D.~Yoo.
-\textit{Temporally Aligned Audio for Video with Autoregression}. ICCV 2025.
+Tri Ton, Ji Woo Hong, Chang D.~Yoo.
+\textit{TARO: Timestep-Adaptive Representation Alignment with Onset-Aware Conditioning for Synchronized Video-to-Audio Synthesis}. ICCV 2025.
 \href{https://arxiv.org/abs/2504.05684}{arXiv:2504.05684}.
 
 \bibitem{CrystalREPA}
-Wei Zhang, Shijie Jin, Hangrui Zhang, Yi Li, Yan Wang.
-\textit{CrystalREPA: Element-aware Representation Alignment for Crystal Generation}. 2026.
+Chengqian Zhang, Yucheng Jin, Duo Zhang, Tiejun Li, Han Wang.
+\textit{CrystalREPA: Transferring Physical Priors from Universal MLIPs to Crystal Generative Models}. 2026.
 \href{https://arxiv.org/abs/2605.08960}{arXiv:2605.08960}.
 
 \bibitem{DiffuseDisperse}
@@ -1047,10 +1043,14 @@ Martin Steinegger, Johannes S\"oding.
 \href{https://doi.org/10.1038/nbt.3988}{doi:10.1038/nbt.3988}.
 
 \bibitem{MACE}
-Ilyes Batatia et al.
-``A foundation model for atomistic materials chemistry''.
-\textit{The Journal of Chemical Physics} 163.18 (2024), 184110.
-\href{https://doi.org/10.1063/5.0155322}{doi:10.1063/5.0155322}.
+Ilyes Batatia, D\'avid P\'eter Kov\'acs, Gregor N.~C. Simm, Christoph Ortner, G\'abor Cs\'anyi.
+\textit{MACE: Higher Order Equivariant Message Passing Neural Networks for Fast and Accurate Force Fields}. NeurIPS 2022.
+\href{https://arxiv.org/abs/2206.07697}{arXiv:2206.07697}.
+
+\bibitem{MACEOFF}
+D\'avid P\'eter Kov\'acs et al.
+\textit{MACE-OFF: Transferable Short Range Machine Learning Force Fields for Organic Molecules}. 2023.
+\href{https://arxiv.org/abs/2312.15211}{arXiv:2312.15211}.
 
 \bibitem{CheMeleon}
 Jackson W.~Burns et al.
@@ -1152,7 +1152,7 @@ Josh Abramson et al.
 
 \bibitem{Brehmer2024}
 Johann Brehmer et al.
-\textit{Does equivariance matter at scale?} NeurIPS 2024.
+\textit{Does equivariance matter at scale?} TMLR 2025.
 \href{https://arxiv.org/abs/2410.23179}{arXiv:2410.23179}.
 
 \bibitem{FrameFlow}
@@ -1176,8 +1176,8 @@ Clement Vignac et al.
 \href{https://arxiv.org/abs/2302.09048}{arXiv:2302.09048}.
 
 \bibitem{SemlaFlow}
-Ross Irwin et al.
-\textit{Efficient 3D Molecular Generation with Flow Matching and Scale Optimal Transport}. 2024.
+Ross Irwin, Alessandro Tibo, Jon Paul Janet, Simon Olsson.
+\textit{SemlaFlow: Efficient 3D Molecular Generation with Latent Attention and Equivariant Flow Matching}. AISTATS 2025.
 \href{https://arxiv.org/abs/2406.07266}{arXiv:2406.07266}.
 
 \bibitem{NIHSmallMolGuide}
@@ -1250,6 +1250,19 @@ Minyoung Huh, Brian Cheung, Tongzhou Wang, Phillip Isola.
 \textit{The Platonic Representation Hypothesis}. ICML 2024.
 \href{https://arxiv.org/abs/2405.07987}{arXiv:2405.07987}.
 
+
+\bibitem{PSEA}
+Gilles Labesse, Nathalie Colloc'h, Jo\"el Pothier, Jean-Paul Mornon.
+``P-SEA: a new efficient assignment of secondary structure from C$\alpha$ trace of proteins''.
+\textit{Computer Applications in the Biosciences (CABIOS)} 13.3 (1997), pp.~291--295.
+\href{https://doi.org/10.1093/bioinformatics/13.3.291}{doi:10.1093/bioinformatics/13.3.291}.
+
+\bibitem{Biotite}
+Patrick Kunzmann, Kay Hamacher.
+``Biotite: a unifying open source computational biology framework in Python''.
+\textit{BMC Bioinformatics} 19 (2018), article~346.
+\href{https://doi.org/10.1186/s12859-018-2367-z}{doi:10.1186/s12859-018-2367-z}.
+
 \end{thebibliography}
 
 \appendix
@@ -1280,6 +1293,20 @@ The random train/val split (\S\ref{app:datasets}) is not sequence-clustered, so 
 
 We control these by filtering the evaluation. A \emph{probe-clean} split removes probe leakage alone --- the probe's training chains are filtered to have no $\ge$30\% sequence-identity hit to the evaluation set, which is otherwise the full validation set. A \emph{blinded} split removes both --- the evaluation proteins are held to under 30\% identity to all training data (here, a cross-database set of AFDB chains with no such hit in either the PDB or AFDB training pool, $\sim$325 proteins). We use the blinded split for the per-residue probes (inverse folding, dihedral), where the $\sim$325 proteins still yield $\sim$43k residues --- full statistical power. The per-chain CATH probe is different: fold classification needs many distinct chains spread across populated fold classes, and the blinded slice is too small and too class-sparse for this, so we relax it to the probe-clean split on the fuller validation set ($\sim$3{,}190 chains). Comparing the splits also decomposes the leakage --- the dirty-to-probe-clean drop isolates probe leakage and the probe-clean-to-blinded drop isolates model leakage --- and the REPA-over-baseline gap survives in every regime.
 
+\section{Full representation-quality ablation}
+\label{app:rep-full}
+
+The main-text representation table (Table~\ref{tab:proteina-rep}) shows four rows. Table~\ref{tab:proteina-rep-full} gives the full six-variant grid, adding the layer-4 GearNet and ProteinMPNN combinations. Two readings carry over from the main text: the encoder-routed pattern (ProteinMPNN wins the per-residue probes, GearNet the fold probes) holds across all depths, and at matched layer~4 the trained GearNet beats the random control on every probe.
+
+\input{tables/table_rep_quality_full}
+
+\section{Representation quality on AFDB}
+\label{app:rep-afdb}
+
+Table~\ref{tab:proteina-rep-afdb} is the AFDB-trained counterpart of the PDB Table~\ref{tab:proteina-rep}. The fold routing (GearNet\,$\to$\,CATH) replicates; the per-residue routing is weaker and noisier than on PDB, for the reasons given in the caption.
+
+\input{tables/table_rep_quality_afdb}
+
 \section{Representation-alignment matrix}
 \label{app:cknna}
 
@@ -1299,14 +1326,28 @@ Section~\ref{sec:proteina-genrep} establishes the representation--generation cou
 
 Proteina's secondary-structure metric compares the \emph{mean} helix and strand content of a generated set against a reference. This collapses each set to a single point, so it cannot see variance, bimodality, or tails --- a model that matches the average composition while collapsing its spread scores the same as one that reproduces it. ssJSD-2D removes this blind spot by comparing the full joint distribution.
 
-For each backbone we annotate every residue as helix, strand, or coil with a C$\alpha$-only secondary-structure assignment (P-SEA, as implemented in Biotite) and record the fraction of residues in helix ($f_H$) and in strand ($f_E$). A set of $N$ backbones is then a cloud of $N$ points in the $(f_H, f_E)$ plane. We bin that plane into a $5\times5$ grid over $[0,1]^2$, form normalised two-dimensional histograms for the generated and reference sets, and report the Jensen--Shannon divergence between them (lower is better). Binning the joint distribution, rather than comparing marginal means, lets the metric reward a model for reproducing the \emph{shape} of the secondary-structure distribution and penalise mode collapse onto, say, all-$\alpha$ backbones.
+For each backbone we annotate every residue as helix, strand, or coil with a C$\alpha$-only secondary-structure assignment (P-SEA~\cite{PSEA}, as implemented in Biotite~\cite{Biotite}) and record the fraction of residues in helix ($f_H$) and in strand ($f_E$). A set of $N$ backbones is then a cloud of $N$ points in the $(f_H, f_E)$ plane. We bin that plane into a $5\times5$ grid over $[0,1]^2$, form normalised two-dimensional histograms for the generated and reference sets, and report the Jensen--Shannon divergence between them (lower is better). Binning the joint distribution, rather than comparing marginal means, lets the metric reward a model for reproducing the \emph{shape} of the secondary-structure distribution and penalise mode collapse onto, say, all-$\alpha$ backbones.
 
 \section{Secondary-structure composition of the designable subset}
 \label{app:ss-composition}
 
-The encoder-routing reading in \S\ref{sec:proteina-anatomy} --- GearNet shifting the designable subset toward $\beta$-strand content, MPNN on AFDB away from it --- rests on the secondary-structure composition of the designable backbones (Table~\ref{tab:ss-composition}). The shifts are small in absolute terms but seed-consistent: on AFDB the GearNet-L9 and MPNN-L9 strand and helix ranges do not overlap across seeds, in opposite directions. The main-text E\%des figures (Table~\ref{tab:proteina-700k}) are the per-seed means of the strand column; we report the spread here rather than in the main table to avoid clutter.
+The encoder-routing reading in \S\ref{sec:proteina-anatomy} --- GearNet shifting the designable subset toward $\beta$-strand content, MPNN on AFDB away from it --- rests on the secondary-structure composition of the designable backbones (Table~\ref{tab:ss-composition}). The shifts are small in absolute terms but seed-consistent: on AFDB the L9-GearNet and L9-MPNN strand and helix ranges do not overlap across seeds, in opposite directions. The main-text designable $\beta$-strand \% figures (Table~\ref{tab:proteina-13m}) are the per-seed means of the strand column; we report the spread here rather than in the main table to avoid clutter.
 
 \input{tables/table_ss_composition}
+
+\section{Deterministic (ODE) sampling across variants}
+\label{app:ode}
+
+The deterministic (ODE) sampler reads the learned velocity field with no injected noise, so it isolates what the trunk has learned from the sampler that draws from it. Table~\ref{tab:proteina-ode} gives the all-variant ODE snapshot at 700K. On AFDB the lift holds across every trained encoder, not just the strongest one, and without concentrating the designable subset (des.\ pwTM); this is the ODE evidence behind the ``genuinely better model'' reading of \S\ref{sec:proteina-anatomy}. On PDB the floor instead redistributes, raising designability while the distribution-match gain is mixed.
+
+\input{tables/table_ode}
+
+\section{Per-seed spread of the centerpiece table}
+\label{app:13m-ranges}
+
+Each cell of the 1.3M centerpiece (Table~\ref{tab:proteina-13m}) is a mean over generation seeds. Table~\ref{tab:proteina-13m-ranges} reports the min--max range across those seeds for the same cells, in absolute units, so the reader can judge which small centerpiece deltas sit within seed scatter. Two rows are single-seed and carry no range. The most load-bearing case is AFDB L4-GearNet: its designable-diversity (pwTM) range overlaps the baseline's, so the $0.02$ rise we report is within seed scatter, while its FPSD range stays cleanly below the baseline's.
+
+\input{tables/table_13m_ranges}
 
 \section{Full encoder profiles}
 \label{app:profiling-full}

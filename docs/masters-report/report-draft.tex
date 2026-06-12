@@ -209,7 +209,7 @@ University.]
 \vspace{\fill}
 
 \chapter*{Abstract}
-The evolution of generative machine learning for de-novo molecular design has increasingly favoured prior-light models, trading hard structural symmetries for architectural simplicity and synthetic data scale. While this enables broader scaling, it dilutes the structural signal available to the model during training. This exacerbates the \emph{representation bottleneck}, where the objective must simultaneously learn how to represent complex geometry and generate samples. In practice, this dual burden leads to slow convergence and expensive training budgets.
+The evolution of generative machine learning for de-novo molecular design has increasingly favoured prior-light models, trading hard structural symmetries for architectural simplicity and synthetic data scale. While this enables broader scaling, it dilutes the structural signal available to the model during training. This exacerbates the representation bottleneck during training, as the objective must simultaneously learn how to represent complex geometry and generate samples using the same objective function. In practice, this dual burden leads to slow convergence and expensive training budgets.
 
 Our report investigates Representation Alignment (REPA), a technique from the imaging domain that injects soft inductive biases by aligning a generator's hidden states with the embeddings of a frozen, pretrained encoder. We systematically characterise when and why it succeeds in the molecular domain.
 
