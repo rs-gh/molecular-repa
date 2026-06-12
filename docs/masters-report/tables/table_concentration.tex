@@ -3,8 +3,10 @@
 % AFDB L4-GearNet) to illustrate the regime difference cleanly; the all-variant
 % "REPA-wide" breadth lives in Table 6.6's T-D column. Source:
 % results/variance/beta_stratified_diversity.json (exp_beta_stratified_diversity.py).
-% Absolute pwTM; colour marks REPA vs same-block/step/bin baseline: red=more
-% concentrated, green=more diverse, |delta|<0.05 uncoloured. Each cell pools the
+% Absolute pwTM. Only the one salient concentration cell (PDB L9-MPNN beta>=25
+% @1.3M, +0.56 vs baseline) is shaded red; every other REPA-vs-baseline delta is
+% <=0.09 and left uncoloured, so the colour matches the caption ("on AFDB it does
+% not", "lower-beta bins barely move") instead of overstating the breadth. Each cell pools the
 % designable subset across ALL available rep dirs (2-3 seeds) and the 5 lengths;
 % NOT single-seed. Per-bin n verified from the rep dirs (e.g. L9-MPNN beta>=25 @1.3M
 % = 64+59+65 over rep0/1/2 = 188; baseline = 9+11 over rep1/2 = 20).
@@ -20,13 +22,13 @@
 \midrule
 \multicolumn{7}{l}{\textit{PDB-trained}}\\
 Baseline        & 0.16 & 0.15 & 0.21 & 0.15 & 0.23 & 0.13 \\
-REPA L9-MPNN    & 0.16 & \rd{0.21} & \rd{0.29} & 0.19 & 0.23 & \rd{0.69} \\
+REPA L9-MPNN    & 0.16 & 0.21 & 0.29 & 0.19 & 0.23 & \rd{0.69} \\
 \midrule
 \multicolumn{7}{l}{\textit{AFDB-trained}}\\
 Baseline        & 0.19 & 0.22 & 0.16 & 0.13 & 0.26 & 0.14 \\
-REPA L4-GearNet & 0.16 & 0.26 & 0.17 & \rd{0.22} & 0.26 & \rd{0.20} \\
+REPA L4-GearNet & 0.16 & 0.26 & 0.17 & 0.22 & 0.26 & 0.20 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{On PDB, REPA concentrates the $\beta$-rich designable folds onto fewer modes; on AFDB it does not.} The effect is specific to the most $\beta$-rich bin ($\beta{\ge}25$): PDB-L9-MPNN climbs from $0.29$ (400K) to $0.69$ (1.3M) while its baseline diversifies to $0.13$. Lower-$\beta$ bins and AFDB-L4-GearNet barely move. Designable-subset pairwise TM, lower\,=\,more diverse; columns bin by $\beta$-strand fraction (\%). Cells pool the designable subset across all available seeds (2--3 per cell) and the five generation lengths. The load-bearing $\beta{\ge}25$ bin at 1.3M holds $n{=}188$ designable backbones for REPA-L9-MPNN against $n{=}20$ for the baseline, so the $0.69$ versus $0.13$ gap is no small-sample artefact; the sparser 400K $\beta{\ge}25$ bins ($n{\approx}11$--$19$) are directional.)}
+\caption{\textbf{On PDB, REPA concentrates the $\beta$-rich designable folds onto fewer modes; on AFDB it does not.} The effect is specific to the most $\beta$-rich bin ($\beta{\ge}25$): PDB-L9-MPNN climbs from $0.29$ (400K) to $0.69$ (1.3M) while its baseline diversifies to $0.13$. Lower-$\beta$ bins and AFDB-L4-GearNet barely move. Designable-subset pairwise TM, lower\,=\,more diverse; columns bin by $\beta$-strand fraction (\%). Cells pool the designable subset across all available seeds (2--3 per cell) and the five generation lengths. The $\beta{\ge}25$ bin at 1.3M holds $n{=}188$ designable backbones for REPA-L9-MPNN against $n{=}20$ for the baseline; the sparser 400K $\beta{\ge}25$ bins ($n{\approx}11$--$19$) are directional.)}
 \label{tab:proteina-concentration}
 \end{table}

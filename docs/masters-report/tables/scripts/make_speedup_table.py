@@ -4,15 +4,18 @@ the two questions, with absolute scores alongside each delta:
   Acceleration: REPA vs the baseline at matched compute (400K steps, the anchor of
       Fig 6.4). Robust to the non-monotone AFDB baseline (compares values at a
       fixed step, not "best so far").
-  Long run: REPA's own best within a 2.0M-step window vs the baseline's best in the
-      same window, with the checkpoint at which REPA's best occurs.
+  Long run: REPA's own best vs the baseline's best, with the checkpoint at which
+      REPA's best occurs. The baseline is capped at the furthest trained REPA
+      variant in each regime (PDB 2.0M, AFDB 1.5M), so the comparison never reads a
+      baseline checkpoint with no variant alongside.
 
 Each cell shows a signed % delta (coloured green if REPA is better, red if worse,
 via the preamble macros \\gd / \\rd) followed by the absolute score. Training extent
 is shown in parentheses after each variant name (it differs by dataset --- AFDB and
 PDB are separate models), so the undertrained random control is visible inline and
-no separate column is needed. The 2.0M window caps the baseline's longer training
-(PDB to 2.4M) without dropping any headline number.
+no separate column is needed. Capping the baseline at the furthest trained variant
+per regime drops its out-of-bounds tail (PDB 2.0M--2.4M, AFDB 1.5M--1.8M) without
+losing any headline number.
 
 PDB FPSD (dagger): REPA leads at 400K but its ceiling sits below the baseline's late
 best --- accelerates, does not win. AFDB designability (ddagger): saturated proxy,
@@ -94,14 +97,22 @@ def colour(txt, good):
     return f"\\gd{{{txt}}}" if good else f"\\rd{{{txt}}}"
 
 
-VARIANT_ORDER = ["L4-GearNet", "L9-GearNet", "L4-MPNN", "L9-MPNN", "Random control"]
+# Random control listed first (right after the baseline anchor row), matching the
+# convention in the other result tables (6.2, 6.6, ODE, appendix rep/ranges).
+VARIANT_ORDER = ["Random control", "L4-GearNet", "L9-GearNet", "L4-MPNN", "L9-MPNN"]
 
 
 def cell(d, metric, lower, vfmt):
     t = traj(d, metric)
     last_true = {lab: max(t[lab]) for lab in t}
     b400 = t["baseline"].get(EARLY)
-    tc = {lab: {s: v for s, v in d2.items() if s <= CAP} for lab, d2 in t.items()}
+    # Per-regime cap: truncate the baseline (and random control) to the furthest
+    # step of any genuine trained REPA variant in this regime, so the long-run
+    # column never reads a baseline checkpoint with no variant alongside.
+    # PDB -> 2.0M (L9-MPNN); AFDB -> 1.5M (L9-MPNN).
+    genuine = [lab for lab in t if lab not in ("baseline", "Random control")]
+    cap = min(CAP, max(max(t[lab]) for lab in genuine))
+    tc = {lab: {s: v for s, v in d2.items() if s <= cap} for lab, d2 in t.items()}
     bb = (min if lower else max)(tc["baseline"].values())
     bb_step = (min if lower else max)(tc["baseline"], key=lambda s: tc["baseline"][s])
 
@@ -130,7 +141,7 @@ def cell(d, metric, lower, vfmt):
         better = (own < bb) if lower else (own > bb)
         late = (f"{vfmt(own)} (@{fmt_step(ostep)})", better)
         rows.append((name, early, late))
-    return b400, bb, bb_step, last_true["baseline"], rows
+    return b400, bb, bb_step, min(last_true["baseline"], cap), rows
 
 
 blocks = [
@@ -201,8 +212,9 @@ lines += [
     "\\caption{\\textbf{Most REPA variants accelerate generation quality over the baseline.} In some "
     "regimes they also win the long run. Acceleration is the \\%-delta vs the baseline at "
     "400K (the anchor of Figure~\\ref{fig:proteina-genrep}), with the absolute score in "
-    "parentheses; the long run is each variant's absolute best within a common 2.0M-step "
-    "window, coloured against the baseline-best row. ($n{=}1$--$3$ seeds, seed-mean; "
+    "parentheses; the long run is each variant's absolute best, with the baseline capped "
+    "at the furthest trained variant per regime (2.0M PDB, 1.5M AFDB), coloured against the "
+    "baseline-best row. ($n{=}1$--$3$ seeds, seed-mean; "
     "$1{,}125$ backbones/seed, $250$ for designability.)}",
     "\\label{tab:proteina-speedup}",
     "\\end{table}",

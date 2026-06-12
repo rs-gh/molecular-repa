@@ -131,6 +131,20 @@ def oriented(d, higher_better):
     return d if higher_better else {k: -v for k, v in d.items()}
 
 
+def is_ref(famname):
+    return famname.startswith("baseline") or "random" in famname
+
+
+# Furthest genuine trained REPA variant step, pooled across all rep + gen dicts.
+# Baseline (and random) checkpoints beyond this are dropped from the pool: a
+# rep--gen point with no trained variant at that compute is a baseline-only tail.
+_all_keys = set()
+for _, _d, _ in REP:
+    _all_keys |= set(_d)
+for _, _d, _ in GEN_M:
+    _all_keys |= set(_d)
+CAP_STEP = max(s for (f, s) in _all_keys if f.startswith("repa") and "random" not in f)
+
 cells, ns = [], []
 for _, rdict, rhb in REP:
     ro = oriented(rdict, rhb)
@@ -138,6 +152,7 @@ for _, rdict, rhb in REP:
     for _, gdict, ghb in GEN_M:
         go = oriented(gdict, ghb)
         keys = sorted(set(ro) & set(go))
+        keys = [k for k in keys if not (is_ref(k[0]) and k[1] > CAP_STEP)]
         xs, ys, zs = [ro[k] for k in keys], [go[k] for k in keys], [k[1] for k in keys]
         row.append((partial(xs, ys, zs), pearson(xs, ys), len(keys)))
     cells.append(row)
@@ -171,11 +186,12 @@ lines.append("\\bottomrule")
 lines.append("\\end{tabular}")
 lines.append(
     "\\caption{\\textbf{On AFDB too, better trunk representations track better "
-    "generation.} The AFDB counterpart to Table~\\ref{tab:proteina-genrep-corr}: partial "
-    "Pearson controlling for training step (raw alongside), oriented so positive means "
-    "better representation accompanies better generation. Generation is FPSD-AFDB and "
-    "designability; representation probes are read at $n_\\text{train}{=}1000$ on the "
-    "cross-database blinded set. ($n{=}" + n_str + "$ AFDB checkpoints pooled over the "
+    "generation.} The AFDB counterpart to Table~\\ref{tab:proteina-genrep-corr} (same "
+    "partial-Pearson method). Generation is FPSD-AFDB and "
+    "designability; representation probes are read at $n_\\text{train}{=}1000$ on a "
+    "leakage-controlled set (App.~\\ref{app:leakage}). ($n{=}"
+    + n_str
+    + "$ AFDB checkpoints pooled over the "
     "baseline, the REPA variants, and the random control; generation is a $3$-seed mean, with single-seed checkpoints only for the under-trained variants (AFDB L9-GearNet, L4-MPNN) and trajectory tails; probe single-seed; "
     "$1{,}125$ backbones/seed, $250$ for designability.)}"
 )

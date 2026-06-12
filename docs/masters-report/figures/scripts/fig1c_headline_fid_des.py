@@ -84,11 +84,24 @@ def trajec(rows, key):
 
 
 def draw(ax, tj, fams_to_show, title, ylabel):
+    # Per-panel cap: the baseline and the random-encoder control are truncated
+    # to the furthest step of the genuine trained REPA variant(s) shown in this
+    # panel. A convergence comparison is only meaningful where both curves
+    # exist, so no curve is drawn into a region with no trained variant to
+    # compare against.
+    trained = [
+        f
+        for f in fams_to_show
+        if f.startswith("repa") and "random" not in f and f in tj
+    ]
+    cap = max((max(tj[f]) for f in trained), default=None)
     for fam in fams_to_show:
         if fam not in tj:
             continue
         color, marker, label, z = classify_family(fam)
         steps = sorted(tj[fam])
+        if cap is not None and ("baseline" in fam or "random" in fam):
+            steps = [s for s in steps if s <= cap]
         steps_k = [s / 1000 for s in steps]
         means = [tj[fam][s][0] for s in steps]
         mins = [tj[fam][s][1] for s in steps]

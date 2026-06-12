@@ -104,10 +104,19 @@ def whole_series(json_key):
 fig, (axL, axR) = plt.subplots(1, 2, figsize=(11, 4.8))
 
 
+# Per-panel cap: truncate the baseline to the furthest step of the genuine
+# trained REPA variant(s) shown, so no curve extends past the last variant point.
+_trained = [bv for bv in SERIES if bv.startswith("repa") and "random" not in bv]
+CAP_STEP = max((max(raw[bv]) for bv in _trained if raw[bv]), default=None)
+
+
 def aligned(bv, field):
     """Dense per-checkpoint series: (steps_k, means, mins, maxs)."""
     sk, ms, los, his = [], [], [], []
+    is_ref = bv.startswith("baseline") or "random" in bv
     for s in sorted(raw[bv]):
+        if is_ref and CAP_STEP is not None and s > CAP_STEP:
+            continue
         vals = [v for v in raw[bv][s][field] if v is not None]
         if not vals:
             continue

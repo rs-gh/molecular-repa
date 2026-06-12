@@ -8,11 +8,11 @@
 \cmidrule(lr){2-3} \cmidrule(lr){4-5}
  & partial & raw & partial & raw \\
 \midrule
-Inverse folding (top-1) & -0.14 & -0.14 & +0.49 & +0.46 \\
-Dihedral MAE & +0.04 & -0.05 & +0.36 & +0.05 \\
-CATH-A & +0.39 & +0.40 & +0.29 & +0.34 \\
+Inverse folding (top-1) & -0.15 & -0.14 & +0.49 & +0.50 \\
+Dihedral MAE & +0.05 & -0.08 & +0.36 & +0.12 \\
+CATH-A & +0.42 & +0.45 & +0.28 & +0.32 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{On AFDB too, better trunk representations track better generation.} The AFDB counterpart to Table~\ref{tab:proteina-genrep-corr} (same partial-Pearson method). Generation is FPSD-AFDB and designability; representation probes are read at $n_\text{train}{=}1000$ on the cross-database blinded set. ($n{=}42$ AFDB checkpoints pooled over the baseline, the REPA variants, and the random control; generation is a $3$-seed mean, with single-seed checkpoints only for the under-trained variants (AFDB L9-GearNet, L4-MPNN) and trajectory tails; probe single-seed; $1{,}125$ backbones/seed, $250$ for designability.)}
+\caption{\textbf{On AFDB too, better trunk representations track better generation.} The AFDB counterpart to Table~\ref{tab:proteina-genrep-corr} (same partial-Pearson method). Generation is FPSD-AFDB and designability; representation probes are read at $n_\text{train}{=}1000$ on a leakage-controlled set (App.~\ref{app:leakage}). ($n{=}40$ AFDB checkpoints pooled over the baseline, the REPA variants, and the random control; generation is a $3$-seed mean, with single-seed checkpoints only for the under-trained variants (AFDB L9-GearNet, L4-MPNN) and trajectory tails; probe single-seed; $1{,}125$ backbones/seed, $250$ for designability.)}
 \label{tab:proteina-genrep-corr-afdb}
 \end{table}

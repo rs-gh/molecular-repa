@@ -133,6 +133,20 @@ def oriented(d, higher_better):
     return d if higher_better else {k: -v for k, v in d.items()}
 
 
+def is_ref(famname):
+    return famname.startswith("baseline") or "random" in famname
+
+
+# Furthest genuine trained REPA variant step, pooled across all rep + gen dicts.
+# Baseline (and random) checkpoints beyond this are dropped from the pool: a
+# rep--gen point with no trained variant at that compute is a baseline-only tail.
+_all_keys = set()
+for _, _d, _ in REP:
+    _all_keys |= set(_d)
+for _, _d, _ in GEN_M:
+    _all_keys |= set(_d)
+CAP_STEP = max(s for (f, s) in _all_keys if f.startswith("repa") and "random" not in f)
+
 # Compute cells: list of rows; each row list of (partial, raw, n).
 cells = []
 ns = []
@@ -142,6 +156,7 @@ for _, rdict, rhb in REP:
     for _, gdict, ghb in GEN_M:
         go = oriented(gdict, ghb)
         keys = sorted(set(ro) & set(go))
+        keys = [k for k in keys if not (is_ref(k[0]) and k[1] > CAP_STEP)]
         xs = [ro[k] for k in keys]
         ys = [go[k] for k in keys]
         zs = [k[1] for k in keys]  # step
@@ -185,9 +200,10 @@ lines.append(
     "controlling for training step, with the raw value alongside; oriented so a positive "
     "value means better representation accompanies better generation. ($n{=}"
     + n_str
-    + "$ checkpoints pooled over the baseline, the REPA variants, and the random "
-    "control; generation is a $3$-seed mean, with only the single-seed late-tail "
-    "checkpoints at $n{=}1$; probe single-seed; "
+    + "$ checkpoints, one per variant and training step, pooled over the baseline, the "
+    "REPA variants, and the random control; each contributes a single (representation, "
+    "generation) point, with generation seed-averaged to one value ($3$ seeds, "
+    "single-seed at the late tail) and the probe read at one seed. "
     "$1{,}125$ backbones/seed, $250$ for designability.)}"
 )
 lines.append("\\label{tab:proteina-genrep-corr}")

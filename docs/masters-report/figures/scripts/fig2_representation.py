@@ -140,11 +140,20 @@ def refs_for(csv_path, probe_kind, value_col, level=None, higher_better=True):
 
 
 def plot_traj_panel(ax, data, families, title, ylabel, refs=None, higher_better=True):
+    # Per-panel cap: baseline and the random control are truncated to the
+    # furthest step of the genuine trained REPA variant(s) shown, so no curve
+    # extends into a region with no trained variant to compare against.
+    trained = [
+        f for f in families if f.startswith("repa") and "random" not in f and f in data
+    ]
+    cap = max((max(data[f]) for f in trained), default=None)
     for family in families:
         if family not in data:
             continue
         color, marker, label, z = classify_family(family)
         steps = sorted(data[family])
+        if cap is not None and ("baseline" in family or "random" in family):
+            steps = [s for s in steps if s <= cap]
         steps_k = [s / 1000 for s in steps]
         means = [data[family][s][0] for s in steps]
         mins = [data[family][s][1] for s in steps]
@@ -187,7 +196,7 @@ plot_traj_panel(
     axes[0],
     if_data,
     FAMS,
-    "(a) IF top-1 (xclean PDB) $\\uparrow$",
+    "(a) IF top-1 $\\uparrow$",
     "top-1 acc",
     refs=refs_for(XCLEAN, "inverse_folding", "if_top1_acc", higher_better=True),
     higher_better=True,
@@ -196,7 +205,7 @@ plot_traj_panel(
     axes[1],
     dih_data,
     FAMS,
-    "(b) Dihedral MAE (xclean PDB) $\\downarrow$",
+    "(b) Dihedral MAE $\\downarrow$",
     "MAE ($^\\circ$)",
     refs=refs_for(XCLEAN, "dihedral", "dih_mae_total_deg", higher_better=False),
     higher_better=False,
@@ -205,7 +214,7 @@ plot_traj_panel(
     axes[2],
     cath_data,
     FAMS,
-    "(c) CATH-A (cleantrain PDB) $\\uparrow$",
+    "(c) CATH-A $\\uparrow$",
     "CATH-A top-1",
     refs=refs_for(CLEANTRAIN, "cath", "cath_accuracy", level="A", higher_better=True),
     higher_better=True,
