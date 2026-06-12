@@ -1,0 +1,461 @@
+\relax
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{DDPM}
+\citation{FlowMatching}
+\citation{RFdiffusion}
+\citation{Chroma}
+\citation{Proteina}
+\citation{MatterGen}
+\citation{Tabasco}
+\citation{LAION5B}
+\citation{Proteina}
+\citation{BronsteinGDL}
+\citation{ThomasTFN}
+\citation{ViT}
+\citation{TokenGT}
+\citation{AlphaFold3}
+\citation{AlphaFold2}
+\citation{Brehmer2024}
+\citation{Tabasco}
+\citation{Proteina}
+\@writefile{toc}{\contentsline {chapter}{\numberline {1}Introduction}{7}{chapter.1}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{ch:intro}{{1}{7}{Introduction}{chapter.1}{}}
+\newlabel{firstcontentpage}{{1}{7}{Introduction}{chapter.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {1.1}A history of trade-offs}{7}{section.1.1}}
+\citation{Proteina}
+\citation{AFDB}
+\citation{MGnify}
+\citation{BrocchieriKarlin}
+\citation{REPA}
+\citation{VideoREPA}
+\citation{TARO}
+\citation{REED}
+\citation{BoltzREPA}
+\@writefile{toc}{\contentsline {section}{\numberline {1.2}Representation alignment}{8}{section.1.2}}
+\citation{Tabasco}
+\citation{Proteina}
+\citation{SpatialStructure}
+\@writefile{toc}{\contentsline {section}{\numberline {1.3}Contributions}{9}{section.1.3}}
+\newlabel{sec:contributions}{{1.3}{9}{Contributions}{section.1.3}{}}
+\citation{FlowMatching}
+\citation{FlowMatching}
+\@writefile{toc}{\contentsline {chapter}{\numberline {2}Background and Related Work}{10}{chapter.2}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{ch:background}{{2}{10}{Background and Related Work}{chapter.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.1}Flow matching}{10}{section.2.1}}
+\newlabel{sec:flow-matching}{{2.1}{10}{Flow matching}{section.2.1}{}}
+\citation{DDPM}
+\citation{FlowMatching}
+\citation{FMGuide}
+\citation{FlowMatching}
+\citation{FMGuide}
+\citation{REPA}
+\@writefile{toc}{\contentsline {section}{\numberline {2.2}Representation alignment}{11}{section.2.2}}
+\newlabel{sec:repa}{{2.2}{11}{Representation alignment}{section.2.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.1}{\ignorespaces The REPA construction. A noised sample $x_t = (1-t)x_0 + t\tmspace  +\thinmuskip {.1667em}x_1$ is constructed at each training step from a noise sample $x_0$, a clean data sample $x_1$, and a sampled timestep $t \in [0,1]$. The generator $v_\theta $ processes $x_t$ through its sequence of layers $\ell _1, \ldots  , \ell _L$ to produce the velocity field that feeds the flow-matching loss $\mathcal  {L}_{\text  {FM}}$. Separately, the clean sample $x_1$ is also passed through a frozen pretrained encoder $f_{\text  {enc}}$ (shaded). The generator's hidden state $z_\ell $ at the chosen alignment layer is mapped into the encoder's feature space by a trainable projector $h_\phi $; the REPA loss $\mathcal  {L}_{\text  {REPA}}$ is the negated similarity between $h_\phi (z_\ell )$ and $f_{\text  {enc}}(x_1)$, averaged across tokens. The total training loss $\mathcal  {L}$ combines them with weight $\lambda $.}}{12}{figure.2.1}}
+\newlabel{fig:repa-construction}{{2.1}{12}{The REPA construction. A noised sample $x_t = (1-t)x_0 + t\,x_1$ is constructed at each training step from a noise sample $x_0$, a clean data sample $x_1$, and a sampled timestep $t \in [0,1]$. The generator $v_\theta $ processes $x_t$ through its sequence of layers $\ell _1, \ldots , \ell _L$ to produce the velocity field that feeds the flow-matching loss $\mathcal {L}_{\text {FM}}$. Separately, the clean sample $x_1$ is also passed through a frozen pretrained encoder $f_{\text {enc}}$ (shaded). The generator's hidden state $z_\ell $ at the chosen alignment layer is mapped into the encoder's feature space by a trainable projector $h_\phi $; the REPA loss $\mathcal {L}_{\text {REPA}}$ is the negated similarity between $h_\phi (z_\ell )$ and $f_{\text {enc}}(x_1)$, averaged across tokens. The total training loss $\mathcal {L}$ combines them with weight $\lambda $}{figure.2.1}{}}
+\citation{DiffuseDisperse}
+\citation{REED}
+\citation{VideoREPA}
+\citation{TARO}
+\citation{CrystalREPA}
+\citation{BoltzREPA}
+\citation{REPA}
+\citation{SpatialStructure}
+\citation{RFdiffusion}
+\citation{RFdiffusion}
+\citation{Schneider2018}
+\citation{PoseBusters}
+\citation{QED}
+\citation{Proteina}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2.1}What makes for a good REPA encoder?}{13}{subsection.2.2.1}}
+\newlabel{sec:encoder-characterisation}{{2.2.1}{13}{What makes for a good REPA encoder?}{subsection.2.2.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.3}A primer on molecular generation}{13}{section.2.3}}
+\newlabel{sec:primer}{{2.3}{13}{A primer on molecular generation}{section.2.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.2}{\ignorespaces The de-novo molecular design cycle. An upstream specification drives a generative model to produce a candidate pool, which is funnelled through in-silico filters and then synthesised (or expressed) and assayed in the wet lab. Experimental results feed back into the next round of generation. Typical generation-step pool sizes are in the thousands to tens of thousands of candidates per round\nobreakspace  {}\cite  {RFdiffusion}.}}{13}{figure.2.2}}
+\newlabel{fig:design-cycle}{{2.2}{13}{The de-novo molecular design cycle. An upstream specification drives a generative model to produce a candidate pool, which is funnelled through in-silico filters and then synthesised (or expressed) and assayed in the wet lab. Experimental results feed back into the next round of generation. Typical generation-step pool sizes are in the thousands to tens of thousands of candidates per round~\cite {RFdiffusion}}{figure.2.2}{}}
+\citation{Tabasco}
+\citation{Proteina}
+\citation{EQGATdiff}
+\citation{MiDi}
+\citation{SemlaFlow}
+\citation{AlphaFold3}
+\citation{RFdiffusion}
+\citation{FrameFlow}
+\citation{Genie}
+\citation{NIHSmallMolGuide}
+\citation{Tabasco}
+\citation{GEOMdrugs}
+\citation{EQGATdiff}
+\citation{MiDi}
+\citation{SemlaFlow}
+\citation{HitchhikersGuide}
+\citation{MoleculeDiffusionSurvey}
+\@writefile{toc}{\contentsline {section}{\numberline {2.4}Tabasco and Proteina}{14}{section.2.4}}
+\newlabel{sec:molecular-domains}{{2.4}{14}{Tabasco and Proteina}{section.2.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.1}Small molecules and Tabasco}{14}{subsection.2.4.1}}
+\newlabel{sec:small-mol}{{2.4.1}{14}{Small molecules and Tabasco}{subsection.2.4.1}{}}
+\citation{BritannicaProtein}
+\citation{CATH}
+\citation{ProteinMPNN}
+\citation{Proteina}
+\citation{AFDB}
+\citation{ESM2}
+\citation{NotinProteinDesign}
+\citation{REED}
+\citation{BoltzREPA}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.2}Protein backbones and Proteina}{15}{subsection.2.4.2}}
+\newlabel{sec:protein}{{2.4.2}{15}{Protein backbones and Proteina}{subsection.2.4.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.5}Open questions}{15}{section.2.5}}
+\newlabel{sec:open-questions}{{2.5}{15}{Open questions}{section.2.5}{}}
+\citation{FID}
+\@writefile{toc}{\contentsline {chapter}{\numberline {3}Evaluating molecular generation}{16}{chapter.3}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{ch:evaluation}{{3}{16}{Evaluating molecular generation}{chapter.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.1}What makes for a ``good'' molecule?}{16}{section.3.1}}
+\newlabel{sec:eval-good}{{3.1}{16}{What makes for a ``good'' molecule?}{section.3.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.2}Representation and generation are multi-factorial and multi-scale problems}{16}{section.3.2}}
+\newlabel{sec:eval-multifactorial}{{3.2}{16}{Representation and generation are multi-factorial and multi-scale problems}{section.3.2}{}}
+\citation{REPA}
+\@writefile{toc}{\contentsline {section}{\numberline {3.3}The linear probe principle}{17}{section.3.3}}
+\newlabel{sec:eval-probe}{{3.3}{17}{The linear probe principle}{section.3.3}{}}
+\citation{Tabasco}
+\citation{EQGATdiff}
+\citation{SemlaFlow}
+\citation{RDKit}
+\citation{FCD}
+\citation{FID}
+\citation{RDKit}
+\citation{FCD}
+\citation{Tabasco}
+\citation{EQGATdiff}
+\citation{SemlaFlow}
+\citation{Tabasco}
+\citation{EQGATdiff}
+\citation{SemlaFlow}
+\citation{Ingraham2019}
+\citation{ProteinWorkshop}
+\citation{ProteinWorkshop}
+\citation{PlatonicRep}
+\citation{Ingraham2019}
+\citation{ProteinWorkshop}
+\citation{ProteinWorkshop}
+\citation{PlatonicRep}
+\citation{REPA}
+\citation{BoltzREPA}
+\@writefile{toc}{\contentsline {section}{\numberline {3.4}Small-molecule metrics}{18}{section.3.4}}
+\newlabel{sec:eval-small-mol}{{3.4}{18}{Small-molecule metrics}{section.3.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.5}Protein-backbone metrics}{18}{section.3.5}}
+\newlabel{sec:eval-protein}{{3.5}{18}{Protein-backbone metrics}{section.3.5}{}}
+\citation{Proteina}
+\citation{ProteinMPNN}
+\@writefile{lot}{\contentsline {table}{\numberline {3.1}{\ignorespaces Small-molecule metrics (Chapter\nobreakspace  {}\ref  {ch:tabasco-study}), following the conventions of recent 3D molecular generators\nobreakspace  {}\cite  {Tabasco,EQGATdiff,SemlaFlow}. Arrows give the good direction.}}{19}{table.3.1}}
+\newlabel{tab:eval-smallmol}{{3.1}{19}{Small-molecule metrics (Chapter~\ref {ch:tabasco-study}), following the conventions of recent 3D molecular generators~\cite {Tabasco,EQGATdiff,SemlaFlow}. Arrows give the good direction}{table.3.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3.2}{\ignorespaces Protein-backbone metrics (Chapter\nobreakspace  {}\ref  {ch:proteina-study}). Arrows give the good direction; full per-metric results appear in Tables\nobreakspace  {}\ref  {tab:proteina-13m} and\nobreakspace  {}\ref  {tab:proteina-concentration}.}}{20}{table.3.2}}
+\newlabel{tab:eval-protein}{{3.2}{20}{Protein-backbone metrics (Chapter~\ref {ch:proteina-study}). Arrows give the good direction; full per-metric results appear in Tables~\ref {tab:proteina-13m} and~\ref {tab:proteina-concentration}}{table.3.2}{}}
+\citation{AlphaFold2}
+\citation{Proteina}
+\citation{GearNet}
+\citation{PSEA}
+\citation{Biotite}
+\citation{Proteina}
+\citation{Proteina}
+\citation{Proteina}
+\@writefile{toc}{\contentsline {section}{\numberline {3.6}The designability--diversity trade-off}{22}{section.3.6}}
+\newlabel{sec:protein-tradeoffs}{{3.6}{22}{The designability--diversity trade-off}{section.3.6}{}}
+\citation{RankMe}
+\@writefile{toc}{\contentsline {chapter}{\numberline {4}Encoder targets and profiling}{23}{chapter.4}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{ch:profiling}{{4}{23}{Encoder targets and profiling}{chapter.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.1}A profiling protocol}{23}{section.4.1}}
+\newlabel{sec:profiling-framework}{{4.1}{23}{A profiling protocol}{section.4.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.1}{\ignorespaces The profiling diagnostics, grouped by the three properties: information, relevance, and conditioning.}}{24}{table.4.1}}
+\newlabel{tab:profiling-diagnostics}{{4.1}{24}{The profiling diagnostics, grouped by the three properties: information, relevance, and conditioning}{table.4.1}{}}
+\citation{CheMeleon}
+\citation{MACE}
+\citation{RankMe}
+\citation{RankMe}
+\@writefile{lot}{\contentsline {table}{\numberline {4.2}{\ignorespaces Molecule encoder profiles. Neither encoder shows promise. \emph  {token-ID}: atom-type linear-probe accuracy (trivially $1.00$ for both; uninformative). \emph  {3D}: cosine self-similarity across conformers (lower $=$ more 3D-sensitive). \emph  {Floor}: constant-prediction cosine (high $=$ saturated). \emph  {Lift}: the rise a same-form MLP gains above the floor from cheap inputs. \emph  {Sparsity}: fraction of exact zeros.}}{26}{table.4.2}}
+\newlabel{tab:profiling-mol}{{4.2}{26}{Molecule encoder profiles. Neither encoder shows promise. \emph {token-ID}: atom-type linear-probe accuracy (trivially $1.00$ for both; uninformative). \emph {3D}: cosine self-similarity across conformers (lower $=$ more 3D-sensitive). \emph {Floor}: constant-prediction cosine (high $=$ saturated). \emph {Lift}: the rise a same-form MLP gains above the floor from cheap inputs. \emph {Sparsity}: fraction of exact zeros}{table.4.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.3}{\ignorespaces Protein encoder profiles. GearNet and ProteinMPNN show promise. \emph  {AA-probe}: residue-identity linear-probe accuracy (high $=$ an identity lookup the generator already has). \emph  {3D}: cosine self-similarity after a 1\tmspace  +\thinmuskip {.1667em}\r A{} perturbation (lower $=$ more 3D-sensitive; N/A for sequence-only ESM2. \emph  {Floor}: constant-prediction cosine (high $=$ saturated). \emph  {Lift}: the rise a same-form MLP gains above the floor from cheap inputs. \emph  {RankMe}: Roy--Vetterli effective rank out of \emph  {Dim}\nobreakspace  {}\cite  {RankMe}. \textsuperscript  {\dag  }ESM2's lift is the largest here but is sequence context, not 3D: off-task.}}{26}{table.4.3}}
+\newlabel{tab:profiling-protein}{{4.3}{26}{Protein encoder profiles. GearNet and ProteinMPNN show promise. \emph {AA-probe}: residue-identity linear-probe accuracy (high $=$ an identity lookup the generator already has). \emph {3D}: cosine self-similarity after a 1\,\AA {} perturbation (lower $=$ more 3D-sensitive; N/A for sequence-only ESM2. \emph {Floor}: constant-prediction cosine (high $=$ saturated). \emph {Lift}: the rise a same-form MLP gains above the floor from cheap inputs. \emph {RankMe}: Roy--Vetterli effective rank out of \emph {Dim}~\cite {RankMe}. \textsuperscript {\dag }ESM2's lift is the largest here but is sequence context, not 3D: off-task}{table.4.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.2}Small molecule encoders}{26}{section.4.2}}
+\newlabel{sec:profiling-mol}{{4.2}{26}{Small molecule encoders}{section.4.2}{}}
+\citation{GearNet}
+\citation{Proteina}
+\citation{ESM2}
+\citation{ProteinMPNN}
+\citation{GearNet}
+\citation{ProteinWorkshop}
+\citation{GearNet}
+\@writefile{toc}{\contentsline {section}{\numberline {4.3}Protein backbone encoders}{27}{section.4.3}}
+\newlabel{sec:profiling-protein}{{4.3}{27}{Protein backbone encoders}{section.4.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.4}Informing our experiments}{27}{section.4.4}}
+\newlabel{sec:profiling-predictions}{{4.4}{27}{Informing our experiments}{section.4.4}{}}
+\citation{Tabasco}
+\citation{GEOMdrugs}
+\@writefile{toc}{\contentsline {chapter}{\numberline {5}REPA on small molecules}{28}{chapter.5}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{ch:tabasco-study}{{5}{28}{REPA on small molecules}{chapter.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.1}Experimental setup}{28}{section.5.1}}
+\newlabel{sec:tabasco-setup}{{5.1}{28}{Experimental setup}{section.5.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.1}Dataset}{28}{subsection.5.1.1}}
+\newlabel{sec:tabasco-data}{{5.1.1}{28}{Dataset}{subsection.5.1.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.2}Models}{28}{subsection.5.1.2}}
+\newlabel{sec:tabasco-models}{{5.1.2}{28}{Models}{subsection.5.1.2}{}}
+\citation{CheMeleon}
+\citation{MACE}
+\citation{RDKit}
+\@writefile{lot}{\contentsline {table}{\numberline {5.1}{\ignorespaces Model and training configuration. This chapter presents two encoder targets; the tradeoff combination mode is examined in \S  \ref  {sec:tabasco-diagnosis}.}}{29}{table.5.1}}
+\newlabel{tab:tabasco-setup}{{5.1}{29}{Model and training configuration. This chapter presents two encoder targets; the tradeoff combination mode is examined in \S \ref {sec:tabasco-diagnosis}}{table.5.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.3}Metrics}{29}{subsection.5.1.3}}
+\newlabel{sec:tabasco-metrics}{{5.1.3}{29}{Metrics}{subsection.5.1.3}{}}
+\citation{REPA}
+\citation{REPA}
+\@writefile{toc}{\contentsline {section}{\numberline {5.2}Results: no measurable gain}{30}{section.5.2}}
+\newlabel{sec:tabasco-results}{{5.2}{30}{Results: no measurable gain}{section.5.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.3}Discussion}{30}{section.5.3}}
+\newlabel{sec:tabasco-diagnosis}{{5.3}{30}{Discussion}{section.5.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.1}{\ignorespaces \textbf  {REPA does not accelerate generation quality over the baseline.} Generation quality on GEOM-drugs (100 molecules sampled per epoch during training), plotted over training step across the range all three runs reach. The baseline and both REPA variants track together and reach near-ceiling on every axis within the first few thousand steps, leaving no headroom for alignment to fill. The metric is the in-training estimate, so values differ slightly from the final-checkpoint evaluation of Table\nobreakspace  {}\ref  {tab:tabasco-gen}. ($n{=}1$ seed, one run per variant.)}}{31}{figure.5.1}}
+\newlabel{fig:tabasco-curves}{{5.1}{31}{\textbf {REPA does not accelerate generation quality over the baseline.} Generation quality on GEOM-drugs (100 molecules sampled per epoch during training), plotted over training step across the range all three runs reach. The baseline and both REPA variants track together and reach near-ceiling on every axis within the first few thousand steps, leaving no headroom for alignment to fill. The metric is the in-training estimate, so values differ slightly from the final-checkpoint evaluation of Table~\ref {tab:tabasco-gen}. ($n{=}1$ seed, one run per variant.)}{figure.5.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.2}{\ignorespaces \textbf  {REPA brings no measurable generation quality gain over the baseline.} The quality metrics are saturated, sitting at or near their ceiling for baseline and variants alike. On FCD, the only metric with headroom, every REPA run is worse. The MACE \emph  {tradeoff} row replaces the additive REPA loss with a convex one (\S  \ref  {sec:tabasco-diagnosis}). (1{,}000 sampled molecules; higher-is-better except FCD ($\delimiter "3223379 $). \emph  {Steps} is the training step at evaluation; the baseline trained ${\sim }2{\times }$ longer, but the quality metrics plateau early, so the unequal steps do not make the comparison unfair (\S  \ref  {sec:tabasco-results}); $n{=}1$ seed, one run per variant.)}}{31}{table.5.2}}
+\newlabel{tab:tabasco-gen}{{5.2}{31}{\textbf {REPA brings no measurable generation quality gain over the baseline.} The quality metrics are saturated, sitting at or near their ceiling for baseline and variants alike. On FCD, the only metric with headroom, every REPA run is worse. The MACE \emph {tradeoff} row replaces the additive REPA loss with a convex one (\S \ref {sec:tabasco-diagnosis}). (1{,}000 sampled molecules; higher-is-better except FCD ($\downarrow $). \emph {Steps} is the training step at evaluation; the baseline trained ${\sim }2{\times }$ longer, but the quality metrics plateau early, so the unequal steps do not make the comparison unfair (\S \ref {sec:tabasco-results}); $n{=}1$ seed, one run per variant.)}{table.5.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.3}{\ignorespaces \textbf  {Linear-probe $R^2$ reveals little representational difference between REPA and the baseline.} The baseline trunk already captures what CheMeleon learns, while MACE's embedding is too narrow to decode these descriptors. Hence, neither makes for a usable REPA target. ($R^2$ for four RDKit descriptors, on held-out molecules; \S  \ref  {sec:tabasco-metrics}; $n{=}1$ seed.)}}{32}{table.5.3}}
+\newlabel{tab:tabasco-probe}{{5.3}{32}{\textbf {Linear-probe $R^2$ reveals little representational difference between REPA and the baseline.} The baseline trunk already captures what CheMeleon learns, while MACE's embedding is too narrow to decode these descriptors. Hence, neither makes for a usable REPA target. ($R^2$ for four RDKit descriptors, on held-out molecules; \S \ref {sec:tabasco-metrics}; $n{=}1$ seed.)}{table.5.3}{}}
+\citation{Tabasco}
+\citation{Proteina}
+\citation{Proteina}
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}REPA on protein backbones}{33}{chapter.6}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{ch:proteina-study}{{6}{33}{REPA on protein backbones}{chapter.6}{}}
+\citation{PDB}
+\citation{AFDB}
+\citation{Proteina}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.1}{\ignorespaces \textbf  {REPA accelerates FPSD in both data regimes, and designability on experimental (PDB) data.} The strongest variant in each regime is shown, with the random-encoder control in grey. PDB retains a persistent designability gap, but its baseline appears to catch up on FPSD after $\approx $1M steps; we examine this in \S  \ref  {sec:proteina-convergence}. (Each point is a mean over $3$ seeds, except a few single-seed checkpoints at the trajectory tails; $1{,}125$ backbones/seed, $250$ for designability.)}}{34}{figure.6.1}}
+\newlabel{fig:proteina-fid}{{6.1}{34}{\textbf {REPA accelerates FPSD in both data regimes, and designability on experimental (PDB) data.} The strongest variant in each regime is shown, with the random-encoder control in grey. PDB retains a persistent designability gap, but its baseline appears to catch up on FPSD after $\approx $1M steps; we examine this in \S \ref {sec:proteina-convergence}. (Each point is a mean over $3$ seeds, except a few single-seed checkpoints at the trajectory tails; $1{,}125$ backbones/seed, $250$ for designability.)}{figure.6.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}Experimental setup}{34}{section.6.1}}
+\newlabel{sec:proteina-setup}{{6.1}{34}{Experimental setup}{section.6.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.1}Datasets}{34}{subsection.6.1.1}}
+\newlabel{sec:proteina-datasets}{{6.1.1}{34}{Datasets}{subsection.6.1.1}{}}
+\citation{Proteina}
+\citation{GearNet}
+\citation{Proteina}
+\citation{ProteinMPNN}
+\citation{REPA}
+\citation{REPA}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.2}Models}{35}{subsection.6.1.2}}
+\citation{REPA}
+\citation{BoltzREPA}
+\@writefile{lot}{\contentsline {table}{\numberline {6.1}{\ignorespaces Model and training configuration. This chapter presents two encoder targets and two injection depths. Other ablations are deferred to Appendix\nobreakspace  {}\ref  {ch:appendix}.}}{36}{table.6.1}}
+\newlabel{tab:setup-model}{{6.1}{36}{Model and training configuration. This chapter presents two encoder targets and two injection depths. Other ablations are deferred to Appendix~\ref {ch:appendix}}{table.6.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.3}Metrics}{36}{subsection.6.1.3}}
+\newlabel{sec:proteina-metrics}{{6.1.3}{36}{Metrics}{subsection.6.1.3}{}}
+\citation{Proteina}
+\citation{ESM2}
+\citation{REPA}
+\citation{Proteina}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.4}Evaluation protocol}{37}{subsection.6.1.4}}
+\newlabel{sec:eval-protocol}{{6.1.4}{37}{Evaluation protocol}{subsection.6.1.4}{}}
+\citation{REPA}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.2}{\ignorespaces \textbf  {REPA offers a mechanistic effect that lifts the trunk's representation quality asymptotically.} REPA variants open a quality gap over baseline that never closes. The random control gains least, evidence that a trained encoder contributes a genuine mechanistic effect rather than mere regularisation from the auxiliary loss. (See Appendix\nobreakspace  {}\ref  {app:leakage} for the probe protocol and further ablations; each point is a mean over $3$ probe seeds where the seed band was run, shown as the shaded interval, and single-seed elsewhere.)}}{38}{figure.6.2}}
+\newlabel{fig:proteina-rep}{{6.2}{38}{\textbf {REPA offers a mechanistic effect that lifts the trunk's representation quality asymptotically.} REPA variants open a quality gap over baseline that never closes. The random control gains least, evidence that a trained encoder contributes a genuine mechanistic effect rather than mere regularisation from the auxiliary loss. (See Appendix~\ref {app:leakage} for the probe protocol and further ablations; each point is a mean over $3$ probe seeds where the seed band was run, shown as the shaded interval, and single-seed elsewhere.)}{figure.6.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Results}{38}{section.6.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.1}REPA improves representation quality asymptotically}{38}{subsection.6.2.1}}
+\newlabel{sec:proteina-rep}{{6.2.1}{38}{REPA improves representation quality asymptotically}{subsection.6.2.1}{}}
+\citation{REPA}
+\citation{BoltzREPA}
+\citation{PlatonicRep}
+\citation{ESM2}
+\@writefile{lot}{\contentsline {table}{\numberline {6.2}{\ignorespaces \textbf  {REPA's representation advantage is encoder-routed.} REPA-GearNet wins the fold probes (CATH C/A/T) decisively, while REPA-MPNN edges the per-residue probe (IF). The random control gains least and does not help IF, evidence of genuine structural transfer rather than regularisation. (Single checkpoint at 1.0M; $n{=}3$ seeds, $\pm $ half the seed range. Best-layer linear probe at $n_\text  {train}{=}1000$, cross-database set for IF/dihedral, cleantrain for CATH.)}}{39}{table.6.2}}
+\newlabel{tab:proteina-rep}{{6.2}{39}{\textbf {REPA's representation advantage is encoder-routed.} REPA-GearNet wins the fold probes (CATH C/A/T) decisively, while REPA-MPNN edges the per-residue probe (IF). The random control gains least and does not help IF, evidence of genuine structural transfer rather than regularisation. (Single checkpoint at 1.0M; $n{=}3$ seeds, $\pm $ half the seed range. Best-layer linear probe at $n_\text {train}{=}1000$, cross-database set for IF/dihedral, cleantrain for CATH.)}{table.6.2}{}}
+\citation{ESM2}
+\citation{PlatonicRep}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.3}{\ignorespaces \textbf  {REPA aligns the trunk with domain encoders, including those it was not trained with.} (a) Each REPA variant lifts per-residue alignment to its own target encoder above the baseline floor. (b) REPA induces cross-encoder alignment: for example, a GearNet-aligned trunk also moves toward ProteinMPNN and ESM2. Absolute alignment is small throughout, so we read the pattern, not its magnitude. (Step 1M, $t{=}1.0$; per-residue CKNNA, $k{=}10$; lines are bootstrap medians, shaded bands the 5--95\% subsample bootstrap interval; $n{=}1$ seed.)}}{40}{figure.6.3}}
+\newlabel{fig:proteina-cknna}{{6.3}{40}{\textbf {REPA aligns the trunk with domain encoders, including those it was not trained with.} (a) Each REPA variant lifts per-residue alignment to its own target encoder above the baseline floor. (b) REPA induces cross-encoder alignment: for example, a GearNet-aligned trunk also moves toward ProteinMPNN and ESM2. Absolute alignment is small throughout, so we read the pattern, not its magnitude. (Step 1M, $t{=}1.0$; per-residue CKNNA, $k{=}10$; lines are bootstrap medians, shaded bands the 5--95\% subsample bootstrap interval; $n{=}1$ seed.)}{figure.6.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.2}A diagnostic check on alignment}{40}{subsection.6.2.2}}
+\newlabel{sec:proteina-alignment}{{6.2.2}{40}{A diagnostic check on alignment}{subsection.6.2.2}{}}
+\citation{REPA}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.3}In the short run, REPA accelerates generation quality in both experimental and synthetic data regimes}{41}{subsection.6.2.3}}
+\newlabel{sec:proteina-convergence}{{6.2.3}{41}{In the short run, REPA accelerates generation quality in both experimental and synthetic data regimes}{subsection.6.2.3}{}}
+\newlabel{sec:proteina-genrep}{{6.2.3}{41}{In the short run, REPA accelerates generation quality in both experimental and synthetic data regimes}{subsection.6.2.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.3}{\ignorespaces \textbf  {Most REPA variants accelerate generation quality over the baseline.} In some regimes they also win the long run. Acceleration is the \%-delta vs the baseline at 400K (the anchor of Figure\nobreakspace  {}\ref  {fig:proteina-genrep}), with the absolute score in parentheses; the long run is each variant's absolute best within a common 2.0M-step window, coloured against the baseline-best row. (Seed-mean over $3$ seeds, except a few single-seed late-tail checkpoints; the 400K acceleration anchor is $3$-seed throughout; $1{,}125$ backbones/seed, $250$ for designability.)}}{42}{table.6.3}}
+\newlabel{tab:proteina-speedup}{{6.3}{42}{\textbf {Most REPA variants accelerate generation quality over the baseline.} In some regimes they also win the long run. Acceleration is the \%-delta vs the baseline at 400K (the anchor of Figure~\ref {fig:proteina-genrep}), with the absolute score in parentheses; the long run is each variant's absolute best within a common 2.0M-step window, coloured against the baseline-best row. (Seed-mean over $3$ seeds, except a few single-seed late-tail checkpoints; the 400K acceleration anchor is $3$-seed throughout; $1{,}125$ backbones/seed, $250$ for designability.)}{table.6.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.4}{\ignorespaces \textbf  {REPA's early-training acceleration holds across the sampler-noise axis.} The representative REPA variant per dataset beats the baseline on both FPSD and designability at almost every $\gamma $; the lone exception is PDB FPSD at the degenerate $\gamma {=}0$. (Absolute values at step 400K; $n{=}3$ seeds at $\gamma {=}0.45$ [2 for AFDB], else $n{=}1$; $1{,}125$ backbones/seed, $250$ for designability.)}}{43}{table.6.4}}
+\newlabel{tab:proteina-sampler}{{6.4}{43}{\textbf {REPA's early-training acceleration holds across the sampler-noise axis.} The representative REPA variant per dataset beats the baseline on both FPSD and designability at almost every $\gamma $; the lone exception is PDB FPSD at the degenerate $\gamma {=}0$. (Absolute values at step 400K; $n{=}3$ seeds at $\gamma {=}0.45$ [2 for AFDB], else $n{=}1$; $1{,}125$ backbones/seed, $250$ for designability.)}{table.6.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.5}{\ignorespaces \textbf  {Better trunk representations track better generation --- strongly for designability, moderately for FPSD.} Partial Pearson correlation controlling for training step, with the raw value alongside; oriented so a positive value means better representation accompanies better generation. ($n{=}63$ checkpoints pooled over the baseline, the REPA variants, and the random control; generation is a $3$-seed mean, with only the single-seed late-tail checkpoints at $n{=}1$; probe single-seed; $1{,}125$ backbones/seed, $250$ for designability.)}}{43}{table.6.5}}
+\newlabel{tab:proteina-genrep-corr}{{6.5}{43}{\textbf {Better trunk representations track better generation --- strongly for designability, moderately for FPSD.} Partial Pearson correlation controlling for training step, with the raw value alongside; oriented so a positive value means better representation accompanies better generation. ($n{=}63$ checkpoints pooled over the baseline, the REPA variants, and the random control; generation is a $3$-seed mean, with only the single-seed late-tail checkpoints at $n{=}1$; probe single-seed; $1{,}125$ backbones/seed, $250$ for designability.)}{table.6.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.4}In the long run, REPA gains are data-regime dependent}{43}{subsection.6.2.4}}
+\newlabel{sec:proteina-distribution}{{6.2.4}{43}{In the long run, REPA gains are data-regime dependent}{subsection.6.2.4}{}}
+\newlabel{sec:proteina-anatomy}{{6.2.4}{43}{In the long run, REPA gains are data-regime dependent}{subsection.6.2.4}{}}
+\newlabel{sec:proteina-modulation}{{6.2.4}{43}{In the long run, REPA gains are data-regime dependent}{subsection.6.2.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.4}{\ignorespaces \textbf  {At equal compute, our strongest variant achieves better representation and generation quality.} The dashed arrow marks the matched-compute comparison at step 400K. Against the baseline, the strongest PDB variant (REPA-L9-MPNN) has higher fold accuracy (CATH-A) and better generation: lower FPSD (a) and higher designability (b). (Markers are a coarse $\approx $400K-spaced subset of checkpoints from 100K, with the 400K point bordered; $x$ = student CATH-A accuracy, higher to the right; generation $n{=}3$ seeds, except the single-seed tail checkpoint on each trajectory; probe single-seed; $1{,}125$ backbones/seed, $250$ for designability.)}}{44}{figure.6.4}}
+\newlabel{fig:proteina-genrep}{{6.4}{44}{\textbf {At equal compute, our strongest variant achieves better representation and generation quality.} The dashed arrow marks the matched-compute comparison at step 400K. Against the baseline, the strongest PDB variant (REPA-L9-MPNN) has higher fold accuracy (CATH-A) and better generation: lower FPSD (a) and higher designability (b). (Markers are a coarse $\approx $400K-spaced subset of checkpoints from 100K, with the 400K point bordered; $x$ = student CATH-A accuracy, higher to the right; generation $n{=}3$ seeds, except the single-seed tail checkpoint on each trajectory; probe single-seed; $1{,}125$ backbones/seed, $250$ for designability.)}{figure.6.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.6}{\ignorespaces \textbf  {On AFDB, REPA lifts the whole-set distribution cleanly; on PDB, the whole-set gains come with a more concentrated designable subset.} Compare rows within a regime block, not across them. FPSD uses the training dataset as its reference in each case. Each cell is a mean over generation seeds; the per-seed min--max range is in Appendix\nobreakspace  {}\ref  {app:13m-ranges} (Table\nobreakspace  {}\ref  {tab:proteina-13m-ranges}). (Rows tagged with a step, e.g.\ \textit  {\relax \fontsize  {8}{9.5}\selectfont  (1.0M)}, show that variant's latest available checkpoint; $n{=}3$ seeds, except PDB L9-GearNet and AFDB L4-MPNN, $n{=}1$; $1{,}125$ backbones/seed, $250$ for designability.)}}{44}{table.6.6}}
+\newlabel{tab:proteina-13m}{{6.6}{44}{\textbf {On AFDB, REPA lifts the whole-set distribution cleanly; on PDB, the whole-set gains come with a more concentrated designable subset.} Compare rows within a regime block, not across them. FPSD uses the training dataset as its reference in each case. Each cell is a mean over generation seeds; the per-seed min--max range is in Appendix~\ref {app:13m-ranges} (Table~\ref {tab:proteina-13m-ranges}). (Rows tagged with a step, e.g.\ \textit {\scriptsize (1.0M)}, show that variant's latest available checkpoint; $n{=}3$ seeds, except PDB L9-GearNet and AFDB L4-MPNN, $n{=}1$; $1{,}125$ backbones/seed, $250$ for designability.)}{table.6.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.7}{\ignorespaces \textbf  {On PDB, REPA concentrates the $\beta $-rich designable folds onto fewer modes; on AFDB it does not.} The effect is specific to the most $\beta $-rich bin ($\beta {\ge }25$): PDB-L9-MPNN climbs from $0.29$ (400K) to $0.69$ (1.3M) while its baseline diversifies to $0.13$. Lower-$\beta $ bins and AFDB-L4-GearNet barely move. Designable-subset pairwise TM, lower\tmspace  +\thinmuskip {.1667em}=\tmspace  +\thinmuskip {.1667em}more diverse; columns bin by $\beta $-strand fraction (\%). Cells pool the designable subset across all available seeds (2--3 per cell) and the five generation lengths. The load-bearing $\beta {\ge }25$ bin at 1.3M holds $n{=}188$ designable backbones for REPA-L9-MPNN against $n{=}20$ for the baseline, so the $0.69$ versus $0.13$ gap is no small-sample artefact; the sparser 400K $\beta {\ge }25$ bins ($n{\approx }11$--$19$) are directional.)}}{45}{table.6.7}}
+\newlabel{tab:proteina-concentration}{{6.7}{45}{\textbf {On PDB, REPA concentrates the $\beta $-rich designable folds onto fewer modes; on AFDB it does not.} The effect is specific to the most $\beta $-rich bin ($\beta {\ge }25$): PDB-L9-MPNN climbs from $0.29$ (400K) to $0.69$ (1.3M) while its baseline diversifies to $0.13$. Lower-$\beta $ bins and AFDB-L4-GearNet barely move. Designable-subset pairwise TM, lower\,=\,more diverse; columns bin by $\beta $-strand fraction (\%). Cells pool the designable subset across all available seeds (2--3 per cell) and the five generation lengths. The load-bearing $\beta {\ge }25$ bin at 1.3M holds $n{=}188$ designable backbones for REPA-L9-MPNN against $n{=}20$ for the baseline, so the $0.69$ versus $0.13$ gap is no small-sample artefact; the sparser 400K $\beta {\ge }25$ bins ($n{\approx }11$--$19$) are directional.)}{table.6.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.5}What we do not claim}{46}{subsection.6.2.5}}
+\newlabel{sec:proteina-scope}{{6.2.5}{46}{What we do not claim}{subsection.6.2.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.3}Discussion}{46}{section.6.3}}
+\newlabel{sec:proteina-discussion}{{6.3}{46}{Discussion}{section.6.3}{}}
+\citation{PlatonicRep}
+\citation{HASTE}
+\citation{REPA}
+\@writefile{toc}{\contentsline {chapter}{\numberline {7}Conclusions}{48}{chapter.7}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{ch:conclusions}{{7}{48}{Conclusions}{chapter.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.1}Does REPA work in the molecular domain?}{48}{section.7.1}}
+\newlabel{sec:concl-domain}{{7.1}{48}{Does REPA work in the molecular domain?}{section.7.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.2}When does REPA work?}{49}{section.7.2}}
+\newlabel{sec:concl-when}{{7.2}{49}{When does REPA work?}{section.7.2}{}}
+\citation{TurbulenceDiffusion}
+\citation{SpatialStructure}
+\@writefile{toc}{\contentsline {section}{\numberline {7.3}Open questions}{50}{section.7.3}}
+\newlabel{sec:conc-open-questions}{{7.3}{50}{Open questions}{section.7.3}{}}
+\newlabel{lastcontentpage}{{7.3}{50}{Open questions}{section.7.3}{}}
+\bibcite{DDPM}{1}
+\bibcite{FlowMatching}{2}
+\bibcite{FMIntroLectures}{3}
+\bibcite{FMGuide}{4}
+\bibcite{REPA}{5}
+\bibcite{SpatialStructure}{6}
+\bibcite{REED}{7}
+\bibcite{BoltzREPA}{8}
+\bibcite{VideoREPA}{9}
+\bibcite{TARO}{10}
+\bibcite{CrystalREPA}{11}
+\bibcite{DiffuseDisperse}{12}
+\bibcite{HASTE}{13}
+\bibcite{Proteina}{14}
+\bibcite{Tabasco}{15}
+\bibcite{REINVENT}{16}
+\bibcite{GENTRL}{17}
+\bibcite{RFdiffusion}{18}
+\bibcite{Chroma}{19}
+\bibcite{GNoME}{20}
+\bibcite{MatterGen}{21}
+\bibcite{TurbulenceDiffusion}{22}
+\bibcite{MoleculeDiffusionSurvey}{23}
+\bibcite{ESM2}{24}
+\bibcite{ProteinMPNN}{25}
+\bibcite{GearNet}{26}
+\bibcite{ProteinWorkshop}{27}
+\bibcite{Ingraham2019}{28}
+\bibcite{MMseqs2}{29}
+\bibcite{MACE}{30}
+\bibcite{CheMeleon}{31}
+\bibcite{RankMe}{32}
+\bibcite{ProstT5}{33}
+\bibcite{SaProt}{34}
+\bibcite{LAION5B}{35}
+\bibcite{PDB}{36}
+\bibcite{AFDB}{37}
+\bibcite{GEOMdrugs}{38}
+\bibcite{MGnify}{39}
+\bibcite{BrocchieriKarlin}{40}
+\bibcite{BronsteinGDL}{41}
+\bibcite{HitchhikersGuide}{42}
+\bibcite{ThomasTFN}{43}
+\bibcite{ViT}{44}
+\bibcite{TokenGT}{45}
+\bibcite{AlphaFold2}{46}
+\bibcite{AlphaFold3}{47}
+\bibcite{Brehmer2024}{48}
+\bibcite{FrameFlow}{49}
+\bibcite{Genie}{50}
+\bibcite{EQGATdiff}{51}
+\bibcite{MiDi}{52}
+\bibcite{SemlaFlow}{53}
+\bibcite{NIHSmallMolGuide}{54}
+\bibcite{BritannicaProtein}{55}
+\bibcite{Schneider2018}{56}
+\bibcite{PoseBusters}{57}
+\bibcite{FCD}{58}
+\bibcite{FID}{59}
+\bibcite{QED}{60}
+\bibcite{RDKit}{61}
+\bibcite{NotinProteinDesign}{62}
+\bibcite{Genie2}{63}
+\bibcite{CATH}{64}
+\bibcite{PlatonicRep}{65}
+\bibcite{PSEA}{66}
+\bibcite{Biotite}{67}
+\citation{MMseqs2}
+\citation{MMseqs2}
+\@writefile{toc}{\contentsline {chapter}{\numberline {A}Technical details}{56}{appendix.A}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{ch:appendix}{{A}{56}{Technical details}{appendix.A}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A.1}Dataset composition and split overlap}{56}{section.A.1}}
+\newlabel{app:datasets}{{A.1}{56}{Dataset composition and split overlap}{section.A.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A.2}Choice of CATH fold-probe level}{56}{section.A.2}}
+\newlabel{app:cath}{{A.2}{56}{Choice of CATH fold-probe level}{section.A.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {A.1}{\ignorespaces Properties of the two datasets we study, at the headline $n{\le }256$ regime. Sequence identity is computed with MMseqs2\nobreakspace  {}\cite  {MMseqs2} (\texttt  {easy-search}, $\ge $30\% identity over $\ge $80\% alignment coverage).}}{56}{table.A.1}}
+\newlabel{tab:setup-datasets}{{A.1}{56}{Properties of the two datasets we study, at the headline $n{\le }256$ regime. Sequence identity is computed with MMseqs2~\cite {MMseqs2} (\texttt {easy-search}, $\ge $30\% identity over $\ge $80\% alignment coverage)}{table.A.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {A.2}{\ignorespaces \textbf  {We read fold-level representation quality off CATH \emph  {architecture} --- Class is too coarse to discriminate, Topology too finely-bucketed to probe reliably.} Class has 4 buckets (one at 55\%, baseline already 0.73); Topology has $\sim $1400 imbalanced buckets; Architecture sits between --- enough classes to be meaningful, enough examples per class to be learnable --- so CATH-A is our headline fold metric (C and T are reported in the appendix). (``Baseline probe acc.'' is a linear probe on the un-aligned trunk.)}}{57}{table.A.2}}
+\newlabel{tab:setup-cath}{{A.2}{57}{\textbf {We read fold-level representation quality off CATH \emph {architecture} --- Class is too coarse to discriminate, Topology too finely-bucketed to probe reliably.} Class has 4 buckets (one at 55\%, baseline already 0.73); Topology has $\sim $1400 imbalanced buckets; Architecture sits between --- enough classes to be meaningful, enough examples per class to be learnable --- so CATH-A is our headline fold metric (C and T are reported in the appendix). (``Baseline probe acc.'' is a linear probe on the un-aligned trunk.)}{table.A.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A.3}Leakage-controlled probe evaluation}{57}{section.A.3}}
+\newlabel{app:leakage}{{A.3}{57}{Leakage-controlled probe evaluation}{section.A.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {A.3}{\ignorespaces \textbf  {Full PDB representation-quality ablation across all six variants.} The remaining encoder$\times $depth combinations behind the four-row main-text Table\nobreakspace  {}\ref  {tab:proteina-rep}, at the same 1.0M checkpoint. The encoder-routed pattern holds throughout: GearNet wins the fold probes (CATH C/A/T), ProteinMPNN edges the inverse-folding probe (IF). At matched layer\nobreakspace  {}4, the trained GearNet (L4-GearNet) beats the random control (L4-random) on every probe, so the learned-versus-random gap is not an artefact of injection depth. (Single checkpoint at 1.0M; baseline absolute, REPA rows $\Delta $-from-baseline, with $\pm $ half the seed range where $>1$ seed exists; $n{=}3$ seeds except where marked. Best-layer linear probe at $n_\text  {train}{=}1000$ (cross-database set for IF/dihedral, cleantrain for CATH); colour marks significance against the combined seed spread, green better (darker $=$ column-best), red worse, uncoloured within seed noise. ($^{\dagger }$L4-GearNet and L4-MPNN single-seed.))}}{58}{table.A.3}}
+\newlabel{tab:proteina-rep-full}{{A.3}{58}{\textbf {Full PDB representation-quality ablation across all six variants.} The remaining encoder$\times $depth combinations behind the four-row main-text Table~\ref {tab:proteina-rep}, at the same 1.0M checkpoint. The encoder-routed pattern holds throughout: GearNet wins the fold probes (CATH C/A/T), ProteinMPNN edges the inverse-folding probe (IF). At matched layer~4, the trained GearNet (L4-GearNet) beats the random control (L4-random) on every probe, so the learned-versus-random gap is not an artefact of injection depth. (Single checkpoint at 1.0M; baseline absolute, REPA rows $\Delta $-from-baseline, with $\pm $ half the seed range where $>1$ seed exists; $n{=}3$ seeds except where marked. Best-layer linear probe at $n_\text {train}{=}1000$ (cross-database set for IF/dihedral, cleantrain for CATH); colour marks significance against the combined seed spread, green better (darker $=$ column-best), red worse, uncoloured within seed noise. ($^{\dagger }$L4-GearNet and L4-MPNN single-seed.))}{table.A.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A.4}Full representation-quality ablation}{58}{section.A.4}}
+\newlabel{app:rep-full}{{A.4}{58}{Full representation-quality ablation}{section.A.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A.5}Representation quality on AFDB}{58}{section.A.5}}
+\newlabel{app:rep-afdb}{{A.5}{58}{Representation quality on AFDB}{section.A.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A.6}Representation-alignment matrix}{58}{section.A.6}}
+\newlabel{app:cknna}{{A.6}{58}{Representation-alignment matrix}{section.A.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {A.4}{\ignorespaces \textbf  {On AFDB, REPA's representation gain concentrates on fold structure.} The AFDB counterpart to Table\nobreakspace  {}\ref  {tab:proteina-rep}. REPA-GearNet lifts the CATH fold probes here as on PDB, so the fold routing replicates. The per-residue picture does not: inverse-folding accuracy is flat, and the dihedral probe shows no consistent REPA effect (it tracks a baseline that itself swings several degrees between checkpoints), unlike the clear MPNN-led per-residue gain on PDB. At this checkpoint density the per-residue reads are noise-dominated, so we lean on the fold result. ($n{\le }256$ AFDB-trained; best-layer linear probe at $n_\text  {train}{=}1000$ on the cross-database blinded set; mean over the 700K--1.2M window; $\Delta $ from baseline; $n{=}1$ seed. The PDB tables (Tables\nobreakspace  {}\ref  {tab:proteina-rep} and\nobreakspace  {}\ref  {tab:proteina-rep-full}) report a single 1.0M checkpoint, whose three seeds smooth out per-step probe noise; AFDB-trained models were probed at a single seed, so here we average a converged window instead --- the only smoothing available. The random control is omitted: it trained only to 500K, below this window.)}}{59}{table.A.4}}
+\newlabel{tab:proteina-rep-afdb}{{A.4}{59}{\textbf {On AFDB, REPA's representation gain concentrates on fold structure.} The AFDB counterpart to Table~\ref {tab:proteina-rep}. REPA-GearNet lifts the CATH fold probes here as on PDB, so the fold routing replicates. The per-residue picture does not: inverse-folding accuracy is flat, and the dihedral probe shows no consistent REPA effect (it tracks a baseline that itself swings several degrees between checkpoints), unlike the clear MPNN-led per-residue gain on PDB. At this checkpoint density the per-residue reads are noise-dominated, so we lean on the fold result. ($n{\le }256$ AFDB-trained; best-layer linear probe at $n_\text {train}{=}1000$ on the cross-database blinded set; mean over the 700K--1.2M window; $\Delta $ from baseline; $n{=}1$ seed. The PDB tables (Tables~\ref {tab:proteina-rep} and~\ref {tab:proteina-rep-full}) report a single 1.0M checkpoint, whose three seeds smooth out per-step probe noise; AFDB-trained models were probed at a single seed, so here we average a converged window instead --- the only smoothing available. The random control is omitted: it trained only to 500K, below this window.)}{table.A.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {A.5}{\ignorespaces \textbf  {Every REPA variant raises per-residue alignment to all three encoders, including the two it was never aligned to.} Across-layer peak per-residue CKNNA (bootstrap median, $\times 10^{3}$), with the peak trunk layer as a superscript; $k{=}10$, step 1.0M, $n{\le }256$ PDB-trained. The $\dagger $ marks each model's own alignment target. Every REPA row exceeds the baseline in every column, the Platonic-convergence signature discussed in \S  \ref  {sec:proteina-alignment}. Absolute values are small (an order of magnitude below image-domain REPA), so we read the pattern, not the magnitude. ($n{=}1$ seed; bootstrap medians.)}}{59}{table.A.5}}
+\newlabel{tab:cknna-matrix}{{A.5}{59}{\textbf {Every REPA variant raises per-residue alignment to all three encoders, including the two it was never aligned to.} Across-layer peak per-residue CKNNA (bootstrap median, $\times 10^{3}$), with the peak trunk layer as a superscript; $k{=}10$, step 1.0M, $n{\le }256$ PDB-trained. The $\dagger $ marks each model's own alignment target. Every REPA row exceeds the baseline in every column, the Platonic-convergence signature discussed in \S \ref {sec:proteina-alignment}. Absolute values are small (an order of magnitude below image-domain REPA), so we read the pattern, not the magnitude. ($n{=}1$ seed; bootstrap medians.)}{table.A.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A.7}Representation--generation coupling on AFDB}{59}{section.A.7}}
+\newlabel{app:genrep-afdb}{{A.7}{59}{Representation--generation coupling on AFDB}{section.A.7}{}}
+\citation{PSEA}
+\citation{Biotite}
+\@writefile{lot}{\contentsline {table}{\numberline {A.6}{\ignorespaces \textbf  {On AFDB too, better trunk representations track better generation.} The AFDB counterpart to Table\nobreakspace  {}\ref  {tab:proteina-genrep-corr}: partial Pearson controlling for training step (raw alongside), oriented so positive means better representation accompanies better generation. Generation is FPSD-AFDB and designability; representation probes are read at $n_\text  {train}{=}1000$ on the cross-database blinded set. ($n{=}42$ AFDB checkpoints pooled over the baseline, the REPA variants, and the random control; generation is a $3$-seed mean, with single-seed checkpoints only for the under-trained variants (AFDB L9-GearNet, L4-MPNN) and trajectory tails; probe single-seed; $1{,}125$ backbones/seed, $250$ for designability.)}}{60}{table.A.6}}
+\newlabel{tab:proteina-genrep-corr-afdb}{{A.6}{60}{\textbf {On AFDB too, better trunk representations track better generation.} The AFDB counterpart to Table~\ref {tab:proteina-genrep-corr}: partial Pearson controlling for training step (raw alongside), oriented so positive means better representation accompanies better generation. Generation is FPSD-AFDB and designability; representation probes are read at $n_\text {train}{=}1000$ on the cross-database blinded set. ($n{=}42$ AFDB checkpoints pooled over the baseline, the REPA variants, and the random control; generation is a $3$-seed mean, with single-seed checkpoints only for the under-trained variants (AFDB L9-GearNet, L4-MPNN) and trajectory tails; probe single-seed; $1{,}125$ backbones/seed, $250$ for designability.)}{table.A.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A.8}The ssJSD-2D secondary-structure metric}{60}{section.A.8}}
+\newlabel{app:ssjsd}{{A.8}{60}{The ssJSD-2D secondary-structure metric}{section.A.8}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A.9}Secondary-structure composition of the designable subset}{60}{section.A.9}}
+\newlabel{app:ss-composition}{{A.9}{60}{Secondary-structure composition of the designable subset}{section.A.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {A.7}{\ignorespaces \textbf  {Secondary-structure composition of the designable subset (step 700K, $\gamma {=}0.45$).} Mean strand ($f_E$) and helix ($f_H$) fractions over the designable backbones, $\pm $ half the seed range. GearNet shifts the designable subset toward strand and away from helix; MPNN on AFDB does the reverse. The AFDB L9-GearNet vs.\ L9-MPNN ranges are non-overlapping on both axes. The strand column ($f_E$) is the designable $\beta $-strand fraction underlying the centerpiece $\beta $-strand\tmspace  +\thinmuskip {.1667em}\% column (Table\nobreakspace  {}\ref  {tab:proteina-13m}), reported here per-seed and at 700K. (AFDB L4-MPNN omitted: no multi-seed $\gamma {=}0.45$ data; $2$--$3$ seeds per row, given in the Seeds column; $250$ backbones/seed (designable subset).)}}{61}{table.A.7}}
+\newlabel{tab:ss-composition}{{A.7}{61}{\textbf {Secondary-structure composition of the designable subset (step 700K, $\gamma {=}0.45$).} Mean strand ($f_E$) and helix ($f_H$) fractions over the designable backbones, $\pm $ half the seed range. GearNet shifts the designable subset toward strand and away from helix; MPNN on AFDB does the reverse. The AFDB L9-GearNet vs.\ L9-MPNN ranges are non-overlapping on both axes. The strand column ($f_E$) is the designable $\beta $-strand fraction underlying the centerpiece $\beta $-strand\,\% column (Table~\ref {tab:proteina-13m}), reported here per-seed and at 700K. (AFDB L4-MPNN omitted: no multi-seed $\gamma {=}0.45$ data; $2$--$3$ seeds per row, given in the Seeds column; $250$ backbones/seed (designable subset).)}{table.A.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A.10}Deterministic (ODE) sampling across variants}{61}{section.A.10}}
+\newlabel{app:ode}{{A.10}{61}{Deterministic (ODE) sampling across variants}{section.A.10}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A.11}Per-seed spread of the centerpiece table}{61}{section.A.11}}
+\newlabel{app:13m-ranges}{{A.11}{61}{Per-seed spread of the centerpiece table}{section.A.11}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {A.8}{\ignorespaces \textbf  {Under deterministic (ODE) sampling, REPA lifts the floor above the baseline on AFDB, while on PDB it redistributes it.} Sampling the trunk's learned distribution directly, with no sampler noise, isolates what the model has learned. On AFDB the GearNet encoders and L9-MPNN raise both designability and distribution match (FPSD); L4-MPNN raises FPSD but not designability. On PDB the trained encoders raise designability but worsen distribution match (FPSD) across the board, so the floor redistributes rather than lifts. Designable pwTM (mean pairwise TM over the designable subset; higher $=$ more concentrated) is shown to track the designability--diversity trade-off. (Absolute values at step 1.3M; REPA cells coloured for Des and FPSD only; $n{=}1$ seed; $1{,}125$ backbones/seed, $250$ for designability. $^{\ast }$AFDB L4-random has no checkpoint past 800K.)}}{62}{table.A.8}}
+\newlabel{tab:proteina-ode}{{A.8}{62}{\textbf {Under deterministic (ODE) sampling, REPA lifts the floor above the baseline on AFDB, while on PDB it redistributes it.} Sampling the trunk's learned distribution directly, with no sampler noise, isolates what the model has learned. On AFDB the GearNet encoders and L9-MPNN raise both designability and distribution match (FPSD); L4-MPNN raises FPSD but not designability. On PDB the trained encoders raise designability but worsen distribution match (FPSD) across the board, so the floor redistributes rather than lifts. Designable pwTM (mean pairwise TM over the designable subset; higher $=$ more concentrated) is shown to track the designability--diversity trade-off. (Absolute values at step 1.3M; REPA cells coloured for Des and FPSD only; $n{=}1$ seed; $1{,}125$ backbones/seed, $250$ for designability. $^{\ast }$AFDB L4-random has no checkpoint past 800K.)}{table.A.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {A.9}{\ignorespaces \textbf  {Per-seed min--max spread behind the 1.3M centerpiece (Table\nobreakspace  {}\ref  {tab:proteina-13m}).} For each cell the centerpiece reports the mean over generation seeds (42/1042/2042, default sde sampler $n{=}0.45$); here we give the min--max range across those seeds, in absolute units. This lets the reader gauge which small centerpiece deltas sit within seed scatter --- e.g.\ the AFDB L4-GearNet designable-diversity (pwTM) range overlaps the baseline's, while its FPSD range is cleanly separated. Columns match the centerpiece: T-W is (fJSD-A, fS-A), T-D is pwTM, S-W is ssJSD2D\nobreakspace  {}(W), S-D is ssJSD2D\nobreakspace  {}(D) and $\beta $\%. ($^{\dagger }$single seed, no range.)}}{62}{table.A.9}}
+\newlabel{tab:proteina-13m-ranges}{{A.9}{62}{\textbf {Per-seed min--max spread behind the 1.3M centerpiece (Table~\ref {tab:proteina-13m}).} For each cell the centerpiece reports the mean over generation seeds (42/1042/2042, default sde sampler $n{=}0.45$); here we give the min--max range across those seeds, in absolute units. This lets the reader gauge which small centerpiece deltas sit within seed scatter --- e.g.\ the AFDB L4-GearNet designable-diversity (pwTM) range overlaps the baseline's, while its FPSD range is cleanly separated. Columns match the centerpiece: T-W is (fJSD-A, fS-A), T-D is pwTM, S-W is ssJSD2D~(W), S-D is ssJSD2D~(D) and $\beta $\%. ($^{\dagger }$single seed, no range.)}{table.A.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {A.10}{\ignorespaces Full molecule encoder profile. \emph  {atom probe}: linear-probe accuracy for atom type (trivial in QM9, so omitted from the main table). \emph  {context-$\Delta $}: same-element, different-environment cosine spread. \emph  {Floor}/\emph  {Lift} as in Table\nobreakspace  {}\ref  {tab:profiling-mol}. RankMe is the Roy--Vetterli effective rank (GEOM value).}}{63}{table.A.10}}
+\newlabel{tab:profiling-full-mol}{{A.10}{63}{Full molecule encoder profile. \emph {atom probe}: linear-probe accuracy for atom type (trivial in QM9, so omitted from the main table). \emph {context-$\Delta $}: same-element, different-environment cosine spread. \emph {Floor}/\emph {Lift} as in Table~\ref {tab:profiling-mol}. RankMe is the Roy--Vetterli effective rank (GEOM value)}{table.A.10}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {A.11}{\ignorespaces Full protein encoder profile. \emph  {AA-probe}, \emph  {context-$\Delta $} (within-minus-between protein cosine), \emph  {Floor} (mean-direction cosine), \emph  {Best} (best-projector cosine), \emph  {Lift} ($=$ Best $-$ Floor), \emph  {RankMe} and \emph  {PR} (participation ratio). MC-GearNet's mean L2 norm is $1.5\times 10^6$, with 95\% of its variance in a single dimension.}}{63}{table.A.11}}
+\newlabel{tab:profiling-full-protein}{{A.11}{63}{Full protein encoder profile. \emph {AA-probe}, \emph {context-$\Delta $} (within-minus-between protein cosine), \emph {Floor} (mean-direction cosine), \emph {Best} (best-projector cosine), \emph {Lift} ($=$ Best $-$ Floor), \emph {RankMe} and \emph {PR} (participation ratio). MC-GearNet's mean L2 norm is $1.5\times 10^6$, with 95\% of its variance in a single dimension}{table.A.11}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A.12}Full encoder profiles}{63}{section.A.12}}
+\newlabel{app:profiling-full}{{A.12}{63}{Full encoder profiles}{section.A.12}{}}
+\newlabel{lastpage}{{A.12}{63}{Full encoder profiles}{table.A.11}{}}
