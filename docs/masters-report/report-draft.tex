@@ -1327,7 +1327,7 @@ We train on GEOM-drugs~\cite{GEOMdrugs}, a dataset of drug-like molecular confor
 
 The baseline is the unmodified Tabasco flow-matching transformer (\S\ref{sec:small-mol}): a 3.7M-parameter non-equivariant model that denoises 3D atom coordinates and atom types jointly. Our REPA variants add a trainable projector that aligns the trunk's hidden states to a frozen encoder, evaluated on the clean ($t$=1) molecule (\S\ref{sec:repa}). The trunk carries two hidden-state streams, one for coordinates and one for atom types. We concatenate them and pass the pair through a single shared projector, so the alignment acts on one combined representation. It enters the loss as a plain additive regulariser, leaving the flow-matching objective untouched.
 
-\textbf{Encoder ablations.} The two encoders we study come from the profiling of Chapter~\ref{ch:profiling}, and span a useful contrast. \emph{CheMeleon}~\cite{CheMeleon} is a 2D molecular-graph encoder. It is conformer-invariant, so it sees only the bonding graph and not the 3D pose. Meanwhile, \emph{MACE}~\cite{MACE} is a 3D interatomic-potential encoder. It is geometry-aware, but, as the profiling showed, its output is a narrow descriptor of local atomic environments. Hence, the former carries rich 2D-graph information, while the latter encodes 3D geometry.
+\textbf{Encoder ablations.} The two encoders we study come from the profiling of Chapter~\ref{ch:profiling}, and span a useful contrast. \emph{CheMeleon}~\cite{CheMeleon} is a 2D molecular-graph encoder. It is conformer-invariant, so it sees only the bonding graph and not the 3D pose. Meanwhile, \emph{MACE}~\cite{MACE,MACEOFF} is a 3D interatomic-potential encoder. It is geometry-aware, but, as the profiling showed, its output is a narrow descriptor of local atomic environments. Hence, the former carries rich 2D-graph information, while the latter encodes 3D geometry.
 
 \input{tables/table_tabasco_setup}
 
@@ -1928,13 +1928,11 @@ Yaron Lipman, Ricky T.~Q.~Chen, Heli Ben-Hamu, Maximilian Nickel, Matt Le.
 Peter Holderrieth and Ezra Erives.
 \textit{An Introduction to Flow Matching and Diffusion Models}.
 MIT 6.S184 lecture notes, 2025.
-% TODO verify canonical URL / citation form -- placeholder below
 \href{https://diffusion.csail.mit.edu/}{diffusion.csail.mit.edu}.
 
 \bibitem{FMGuide}
 Yaron Lipman, Marton Havasi, Peter Holderrieth, Neta Shaul, Matt Le, Brian Karrer, Ricky T.~Q.~Chen, David Lopez-Paz, Heli Ben-Hamu, Itai Gat.
 \textit{Flow Matching Guide and Code}. 2024.
-% TODO verify arXiv ID -- best guess below
 \href{https://arxiv.org/abs/2412.06264}{arXiv:2412.06264}.
 
 % --- Representation alignment line ---
@@ -1965,13 +1963,13 @@ Xiangdong Zhang, Jiaqi Liao, Shaofeng Zhang, Fanqing Meng, Xiangpeng Wan, Junchi
 \href{https://arxiv.org/abs/2505.23656}{arXiv:2505.23656}.
 
 \bibitem{TARO}
-Tri Ton, Jiajing Hong, Chang D.~Yoo.
-\textit{Temporally Aligned Audio for Video with Autoregression}. ICCV 2025.
+Tri Ton, Ji Woo Hong, Chang D.~Yoo.
+\textit{TARO: Timestep-Adaptive Representation Alignment with Onset-Aware Conditioning for Synchronized Video-to-Audio Synthesis}. ICCV 2025.
 \href{https://arxiv.org/abs/2504.05684}{arXiv:2504.05684}.
 
 \bibitem{CrystalREPA}
-Wei Zhang, Shijie Jin, Hangrui Zhang, Yi Li, Yan Wang.
-\textit{CrystalREPA: Element-aware Representation Alignment for Crystal Generation}. 2026.
+Chengqian Zhang, Yucheng Jin, Duo Zhang, Tiejun Li, Han Wang.
+\textit{CrystalREPA: Transferring Physical Priors from Universal MLIPs to Crystal Generative Models}. 2026.
 \href{https://arxiv.org/abs/2605.08960}{arXiv:2605.08960}.
 
 \bibitem{DiffuseDisperse}
@@ -2082,10 +2080,14 @@ Martin Steinegger, Johannes S\"oding.
 \href{https://doi.org/10.1038/nbt.3988}{doi:10.1038/nbt.3988}.
 
 \bibitem{MACE}
-Ilyes Batatia et al.
-``A foundation model for atomistic materials chemistry''.
-\textit{The Journal of Chemical Physics} 163.18 (2024), 184110.
-\href{https://doi.org/10.1063/5.0155322}{doi:10.1063/5.0155322}.
+Ilyes Batatia, D\'avid P\'eter Kov\'acs, Gregor N.~C. Simm, Christoph Ortner, G\'abor Cs\'anyi.
+\textit{MACE: Higher Order Equivariant Message Passing Neural Networks for Fast and Accurate Force Fields}. NeurIPS 2022.
+\href{https://arxiv.org/abs/2206.07697}{arXiv:2206.07697}.
+
+\bibitem{MACEOFF}
+D\'avid P\'eter Kov\'acs et al.
+\textit{MACE-OFF: Transferable Short Range Machine Learning Force Fields for Organic Molecules}. 2023.
+\href{https://arxiv.org/abs/2312.15211}{arXiv:2312.15211}.
 
 \bibitem{CheMeleon}
 Jackson W.~Burns et al.
@@ -2189,7 +2191,7 @@ Josh Abramson et al.
 
 \bibitem{Brehmer2024}
 Johann Brehmer et al.
-\textit{Does equivariance matter at scale?} NeurIPS 2024.
+\textit{Does equivariance matter at scale?} TMLR 2025.
 \href{https://arxiv.org/abs/2410.23179}{arXiv:2410.23179}.
 
 \bibitem{FrameFlow}
@@ -2213,8 +2215,8 @@ Clement Vignac et al.
 \href{https://arxiv.org/abs/2302.09048}{arXiv:2302.09048}.
 
 \bibitem{SemlaFlow}
-Ross Irwin et al.
-\textit{Efficient 3D Molecular Generation with Flow Matching and Scale Optimal Transport}. 2024.
+Ross Irwin, Alessandro Tibo, Jon Paul Janet, Simon Olsson.
+\textit{SemlaFlow: Efficient 3D Molecular Generation with Latent Attention and Equivariant Flow Matching}. AISTATS 2025.
 \href{https://arxiv.org/abs/2406.07266}{arXiv:2406.07266}.
 
 \bibitem{NIHSmallMolGuide}
