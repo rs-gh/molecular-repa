@@ -149,7 +149,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 15073
+Main chapters word count: 15126
 
 Methodology used to generate that word count:
 
@@ -1733,7 +1733,9 @@ The short-run REPA-induced acceleration we observe in our headline metrics, FPSD
 
 \textbf{On synthetic data, REPA learns a genuinely better model.} Table~\ref{tab:proteina-13m} captures the state of our models after 1.3M training steps. At this snapshot, the strongest long-run AFDB variant (identified in Table~\ref{tab:proteina-speedup}, long-run column), REPA-L4-GearNet, beats the baseline on Quality and whole-set (T-W, S-W) metrics at once, \emph{at no meaningful cost to designable-subset metrics} (T-D and S-D). This represents a true pushing of the designability--diversity envelope (\S\ref{sec:protein-tradeoffs}). The $0.02$ rise in designable pwTM is within the baseline's own seed-to-seed scatter, while the designability quality gains clear it (Appendix~\ref{app:13m-ranges}). This makes REPA-L4-GearNet the canonically better model under that framework, not merely a different point on the same envelope. This is learned model behaviour, not a sampler artefact. The same pattern survives the deterministic ODE limit, which reads the velocity field with no injected noise (Appendix~\ref{app:ode}). The random-weights control marks the boundary of a genuine gain. At just $0.5$M steps, the least training of any variant, it posts the AFDB block's best designability ($+0.21$). Yet it improves FPSD only marginally and regresses on fold similarity (fS-A). That designability bump reflects the auxiliary loss, not structural transfer.
 
-\textbf{On experimental data, REPA finds a different spot on the designability--diversity envelope.} At the 1.3M snapshot, across variants, REPA delivers whole-set gains (T-W, S-W) while pushing the designable subset toward $\beta$-strand content (S-D). However, designable diversity (T-D) drops, as the model appears to collapse onto fewer distinct $\beta$-rich folds (Table~\ref{tab:proteina-concentration}). This $\beta$-driven dynamic of secondary-structure enhancement and loss of tertiary-structure diversity is far stronger on PDB. The performance of the strongest long-run variant, REPA-L9-MPNN (identified in Table~\ref{tab:proteina-speedup}, long-run column), makes the resultant trade-off clear. While REPA increases designability on PDB, it does so by losing diversity, instead of pushing the frontier out as with AFDB.
+\textbf{On experimental data, REPA finds a different spot on the designability--diversity envelope.} At the 1.3M snapshot, across variants, REPA delivers whole-set gains (T-W, S-W) while pushing the designable subset toward $\beta$-strand content (S-D; Figure~\ref{fig:proteina-enrichment}). However, designable diversity (T-D) drops, as the model appears to collapse onto fewer distinct $\beta$-rich folds (Table~\ref{tab:proteina-concentration}). This $\beta$-driven dynamic of secondary-structure enhancement and loss of tertiary-structure diversity is far stronger on PDB. The performance of the strongest long-run variant, REPA-L9-MPNN (identified in Table~\ref{tab:proteina-speedup}, long-run column), makes the resultant trade-off clear. While REPA increases designability on PDB, it does so by losing diversity, instead of pushing the frontier out as with AFDB.
+
+\input{figures/fig_ch6_enrichment}
 
 \input{tables/table_concentration}
 
