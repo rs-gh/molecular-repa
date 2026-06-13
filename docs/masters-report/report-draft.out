@@ -48,7 +48,7 @@
 \BOOKMARK [1][-]{section.7.2}{When does REPA work?}{chapter.7}% 48
 \BOOKMARK [1][-]{section.7.3}{Open questions}{chapter.7}% 49
 \BOOKMARK [0][-]{appendix.A}{Technical details}{}% 50
-\BOOKMARK [1][-]{section.A.1}{Dataset composition and split overlap}{appendix.A}% 51
+\BOOKMARK [1][-]{section.A.1}{Protein dataset composition and split overlap}{appendix.A}% 51
 \BOOKMARK [1][-]{section.A.2}{Choice of CATH fold-probe level}{appendix.A}% 52
 \BOOKMARK [1][-]{section.A.3}{Leakage-controlled probe evaluation}{appendix.A}% 53
 \BOOKMARK [1][-]{section.A.4}{Full representation-quality ablation}{appendix.A}% 54
