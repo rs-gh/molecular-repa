@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2026.4.15)  12 JUN 2026 19:40
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2026.4.15)  13 JUN 2026 01:23
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -856,50 +856,54 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [43 <./figures/fig04_fid_des_gen_vs_rep.png>] (./tables/table_proteina_13m.tex
 ) [44]
-(./tables/table_concentration.tex) [45] [46] [47]
+(./tables/table_concentration.tex)
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [45]
+[46] [47]
 Chapter 7.
 [48
 
 ] [49] [50] [51
 
 ]
-Underfull \hbox (badness 1721) in paragraph at lines 2004--2008
+Underfull \hbox (badness 1721) in paragraph at lines 2005--2009
 []\OT1/cmr/m/n/12 Alex Zha-voronkov et al. ``Deep learn-ing en-ables rapid iden
 -ti-fi-ca-tion of po-
  []
 
 
-Underfull \hbox (badness 5667) in paragraph at lines 2049--2053
+Underfull \hbox (badness 5667) in paragraph at lines 2050--2054
 \OT1/cmr/m/n/12 ture with a lan-guage model''. \OT1/cmr/m/it/12 Sci-ence \OT1/c
 mr/m/n/12 379.6637 (2023), pp. 1123--1130.
  []
 
 [52]
-Underfull \hbox (badness 3179) in paragraph at lines 2102--2106
+Underfull \hbox (badness 3179) in paragraph at lines 2103--2107
 []\OT1/cmr/m/n/12 Michael Heinzinger et al. ``Bilin-gual lan-guage model for pr
 o-tein se-quence
  []
 
 
-Underfull \hbox (badness 5607) in paragraph at lines 2102--2106
+Underfull \hbox (badness 5607) in paragraph at lines 2103--2107
 \OT1/cmr/m/n/12 and struc-ture''. \OT1/cmr/m/it/12 NAR Ge-nomics and Bioin-for-
 mat-ics \OT1/cmr/m/n/12 6.4 (2024), lqae150.
  []
 
 
-Underfull \hbox (badness 2913) in paragraph at lines 2146--2150
+Underfull \hbox (badness 2913) in paragraph at lines 2147--2151
 []\OT1/cmr/m/n/12 Luciano Broc-chieri and Samuel Kar-lin. ``Pro-tein length in
 eu-kary-otic and
  []
 
 [53]
-Underfull \hbox (badness 1917) in paragraph at lines 2191--2194
+Underfull \hbox (badness 1917) in paragraph at lines 2192--2195
 []\OT1/cmr/m/n/12 Johann Brehmer et al. \OT1/cmr/m/it/12 Does equiv-ari-ance ma
 t-ter at scale? \OT1/cmr/m/n/12 TMLR 2025.
  []
 
 [54]
-Underfull \hbox (badness 1127) in paragraph at lines 2294--2298
+Underfull \hbox (badness 1127) in paragraph at lines 2295--2299
 \OT1/cmr/m/n/12 new ef-fi-cient as-sign-ment of sec-ondary struc-ture from C$\O
 ML/cmm/m/it/12 $ \OT1/cmr/m/n/12 trace of pro-teins''.
  []
@@ -932,28 +936,28 @@ Underfull \vbox (badness 1895) has occurred while \output is active []
 
  [58]
 (./tables/table_genrep_corr_afdb.tex) [59]
-Overfull \hbox (15.64963pt too wide) in paragraph at lines 2406--2406
+Overfull \hbox (15.64963pt too wide) in paragraph at lines 2407--2407
 |[]\OT1/cmr/bx/n/17.28 Secondary-structure com-po-si-tion of the des-ignable
  []
 
 (./tables/table_ss_composition.tex) [60] (./tables/table_ode.tex)
 (./tables/table_13m_ranges.tex) (./tables/table_profiling_full.tex) [61]
 [62]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2564.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2565.
  [63]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 2564.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 2565.
  (./report-draft.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 2564.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2564.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 2565.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2565.
 
 Package rerunfilecheck Info: File `report-draft.out' has not changed.
 (rerunfilecheck)             Checksum: 6C786CE8A545F76769D2E216ED0DF601;4608.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2564.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2565.
  )
 Here is how much of TeX's memory you used:
  18059 strings out of 494917
  334278 string characters out of 6180699
- 437901 words of memory out of 5000000
+ 437892 words of memory out of 5000000
  20745 multiletter control sequences out of 15000+600000
  18380 words of font info for 68 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
@@ -981,9 +985,9 @@ amsfonts/cm/cmti12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
 ts/cm/cmti8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
 mtt12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/ms
 bm10.pfb>
-Output written on report-draft.pdf (63 pages, 1551032 bytes).
+Output written on report-draft.pdf (63 pages, 1551641 bytes).
 PDF statistics:
- 1373 PDF objects out of 1440 (max. 8388607)
- 1228 compressed objects within 13 object streams
+ 1374 PDF objects out of 1440 (max. 8388607)
+ 1229 compressed objects within 13 object streams
  230 named destinations out of 1000 (max. 500000)
  539 words of extra memory for PDF output out of 10000 (max. 10000000)

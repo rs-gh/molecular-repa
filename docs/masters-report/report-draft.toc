@@ -41,7 +41,7 @@
 \contentsline {subsection}{\numberline {6.2.2}A diagnostic check on alignment}{39}{subsection.6.2.2}
 \contentsline {subsection}{\numberline {6.2.3}In the short run, REPA accelerates generation quality in both experimental and synthetic data regimes}{40}{subsection.6.2.3}
 \contentsline {subsection}{\numberline {6.2.4}In the long run, REPA gains are data-regime dependent}{44}{subsection.6.2.4}
-\contentsline {subsection}{\numberline {6.2.5}What we do not claim}{45}{subsection.6.2.5}
+\contentsline {subsection}{\numberline {6.2.5}What we do not claim}{46}{subsection.6.2.5}
 \contentsline {section}{\numberline {6.3}Discussion}{46}{section.6.3}
 \contentsline {chapter}{\numberline {7}Conclusions}{48}{chapter.7}
 \contentsline {section}{\numberline {7.1}Does REPA work in the molecular domain?}{48}{section.7.1}
