@@ -1595,7 +1595,7 @@ We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant
 
 We train in two data regimes that mirror the data-scarcity context motivating this report (Chapter~\ref{ch:intro}). The Protein Data Bank (PDB)~\cite{PDB} is the high-quality experimental source, but it is relatively scarce, containing on the order of hundreds of thousands of structures. The AlphaFold Database (AFDB)~\cite{AFDB} is the synthetic alternative containing hundreds of millions of AF2-predicted structures, but it is almost entirely unverified. We treat the datasets as two ends of a quality--scale axis. (We use the manually-curated Swiss-Prot subset of AFDB as a reproducible stand-in for the Foldseek-clustered TrEMBL subset on which Proteina was trained in the original presentation~\cite{Proteina}. This corpus contained data that has since been pruned from AFDB, and is hence inaccessible.)
 
-Following Proteina~\cite{Proteina}, we train on the subset of chains with at most 256 residues; we represent this length-regime by $n{\le}256$. (We note that this represents only a property of the training datasets, not a bound on the length of the proteins that models trained on these datasets can generate.) Following this filter, the two training sets are comparable in size (PDB: 273{,}771 / 3{,}190 / 323 train/val/test chains; AFDB: 229{,}670 / 4{,}521 / 235). Appendix~\ref{ch:appendix} contains further details on dataset composition. During training, we augment each backbone with a single random global rotation per sample.
+Following Proteina~\cite{Proteina}, we train on the subset of chains with at most 256 residues; we represent this length-regime by $n{\le}256$. (We note that this represents only a property of the training datasets, not a bound on the length of the proteins that models trained on these datasets can generate.) Following this filter, the two training sets are comparable in size (PDB: 273{,}771 / 3{,}190 / 323 train/val/test chains; AFDB: 229{,}670 / 4{,}521 / 235). Appendix~\ref{app:datasets} contains further details on dataset composition. During training, we augment each backbone with a single random global rotation per sample.
 
 \textbf{Different datasets in this domain carry different biases.} Trends in designability offer a clear example, as training on AFDB raises the in-silico-designability floor well above PDB at every setting we tested (\S\ref{sec:proteina-convergence}). This is the designability-proxy lineage effect of Chapter~\ref{ch:evaluation}: the test re-folds with models sharing AlphaFold2's lineage, so AlphaFold-like backbones are plausibly re-folded most confidently. We also note that both datasets feature some amount of structural similarity across training and evaluation subsets. We attempt to control for this in our evaluation protocol, as noted in \S\ref{sec:eval-protocol}.
 \subsection{Models}
@@ -1615,7 +1615,7 @@ The base Proteina model comprises a stack of ten transformer layers (zero-indexe
 
 The original hypothesis that motivated REPA for imaging~\cite{REPA} was that alleviating a \emph{representation} bottleneck would improve \emph{generation} quality. We seek to understand if the same mechanism applies in the molecular domain as well. Hence, along with estimating the quality of a model's generated samples, we are also interested in what the model comes to represent internally. To this end, we measure three families of metrics, as outlined below: representation quality, representation alignment, and generation quality (Table~\ref{tab:eval-protein}).
 
-\textbf{Representation quality.} We use the three-task protein battery of Chapter~\ref{ch:evaluation} (inverse folding, dihedral error, CATH fold classification; Table~\ref{tab:eval-protein}). Because the three probes target largely orthogonal capabilities --- local chemical environment, local geometry, and global fold --- improving all of them at once is strong evidence of holistic representation quality. Among the CATH levels we headline on architecture (CATH-A): Class is too easy (top-1 saturates) and Topology too sparse (too many buckets, too few chains). We report all three for completeness, the patterns holding across them, and motivate the choice in Appendix~\ref{ch:appendix} (Table~\ref{tab:setup-cath}).
+\textbf{Representation quality.} We use the three-task protein battery of Chapter~\ref{ch:evaluation} (inverse folding, dihedral error, CATH fold classification; Table~\ref{tab:eval-protein}). Because the three probes target largely orthogonal capabilities --- local chemical environment, local geometry, and global fold --- improving all of them at once is strong evidence of holistic representation quality. Among the CATH levels we headline on architecture (CATH-A): Class is too easy (top-1 saturates) and Topology too sparse (too many buckets, too few chains). We report all three for completeness, the patterns holding across them, and motivate the choice in Appendix~\ref{app:cath} (Table~\ref{tab:setup-cath}).
 
 \textbf{Representation alignment.} This measures how close the trunk sits to a structural encoder, via CKNNA (\S\ref{sec:eval-probe}). As in the original REPA analysis~\cite{REPA} and a recent molecular extension~\cite{BoltzREPA}, we use it as a diagnostic --- a mechanistic lens on how REPA might produce its representation gains --- rather than a quantity we optimise or build claims on.
 
@@ -1735,7 +1735,7 @@ The short-run REPA-induced acceleration we observe in our headline metrics, FPSD
 
 \textbf{On synthetic data, REPA learns a genuinely better model.} Table~\ref{tab:proteina-13m} captures the state of our models after 1.3M training steps. At this snapshot, the strongest long-run AFDB variant (identified in Table~\ref{tab:proteina-speedup}, long-run column), REPA-L4-GearNet, beats the baseline on Quality and whole-set (T-W, S-W) metrics at once, \emph{at no meaningful cost to designable-subset metrics} (T-D and S-D). This represents a true pushing of the designability--diversity envelope (\S\ref{sec:protein-tradeoffs}). The $0.02$ rise in designable pwTM is within the baseline's own seed-to-seed scatter, while the designability quality gains clear it (Appendix~\ref{app:13m-ranges}). This makes REPA-L4-GearNet the canonically better model under that framework, not merely a different point on the same envelope. This is learned model behaviour, not a sampler artefact. The same pattern survives the deterministic ODE limit, which reads the velocity field with no injected noise (Appendix~\ref{app:ode}). The random-weights control marks the boundary of a genuine gain. At just $0.5$M steps, the least training of any variant, it posts the AFDB block's best designability ($+0.21$). Yet it improves FPSD only marginally and regresses on fold similarity (fS-A). That designability bump reflects the auxiliary loss, not structural transfer.
 
-\textbf{On experimental data, REPA finds a different spot on the designability--diversity envelope.} At the 1.3M snapshot, across variants, REPA delivers whole-set gains (T-W, S-W) while pushing the designable subset toward $\beta$-strand content (S-D; Figure~\ref{fig:proteina-enrichment}). However, designable diversity (T-D) drops, as the model appears to collapse onto fewer distinct $\beta$-rich folds (Table~\ref{tab:proteina-concentration}). This $\beta$-driven dynamic of secondary-structure enhancement and loss of tertiary-structure diversity is far stronger on PDB. The performance of the strongest long-run variant, REPA-L9-MPNN (identified in Table~\ref{tab:proteina-speedup}, long-run column), makes the resultant trade-off clear. While REPA increases designability on PDB, it does so by losing diversity, instead of pushing the frontier out as with AFDB.
+\textbf{On experimental data, REPA finds a different spot on the designability--diversity envelope.} At the 1.3M snapshot, across variants, REPA delivers whole-set gains (T-W, S-W) while pushing the designable subset toward $\beta$-strand content (S-D; Figure~\ref{fig:proteina-enrichment}; per-seed composition, including the opposite-direction AFDB-MPNN routing, in Appendix~\ref{app:ss-composition}). However, designable diversity (T-D) drops, as the model appears to collapse onto fewer distinct $\beta$-rich folds (Table~\ref{tab:proteina-concentration}). This $\beta$-driven dynamic of secondary-structure enhancement and loss of tertiary-structure diversity is far stronger on PDB. The performance of the strongest long-run variant, REPA-L9-MPNN (identified in Table~\ref{tab:proteina-speedup}, long-run column), makes the resultant trade-off clear. While REPA increases designability on PDB, it does so by losing diversity, instead of pushing the frontier out as with AFDB.
 
 \input{figures/fig_ch6_enrichment}
 
@@ -2358,17 +2358,17 @@ Patrick Kunzmann, Kay Hamacher.
 % The placeholder Lorem-ipsum text has been removed; remove this entire
 % appendix block if the report doesn't end up needing appendices.
 
-\section{Dataset composition and split overlap}
+\section{Protein dataset composition and split overlap}
 \label{app:datasets}
 
-Table~\ref{tab:setup-datasets} summarises the two datasets used in Chapter~\ref{ch:proteina-study}. Both training sets are $\alpha/\beta$-dominated and span a substantial fraction of CATH architectures (44.2\% PDB, 61.8\% AFDB), which is what makes the per-chain CATH fold probe meaningful. Neither random split is sequence-clustered: 98.3\% of PDB and 92.2\% of AFDB validation chains have a $\ge$30\%-identity homolog in their own training set, so absolute in-house scores are inflated and we read rank-order and $\Delta$-from-baseline instead. The cross-database overlap is far lower --- only 62.1\% of AFDB validation chains have a $\ge$30\%-identity hit in PDB training --- so a homology-filtered AFDB set serves as a cleaner probe set for PDB-trained models (Chapter~\ref{ch:evaluation}).
-
 \input{tables/table_setup_datasets}
+
+Table~\ref{tab:setup-datasets} summarises the two datasets used in Chapter~\ref{ch:proteina-study}. Both training sets are $\alpha/\beta$-dominated and span a substantial fraction of CATH architectures (44.2\% PDB, 61.8\% AFDB), which is what makes the per-chain CATH fold probe meaningful. Neither random split is sequence-clustered: 98.3\% of PDB and 92.2\% of AFDB validation chains have a $\ge$30\%-identity homolog in their own training set, so absolute in-house scores are inflated and we read rank-order and $\Delta$-from-baseline instead. The cross-database overlap is far lower: only 62.1\% of AFDB validation chains have a $\ge$30\%-identity hit in PDB training. This is what makes a clean evaluation possible. Filtering AFDB chains clean against \emph{both} training pools leaves $\sim$325 proteins at $n{\le}256$, more than five times the $\sim$62 left in the same-source PDB validation set, so this cross-database set serves as the blinded probe set for PDB-trained models (\S\ref{app:leakage}; Chapter~\ref{ch:evaluation}).
 
 \section{Choice of CATH fold-probe level}
 \label{app:cath}
 
-We report CATH \emph{architecture} (CATH-A) as the headline fold-probe level throughout Chapter~\ref{ch:proteina-study}. Table~\ref{tab:setup-cath} justifies that choice: Class is too coarse (four buckets, one already near-saturated), Topology too finely-bucketed to probe reliably, and Architecture sits between --- discriminative but learnable.
+We report CATH \emph{architecture} (CATH-A) as the headline fold-probe level throughout Chapter~\ref{ch:proteina-study}. Table~\ref{tab:setup-cath} justifies that choice: Class is too coarse (four buckets, one already near-saturated), Topology too finely-bucketed to probe reliably, and Architecture sits between --- discriminative but learnable. The example here shows the PDB-trained baseline trunk ($n{\le}256$): the probe classifies validation chains by their CATH code and we report the linear-probe top-1 accuracy at each level.
 
 \input{tables/table_setup_cath}
 
@@ -2377,7 +2377,11 @@ We report CATH \emph{architecture} (CATH-A) as the headline fold-probe level thr
 
 The random train/val split (\S\ref{app:datasets}) is not sequence-clustered, so probe scores are exposed to two distinct leakages. \emph{Model leakage} is asymmetric: a model trained on the leaky split has effectively seen near-duplicates of the evaluation proteins, an advantage a differently-curated model (such as an externally-pretrained checkpoint) does not share. \emph{Probe leakage} is symmetric: a probe fit on training chains near-identical to its evaluation set can shortcut by matching sequences rather than learning generalisable structure, inflating every model's absolute score.
 
-We control these by filtering the evaluation. A \emph{probe-clean} split removes probe leakage alone --- the probe's training chains are filtered to have no $\ge$30\% sequence-identity hit to the evaluation set, which is otherwise the full validation set. A \emph{blinded} split removes both --- the evaluation proteins are held to under 30\% identity to all training data (here, a cross-database set of AFDB chains with no such hit in either the PDB or AFDB training pool, $\sim$325 proteins). We use the blinded split for the per-residue probes (inverse folding, dihedral), where the $\sim$325 proteins still yield $\sim$43k residues --- full statistical power. The per-chain CATH probe is different: fold classification needs many distinct chains spread across populated fold classes, and the blinded slice is too small and too class-sparse for this, so we relax it to the probe-clean split on the fuller validation set ($\sim$3{,}190 chains). Comparing the splits also decomposes the leakage --- the dirty-to-probe-clean drop isolates probe leakage and the probe-clean-to-blinded drop isolates model leakage --- and the REPA-over-baseline gap survives in every regime.
+We control these by filtering the evaluation. A \emph{probe-clean} split removes probe leakage alone. The probe's training chains are filtered to have no $\ge$30\% sequence-identity hit to the evaluation set, which is otherwise the full validation set. A \emph{blinded} split removes both: the evaluation proteins are held under 30\% sequence identity to all training data.
+
+However, for both our datasets, validation sets are heavily homologous to their own training data. For example, 98\% of PDB validation chains have a $\ge$30\% hit in PDB training, leaving only $\sim$62 clean chains at $n{\le}256$, which is far too few to probe. Hence, we look across datasets to increase the count. AFDB chains filtered clean against \emph{both} the PDB and AFDB training pools yield $\sim$325 proteins, more than $5\times$ the same-source PDB slice.
+
+This number sufficees for our per-residue probes, as the $\sim$325 proteins still yield $\sim$43k residues, which yields full statistical power. However, the per-chain CATH probe is different. Fold classification needs many distinct chains spread across populated fold classes, and the blinded slice is too small and too class-sparse for this. Hence, for the numbers we report in the main text, we relax our clean condition to the probe-clean split on the fuller validation set ($\sim$3{,}190 chains). Comparing the splits also decomposes the leakage --- the dirty-to-probe-clean drop isolates probe leakage and the probe-clean-to-blinded drop isolates model leakage --- and the REPA-over-baseline gap survives in every regime.
 
 \section{Full representation-quality ablation}
 \label{app:rep-full}
@@ -2389,7 +2393,7 @@ The main-text representation table (Table~\ref{tab:proteina-rep}) shows four row
 \section{Representation quality on AFDB}
 \label{app:rep-afdb}
 
-Table~\ref{tab:proteina-rep-afdb} is the AFDB-trained counterpart of the PDB Table~\ref{tab:proteina-rep}. The fold routing (GearNet\,$\to$\,CATH) replicates; the per-residue routing is weaker and noisier than on PDB, for the reasons given in the caption.
+Table~\ref{tab:proteina-rep-afdb} is the AFDB-trained counterpart of the PDB Table~\ref{tab:proteina-rep}. The fold routing (GearNet\,$\to$\,CATH) replicates. The per-residue routing does not: inverse folding and the dihedral probe show no consistent REPA effect, unlike the clear MPNN-led per-residue gains on PDB. We read this as a measurement limit, not a real absence. These probes run on the small cross-database blinded set at a single seed and a single checkpoint, so step-to-step noise is large --- the baseline dihedral error alone swings several degrees between adjacent checkpoints. We therefore draw no per-residue conclusion on AFDB and lean on the fold result, whose effect is large enough to clear that noise.
 
 \input{tables/table_rep_quality_afdb}
 
@@ -2417,14 +2421,14 @@ For each backbone we annotate every residue as helix, strand, or coil with a C$\
 \section{Secondary-structure composition of the designable subset}
 \label{app:ss-composition}
 
-The encoder-routing reading in \S\ref{sec:proteina-anatomy} --- GearNet shifting the designable subset toward $\beta$-strand content, MPNN on AFDB away from it --- rests on the secondary-structure composition of the designable backbones (Table~\ref{tab:ss-composition}). The shifts are small in absolute terms but seed-consistent: on AFDB the L9-GearNet and L9-MPNN strand and helix ranges do not overlap across seeds, in opposite directions. The main-text designable $\beta$-strand \% figures (Table~\ref{tab:proteina-13m}) are the per-seed means of the strand column; we report the spread here rather than in the main table to avoid clutter.
+The encoder-routing reading in \S\ref{sec:proteina-anatomy} --- GearNet shifting the designable subset toward $\beta$-strand content, MPNN on AFDB away from it --- rests on the secondary-structure composition of the designable backbones (Table~\ref{tab:ss-composition}). The shifts are small in absolute terms but seed-consistent: on AFDB the L9-GearNet and L9-MPNN strand and helix ranges do not overlap across seeds, in opposite directions. The strand column ($f_E$) is the same designable $\beta$-strand metric as the centerpiece $\beta$-strand \% column (Table~\ref{tab:proteina-13m}), shown here per-seed and alongside the helix axis. We report it at 700K rather than the centerpiece's 1.3M because that is the step at which the load-bearing AFDB L9-GearNet vs.\ L9-MPNN contrast has multi-seed coverage on both encoders --- the AFDB L9-GearNet run trains only to 1.0M, so it has no 1.3M checkpoint. The per-seed values therefore do not match the 1.3M centerpiece cell exactly; we report the spread here rather than in the main table to avoid clutter.
 
 \input{tables/table_ss_composition}
 
 \section{Deterministic (ODE) sampling across variants}
 \label{app:ode}
 
-The deterministic (ODE) sampler reads the learned velocity field with no injected noise, so it isolates what the trunk has learned from the sampler that draws from it. Table~\ref{tab:proteina-ode} gives the all-variant ODE snapshot at 700K. On AFDB the lift holds across every trained encoder, not just the strongest one, and without concentrating the designable subset (des.\ pwTM); this is the ODE evidence behind the ``genuinely better model'' reading of \S\ref{sec:proteina-anatomy}. On PDB the floor instead redistributes, raising designability while the distribution-match gain is mixed.
+The deterministic (ODE) sampler reads the learned velocity field with no injected noise, so it isolates what the trunk has learned from the sampler that draws from it. Table~\ref{tab:proteina-ode} gives the all-variant ODE snapshot at 1.3M. On AFDB the lift holds across every trained encoder, not just the strongest one, and without concentrating the designable subset (des.\ pwTM); this is the ODE evidence behind the ``genuinely better model'' reading of \S\ref{sec:proteina-anatomy}. On PDB the floor instead redistributes, raising designability while the distribution-match gain is mixed.
 
 \input{tables/table_ode}
 
@@ -2441,134 +2445,6 @@ Each cell of the 1.3M centerpiece (Table~\ref{tab:proteina-13m}) is a mean over 
 Tables~\ref{tab:profiling-mol} and~\ref{tab:profiling-protein} in the main text show only the diagnostics that drive each verdict. Tables~\ref{tab:profiling-full-mol} and~\ref{tab:profiling-full-protein} give the complete set of measured values for every candidate encoder, including the columns omitted from the main text (atom/context probes, participation ratio, and the best-projector cosine the lift is computed from).
 
 \input{tables/table_profiling_full}
-
-% --- removed: original template's Lorem-ipsum filler ---
-\iffalse
-\section{Lorem ipsum}
-
-% Some traditional fake Latin prose for calibrating words/page
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
-nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,
-sed diam voluptua. At vero eos et accusam et justo duo dolores et ea
-rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem
-ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
-sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et
-dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam
-et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea
-takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit
-amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
-invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
-At vero eos et accusam et justo duo dolores et ea rebum. Stet clita
-kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit
-amet.
-
-\section{Homo sapiens non urinat in ventum}
-Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse
-molestie consequat, vel illum dolore eu feugiat nulla facilisis at
-vero eros et accumsan et iusto odio dignissim qui blandit praesent
-luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-volutpat.
-
-Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper
-suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem
-vel eum iriure dolor in hendrerit in vulputate velit esse molestie
-consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et
-accumsan et iusto odio dignissim qui blandit praesent luptatum zzril
-delenit augue duis dolore te feugait nulla facilisi.
-
-Nam liber tempor cum soluta nobis eleifend option congue nihil
-imperdiet doming id quod mazim placerat facer possim assum. Lorem
-ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy
-nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper
-suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-
-Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse
-molestie consequat, vel illum dolore eu feugiat nulla facilisis.
-
-At vero eos et accusam et justo duo dolores et ea rebum. Stet clita
-kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit
-amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed
-diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
-erat, sed diam voluptua. At vero eos et accusam et justo duo dolores
-et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est
-Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
-sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo
-eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet
-clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata
-ut vero voluptua. est Lorem ipsum dolor sit amet. Lorem ipsum dolor
-sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
-invidunt ut labore et dolore magna aliquyam erat.
-
-Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
-labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos
-et accusam et justo duo dolores et ea rebum. Stet clita kasd
-gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
-nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,
-sed diam voluptua. At vero eos et accusam et justo duo dolores et ea
-rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem
-ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
-sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et
-dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam
-et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea
-takimata sanctus est Lorem ipsum dolor sit amet.
-
-Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse
-molestie consequat, vel illum dolore eu feugiat nulla facilisis at
-vero eros et accumsan et iusto odio dignissim qui blandit praesent
-luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-volutpat.
-
-Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper
-suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem
-vel eum iriure dolor in hendrerit in vulputate velit esse molestie
-consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et
-accumsan et iusto odio dignissim qui blandit praesent luptatum zzril
-delenit augue duis dolore te feugait nulla facilisi.
-
-Nam liber tempor cum soluta nobis eleifend option congue nihil
-imperdiet doming id quod mazim placerat facer possim assum. Lorem
-ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy
-nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper
-suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-
-Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse
-molestie consequat, vel illum dolore eu feugiat nulla facilisis.
-
-At vero eos et accusam et justo duo dolores et ea rebum. Stet clita
-kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit
-amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed
-diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
-erat, sed diam voluptua. At vero eos et accusam et justo duo dolores
-et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est
-Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
-sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo
-eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet
-clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata
-ut vero voluptua. est Lorem ipsum dolor sit amet. Lorem ipsum dolor
-sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
-invidunt ut labore et dolore magna aliquyam erat.
-
-Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
-labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos
-et accusam et justo duo dolores et ea rebum. Stet clita kasd
-gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
-nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,
-sed diam voluptua. At vero eos et accusam et justo duo dolores et ea
-rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem
-ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
-sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et
-dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam
-et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea
-takimata sanctus est Lorem ipsum dolor sit amet.
-\fi
 
 %TC:endignore
 \label{lastpage}
