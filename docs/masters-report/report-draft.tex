@@ -149,7 +149,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 15126
+Main chapters word count: 15155
 
 Methodology used to generate that word count:
 
@@ -1350,7 +1350,9 @@ We compute every metric on a set of $1{,}000$ molecules sampled from the trained
 \section{Results: no measurable gain}
 \label{sec:tabasco-results}
 
-\textbf{No REPA variant meaningfully improves on the baseline.} As outlined in Table~\ref{tab:tabasco-gen}, the baseline pushes validity, connectivity, and uniqueness to their ceiling, and the REPA variants follow suit. This is perhaps to be expected, since these are largely properties of bond topology, which a strong generator reproduces almost perfectly. Essentially, there is no headroom on these metrics for improvement.
+\textbf{No REPA variant meaningfully improves on the baseline.} As outlined in Table~\ref{tab:tabasco-gen}, the baseline pushes validity, connectivity, and uniqueness to their ceiling, and the REPA variants follow suit (Figure~\ref{fig:tabasco-gallery}). This is perhaps to be expected, since these are largely properties of bond topology, which a strong generator reproduces almost perfectly. Essentially, there is no headroom on these metrics for improvement.
+
+\input{figures/fig_ch5_gallery}
 
 \textbf{On FCD, the one metric with room to move, both tested variants are worse.} The baseline records the lowest (best) FCD at $5.61$; CheMeleon lands at $7.43$ and MACE at $6.81$ (Table~\ref{tab:tabasco-gen}). We caveat this by noting that each variant is a single run, not a multi-seed average, and we do not have per-set FCD intervals to bound the gaps. Nevertheless, both point estimates strongly favour the baseline.
 
