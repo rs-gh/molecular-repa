@@ -149,7 +149,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 15155
+Main chapters word count: 14997
 
 Methodology used to generate that word count:
 
@@ -683,7 +683,7 @@ In this chapter, we introduce the machinery the rest of this thesis depends on: 
 \section{Flow matching}
 \label{sec:flow-matching}
 
-The term \emph{generative modelling} suggests \emph{creating} new artefacts from scratch. However, it is more precisely the problem of \emph{sampling} new artefacts from a complex data distribution accessible only through a finite training set. A common strategy here is to fix a simple distribution we can sample from cheaply --- typically standard Gaussian noise $p_0 = \mathcal{N}(0, I)$ --- and learn a mapping from it to the desired data distribution $p_1$.
+Generative modelling is the problem of \emph{sampling} new artefacts from a complex data distribution accessible only through a finite training set. A common strategy here is to fix a simple distribution we can sample from cheaply --- typically standard Gaussian noise $p_0 = \mathcal{N}(0, I)$ --- and learn a mapping from it to the desired data distribution $p_1$.
 
 Flow matching (FM)~\cite{FlowMatching} realises this mapping as a continuous-time transport. The model designer defines a \emph{probability path} between a noise sample and a data sample --- a continuous interpolation between them --- and the model learns to carry the noise sample along this path. Concretely, it parameterises a time-dependent \emph{velocity field} $v_\theta(x, t)$ that gives the instantaneous direction of motion at each location $x$ and time $t \in [0, 1]$. At inference, integrating the learned ordinary differential equation (ODE) $\dot{x}_t = v_\theta(x_t, t)$ from $t = 0$ to $t = 1$ pushes a fresh noise sample forward into a fresh data sample.
 
@@ -776,7 +776,7 @@ For fuller treatments, see Lipman et al.~\cite{FlowMatching,FMGuide}.
 \draw[arr] (lfm) -| (ltotal);
 \draw[arr] (lrepa) -| (ltotal);
 \end{tikzpicture}
-\caption{The REPA construction. A noised sample $x_t = (1-t)x_0 + t\,x_1$ is constructed at each training step from a noise sample $x_0$, a clean data sample $x_1$, and a sampled timestep $t \in [0,1]$. The generator $v_\theta$ processes $x_t$ through its sequence of layers $\ell_1, \ldots, \ell_L$ to produce the velocity field that feeds the flow-matching loss $\mathcal{L}_{\text{FM}}$. Separately, the clean sample $x_1$ is also passed through a frozen pretrained encoder $f_{\text{enc}}$ (shaded). The generator's hidden state $z_\ell$ at the chosen alignment layer is mapped into the encoder's feature space by a trainable projector $h_\phi$; the REPA loss $\mathcal{L}_{\text{REPA}}$ is the negated similarity between $h_\phi(z_\ell)$ and $f_{\text{enc}}(x_1)$, averaged across tokens. The total training loss $\mathcal{L}$ combines them with weight $\lambda$.}
+\caption{The REPA construction. The generator $v_\theta$ processes the noised sample $x_t$ to produce the velocity field for the flow-matching loss $\mathcal{L}_{\text{FM}}$. In parallel, a frozen encoder $f_{\text{enc}}$ (shaded) embeds the clean sample $x_1$. A trainable projector $h_\phi$ maps the generator's hidden state $z_\ell$ into the encoder's space, and the REPA loss $\mathcal{L}_{\text{REPA}}$ is their token-averaged negated similarity. The total loss combines the two with weight $\lambda$.}
 \label{fig:repa-construction}
 \end{figure}
 
@@ -858,7 +858,7 @@ The encoder $f_{\text{enc}}$ is among REPA's largest design choices, but what ma
 \draw[arr] (lab.south) .. controls (12.6, -2.6) and (0, -2.6) .. (spec.south);
 \node[lbl] at (6.3, -2.4) {feedback (next round)};
 \end{tikzpicture}
-\caption{The de-novo molecular design cycle. An upstream specification drives a generative model to produce a candidate pool, which is funnelled through in-silico filters and then synthesised (or expressed) and assayed in the wet lab. Experimental results feed back into the next round of generation. Typical generation-step pool sizes are in the thousands to tens of thousands of candidates per round~\cite{RFdiffusion}.}
+\caption{The de-novo molecular design cycle. An upstream specification drives a generative model to produce a candidate pool, which is funnelled through in-silico filters and then synthesised (or expressed) and assayed in the wet lab. Results feed back into the next round.}
 \label{fig:design-cycle}
 \end{figure}
 
@@ -875,7 +875,7 @@ The two models we study --- Tabasco~\cite{Tabasco} for small molecules and Prote
 
 \input{figures/fig_ch2_domains}
 
-Tabasco is motivated by the success of similar architectures in protein-structure generation, like Proteina, setting it apart from equivariant message-passing small-molecule generators such as EQGAT-diff~\cite{EQGATdiff}, MiDi~\cite{MiDi}, and SemlaFlow~\cite{SemlaFlow}. In turn, Proteina is motivated by the pair-bias attention mechanism introduced in AlphaFold~3~\cite{AlphaFold3}, which distinguishes it from SE(3)-equivariant backbone generators such as RFdiffusion~\cite{RFdiffusion}, FrameFlow~\cite{FrameFlow}, and Genie~\cite{Genie}. Despite their architectural minimalism, both achieve performance comparable or superior to equivariant baselines on quality evaluations.
+Tabasco is motivated by the success of similar architectures in protein-structure generation, like Proteina, setting it apart from equivariant message-passing small-molecule generators such as EQGAT-diff~\cite{EQGATdiff}, MiDi~\cite{MiDi}, and SemlaFlow~\cite{SemlaFlow}. In turn, Proteina is motivated by the pair-bias attention mechanism introduced in AlphaFold~3~\cite{AlphaFold3}, which distinguishes it from SE(3)-equivariant backbone generators such as RFdiffusion~\cite{RFdiffusion}, FrameFlow~\cite{FrameFlow}, and Genie~\cite{Genie}.
 % ==========================================================================
 % PROSE -- §2.3.1 first draft. Three beats: definition + Tabasco
 % parameterisation (with GEOM-drugs); use-case/pipeline as prose;
@@ -899,7 +899,7 @@ This point-cloud-of-atoms parameterisation is one of several, each with a differ
 \subsection{Protein backbones and Proteina}
 \label{sec:protein}
 
-A \emph{protein} is a chain of amino-acid residues, ranging from around 50 to several thousands in length~\cite{BritannicaProtein}; the largest known, titin, has approximately 34,000 residues. (Shorter chains are typically classified as \emph{peptides} instead.) Each amino-acid residue contributes four \emph{backbone} atoms (N, C$_\alpha$, C, O) whose interactions determine the chain's \emph{fold} geometry, and a \emph{side chain} that determines its amino-acid identity.
+A \emph{protein} is a chain of amino-acid residues, ranging from around 50 to several thousands in length~\cite{BritannicaProtein}. Each amino-acid residue contributes four \emph{backbone} atoms (N, C$_\alpha$, C, O) whose interactions determine the chain's \emph{fold} geometry, and a \emph{side chain} that determines its amino-acid identity.
 
 A protein's \emph{secondary structure} is its local pattern of $\alpha$-helices and $\beta$-strands; its \emph{tertiary structure} is the global three-dimensional fold those elements form when they pack together. A CATH code~\cite{CATH} (Class, Architecture, Topology, Homology) classifies this fold hierarchically. \emph{Class} captures broad secondary-structure content (mostly-$\alpha$, mostly-$\beta$, or mixed), \emph{Architecture} the gross spatial arrangement of those elements, and \emph{Topology} their specific connectivity.
 
@@ -1085,7 +1085,7 @@ This survey leaves open the two questions of \S\ref{sec:contributions}. First, \
 % still re-states the protocol detail.
 % ==========================================================================
 
-\emph{What does it mean for a model to generate ``good'' artefacts?} In this chapter, we outline a framework for evaluating molecular generation, and the tensions inherent to this endeavour. We argue that no single number suffices here, define the metric suites we use for small molecules (Table~\ref{tab:eval-smallmol}) and protein backbones (Table~\ref{tab:eval-protein}), and introduce the probe principle by which we measure a model's internal representations. We also introduce the theme of a \emph{trade-off frontier} with these metrics. A gain on one axis may imply a loss on another (Chapter~\ref{ch:proteina-study}), so finding an acceptable balance, or better yet, pushing this envelope, is very useful.
+\emph{What does it mean for a model to generate ``good'' artefacts?} In this chapter, we outline a framework for evaluating molecular generation, and the tensions inherent to this endeavour. We argue that no single number suffices here, define the metric suites we use for small molecules (Table~\ref{tab:eval-smallmol}) and protein backbones (Table~\ref{tab:eval-protein}), and introduce the probe principle by which we measure a model's internal representations. We also introduce the theme of a \emph{trade-off frontier} with these metrics. A gain on one axis may imply a loss on another (Chapter~\ref{ch:proteina-study}), a tension we return to in \S\ref{sec:protein-tradeoffs}.
 
 \section{What makes for a ``good'' molecule?}
 \label{sec:eval-good}
@@ -1106,7 +1106,7 @@ In a 2D image, \emph{geometry} and \emph{content} are coupled in one representat
 
 However, molecules pull geometry and content apart, and into more than two pieces. A molecule is at once a discrete graph of typed atoms drawn from a periodic-table-sized alphabet, and a continuous 3D geometry. This is a discrete--continuous duality with no clean analogue in the pixel grid. The two concepts are only loosely tied: one bonding graph admits many conformers, and similar geometries can host different atom types. Geometry is itself organised hierarchically from local environments up to global shape. Indeed, the taxonomy used to describe protein structure makes this explicit, running from primary sequence through secondary-structure elements to the tertiary fold.
 
-As a consequence, both representation and generation quality are \emph{multi-factorial} and \emph{multi-scale} in this domain. No single encoder captures every factor of content and geometry at every scale at once, as we see in Chapter~\ref{ch:profiling}. Moreover, no single metric can score a generated set along all those factors at once. A model can match the distribution of folds while getting local geometry subtly wrong; it can place atoms in valid positions while collapsing the diversity of shapes it produces. These are independent failures, so mode collapse is harder to reason about than in the image domain, where one number suffices to track what goes wrong.
+As a consequence, both representation and generation quality are \emph{multi-factorial} and \emph{multi-scale} in this domain. No single encoder captures every factor of content and geometry at every scale at once, as we see in Chapter~\ref{ch:profiling}. Moreover, no single metric can score a generated set along all those factors at once. A model can match the distribution of folds while getting local geometry subtly wrong; it can place atoms in valid positions while collapsing the diversity of shapes it produces. These are independent failures, so mode collapse is harder to reason about here than in the image domain.
 
 The metric suite we propose in this chapter is an attempt at handling this complexity. We decompose quality along the factors the domain pulls apart, and interpret metrics holistically to understand the complete picture. For each domain we report two complementary families: \emph{representation quality}, which scores what the model encodes internally, and \emph{generation quality}, which scores its outputs. We present them in that order throughout the report, since representation is what REPA's mechanism acts on (\S\ref{sec:repa}) and generation is the outcome we hope it improves.
 
@@ -1151,7 +1151,7 @@ One caveat affects interpretation: designability is an in-silico proxy, not grou
 
 \input{figures/fig_ch3_designability}
 
-\textbf{FPSD.} The Fr\'echet Protein Structure Distance~\cite{Proteina} is the protein analogue of the imaging FID. First, it embeds the generated and reference sets using an external encoder: in this case, a GearNet~\cite{GearNet} model trained on a fold classification task. Then, it models each set of embeddings as a Gaussian, and reports the Fr\'echet distance between the two --- a scalar that drops to zero as the generated distribution matches the reference in both mean and covariance. Because the encoder reads fold-level geometry, FPSD scores how well a generated set reproduces the reference distribution of folds. As a distributional distance, FPSD also rewards matching the spread of the reference, not just its centre. It therefore carries some diversity signal of its own, which is why it and our dedicated diversity metrics often move together. This GearNet fold classifier is also one of our two REPA alignment targets in our study of protein backbones (Chapter~\ref{ch:proteina-study}). A model aligned to it might then be expected to gain on FPSD mechanically, by being pulled toward the metric's own feature space. We check this in \S\ref{sec:proteina-convergence} and find it does not hold.
+\textbf{FPSD.} The Fr\'echet Protein Structure Distance~\cite{Proteina} is the protein analogue of the imaging FID. First, it embeds the generated and reference sets using an external encoder: in this case, a GearNet~\cite{GearNet} model trained on a fold classification task. Then, it models each set of embeddings as a Gaussian, and reports the Fr\'echet distance between the two --- a scalar that drops to zero as the generated distribution matches the reference in both mean and covariance. Because the encoder reads fold-level geometry, FPSD scores how well a generated set reproduces the reference distribution of folds. By matching covariance and not just the mean, it carries some diversity signal of its own, which is why it often moves together with our dedicated diversity metrics. This GearNet fold classifier is also one of our two REPA alignment targets in our study of protein backbones (Chapter~\ref{ch:proteina-study}). A model aligned to it might then be expected to gain on FPSD mechanically, by being pulled toward the metric's own feature space. We check this in \S\ref{sec:proteina-convergence} and find it does not hold.
 
 \textbf{ssJSD-2D.} We introduce this secondary-structure metric in our report. Like FPSD and fJSD, it is a \emph{distributional} metric, scoring the generated secondary-structure distribution against a real reference. Proteina already measures this, but only at the level of mean helix and strand content, which is blind to a model that matches the average composition while collapsing its spread. In contrast, ssJSD-2D is a Jensen--Shannon divergence over the full joint (helix-fraction, strand-fraction) distribution against the reference, so it rewards reproducing the whole spread of secondary-structure content, not just its centre. The per-residue helix, strand, and coil labels come from the P-SEA algorithm~\cite{PSEA}, run on C$\alpha$ coordinates alone, as implemented in Biotite~\cite{Biotite} (Appendix~\ref{app:ssjsd}).
 
@@ -1162,7 +1162,7 @@ One caveat affects interpretation: designability is an in-silico proxy, not grou
 \section{The designability--diversity trade-off}
 \label{sec:protein-tradeoffs}
 
-A central dynamic in protein generation pits the designability number against the diversity of the designable subset (T-D). A model can trivially raise its designability number by collapsing onto a few reliable, highly foldable modes, but this shrinks the diversity of that designable subset. Pushing designability up therefore tends to push designable-subset diversity down, and vice versa. This dynamic is noted regularly in the literature~\cite{Proteina}, and is typically modulated by a choice of sampler noise.
+A central dynamic in protein generation pits the designability number against the diversity of the designable subset (T-D). A model can trivially raise its designability number by collapsing onto a few reliable, highly foldable modes, but this shrinks the diversity of that designable subset, and vice versa. This dynamic is noted regularly in the literature~\cite{Proteina}, and is typically modulated by a choice of sampler noise.
 
 Ultimately, how does this trade-off help us compare models? In our studies, we distinguish between two phenomena. The first is whether a model merely occupies a different spot on the same envelope, in which case the optimal choice is use-case specific. The second is whether a model pushes the envelope itself --- playing the same trade-off game, but at a higher level, winning on one axis without conceding the other. This makes a model canonically better.
 
@@ -1213,7 +1213,7 @@ These complex dynamics further motivate the question: \emph{what makes an encode
 
 \emph{What properties make an encoder a good target for representation alignment?} This question is unsettled in the image domain, with global semantic quality and local spatial structure both proposed as the driver (\S\ref{sec:encoder-characterisation}).
 
-In this chapter, we ask this question in the molecular domain. Earlier, we discussed how molecular representation is multi-factorial and multi-scale (\S\ref{sec:eval-multifactorial}), which means that no single pre-trained encoder is likely to capture all of it. An encoder is typically optimised for one task in isolation, and sees a molecule through that lens. For example, an interatomic-potential model reads local geometry; a fold classifier reads global shape; a sequence model reads chemical identity. The encoder we align to therefore selects which factor REPA is most likely to transfer.
+In this chapter, we ask this question in the molecular domain. Earlier, we discussed how molecular representation is multi-factorial and multi-scale (\S\ref{sec:eval-multifactorial}), which means that no single pre-trained encoder is likely to capture all of it. An encoder is typically optimised for one task in isolation, and sees a molecule through that lens --- local geometry, global shape, or chemical identity. The encoder we align to therefore selects which factor REPA is most likely to transfer.
 
 Our profiling work in this chapter makes this concrete. We build a suite of diagnostics to assess what information an encoder contains, how much of it is relevant to the generative task, and how well conditioned its embeddings are. We use this to profile seven candidate encoders across small molecules and proteins, and then use the results to guide which encoders to align with in the studies of Chapters~\ref{ch:tabasco-study} and~\ref{ch:proteina-study}.
 
@@ -1375,7 +1375,7 @@ We compute every metric on a set of $1{,}000$ molecules sampled from the trained
 
 \textbf{The first condition fails on the metric surface.} The generation quality axes are saturated, as \S\ref{sec:tabasco-results} showed. The representation side is saturated too --- the trunk already encodes what our descriptors capture --- so this regime happens to be closed on both.
 
-\textbf{The second condition fails on both encoders, for opposite reasons (Table~\ref{tab:tabasco-probe}).} From our linear probes, we learn that CheMeleon decodes the descriptors almost perfectly in isolation ($R^2$ up to $0.99$). But the baseline trunk \emph{already decodes them well} ($0.64$--$0.92$), because they are 2D-graph quantities and the trunk sees the graph. CheMeleon's signal therefore overlaps with what the model already has. Moreover, FCD ultimately scores the inferred 2D graph --- the very information the trunk already holds --- so even on the one metric with headroom, CheMeleon adds nothing new.
+\textbf{The second condition fails on both encoders, for opposite reasons.} From our linear probes in Table~\ref{tab:tabasco-probe}, we learn that CheMeleon decodes the descriptors almost perfectly in isolation ($R^2$ up to $0.99$). But the baseline trunk \emph{already decodes them well} ($0.64$--$0.92$), because they are 2D-graph quantities and the trunk sees the graph. CheMeleon's signal therefore overlaps with what the model already has. Moreover, FCD ultimately scores the inferred 2D graph --- the very information the trunk already holds --- so even on the one metric with headroom, CheMeleon adds nothing new.
 
 MACE presents the contrary problem. It is genuinely 3D, but it encodes only a narrow, energy-tuned slice of \emph{local} atomic chemistry. The global descriptors we probe sit outside that slice, so they are largely undecodable from its mean-pooled embedding ($R^2$ near zero, save a weak $0.31$ on LogP). Its signal differs from the trunk's, but does not transfer. To calibrate the scale, note that an untrained random-weight encoder (Dummy) already decodes molecular weight at $R^2 = 0.82$, simply because weight tracks atom count. MACE falls below even this floor on three of the four descriptors.
 

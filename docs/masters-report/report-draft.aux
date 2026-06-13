@@ -69,10 +69,10 @@
 \citation{FlowMatching}
 \citation{FMGuide}
 \citation{REPA}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.1}{\ignorespaces The REPA construction. The generator $v_\theta $ processes the noised sample $x_t$ to produce the velocity field for the flow-matching loss $\mathcal  {L}_{\text  {FM}}$. In parallel, a frozen encoder $f_{\text  {enc}}$ (shaded) embeds the clean sample $x_1$. A trainable projector $h_\phi $ maps the generator's hidden state $z_\ell $ into the encoder's space, and the REPA loss $\mathcal  {L}_{\text  {REPA}}$ is their token-averaged negated similarity. The total loss combines the two with weight $\lambda $.}}{11}{figure.2.1}}
+\newlabel{fig:repa-construction}{{2.1}{11}{The REPA construction. The generator $v_\theta $ processes the noised sample $x_t$ to produce the velocity field for the flow-matching loss $\mathcal {L}_{\text {FM}}$. In parallel, a frozen encoder $f_{\text {enc}}$ (shaded) embeds the clean sample $x_1$. A trainable projector $h_\phi $ maps the generator's hidden state $z_\ell $ into the encoder's space, and the REPA loss $\mathcal {L}_{\text {REPA}}$ is their token-averaged negated similarity. The total loss combines the two with weight $\lambda $}{figure.2.1}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {2.2}Representation alignment}{11}{section.2.2}}
 \newlabel{sec:repa}{{2.2}{11}{Representation alignment}{section.2.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2.1}{\ignorespaces The REPA construction. A noised sample $x_t = (1-t)x_0 + t\tmspace  +\thinmuskip {.1667em}x_1$ is constructed at each training step from a noise sample $x_0$, a clean data sample $x_1$, and a sampled timestep $t \in [0,1]$. The generator $v_\theta $ processes $x_t$ through its sequence of layers $\ell _1, \ldots  , \ell _L$ to produce the velocity field that feeds the flow-matching loss $\mathcal  {L}_{\text  {FM}}$. Separately, the clean sample $x_1$ is also passed through a frozen pretrained encoder $f_{\text  {enc}}$ (shaded). The generator's hidden state $z_\ell $ at the chosen alignment layer is mapped into the encoder's feature space by a trainable projector $h_\phi $; the REPA loss $\mathcal  {L}_{\text  {REPA}}$ is the negated similarity between $h_\phi (z_\ell )$ and $f_{\text  {enc}}(x_1)$, averaged across tokens. The total training loss $\mathcal  {L}$ combines them with weight $\lambda $.}}{12}{figure.2.1}}
-\newlabel{fig:repa-construction}{{2.1}{12}{The REPA construction. A noised sample $x_t = (1-t)x_0 + t\,x_1$ is constructed at each training step from a noise sample $x_0$, a clean data sample $x_1$, and a sampled timestep $t \in [0,1]$. The generator $v_\theta $ processes $x_t$ through its sequence of layers $\ell _1, \ldots , \ell _L$ to produce the velocity field that feeds the flow-matching loss $\mathcal {L}_{\text {FM}}$. Separately, the clean sample $x_1$ is also passed through a frozen pretrained encoder $f_{\text {enc}}$ (shaded). The generator's hidden state $z_\ell $ at the chosen alignment layer is mapped into the encoder's feature space by a trainable projector $h_\phi $; the REPA loss $\mathcal {L}_{\text {REPA}}$ is the negated similarity between $h_\phi (z_\ell )$ and $f_{\text {enc}}(x_1)$, averaged across tokens. The total training loss $\mathcal {L}$ combines them with weight $\lambda $}{figure.2.1}{}}
 \citation{DiffuseDisperse}
 \citation{REED}
 \citation{VideoREPA}
@@ -81,8 +81,6 @@
 \citation{BoltzREPA}
 \citation{REPA}
 \citation{SpatialStructure}
-\citation{RFdiffusion}
-\citation{RFdiffusion}
 \citation{Schneider2018}
 \citation{PoseBusters}
 \citation{QED}
@@ -91,8 +89,8 @@
 \newlabel{sec:encoder-characterisation}{{2.2.1}{13}{What makes for a good REPA encoder?}{subsection.2.2.1}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {2.3}A primer on molecular generation}{13}{section.2.3}}
 \newlabel{sec:primer}{{2.3}{13}{A primer on molecular generation}{section.2.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2.2}{\ignorespaces The de-novo molecular design cycle. An upstream specification drives a generative model to produce a candidate pool, which is funnelled through in-silico filters and then synthesised (or expressed) and assayed in the wet lab. Experimental results feed back into the next round of generation. Typical generation-step pool sizes are in the thousands to tens of thousands of candidates per round\nobreakspace  {}\cite  {RFdiffusion}.}}{13}{figure.2.2}}
-\newlabel{fig:design-cycle}{{2.2}{13}{The de-novo molecular design cycle. An upstream specification drives a generative model to produce a candidate pool, which is funnelled through in-silico filters and then synthesised (or expressed) and assayed in the wet lab. Experimental results feed back into the next round of generation. Typical generation-step pool sizes are in the thousands to tens of thousands of candidates per round~\cite {RFdiffusion}}{figure.2.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.2}{\ignorespaces The de-novo molecular design cycle. An upstream specification drives a generative model to produce a candidate pool, which is funnelled through in-silico filters and then synthesised (or expressed) and assayed in the wet lab. Results feed back into the next round.}}{13}{figure.2.2}}
+\newlabel{fig:design-cycle}{{2.2}{13}{The de-novo molecular design cycle. An upstream specification drives a generative model to produce a candidate pool, which is funnelled through in-silico filters and then synthesised (or expressed) and assayed in the wet lab. Results feed back into the next round}{figure.2.2}{}}
 \citation{Tabasco}
 \citation{Proteina}
 \citation{EQGATdiff}
@@ -107,6 +105,8 @@
 \newlabel{fig:domains}{{2.3}{14}{The two molecular domains, at very different scales. (a) A small molecule, aspirin: 13 heavy atoms. (b) A protein backbone, ubiquitin: 76 residues, 602 atoms}{figure.2.3}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {2.4}Tabasco and Proteina}{14}{section.2.4}}
 \newlabel{sec:molecular-domains}{{2.4}{14}{Tabasco and Proteina}{section.2.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.1}Small molecules and Tabasco}{14}{subsection.2.4.1}}
+\newlabel{sec:small-mol}{{2.4.1}{14}{Small molecules and Tabasco}{subsection.2.4.1}{}}
 \citation{Tabasco}
 \citation{GEOMdrugs}
 \citation{EQGATdiff}
@@ -121,12 +121,10 @@
 \citation{AFDB}
 \citation{ESM2}
 \citation{NotinProteinDesign}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.1}Small molecules and Tabasco}{15}{subsection.2.4.1}}
-\newlabel{sec:small-mol}{{2.4.1}{15}{Small molecules and Tabasco}{subsection.2.4.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.2}Protein backbones and Proteina}{15}{subsection.2.4.2}}
-\newlabel{sec:protein}{{2.4.2}{15}{Protein backbones and Proteina}{subsection.2.4.2}{}}
 \citation{REED}
 \citation{BoltzREPA}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.2}Protein backbones and Proteina}{15}{subsection.2.4.2}}
+\newlabel{sec:protein}{{2.4.2}{15}{Protein backbones and Proteina}{subsection.2.4.2}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {2.5}Open questions}{16}{section.2.5}}
 \newlabel{sec:open-questions}{{2.5}{16}{Open questions}{section.2.5}{}}
 \citation{FID}
@@ -165,17 +163,17 @@
 \citation{PlatonicRep}
 \citation{REPA}
 \citation{BoltzREPA}
+\citation{Proteina}
 \@writefile{toc}{\contentsline {section}{\numberline {3.4}Small-molecule metrics}{19}{section.3.4}}
 \newlabel{sec:eval-small-mol}{{3.4}{19}{Small-molecule metrics}{section.3.4}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {3.5}Protein-backbone metrics}{19}{section.3.5}}
 \newlabel{sec:eval-protein}{{3.5}{19}{Protein-backbone metrics}{section.3.5}{}}
-\citation{Proteina}
 \citation{ProteinMPNN}
+\citation{AlphaFold2}
 \@writefile{lot}{\contentsline {table}{\numberline {3.1}{\ignorespaces Small-molecule metrics (Chapter\nobreakspace  {}\ref  {ch:tabasco-study}), following the conventions of recent 3D molecular generators\nobreakspace  {}\cite  {Tabasco,EQGATdiff,SemlaFlow}. Arrows give the good direction.}}{20}{table.3.1}}
 \newlabel{tab:eval-smallmol}{{3.1}{20}{Small-molecule metrics (Chapter~\ref {ch:tabasco-study}), following the conventions of recent 3D molecular generators~\cite {Tabasco,EQGATdiff,SemlaFlow}. Arrows give the good direction}{table.3.1}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {3.2}{\ignorespaces Protein-backbone metrics (Chapter\nobreakspace  {}\ref  {ch:proteina-study}). Arrows give the good direction; full per-metric results appear in Tables\nobreakspace  {}\ref  {tab:proteina-13m} and\nobreakspace  {}\ref  {tab:proteina-concentration}.}}{21}{table.3.2}}
 \newlabel{tab:eval-protein}{{3.2}{21}{Protein-backbone metrics (Chapter~\ref {ch:proteina-study}). Arrows give the good direction; full per-metric results appear in Tables~\ref {tab:proteina-13m} and~\ref {tab:proteina-concentration}}{table.3.2}{}}
-\citation{AlphaFold2}
 \citation{Proteina}
 \citation{GearNet}
 \@writefile{lof}{\contentsline {figure}{\numberline {3.1}{\ignorespaces Designable versus non-designable backbones. Designable ones (top, scRMSD${<}2$\tmspace  +\thinmuskip {.1667em}\r A{}) re-fold to their generated shape; non-designable ones (bottom, $16$--$20$\tmspace  +\thinmuskip {.1667em}\r A{}) do not. The two right-hand designable examples are $\beta $-rich, not easy helices. From our PDB models at 1.3M steps (\S  \ref  {sec:proteina-anatomy}).}}{22}{figure.3.1}}
@@ -185,8 +183,8 @@
 \citation{Proteina}
 \citation{Proteina}
 \citation{Proteina}
-\@writefile{toc}{\contentsline {section}{\numberline {3.6}The designability--diversity trade-off}{24}{section.3.6}}
-\newlabel{sec:protein-tradeoffs}{{3.6}{24}{The designability--diversity trade-off}{section.3.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.6}The designability--diversity trade-off}{23}{section.3.6}}
+\newlabel{sec:protein-tradeoffs}{{3.6}{23}{The designability--diversity trade-off}{section.3.6}{}}
 \citation{RankMe}
 \@writefile{toc}{\contentsline {chapter}{\numberline {4}Encoder targets and profiling}{25}{chapter.4}}
 \@writefile{lof}{\addvspace {10\p@ }}

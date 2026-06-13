@@ -8,7 +8,7 @@
 \contentsline {subsection}{\numberline {2.2.1}What makes for a good REPA encoder?}{13}{subsection.2.2.1}
 \contentsline {section}{\numberline {2.3}A primer on molecular generation}{13}{section.2.3}
 \contentsline {section}{\numberline {2.4}Tabasco and Proteina}{14}{section.2.4}
-\contentsline {subsection}{\numberline {2.4.1}Small molecules and Tabasco}{15}{subsection.2.4.1}
+\contentsline {subsection}{\numberline {2.4.1}Small molecules and Tabasco}{14}{subsection.2.4.1}
 \contentsline {subsection}{\numberline {2.4.2}Protein backbones and Proteina}{15}{subsection.2.4.2}
 \contentsline {section}{\numberline {2.5}Open questions}{16}{section.2.5}
 \contentsline {chapter}{\numberline {3}Evaluating molecular generation}{17}{chapter.3}
@@ -17,7 +17,7 @@
 \contentsline {section}{\numberline {3.3}The linear probe principle}{18}{section.3.3}
 \contentsline {section}{\numberline {3.4}Small-molecule metrics}{19}{section.3.4}
 \contentsline {section}{\numberline {3.5}Protein-backbone metrics}{19}{section.3.5}
-\contentsline {section}{\numberline {3.6}The designability--diversity trade-off}{24}{section.3.6}
+\contentsline {section}{\numberline {3.6}The designability--diversity trade-off}{23}{section.3.6}
 \contentsline {chapter}{\numberline {4}Encoder targets and profiling}{25}{chapter.4}
 \contentsline {section}{\numberline {4.1}A profiling protocol}{25}{section.4.1}
 \contentsline {section}{\numberline {4.2}Small molecule encoders}{28}{section.4.2}
