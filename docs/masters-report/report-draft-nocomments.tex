@@ -26,7 +26,7 @@
 \usepackage{enumitem}
 \usepackage[table]{xcolor}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta}
+\usetikzlibrary{arrows.meta,fit}
 
 \newcommand{\gd}[1]{\cellcolor{green!20}#1}
 \newcommand{\gb}[1]{\cellcolor{green!42}#1}
@@ -114,7 +114,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 14984
+Main chapters word count: 15073
 
 Methodology used to generate that word count:
 
@@ -604,7 +604,9 @@ We train on GEOM-drugs~\cite{GEOMdrugs}, a dataset of drug-like molecular confor
 \subsection{Models}
 \label{sec:tabasco-models}
 
-The baseline is the unmodified Tabasco flow-matching transformer (\S\ref{sec:small-mol}): a 3.7M-parameter non-equivariant model that denoises 3D atom coordinates and atom types jointly. Our REPA variants add a trainable projector that aligns the trunk's hidden states to a frozen encoder, evaluated on the clean ($t$=1) molecule (\S\ref{sec:repa}). The trunk carries two hidden-state streams, one for coordinates and one for atom types. We concatenate them and pass the pair through a single shared projector, so the alignment acts on one combined representation. It enters the loss as a plain additive regulariser, leaving the flow-matching objective untouched.
+The baseline is the unmodified Tabasco flow-matching transformer (\S\ref{sec:small-mol}): a 3.7M-parameter non-equivariant model that denoises 3D atom coordinates and atom types jointly. Our REPA variants add a trainable projector that aligns the trunk's hidden states to a frozen encoder, evaluated on the clean ($t$=1) molecule (\S\ref{sec:repa}; Figure~\ref{fig:tabasco-setup}). The trunk carries two hidden-state streams, one for coordinates and one for atom types. We concatenate them and pass the pair through a single shared projector, so the alignment acts on one combined representation. It enters the loss as a plain additive regulariser, leaving the flow-matching objective untouched.
+
+\input{figures/fig_ch5_model}
 
 \textbf{Encoder ablations.} The two encoders we study come from the profiling of Chapter~\ref{ch:profiling}, and span a useful contrast. \emph{CheMeleon}~\cite{CheMeleon} is a 2D molecular-graph encoder. It is conformer-invariant, so it sees only the bonding graph and not the 3D pose. Meanwhile, \emph{MACE}~\cite{MACE,MACEOFF} is a 3D interatomic-potential encoder. It is geometry-aware, but, as the profiling showed, its output is a narrow descriptor of local atomic environments. Hence, the former carries rich 2D-graph information, while the latter encodes 3D geometry.
 
@@ -649,7 +651,7 @@ MACE presents the contrary problem. It is genuinely 3D, but it encodes only a na
 
 \input{tables/table_tabasco_probe}
 
-\textbf{Forcing the signal in does not rescue it either.} As a final test, we replaced the additive regulariser with a convex \emph{tradeoff} loss, $(1-\lambda)\cdot\mathcal{L}_{\text{gen}} + \lambda\cdot\mathcal{L}_{\text{REPA}}$. This deliberately down-weights the flow-matching loss to force the model to adopt the encoder's representation. Even so, the effect on generation is negligible. MACE under the tradeoff loss still trails the baseline on FCD ($6.32$ versus $5.61$; Table~\ref{tab:tabasco-gen}). Its only mark is on the representation, where it is the only variant to beat the baseline on a majority of the descriptor probes (Table~\ref{tab:tabasco-probe}), but only by a small margin. Even when forced into the architecture, MACE leaves only a tiny trace in representation, and nothing in generation.
+\textbf{Forcing the signal in does not rescue it either.} As a final test, we replaced the additive regulariser with a convex \emph{trade-off} loss, $(1-\lambda)\cdot\mathcal{L}_{\text{gen}} + \lambda\cdot\mathcal{L}_{\text{REPA}}$. This deliberately down-weights the flow-matching loss to force the model to adopt the encoder's representation. Even so, the effect on generation is negligible. MACE under the trade-off loss still trails the baseline on FCD ($6.32$ versus $5.61$; Table~\ref{tab:tabasco-gen}). Its only mark is on the representation, where it is the only variant to beat the baseline on a majority of the descriptor probes (Table~\ref{tab:tabasco-probe}), but only by a small margin. Even when forced into the architecture, MACE leaves only a tiny trace in representation, and nothing in generation.
 
 \textbf{When is REPA actually useful?} Our results sharpen the question on REPA's effectiveness rather than settling it. Under our setup, REPA does not help because the regime offers neither headroom nor a usable teacher. This is not evidence that REPA cannot help with molecular generation in principle. Indeed, we do not claim to have exhausted the REPA design space, and there may be other configurations that work well. But it does suggest the question has no single answer. Molecular generation is a broad domain of distinct regimes, and whether REPA helps may be decided within each, not across the whole. Read that way, REPA is not a single intervention, but a family of them.
 
@@ -672,7 +674,7 @@ In this chapter, we expand the scope of our study on representation alignment fr
 \section{Experimental setup}
 \label{sec:proteina-setup}
 
-We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant flow-matching generator of C$\alpha$ protein backbones (\S\ref{sec:protein}). Following \S\ref{sec:repa}, we attach a trainable projector at a chosen layer of the generator trunk (the transformer stack) that aligns the model's hidden states to a frozen external encoder.
+We integrate REPA into Proteina~\cite{Proteina}, a 60M-parameter non-equivariant flow-matching generator of C$\alpha$ protein backbones (\S\ref{sec:protein}). Following \S\ref{sec:repa}, we attach a trainable projector at a chosen trunk layer, aligning the model's hidden states to a frozen external encoder (Figure~\ref{fig:proteina-setup}).
 
 \subsection{Datasets}
 \label{sec:proteina-datasets}
@@ -686,7 +688,9 @@ Following Proteina~\cite{Proteina}, we train on the subset of chains with at mos
 
 The base Proteina model comprises a stack of ten transformer layers (zero-indexed) that feeds a flow matching objective. Our experiments add a REPA loss to this design, as outlined in Table~\ref{tab:setup-model}.
 
-\textbf{Encoder and injection-depth ablations.} Our narrative concentrates on the two encoders identified as most viable in Chapter~\ref{ch:profiling}: \emph{GearNet}~\cite{GearNet}, a structure encoder pretrained for CATH fold classification (checkpoint released with Proteina~\cite{Proteina}); and \emph{ProteinMPNN}~\cite{ProteinMPNN}, which encodes each residue's local inverse-folding environment. Each encoder is attached to the trunk in two layer-depth configurations: layer~4 (middle layer) and layer~9 (last layer). The remaining encoder and depth combinations are collected in Appendix~\ref{app:rep-full} (Table~\ref{tab:proteina-rep-full}). Figures presented in this chapter will typically feature the best performing model to serve as an illustrative example.
+\input{figures/fig_ch6_model}
+
+\textbf{Encoder and injection-depth ablations.} Our narrative concentrates on the two encoders identified as most viable in Chapter~\ref{ch:profiling}: \emph{GearNet}~\cite{GearNet}, a structure encoder pretrained for CATH fold classification (checkpoint released with Proteina~\cite{Proteina}); and \emph{ProteinMPNN}~\cite{ProteinMPNN}, which encodes each residue's local inverse-folding environment. Each encoder is attached at two depths: layer~4 (middle) and layer~9 (last). The remaining encoder and depth combinations are collected in Appendix~\ref{app:rep-full} (Table~\ref{tab:proteina-rep-full}). Figures presented in this chapter will typically feature the best performing model to serve as an illustrative example.
 
 \textbf{Separating regularisation from mechanism.} A random-weights GearNet attached at layer 4, identical in architecture but never trained, serves as a control architecture in this chapter. We use this model to separate whatever REPA achieves merely due to the regularisation effect of adding an auxiliary loss from what it achieves through the encoder's \emph{learned} structural knowledge. Crucially, a trained encoder at the same layer~4 still outperforms the random one, so the learned-versus-random gap is not an artefact of injection depth (Appendix~\ref{app:rep-full}).
 

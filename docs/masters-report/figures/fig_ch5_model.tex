@@ -1,0 +1,57 @@
+% Figure -- the Tabasco REPA setup (model construction + encoders tried).
+% \input{} from Ch5 (sec:tabasco-models). Inline TikZ;
+% needs \usetikzlibrary{arrows.meta,fit} (loaded in the preamble).
+\begin{figure}[tbp]
+\centering
+\begin{tikzpicture}[
+    >={Latex[length=2mm]},
+    trunk/.style={rectangle, draw, rounded corners=2pt, minimum height=11mm, minimum width=32mm, align=center},
+    enc/.style={rectangle, draw, rounded corners=2pt, fill=gray!18, minimum height=8mm, minimum width=36mm, align=center, font=\small},
+    op/.style={rectangle, draw, rounded corners=2pt, minimum height=8mm, minimum width=16mm, align=center, font=\small},
+    lbl/.style={font=\itshape, align=center},
+    loss/.style={font=\bfseries, align=center},
+    note/.style={font=\footnotesize, align=left},
+    arr/.style={-{Latex[length=2mm]}, thick}
+]
+% top row: generation path
+\node[lbl] (xin) at (0,0) {Noised\\molecule $x_t$};
+\node[trunk] (trunk) at (3.8,0) {Tabasco trunk\\$\ell_1 \to \cdots \to \ell_L$};
+\node[lbl] (vout) at (6.4,0) {velocity\\$v_\theta(x_t,t)$};
+\node[op] (mse) at (8.4,0) {MSE};
+\node[loss] (lfm) at (10.7,0) {$\mathcal{L}_{\text{FM}}$};
+% projector tap (aligned column at x=3.8)
+\node[op] (proj) at (3.8,-2.4) {Projector $h_\phi$};
+\node[lbl] (pemb) at (3.8,-3.6) {$h_\phi(z_\ell)$};
+% encoder stack (swappable alignment target)
+\node[enc] (cm) at (3.8,-5.1) {CheMeleon \textit{(2D graph)}};
+\node[enc] (mc) at (3.8,-6.2) {MACE \textit{(3D local)}};
+\node[draw, dashed, rounded corners=3pt, fit=(cm)(mc), inner sep=2.5mm] (box) {};
+% routing annotations
+\node[note,anchor=west] at (5.95,-5.1) {$\rightarrow$ no transfer};
+\node[note,anchor=west] at (5.95,-6.2) {$\rightarrow$ no transfer};
+% clean molecule input
+\node[lbl] (x1) at (0,-5.65) {Clean\\molecule $x_1$};
+% cosine similarity (intermediate box)
+\node[op] (sim) at (3.8,-7.7) {cosine sim};
+% REPA loss terminal
+\node[loss] (lrepa) at (7.3,-7.7) {$\mathcal{L}_{\text{REPA}}$};
+% combined objective (mid-right)
+\node[draw, rounded corners=2pt, inner sep=5pt, font=\small\bfseries, align=center]
+  (ltotal) at (12.4,-3.85) {$\mathcal{L} = \mathcal{L}_{\text{FM}} + \lambda\,\mathcal{L}_{\text{REPA}}$};
+% arrows
+\draw[arr] (xin) -- (trunk);
+\draw[arr] (trunk) -- (vout);
+\draw[arr] (vout) -- (mse);
+\draw[arr] (mse) -- (lfm);
+\draw[arr] (trunk) -- (proj) node[midway,right]{\small $z_\ell$};
+\draw[arr] (proj) -- (pemb);
+\draw[arr] (pemb) -- (box.north);
+\draw[arr] (x1) -- (x1-|box.west);
+\draw[arr] (box.south) -- (sim);
+\draw[arr] (sim) -- (lrepa);
+\draw[arr] (lfm) -| (ltotal);
+\draw[arr] (lrepa) -| (ltotal);
+\end{tikzpicture}
+\caption{The Tabasco REPA setup. The trunk is trained with flow matching ($\mathcal{L}_{\text{FM}}$, a mean-squared error on the velocity); its layer-$\ell$ hidden state is projected and aligned by cosine similarity to one frozen encoder per run, giving the REPA loss $\mathcal{L}_{\text{REPA}}$. The two combine into the training objective. Neither encoder transfers to generation.}
+\label{fig:tabasco-setup}
+\end{figure}
