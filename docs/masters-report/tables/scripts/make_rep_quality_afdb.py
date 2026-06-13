@@ -2,16 +2,14 @@
 PDB representation-quality table (Ch6 S6.2.1, Table~\\ref{tab:proteina-rep}).
 
 Same recipe as that hand-built table: best-layer linear probe, n_train=1000,
-seed 42, mean over a converged training-step window, Delta-from-baseline, with
-green/darker-green marking improvement/best-per-probe. AFDB-TRAINED models;
-probes read on the cross-database blinded set (n256_xclean_pdb_afdb), which is
-the only place AFDB probes exist at n_train=1000.
+seed 42, a single 1.0M checkpoint, Delta-from-baseline, with green/darker-green
+marking improvement/best-per-probe. AFDB-TRAINED models; probes read on the
+cross-database blinded set (n256_xclean_pdb_afdb), which is the only place AFDB
+probes exist at n_train=1000.
 
-ALL variants with n1000 data in the window are included automatically, so the
-table grows as the n1000 probe eval catches up on later AFDB checkpoints. With
-WINDOW=(700,1200) the L9-GearNet and random-control rows are absent: L9-GearNet's
-n1000 probes currently stop at 600K (700-1000K exist only at n5000) and the
-random control trained only to 500K.
+Each variant is read at a single 1.0M checkpoint to mirror the PDB tables. A
+variant with no 1.0M checkpoint falls back to its latest earlier checkpoint;
+only the random control does so (it trained only to 500K), and its row is tagged.
 
 Run from repo root:  python docs/masters-report/tables/scripts/make_rep_quality_afdb.py
 """
@@ -20,7 +18,6 @@ import csv
 import re
 import os
 from collections import defaultdict
-from statistics import mean
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
 _REP = f"{ROOT}/evaluation/proteina/representation/results/paper"
@@ -42,15 +39,16 @@ def _rep_rows():
 OUT = f"{ROOT}/docs/masters-report/tables/table_rep_quality_afdb.tex"
 
 N_TRAIN = "1000"
-WINDOW = (700, 1200)  # k steps; matches the PDB table's converged window
+TARGET_K = 1000  # single checkpoint, mirroring the PDB tables (Tab 6.2 / A.3)
 _STEP = re.compile(r"_step(\d+)k$")
 
-# canonical row order + display labels (baseline first); auto-skipped if no data
+# canonical row order + display labels (baseline first, then random control, as
+# in the PDB tables); auto-skipped if no data
 VARIANTS = [
     ("baseline_afdb_256", "Baseline"),
+    ("repa_l4_afdb_256_random", "REPA L4-random"),
     ("repa_l4_afdb_256", "REPA L4-GearNet"),
     ("repa_l9_afdb_256", "REPA L9-GearNet"),
-    ("repa_l4_afdb_256_random", "REPA L4-random"),
     ("repa_mpnn_l4_afdb_256", "REPA L4-MPNN"),
     ("repa_mpnn_l9_afdb_256", "REPA L9-MPNN"),
 ]
@@ -73,8 +71,8 @@ def step_k(run):
     return int(m.group(1)) if m else None
 
 
-def window_mean(probe_kind, col, higher_better, cath_level):
-    """best-layer value per (family,step), then mean over the window, per family."""
+def best_layer_per_step(probe_kind, col, higher_better, cath_level):
+    """best-layer value per (family, step)."""
     per_step = defaultdict(list)  # (family, step) -> [layer values]
     for r in _rep_rows():
         run = r.get("run", "")
@@ -85,21 +83,39 @@ def window_mean(probe_kind, col, higher_better, cath_level):
         if cath_level and r.get("cath_level") != cath_level:
             continue
         s, v = step_k(run), r.get(col)
-        if s is None or not v or not (WINDOW[0] <= s <= WINDOW[1]):
+        if s is None or not v:
             continue
         try:
             per_step[(fam(run), s)].append(float(v))
         except ValueError:
             continue
-    best = {k: (max(vs) if higher_better else min(vs)) for k, vs in per_step.items()}
-    out = defaultdict(list)
-    for (family, _), v in best.items():
-        out[family].append(v)
-    return {family: mean(vs) for family, vs in out.items()}
+    return {k: (max(vs) if higher_better else min(vs)) for k, vs in per_step.items()}
 
 
-# probe label -> {family: windowed value}
-data = {pl: window_mean(pk, col, hb, cl) for pl, pk, col, hb, cl in PROBES}
+# probe label -> {(family, step): best-layer value}
+_per_step = {pl: best_layer_per_step(pk, col, hb, cl) for pl, pk, col, hb, cl in PROBES}
+
+# Each variant is read at one checkpoint: 1.0M where it exists (every trained
+# variant), else the family's latest earlier checkpoint. Only the random control
+# falls back --- it stopped at 500K --- and its row is tagged in the table.
+_steps_avail = defaultdict(set)
+for pl in _per_step:
+    for family, s in _per_step[pl]:
+        _steps_avail[family].add(s)
+chosen_step = {
+    family: (TARGET_K if TARGET_K in steps else max(steps))
+    for family, steps in _steps_avail.items()
+}
+
+# probe label -> {family: value at the family's chosen step}
+data = {
+    pl: {
+        family: _per_step[pl][(family, chosen_step[family])]
+        for family in _steps_avail
+        if (family, chosen_step[family]) in _per_step[pl]
+    }
+    for pl in _per_step
+}
 present = [(key, disp) for key, disp in VARIANTS if any(key in data[pl] for pl in data)]
 base = {pl: data[pl].get("baseline_afdb_256") for pl in data}
 
@@ -133,12 +149,16 @@ def fmt_delta(pl, val, hb, col_best_family, family):
     return f"\\{macro}{{{body}}}"
 
 
-# best improver per probe column (for \gb)
+# best improver per probe column (for \gb). Only families read at the common
+# 1.0M checkpoint compete --- the off-step random control (500K) would otherwise
+# claim the "best" marker on a checkpoint nobody else is measured at.
 col_best = {}
 for pl, pk, col, hb, cl in PROBES:
     best_fam, best_imp = None, 0.0
     for key, _ in present:
         if key == "baseline_afdb_256" or key not in data[pl] or base[pl] is None:
+            continue
+        if chosen_step.get(key) != TARGET_K:
             continue
         d = data[pl][key] - base[pl]
         imp = d if hb else -d
@@ -162,31 +182,25 @@ lines.append(
 )
 lines.append("\\midrule")
 for key, disp in present:
+    # tag any row read off a checkpoint other than 1.0M (only the random control)
+    label = disp + ("$^{\\ddagger}$" if chosen_step.get(key) != TARGET_K else "")
     if key == "baseline_afdb_256":
-        cells = [fmt_abs(pl, base[pl]) for pl, *_ in [(p[0],) for p in PROBES]]
         cells = [fmt_abs(pl, base[pl]) for pl in [p[0] for p in PROBES]]
     else:
         cells = []
         for pl, pk, col, hb, cl in PROBES:
             cells.append(fmt_delta(pl, data[pl].get(key), hb, col_best[pl], key))
-    lines.append(f"{disp} & " + " & ".join(cells) + " \\\\")
+    lines.append(f"{label} & " + " & ".join(cells) + " \\\\")
 lines.append("\\bottomrule")
 lines.append("\\end{tabular}")
 lines.append(
     "\\caption{\\textbf{On AFDB, REPA's representation gain concentrates on fold structure.} "
-    "The AFDB counterpart to Table~\\ref{tab:proteina-rep}. REPA-GearNet lifts the CATH fold "
-    "probes here as on PDB, so the fold routing replicates. The per-residue picture does not: "
-    "inverse-folding accuracy is flat, and the dihedral probe shows no consistent REPA effect "
-    "(it tracks a baseline that itself swings several degrees between checkpoints), unlike the "
-    "clear MPNN-led per-residue gain on PDB. At this checkpoint density the per-residue reads are "
-    "noise-dominated, so we lean on the fold result. ($n{\\le}256$ AFDB-trained; best-layer "
-    "linear probe at $n_\\text{train}{=}1000$ on the cross-database blinded set; mean over the "
-    f"{WINDOW[0]}K--{WINDOW[1]/1000:.1f}M window; $\\Delta$ from baseline; $n{{=}}1$ seed. "
-    "The PDB tables (Tables~\\ref{tab:proteina-rep} and~\\ref{tab:proteina-rep-full}) report a "
-    "single 1.0M checkpoint, whose three seeds smooth out per-step probe noise; AFDB-trained "
-    "models were probed at a single seed, so here we average a converged window instead --- the "
-    "only smoothing available. The random control is omitted: it trained only to 500K, below "
-    "this window.)}"
+    "The AFDB counterpart to Table~\\ref{tab:proteina-rep}: REPA-GearNet lifts the CATH fold "
+    "probes as on PDB, so the fold routing replicates. The per-residue probes (IF, dihedral) "
+    "show no consistent effect and are noise-dominated at this scale, so we lean on the fold "
+    "result. ($n{\\le}256$ AFDB-trained; best-layer linear probe at $n_\\text{train}{=}1000$ on "
+    "the cross-database blinded set (App.~\\ref{app:leakage}); single 1.0M checkpoint, $n{=}1$ "
+    "seed; $\\Delta$ from baseline. $^{\\ddagger}$Random control at its 500K last checkpoint.)}"
 )
 lines.append("\\label{tab:proteina-rep-afdb}")
 lines.append("\\end{table}")
