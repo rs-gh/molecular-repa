@@ -114,7 +114,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 14916
+Main chapters word count: 14984
 
 Methodology used to generate that word count:
 
@@ -396,7 +396,9 @@ This pipeline framing is relevant to our discussion of evaluation metrics in Cha
 \section{Tabasco and Proteina}
 \label{sec:molecular-domains}
 
-The two models we study --- Tabasco~\cite{Tabasco} for small molecules and Proteina~\cite{Proteina} for protein backbones --- are both non-equivariant transformer flow-matching generators, designed to scale with data and model size rather than impose structural priors by construction.
+The two models we study --- Tabasco~\cite{Tabasco} for small molecules and Proteina~\cite{Proteina} for protein backbones (Figure~\ref{fig:domains}) --- are both non-equivariant transformer flow-matching generators, designed to scale with data and model size rather than impose structural priors by construction.
+
+\input{figures/fig_ch2_domains}
 
 Tabasco is motivated by the success of similar architectures in protein-structure generation, like Proteina, setting it apart from equivariant message-passing small-molecule generators such as EQGAT-diff~\cite{EQGATdiff}, MiDi~\cite{MiDi}, and SemlaFlow~\cite{SemlaFlow}. In turn, Proteina is motivated by the pair-bias attention mechanism introduced in AlphaFold~3~\cite{AlphaFold3}, which distinguishes it from SE(3)-equivariant backbone generators such as RFdiffusion~\cite{RFdiffusion}, FrameFlow~\cite{FrameFlow}, and Genie~\cite{Genie}. Despite their architectural minimalism, both achieve performance comparable or superior to equivariant baselines on quality evaluations.
 \subsection{Small molecules and Tabasco}
@@ -483,11 +485,13 @@ Protein backbones are larger and more variable than small molecules (Chapter~\re
 
 \textbf{Generation quality.} Measures of generation quality draw on two lineages. The \emph{canonical} ones --- designability, and various counts of novelty and diversity --- score or tally individual generations, and predate modern generative models. The \emph{model-based} ones, introduced to this domain by Proteina~\cite{Proteina}, borrow the idea from image generation of comparing a generated set against a reference in a learned feature space. We headline on one from each: designability as the canonical measure of per-sample quality, and the Fr\'echet Protein Structure Distance (FPSD) as the model-based measure of set-level distributional realism. We outline these two metrics, add a secondary-structure metric of our own, and then set out a framework that organises them all.
 
-\textbf{Designability.} This metric estimates the fraction of generated backbones that are realisable as real proteins. It involves an in-silico round-trip through the protein design loop (\S\ref{sec:protein}). Each backbone is inverse-folded with ProteinMPNN~\cite{ProteinMPNN}, a model trained to predict an amino-acid sequence that would fold into a given backbone, to propose candidate sequences. These sequences are then re-folded with ESMFold, a model trained to predict 3D structure from sequence. A backbone is termed designable when the self-consistency root-mean-squared deviation (scRMSD) between the generated backbone and its re-folded prediction falls below 2\,\AA{}.
+\textbf{Designability.} This metric estimates the fraction of generated backbones that are realisable as real proteins. It involves an in-silico round-trip through the protein design loop (\S\ref{sec:protein}). Each backbone is inverse-folded with ProteinMPNN~\cite{ProteinMPNN}, a model trained to predict an amino-acid sequence that would fold into a given backbone, to propose candidate sequences. These sequences are then re-folded with ESMFold, a model trained to predict 3D structure from sequence. A backbone is termed designable when the self-consistency root-mean-squared deviation (scRMSD) between the generated backbone and its re-folded prediction falls below 2\,\AA{} (Figure~\ref{fig:designability}).
 
 One caveat affects interpretation: designability is an in-silico proxy, not ground-truth physical realism, so it inherits the biases of the folding models it relies on. The inverse-folding and folding steps share model lineage with AlphaFold2~\cite{AlphaFold2}, and hence with the synthetic AlphaFold Database (AFDB), whose structures are themselves AF2 predictions. Generators trained on AFDB therefore score systematically higher on designability by construction, as we explore in Chapter~\ref{ch:proteina-study}.
 
 \textbf{Designable $\beta$-strand \%.} A model can inflate designability by emitting easy, highly foldable all-$\alpha$ backbones, since idealised helical bundles re-fold with low scRMSD almost by construction. On the contrary, $\beta$-strand content is harder to render designable. As a guard-rail, we track the mean fraction of residues in $\beta$-strand ($f_E$) over the designable subset, and read it alongside designability. A designable set that retains $\beta$-rich folds is evidence that its designability is genuine, rather than bought with trivial helical artefacts. (We use the C$\alpha$-only secondary-structure assignment of Appendix~\ref{app:ssjsd}.)
+
+\input{figures/fig_ch3_designability}
 
 \textbf{FPSD.} The Fr\'echet Protein Structure Distance~\cite{Proteina} is the protein analogue of the imaging FID. First, it embeds the generated and reference sets using an external encoder: in this case, a GearNet~\cite{GearNet} model trained on a fold classification task. Then, it models each set of embeddings as a Gaussian, and reports the Fr\'echet distance between the two --- a scalar that drops to zero as the generated distribution matches the reference in both mean and covariance. Because the encoder reads fold-level geometry, FPSD scores how well a generated set reproduces the reference distribution of folds. As a distributional distance, FPSD also rewards matching the spread of the reference, not just its centre. It therefore carries some diversity signal of its own, which is why it and our dedicated diversity metrics often move together. This GearNet fold classifier is also one of our two REPA alignment targets in our study of protein backbones (Chapter~\ref{ch:proteina-study}). A model aligned to it might then be expected to gain on FPSD mechanically, by being pulled toward the metric's own feature space. We check this in \S\ref{sec:proteina-convergence} and find it does not hold.
 
