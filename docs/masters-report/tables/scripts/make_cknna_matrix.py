@@ -67,7 +67,7 @@ def main():
             val, lyr = best[(mkey, ekey)]
             txt = f"{val * 1e3:.1f}$^{{\\text{{L{lyr}}}}}$"
             if ekey == aligned:
-                txt = f"\\textbf{{{txt}}}$^{{\\dagger}}$"
+                txt = f"{txt}$^{{\\dagger}}$"
             cells.append(txt)
         lines.append(f"{mdisp} & " + " & ".join(cells) + r" \\")
     lines.append(r"\bottomrule")
@@ -77,8 +77,10 @@ def main():
         r"encoders, including the two it was never aligned to.} Across-layer peak per-residue "
         r"CKNNA (bootstrap median, $\times 10^{3}$), with the peak trunk layer as a superscript; "
         r"$k{=}10$, step 1.0M, $n{\le}256$ PDB-trained. The $\dagger$ marks each model's own "
-        r"alignment target. Every REPA row exceeds the baseline in every column, the "
-        r"Platonic-convergence signature discussed in \S\ref{sec:proteina-alignment}. "
+        r"alignment target. Every REPA row exceeds the baseline in every column. This holds "
+        r"even for the two encoders each model was never aligned to (the non-$\dagger$ cells). "
+        r"We suggest the Platonic-convergence signature~\cite{PlatonicRep} as possibly being "
+        r"relevant in \S\ref{sec:proteina-alignment}. "
         r"Absolute values are small (an order of magnitude below image-domain REPA), so we read "
         r"the pattern, not the magnitude. ($n{=}1$ seed; bootstrap medians.)}"
     )
