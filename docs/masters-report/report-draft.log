@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2026.4.15)  14 JUN 2026 13:45
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2026.4.15)  14 JUN 2026 13:59
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -738,6 +738,7 @@ LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
 ]
 (./report-draft.toc [5
 
+
 ])
 \tf@toc=\write5
 \openout5 = `report-draft.toc'.
@@ -754,12 +755,12 @@ Underfull \vbox (badness 1173) has occurred while \output is active []
  [10
 
 ]
-Overfull \hbox (20.4376pt too wide) in paragraph at lines 778--779
+Overfull \hbox (20.4376pt too wide) in paragraph at lines 777--778
  [][]
  []
 
 [11] [12] [13] (./figures/fig_ch2_domains.tex
-<figures/fig_ch2_domains.png, id=520, 527.571pt x 267.399pt>
+<figures/fig_ch2_domains.png, id=521, 527.571pt x 267.399pt>
 File: figures/fig_ch2_domains.png Graphic file (type png)
 <use figures/fig_ch2_domains.png>
 Package pdftex.def Info: figures/fig_ch2_domains.png  used on input line 5. on
@@ -769,7 +770,7 @@ e 5.
 ) [14 <./figures/fig_ch2_domains.png>] [15] [16]
 Chapter 3.
 
-Overfull \hbox (1.82362pt too wide) in paragraph at lines 1095--1095
+Overfull \hbox (1.82362pt too wide) in paragraph at lines 1094--1094
 |[]\OT1/cmr/bx/n/17.28 Representation and gen-er-a-tion are multi-factorial
  []
 
@@ -777,7 +778,7 @@ Overfull \hbox (1.82362pt too wide) in paragraph at lines 1095--1095
 
 ] [18] (./tables/table_eval_smallmol.tex) (./tables/table_eval_protein.tex)
 [19] [20] [21] (./figures/fig_ch3_designability.tex
-<figures/fig_ch3_designability.png, id=673, 679.338pt x 361.35pt>
+<figures/fig_ch3_designability.png, id=674, 679.338pt x 361.35pt>
 File: figures/fig_ch3_designability.png Graphic file (type png)
 <use figures/fig_ch3_designability.png>
 Package pdftex.def Info: figures/fig_ch3_designability.png  used on input line
@@ -815,7 +816,7 @@ Chapter 5.
 
 ] (./figures/fig_ch5_model.tex) (./tables/table_tabasco_setup.tex) [31]
 (./figures/fig_ch5_gallery.tex
-<figures/fig_ch5_gallery.png, id=800, 615.37904pt x 331.35796pt>
+<figures/fig_ch5_gallery.png, id=801, 615.37904pt x 331.35796pt>
 File: figures/fig_ch5_gallery.png Graphic file (type png)
 <use figures/fig_ch5_gallery.png>
 Package pdftex.def Info: figures/fig_ch5_gallery.png  used on input line 5. on
@@ -823,7 +824,7 @@ input line 5.
 Package pdftex.def Info: Requested size: 455.24411pt x 245.13026pt on input lin
 e 5.
 ) [32] (./figures/fig5_1_tabasco_curves.tex
-<figures/fig5_1_tabasco_curves.png, id=814, 781.2387pt x 239.2137pt>
+<figures/fig5_1_tabasco_curves.png, id=815, 781.2387pt x 239.2137pt>
 File: figures/fig5_1_tabasco_curves.png Graphic file (type png)
 <use figures/fig5_1_tabasco_curves.png>
 Package pdftex.def Info: figures/fig5_1_tabasco_curves.png  used on input line
@@ -838,7 +839,7 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 figures/fig5_1_tabasco_curves.png>]) [35]
 Chapter 6.
 (./figures/fig01_fid_des_convergence.tex
-<figures/fig01_fid_des_convergence.png, id=850, 931.8012pt x 661.5114pt>
+<figures/fig01_fid_des_convergence.png, id=851, 931.8012pt x 661.5114pt>
 File: figures/fig01_fid_des_convergence.png Graphic file (type png)
 <use figures/fig01_fid_des_convergence.png>
 Package pdftex.def Info: figures/fig01_fid_des_convergence.png  used on input l
@@ -857,7 +858,7 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [39]
 [40] (./figures/fig02_representation.tex
-<figures/fig02_representation.png, id=923, 967.4544pt x 330.5148pt>
+<figures/fig02_representation.png, id=924, 967.4544pt x 330.5148pt>
 File: figures/fig02_representation.png Graphic file (type png)
 <use figures/fig02_representation.png>
 Package pdftex.def Info: figures/fig02_representation.png  used on input line 4
@@ -867,7 +868,7 @@ e 4.
 ) [41] (./tables/table_rep_quality.tex
 (./tables/table_rep_quality_data.tex)) [42 <./figures/fig02_representation.png>
 ] (./figures/fig03_alignment.tex
-<figures/fig03_alignment.png, id=954, 895.1844pt x 322.3242pt>
+<figures/fig03_alignment.png, id=955, 895.1844pt x 322.3242pt>
 File: figures/fig03_alignment.png Graphic file (type png)
 <use figures/fig03_alignment.png>
 Package pdftex.def Info: figures/fig03_alignment.png  used on input line 4. on
@@ -885,7 +886,7 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [45]
 (./figures/fig04_fid_des_gen_vs_rep.tex
-<figures/fig04_fid_des_gen_vs_rep.png, id=995, 931.3194pt x 359.4228pt>
+<figures/fig04_fid_des_gen_vs_rep.png, id=996, 931.3194pt x 359.4228pt>
 File: figures/fig04_fid_des_gen_vs_rep.png Graphic file (type png)
 <use figures/fig04_fid_des_gen_vs_rep.png>
 Package pdftex.def Info: figures/fig04_fid_des_gen_vs_rep.png  used on input li
@@ -898,7 +899,7 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
  [46]
 (./tables/table_proteina_13m.tex) [47 <./figures/fig04_fid_des_gen_vs_rep.png>]
 (./figures/fig_ch6_enrichment.tex
-<figures/fig_ch6_enrichment.png, id=1025, 679.338pt x 274.626pt>
+<figures/fig_ch6_enrichment.png, id=1026, 679.338pt x 274.626pt>
 File: figures/fig_ch6_enrichment.png Graphic file (type png)
 <use figures/fig_ch6_enrichment.png>
 Package pdftex.def Info: figures/fig_ch6_enrichment.png  used on input line 5.
@@ -913,43 +914,43 @@ Chapter 7.
 ] [53] [54] [55
 
 ]
-Underfull \hbox (badness 1721) in paragraph at lines 2015--2019
+Underfull \hbox (badness 1721) in paragraph at lines 2014--2018
 []\OT1/cmr/m/n/12 Alex Zha-voronkov et al. ``Deep learn-ing en-ables rapid iden
 -ti-fi-ca-tion of po-
  []
 
 
-Underfull \hbox (badness 5667) in paragraph at lines 2060--2064
+Underfull \hbox (badness 5667) in paragraph at lines 2059--2063
 \OT1/cmr/m/n/12 ture with a lan-guage model''. \OT1/cmr/m/it/12 Sci-ence \OT1/c
 mr/m/n/12 379.6637 (2023), pp. 1123--1130.
  []
 
 [56]
-Underfull \hbox (badness 3179) in paragraph at lines 2113--2117
+Underfull \hbox (badness 3179) in paragraph at lines 2112--2116
 []\OT1/cmr/m/n/12 Michael Heinzinger et al. ``Bilin-gual lan-guage model for pr
 o-tein se-quence
  []
 
 
-Underfull \hbox (badness 5607) in paragraph at lines 2113--2117
+Underfull \hbox (badness 5607) in paragraph at lines 2112--2116
 \OT1/cmr/m/n/12 and struc-ture''. \OT1/cmr/m/it/12 NAR Ge-nomics and Bioin-for-
 mat-ics \OT1/cmr/m/n/12 6.4 (2024), lqae150.
  []
 
 
-Underfull \hbox (badness 2913) in paragraph at lines 2157--2161
+Underfull \hbox (badness 2913) in paragraph at lines 2156--2160
 []\OT1/cmr/m/n/12 Luciano Broc-chieri and Samuel Kar-lin. ``Pro-tein length in
 eu-kary-otic and
  []
 
 [57]
-Underfull \hbox (badness 1917) in paragraph at lines 2202--2205
+Underfull \hbox (badness 1917) in paragraph at lines 2201--2204
 []\OT1/cmr/m/n/12 Johann Brehmer et al. \OT1/cmr/m/it/12 Does equiv-ari-ance ma
 t-ter at scale? \OT1/cmr/m/n/12 TMLR 2025.
  []
 
 [58]
-Underfull \hbox (badness 1127) in paragraph at lines 2305--2309
+Underfull \hbox (badness 1127) in paragraph at lines 2304--2308
 \OT1/cmr/m/n/12 new ef-fi-cient as-sign-ment of sec-ondary struc-ture from C$\O
 ML/cmm/m/it/12 $ \OT1/cmr/m/n/12 trace of pro-teins''.
  []
@@ -979,7 +980,7 @@ Overfull \hbox (46.62437pt too wide) in paragraph at lines 3--8
 (./tables/table_cknna_matrix_data.tex)) [63]
 (./tables/table_genrep_corr_afdb.tex (./tables/table_genrep_corr_afdb_data.tex)
 )
-Overfull \hbox (15.64963pt too wide) in paragraph at lines 2423--2423
+Overfull \hbox (15.64963pt too wide) in paragraph at lines 2422--2422
 |[]\OT1/cmr/bx/n/17.28 Secondary-structure com-po-si-tion of the des-ignable
  []
 
@@ -992,19 +993,19 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [66]
 (./tables/table_profiling_full.tex) [67]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2459.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 2459.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2458.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 2458.
  (./report-draft.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 2459.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2459.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 2458.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2458.
 
 Package rerunfilecheck Info: File `report-draft.out' has not changed.
 (rerunfilecheck)             Checksum: 42437ED12692C2EE1C02A6C005CCF78C;4611.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2459.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2458.
  )
 Here is how much of TeX's memory you used:
- 18237 strings out of 494917
- 338046 string characters out of 6180699
+ 18238 strings out of 494917
+ 338056 string characters out of 6180699
  433001 words of memory out of 5000000
  20869 multiletter control sequences out of 15000+600000
  18021 words of font info for 67 fonts, out of 8000000 for 9000
@@ -1032,9 +1033,9 @@ lic/amsfonts/cm/cmti12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmti8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
 cm/cmtt12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbol
 s/msbm10.pfb>
-Output written on report-draft.pdf (67 pages, 2371615 bytes).
+Output written on report-draft.pdf (67 pages, 2371921 bytes).
 PDF statistics:
- 1415 PDF objects out of 1440 (max. 8388607)
- 1257 compressed objects within 13 object streams
- 240 named destinations out of 1000 (max. 500000)
+ 1417 PDF objects out of 1440 (max. 8388607)
+ 1259 compressed objects within 13 object streams
+ 241 named destinations out of 1000 (max. 500000)
  559 words of extra memory for PDF output out of 10000 (max. 10000000)
