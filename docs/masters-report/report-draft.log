@@ -1,6 +1,7 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2026.4.15)  14 JUN 2026 00:27
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2026.4.15)  14 JUN 2026 13:45
 entering extended mode
  restricted \write18 enabled.
+ file:line:error style messages enabled.
  %&-line parsing enabled.
 **report-draft.tex
 (./report-draft.tex
@@ -863,10 +864,9 @@ Package pdftex.def Info: figures/fig02_representation.png  used on input line 4
 . on input line 4.
 Package pdftex.def Info: Requested size: 455.24411pt x 155.52856pt on input lin
 e 4.
-) [41] (./tables/table_rep_quality.tex)
-Underfull \vbox (badness 6141) has occurred while \output is active []
-
- [42 <./figures/fig02_representation.png>] (./figures/fig03_alignment.tex
+) [41] (./tables/table_rep_quality.tex
+(./tables/table_rep_quality_data.tex)) [42 <./figures/fig02_representation.png>
+] (./figures/fig03_alignment.tex
 <figures/fig03_alignment.png, id=954, 895.1844pt x 322.3242pt>
 File: figures/fig03_alignment.png Graphic file (type png)
 <use figures/fig03_alignment.png>
@@ -874,9 +874,13 @@ Package pdftex.def Info: figures/fig03_alignment.png  used on input line 4. on
 input line 4.
 Package pdftex.def Info: Requested size: 455.24411pt x 163.92084pt on input lin
 e 4.
-) [43]
-(./tables/table_speedup.tex) (./tables/table_sampler.tex) [44 <./figures/fig03_
-alignment.png>] (./tables/table_genrep_corr.tex)
+)
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [43]
+(./tables/table_speedup.tex (./tables/table_speedup_data.tex))
+(./tables/table_sampler.tex) [44 <./figures/fig03_alignment.png>]
+(./tables/table_genrep_corr.tex (./tables/table_genrep_corr_data.tex))
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [45]
@@ -889,7 +893,7 @@ ne 4. on input line 4.
 Package pdftex.def Info: Requested size: 455.24411pt x 175.69093pt on input lin
 e 4.
 )
-Underfull \vbox (badness 1371) has occurred while \output is active []
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [46]
 (./tables/table_proteina_13m.tex) [47 <./figures/fig04_fid_des_gen_vs_rep.png>]
@@ -901,10 +905,7 @@ Package pdftex.def Info: figures/fig_ch6_enrichment.png  used on input line 5.
 on input line 5.
 Package pdftex.def Info: Requested size: 455.24411pt x 184.04036pt on input lin
 e 5.
-) (./tables/table_concentration.tex)
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [48]
+) (./tables/table_concentration.tex) [48]
 [49 <./figures/fig_ch6_enrichment.png>] [50] [51]
 Chapter 7.
 [52
@@ -968,40 +969,43 @@ Overfull \hbox (16.63011pt too wide) in paragraph at lines 5--14
  []
 
 ) [61] (./tables/table_rep_quality_full.tex
-Overfull \hbox (46.62437pt too wide) in paragraph at lines 7--21
+(./tables/table_rep_quality_full_data.tex)
+Overfull \hbox (46.62437pt too wide) in paragraph at lines 3--8
  [][]
  []
 
-) (./tables/table_rep_quality_afdb.tex) [62] (./tables/table_cknna_matrix.tex)
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [63]
-(./tables/table_genrep_corr_afdb.tex)
-Overfull \hbox (15.64963pt too wide) in paragraph at lines 2421--2421
+) [62] (./tables/table_rep_quality_afdb.tex
+(./tables/table_rep_quality_afdb_data.tex)) (./tables/table_cknna_matrix.tex
+(./tables/table_cknna_matrix_data.tex)) [63]
+(./tables/table_genrep_corr_afdb.tex (./tables/table_genrep_corr_afdb_data.tex)
+)
+Overfull \hbox (15.64963pt too wide) in paragraph at lines 2423--2423
 |[]\OT1/cmr/bx/n/17.28 Secondary-structure com-po-si-tion of the des-ignable
  []
 
+[64] (./tables/table_ss_composition.tex) (./tables/table_ode.tex)
+Underfull \vbox (badness 1609) has occurred while \output is active []
 
-Underfull \vbox (badness 5622) has occurred while \output is active []
+ [65]
+(./tables/table_13m_ranges.tex (./tables/table_13m_ranges_data.tex))
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [64]
-(./tables/table_ss_composition.tex) [65] (./tables/table_ode.tex)
-(./tables/table_13m_ranges.tex) (./tables/table_profiling_full.tex) [66]
-[67]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2451.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 2451.
+ [66]
+(./tables/table_profiling_full.tex) [67]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2459.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 2459.
  (./report-draft.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 2451.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2451.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 2459.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2459.
 
 Package rerunfilecheck Info: File `report-draft.out' has not changed.
-(rerunfilecheck)             Checksum: 24BB735B4E74C0ACB5701B49E9F21802;4616.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2451.
+(rerunfilecheck)             Checksum: 42437ED12692C2EE1C02A6C005CCF78C;4611.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2459.
  )
 Here is how much of TeX's memory you used:
- 18213 strings out of 494917
- 337293 string characters out of 6180699
- 436176 words of memory out of 5000000
+ 18237 strings out of 494917
+ 338046 string characters out of 6180699
+ 433001 words of memory out of 5000000
  20869 multiletter control sequences out of 15000+600000
  18021 words of font info for 67 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
@@ -1028,9 +1032,9 @@ lic/amsfonts/cm/cmti12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmti8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
 cm/cmtt12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbol
 s/msbm10.pfb>
-Output written on report-draft.pdf (67 pages, 2371320 bytes).
+Output written on report-draft.pdf (67 pages, 2371615 bytes).
 PDF statistics:
- 1416 PDF objects out of 1440 (max. 8388607)
- 1256 compressed objects within 13 object streams
+ 1415 PDF objects out of 1440 (max. 8388607)
+ 1257 compressed objects within 13 object streams
  240 named destinations out of 1000 (max. 500000)
  559 words of extra memory for PDF output out of 10000 (max. 10000000)
