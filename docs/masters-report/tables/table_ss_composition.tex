@@ -1,13 +1,12 @@
-% Appendix table -- designable-subset secondary-structure composition backing the
-% encoder-routing claim in sec:proteina-anatomy. Step 700K, gamma=0.45. Values are
-% per-seed means +/- half the seed range; strand column = absolute E%des of Table 6.6.
+% Appendix table -- designable-subset secondary-structure composition, shown for
+% completeness. Step 700K, gamma=0.45. Values are per-seed means +/- half the seed range.
 \begin{table}[tbp]
 \centering
 \small
 \setlength{\tabcolsep}{8pt}
-\begin{tabular}{l|ccc}
+\begin{tabular}{lccc}
 \toprule
-Variant (700K, $\gamma{=}0.45$) & Strand $f_E$ & Helix $f_H$ & Seeds \\
+\textbf{Variant (700K, $\gamma{=}0.45$)} & \textbf{$\beta$-strand} & \textbf{$\alpha$-helix} & \textbf{Seeds} \\
 \midrule
 \multicolumn{4}{l}{\textit{PDB-trained}}\\
 Baseline       & $0.22 \pm 0.02$ & $0.48 \pm 0.03$ & 3 \\
@@ -24,6 +23,6 @@ REPA L9-GearNet     & $0.19 \pm 0.01$ & $0.38 \pm 0.03$ & 3 \\
 REPA L9-MPNN   & $0.11 \pm 0.00$ & $0.55 \pm 0.01$ & 2 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Secondary-structure composition of the designable subset (step 700K, $\gamma{=}0.45$).} Mean strand ($f_E$) and helix ($f_H$) fractions over the designable backbones, $\pm$ half the seed range. GearNet shifts the designable subset toward strand and away from helix; MPNN on AFDB does the reverse. The AFDB L9-GearNet vs.\ L9-MPNN ranges are non-overlapping on both axes. The strand column ($f_E$) is the designable $\beta$-strand fraction underlying the centerpiece $\beta$-strand\,\% column (Table~\ref{tab:proteina-13m}), reported here per-seed and at 700K. (AFDB L4-MPNN omitted: no multi-seed $\gamma{=}0.45$ data; $2$--$3$ seeds per row, given in the Seeds column; $250$ backbones/seed (designable subset).)}
+\caption{Secondary-structure composition of the designable subset (step 700K, $\gamma{=}0.45$). Mean $\beta$-strand and $\alpha$-helix fractions over the designable backbones, $\pm$ half the seed range. On AFDB the L9-GearNet and L9-MPNN strand and helix ranges do not overlap across seeds, in opposite directions. (AFDB L4-MPNN omitted: no multi-seed $\gamma{=}0.45$ data; $2$--$3$ seeds per row, given in the Seeds column; $250$ backbones/seed.)}
 \label{tab:ss-composition}
 \end{table}

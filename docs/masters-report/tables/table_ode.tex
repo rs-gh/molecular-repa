@@ -5,10 +5,14 @@
 % 30400033/034): PDB now has all 6 variants natively at 1.3M (incl. L9-MPNN) and
 % AFDB has 5 (L4-MPNN now available; L4-random still has no ckpt past 800K).
 % ABSOLUTE values; REPA cells coloured against the SAME-step (1.3M) baseline --
-% green = better (Des higher / FPSD lower), red = worse.
+% green = better (Des higher / FPSD lower / pwTM lower), red = worse.
+% THRESHOLD CONVENTION (added 2026-06-14): Des and pwTM coloured only where
+% |delta vs same-block baseline| > 0.05 (~2x the n=250 binomial SE; cells sitting
+% exactly at 0.05, rounding-ambiguous, are left plain -- e.g. AFDB L4-MPNN pwTM
+% 0.19 vs 0.14). FPSD coloured by direction (every delta here clears any sane cut).
 % Designable pwTM (mean pairwise TM over the designable subset; HIGHER = more
-% structurally concentrated) is the designability--diversity trade-off axis under
-% investigation, so it is left uncoloured. Sources (ODE / vf, sampler_tag=ode,
+% structurally concentrated) is the designability--diversity trade-off axis; a
+% rise is the concentration cost, flagged red. Sources (ODE / vf, sampler_tag=ode,
 % step 1300000): FPSD = _res_{PDB,AFDB}_FID, Des = _res_designability_rate, pwTM =
 % _res_diversity_pairwise_tm_mean from the n256 PDB/AFDB sampler-ablation jsonls.
 % Single-seed (rep0/seed42): FPSD at one seed on n=256 is noisy, and pwTM over
@@ -20,25 +24,25 @@
 \setlength{\tabcolsep}{8pt}
 \begin{tabular}{lccc}
 \toprule
-\textbf{Variant (1.3M, ODE)} & \textbf{Des}\,$\uparrow$ & \textbf{FPSD}\,$\downarrow$ & \textbf{des.\ pwTM} \\
+\textbf{Variant (1.3M, ODE)} & \textbf{Des}\,$\uparrow$ & \textbf{FPSD}\,$\downarrow$ & \textbf{des.\ pwTM}\,$\downarrow$ \\
 \midrule
 \multicolumn{4}{l}{\textit{PDB-trained}}\\
 Baseline           & 0.07 & 297 & 0.27 \\
-REPA L4-random     & \rd{0.03} & \rd{353} & 0.42 \\
+REPA L4-random     & 0.03 & \rd{353} & \rd{0.42} \\
 REPA L4-GearNet    & \gd{0.20} & \rd{601} & 0.31 \\
-REPA L9-GearNet    & \gd{0.08} & \rd{376} & 0.34 \\
-REPA L4-MPNN       & \gd{0.10} & \rd{385} & 0.46 \\
+REPA L9-GearNet    & 0.08 & \rd{376} & \rd{0.34} \\
+REPA L4-MPNN       & 0.10 & \rd{385} & \rd{0.46} \\
 REPA L9-MPNN       & \gd{0.23} & \rd{413} & 0.29 \\
 \midrule
 \multicolumn{4}{l}{\textit{AFDB-trained}}\\
 Baseline           & 0.18 & 233 & 0.14 \\
 REPA L4-random\,$^{\ast}$ & --- & --- & --- \\
 REPA L4-GearNet    & \gd{0.29} & \gd{177} & 0.17 \\
-REPA L9-GearNet    & \gd{0.36} & \gd{134} & 0.25 \\
-REPA L4-MPNN       & \rd{0.15} & \gd{206} & 0.19 \\
-REPA L9-MPNN       & \gd{0.18} & \gd{182} & 0.15 \\
+REPA L9-GearNet    & \gd{0.36} & \gd{134} & \rd{0.25} \\
+REPA L4-MPNN       & 0.15 & \gd{206} & 0.19 \\
+REPA L9-MPNN       & 0.18 & \gd{182} & 0.15 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Under deterministic (ODE) sampling, REPA lifts the floor above the baseline on AFDB, while on PDB it redistributes it.} ODE sampling (no sampler noise) isolates the learned distribution. On AFDB the GearNet encoders and L9-MPNN raise both designability and distribution match (FPSD); L4-MPNN raises FPSD only. On PDB the trained encoders raise designability but worsen FPSD across the board --- the floor redistributes rather than lifts. Designable pwTM is the mean pairwise TM over the designable subset (higher $=$ more concentrated). (Absolute values at step 1.3M; REPA cells coloured for Des and FPSD only; $n{=}1$ seed; $1{,}125$ backbones/seed, $250$ for designability. $^{\ast}$AFDB L4-random has no checkpoint past 800K.)}
+\caption{Deterministic (ODE) sampling at 1.3M: REPA lifts the floor on AFDB, but redistributes it on PDB (designability up, FPSD worse). Designable pwTM is mean pairwise TM over the designable subset (higher $=$ more concentrated). Cells coloured by direction (green better, red worse) within a $0.05$ threshold. ($n{=}1$ seed; $1{,}125$ backbones/seed, $250$ for designability. $^{\ast}$AFDB L4-random has no checkpoint past 800K.)}
 \label{tab:proteina-ode}
 \end{table}

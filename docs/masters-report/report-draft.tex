@@ -149,7 +149,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 14997
+Main chapters word count: 14904
 
 Methodology used to generate that word count:
 
@@ -1147,7 +1147,7 @@ Protein backbones are larger and more variable than small molecules (Chapter~\re
 
 One caveat affects interpretation: designability is an in-silico proxy, not ground-truth physical realism, so it inherits the biases of the folding models it relies on. The inverse-folding and folding steps share model lineage with AlphaFold2~\cite{AlphaFold2}, and hence with the synthetic AlphaFold Database (AFDB), whose structures are themselves AF2 predictions. Generators trained on AFDB therefore score systematically higher on designability by construction, as we explore in Chapter~\ref{ch:proteina-study}.
 
-\textbf{Designable $\beta$-strand \%.} A model can inflate designability by emitting easy, highly foldable all-$\alpha$ backbones, since idealised helical bundles re-fold with low scRMSD almost by construction. On the contrary, $\beta$-strand content is harder to render designable. As a guard-rail, we track the mean fraction of residues in $\beta$-strand ($f_E$) over the designable subset, and read it alongside designability. A designable set that retains $\beta$-rich folds is evidence that its designability is genuine, rather than bought with trivial helical artefacts. (We use the C$\alpha$-only secondary-structure assignment of Appendix~\ref{app:ssjsd}.)
+\textbf{Designable $\beta$-strand fraction.} A model can inflate designability by emitting easy, highly foldable all-$\alpha$ backbones, since idealised helical bundles re-fold with low scRMSD almost by construction. On the contrary, $\beta$-strand content is harder to render designable. As a guard-rail, we track the mean fraction of residues in $\beta$-strand ($f_E$) over the designable subset, and read it alongside designability. A designable set that retains $\beta$-rich folds is evidence that its designability is genuine, rather than bought with trivial helical artefacts. (We use the C$\alpha$-only secondary-structure assignment of Appendix~\ref{app:ssjsd}.)
 
 \input{figures/fig_ch3_designability}
 
@@ -2379,9 +2379,9 @@ The random train/val split (\S\ref{app:datasets}) is not sequence-clustered, so 
 
 We control these by filtering the evaluation. A \emph{probe-clean} split removes probe leakage alone. The probe's training chains are filtered to have no $\ge$30\% sequence-identity hit to the evaluation set, which is otherwise the full validation set. A \emph{blinded} split removes both: the evaluation proteins are held under 30\% sequence identity to all training data.
 
-However, for both our datasets, validation sets are heavily homologous to their own training data. For example, 98\% of PDB validation chains have a $\ge$30\% hit in PDB training, leaving only $\sim$62 clean chains at $n{\le}256$, which is far too few to probe. Hence, we look across datasets to increase the count. AFDB chains filtered clean against \emph{both} the PDB and AFDB training pools yield $\sim$325 proteins, more than $5\times$ the same-source PDB slice.
+However, for both our datasets, validation sets are heavily homologous to their own training data. For example, 98\% of PDB validation chains have a $\ge$30\% hit in PDB training, leaving only $\sim$62 clean chains at $n{\le}256$, which is far too few to probe. Hence, we look across datasets. AFDB chains filtered clean against both the PDB and AFDB training pools yield $\sim$325 proteins, more than $5\times$ the $\sim$62-chain same-source PDB slice. We use this set as our blinded evaluation set for both PDB-trained and AFDB-trained models (Table~\ref{tab:proteina-rep-afdb}). This number suffices for our per-residue probes, as the $\sim$325 proteins still yield $\sim$43k residues, which yields full statistical power.
 
-This number sufficees for our per-residue probes, as the $\sim$325 proteins still yield $\sim$43k residues, which yields full statistical power. However, the per-chain CATH probe is different. Fold classification needs many distinct chains spread across populated fold classes, and the blinded slice is too small and too class-sparse for this. Hence, for the numbers we report in the main text, we relax our clean condition to the probe-clean split on the fuller validation set ($\sim$3{,}190 chains). Comparing the splits also decomposes the leakage --- the dirty-to-probe-clean drop isolates probe leakage and the probe-clean-to-blinded drop isolates model leakage --- and the REPA-over-baseline gap survives in every regime.
+However, the per-chain CATH probe needs more data. Fold classification needs many distinct chains spread across populated fold classes, and the blinded slice is too small and too class-sparse for this. Hence, for the numbers we report in the main text, we relax our clean condition to the probe-clean split on the fuller validation set ($\sim$3{,}190 chains). Comparing the splits also decomposes the leakage --- the dirty-to-probe-clean drop isolates probe leakage and the probe-clean-to-blinded drop isolates model leakage --- and the REPA-over-baseline gap survives in every regime.
 
 \section{Full representation-quality ablation}
 \label{app:rep-full}
@@ -2393,14 +2393,16 @@ The main-text representation table (Table~\ref{tab:proteina-rep}) shows four row
 \section{Representation quality on AFDB}
 \label{app:rep-afdb}
 
-Table~\ref{tab:proteina-rep-afdb} is the AFDB-trained counterpart of the PDB Table~\ref{tab:proteina-rep}. The fold routing (GearNet\,$\to$\,CATH) replicates. The per-residue routing does not: inverse folding and the dihedral probe show no consistent REPA effect, unlike the clear MPNN-led per-residue gains on PDB. We read this as a measurement limit, not a real absence. These probes run on the small cross-database blinded set at a single seed and a single checkpoint, so step-to-step noise is large --- the baseline dihedral error alone swings several degrees between adjacent checkpoints. We therefore draw no per-residue conclusion on AFDB and lean on the fold result, whose effect is large enough to clear that noise.
+Table~\ref{tab:proteina-rep-afdb} is the AFDB-trained counterpart of the PDB Table~\ref{tab:proteina-rep}. The fold routing (GearNet\,$\to$\,CATH) replicates. The per-residue routing does not: inverse folding and the dihedral probe show no consistent REPA effect, unlike the clear MPNN-led per-residue gains on PDB.
+
+However, we note this might reflect a measurement limit. These probes are run on the small cross-database blinded set at a single seed and a single checkpoint, so step-to-step noise is large. For example, the baseline dihedral error alone swings several degrees between adjacent checkpoints. We therefore draw no per-residue conclusion on AFDB and lean on the fold result, where the effect is large enough to clear that noise.
 
 \input{tables/table_rep_quality_afdb}
 
 \section{Representation-alignment matrix}
 \label{app:cknna}
 
-The alignment diagnostic in \S\ref{sec:proteina-alignment} reports peak per-residue CKNNA for a single illustrative variant. Table~\ref{tab:cknna-matrix} gives the full model$\times$encoder matrix behind that reading. It confirms the off-diagonal generalisation we describe there. Aligning the trunk to one encoder raises its CKNNA to the other two as well, not just the alignment target. The peak sits at the last trunk layers (L7--L8 here). The absolute values stay an order of magnitude below image-domain REPA, so we read the direction and layer pattern rather than the raw magnitude.
+The alignment diagnostic in \S\ref{sec:proteina-alignment} reports peak per-residue CKNNA for a single illustrative variant. Table~\ref{tab:cknna-matrix} gives the full model$\times$encoder matrix behind that reading. As we show in the main text, aligning the trunk to one encoder raises its CKNNA to the other two as well, not just the alignment target. The absolute values stay an order of magnitude below image-domain REPA, so we read the direction and layer pattern rather than the raw magnitude.
 
 \input{tables/table_cknna_matrix}
 
@@ -2414,35 +2416,41 @@ Section~\ref{sec:proteina-genrep} establishes the representation--generation cou
 \section{The ssJSD-2D secondary-structure metric}
 \label{app:ssjsd}
 
-Proteina's secondary-structure metric compares the \emph{mean} helix and strand content of a generated set against a reference. This collapses each set to a single point, so it cannot see variance, bimodality, or tails --- a model that matches the average composition while collapsing its spread scores the same as one that reproduces it. ssJSD-2D removes this blind spot by comparing the full joint distribution.
+Proteina's secondary-structure metric compares the \emph{mean} helix and strand content of a generated set against a reference. This collapses each set to a single point, so it cannot see variance, bimodality, or tails. Hence, a model that matches the average composition while collapsing its spread scores the same as one that reproduces it. ssJSD-2D removes this blind spot by comparing the full joint distribution.
 
 For each backbone we annotate every residue as helix, strand, or coil with a C$\alpha$-only secondary-structure assignment (P-SEA~\cite{PSEA}, as implemented in Biotite~\cite{Biotite}) and record the fraction of residues in helix ($f_H$) and in strand ($f_E$). A set of $N$ backbones is then a cloud of $N$ points in the $(f_H, f_E)$ plane. We bin that plane into a $5\times5$ grid over $[0,1]^2$, form normalised two-dimensional histograms for the generated and reference sets, and report the Jensen--Shannon divergence between them (lower is better). Binning the joint distribution, rather than comparing marginal means, lets the metric reward a model for reproducing the \emph{shape} of the secondary-structure distribution and penalise mode collapse onto, say, all-$\alpha$ backbones.
 
 \section{Secondary-structure composition of the designable subset}
 \label{app:ss-composition}
 
-The encoder-routing reading in \S\ref{sec:proteina-anatomy} --- GearNet shifting the designable subset toward $\beta$-strand content, MPNN on AFDB away from it --- rests on the secondary-structure composition of the designable backbones (Table~\ref{tab:ss-composition}). The shifts are small in absolute terms but seed-consistent: on AFDB the L9-GearNet and L9-MPNN strand and helix ranges do not overlap across seeds, in opposite directions. The strand column ($f_E$) is the same designable $\beta$-strand metric as the centerpiece $\beta$-strand \% column (Table~\ref{tab:proteina-13m}), shown here per-seed and alongside the helix axis. We report it at 700K rather than the centerpiece's 1.3M because that is the step at which the load-bearing AFDB L9-GearNet vs.\ L9-MPNN contrast has multi-seed coverage on both encoders --- the AFDB L9-GearNet run trains only to 1.0M, so it has no 1.3M checkpoint. The per-seed values therefore do not match the 1.3M centerpiece cell exactly; we report the spread here rather than in the main table to avoid clutter.
+Table~\ref{tab:ss-composition} reports the per-seed secondary-structure composition of the designable backbones, behind the secondary-structure readings in \S\ref{sec:proteina-anatomy}. We show it at 700K, the step with the most complete multi-seed coverage across variants. On AFDB, the L9-GearNet and L9-MPNN strand and helix ranges do not overlap across seeds, in opposite directions. The remaining rows are included for completeness.
 
 \input{tables/table_ss_composition}
 
 \section{Deterministic (ODE) sampling across variants}
 \label{app:ode}
 
-The deterministic (ODE) sampler reads the learned velocity field with no injected noise, so it isolates what the trunk has learned from the sampler that draws from it. Table~\ref{tab:proteina-ode} gives the all-variant ODE snapshot at 1.3M. On AFDB the lift holds across every trained encoder, not just the strongest one, and without concentrating the designable subset (des.\ pwTM); this is the ODE evidence behind the ``genuinely better model'' reading of \S\ref{sec:proteina-anatomy}. On PDB the floor instead redistributes, raising designability while the distribution-match gain is mixed.
+The deterministic (ODE) sampler reads the learned velocity field with no injected noise. This isolates what the trunk has learned from the sampler that draws from it. We note that we use the ODE limit as a diagnostic. It is not the operating point for our models, which use tuned SDE noise (Table~\ref{tab:proteina-sampler}).
+
+Table~\ref{tab:proteina-ode} gives the all-variant ODE snapshot at 1.3M. On AFDB, the REPA lift holds across every trained encoder. For the strongest variant (L4-GearNet) it comes without concentrating designable diversity (des.\ pwTM); only L9-GearNet tightens it meaningfully. This further suggests that REPA helps learn a better model, as outlined in \S\ref{sec:proteina-anatomy}.
+
+PDB displays a more subtle pattern. L4-GearNet and L9-MPNN comfortably beat the baseline on designability (Table~\ref{tab:proteina-ode}), but FPSD for REPA variants is generally higher. One possible explanation is that REPA alignment moves the velocity field towards a few folds, as we discuss in \S\ref{sec:proteina-anatomy}. At zero noise, the unsmoothed field then covers the target distribution worse, which inflates FPSD. In this reading, the injected sampler noise then re-broadens these models to recover distribution match.
+
+We read the magnitudes cautiously, as the ODE FPSD is single-seed and noisy. We only use these results to inform our directional understanding of what is happening.
 
 \input{tables/table_ode}
 
-\section{Per-seed spread of the centerpiece table}
+\section{Per-seed spread of the 1.3M results}
 \label{app:13m-ranges}
 
-Each cell of the 1.3M centerpiece (Table~\ref{tab:proteina-13m}) is a mean over generation seeds. Table~\ref{tab:proteina-13m-ranges} reports the min--max range across those seeds for the same cells, in absolute units, so the reader can judge which small centerpiece deltas sit within seed scatter. Two rows are single-seed and carry no range. The most load-bearing case is AFDB L4-GearNet: its designable-diversity (pwTM) range overlaps the baseline's, so the $0.02$ rise we report is within seed scatter, while its FPSD range stays cleanly below the baseline's.
+Each cell of Table~\ref{tab:proteina-13m} is a mean over three generation seeds. Table~\ref{tab:proteina-13m-ranges} reports the min--max range across those three seeds for the same cells, in absolute units. The most load-bearing case is AFDB L4-GearNet, as references in the main text. Its designable-diversity (pwTM) range overlaps with the baseline, so the $0.02$ rise we report is within seed scatter, while its FPSD range stays cleanly below the baseline's.
 
 \input{tables/table_13m_ranges}
 
 \section{Full encoder profiles}
 \label{app:profiling-full}
 
-Tables~\ref{tab:profiling-mol} and~\ref{tab:profiling-protein} in the main text show only the diagnostics that drive each verdict. Tables~\ref{tab:profiling-full-mol} and~\ref{tab:profiling-full-protein} give the complete set of measured values for every candidate encoder, including the columns omitted from the main text (atom/context probes, participation ratio, and the best-projector cosine the lift is computed from).
+Tables~\ref{tab:profiling-mol} and~\ref{tab:profiling-protein} in the main text show only the diagnostics that drive each verdict. Tables~\ref{tab:profiling-full-mol} and~\ref{tab:profiling-full-protein} give the complete measured set for every candidate encoder. The probe, \emph{3D}, \emph{Floor}, \emph{Lift}, \emph{Sparsity} and \emph{RankMe} columns carry the same meaning as in the main-text tables. The added columns are \emph{context-$\Delta$} (the within-minus-between cosine spread); \emph{Best} (the best-projector cosine, with $\text{Lift}=\text{Best}-\text{Floor}$); \emph{PR} (participation ratio); \emph{Dims@95\%} (dimensions holding $95\%$ of the variance); and \emph{norm} (mean L2 embedding norm). The spectral columns --- RankMe, PR, Dims@95\% and norm --- diagnose optimisation tractability. Rank collapse or a norm explosion degrades the gradient signal even when the embedding is informative.
 
 \input{tables/table_profiling_full}
 
