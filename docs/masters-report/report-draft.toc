@@ -1,62 +1,62 @@
-\contentsline {chapter}{\numberline {1}Introduction}{6}{chapter.1}
-\contentsline {section}{\numberline {1.1}A history of trade-offs}{6}{section.1.1}
-\contentsline {section}{\numberline {1.2}Representation alignment}{7}{section.1.2}
-\contentsline {section}{\numberline {1.3}Contributions}{8}{section.1.3}
-\contentsline {chapter}{\numberline {2}Background and Related Work}{9}{chapter.2}
-\contentsline {section}{\numberline {2.1}Flow matching}{9}{section.2.1}
-\contentsline {section}{\numberline {2.2}Representation alignment}{10}{section.2.2}
-\contentsline {subsection}{\numberline {2.2.1}What makes for a good REPA encoder?}{12}{subsection.2.2.1}
-\contentsline {section}{\numberline {2.3}A primer on molecular generation}{12}{section.2.3}
-\contentsline {section}{\numberline {2.4}Tabasco and Proteina}{13}{section.2.4}
-\contentsline {subsection}{\numberline {2.4.1}Small molecules and Tabasco}{14}{subsection.2.4.1}
-\contentsline {subsection}{\numberline {2.4.2}Protein backbones and Proteina}{14}{subsection.2.4.2}
-\contentsline {section}{\numberline {2.5}Open questions}{15}{section.2.5}
-\contentsline {chapter}{\numberline {3}Evaluating molecular generation}{16}{chapter.3}
-\contentsline {section}{\numberline {3.1}What makes for a ``good'' molecule?}{16}{section.3.1}
-\contentsline {section}{\numberline {3.2}Representation and generation are multi-factorial and multi-scale problems}{16}{section.3.2}
-\contentsline {section}{\numberline {3.3}The linear probe principle}{17}{section.3.3}
-\contentsline {section}{\numberline {3.4}Small-molecule metrics}{18}{section.3.4}
-\contentsline {section}{\numberline {3.5}Protein-backbone metrics}{18}{section.3.5}
-\contentsline {section}{\numberline {3.6}The designability--diversity trade-off}{22}{section.3.6}
-\contentsline {chapter}{\numberline {4}Encoder targets and profiling}{24}{chapter.4}
-\contentsline {section}{\numberline {4.1}A profiling protocol}{24}{section.4.1}
-\contentsline {section}{\numberline {4.2}Small molecule encoders}{27}{section.4.2}
-\contentsline {section}{\numberline {4.3}Protein backbone encoders}{27}{section.4.3}
-\contentsline {section}{\numberline {4.4}Informing our experiments}{28}{section.4.4}
-\contentsline {chapter}{\numberline {5}REPA on small molecules}{29}{chapter.5}
-\contentsline {section}{\numberline {5.1}Experimental setup}{29}{section.5.1}
-\contentsline {subsection}{\numberline {5.1.1}Dataset}{29}{subsection.5.1.1}
-\contentsline {subsection}{\numberline {5.1.2}Models}{29}{subsection.5.1.2}
-\contentsline {subsection}{\numberline {5.1.3}Metrics}{30}{subsection.5.1.3}
-\contentsline {section}{\numberline {5.2}Results: no measurable gain}{31}{section.5.2}
-\contentsline {section}{\numberline {5.3}Discussion}{33}{section.5.3}
-\contentsline {chapter}{\numberline {6}REPA on protein backbones}{35}{chapter.6}
-\contentsline {section}{\numberline {6.1}Experimental setup}{36}{section.6.1}
-\contentsline {subsection}{\numberline {6.1.1}Datasets}{36}{subsection.6.1.1}
-\contentsline {subsection}{\numberline {6.1.2}Models}{37}{subsection.6.1.2}
-\contentsline {subsection}{\numberline {6.1.3}Metrics}{38}{subsection.6.1.3}
-\contentsline {subsection}{\numberline {6.1.4}Evaluation protocol}{39}{subsection.6.1.4}
-\contentsline {section}{\numberline {6.2}Results}{40}{section.6.2}
-\contentsline {subsection}{\numberline {6.2.1}REPA improves representation quality asymptotically}{40}{subsection.6.2.1}
-\contentsline {subsection}{\numberline {6.2.2}A diagnostic check on alignment}{42}{subsection.6.2.2}
-\contentsline {subsection}{\numberline {6.2.3}In the short run, REPA accelerates generation quality in both experimental and synthetic data regimes}{42}{subsection.6.2.3}
-\contentsline {subsection}{\numberline {6.2.4}In the long run, REPA gains are data-regime dependent}{45}{subsection.6.2.4}
-\contentsline {subsection}{\numberline {6.2.5}What we do not claim}{48}{subsection.6.2.5}
-\contentsline {section}{\numberline {6.3}Discussion}{49}{section.6.3}
-\contentsline {chapter}{\numberline {7}Conclusions}{51}{chapter.7}
-\contentsline {section}{\numberline {7.1}Does REPA work in the molecular domain?}{51}{section.7.1}
-\contentsline {section}{\numberline {7.2}When does REPA work?}{52}{section.7.2}
-\contentsline {section}{\numberline {7.3}Open questions}{53}{section.7.3}
-\contentsline {chapter}{\numberline {A}Technical details}{59}{appendix.A}
-\contentsline {section}{\numberline {A.1}Protein dataset composition and split overlap}{59}{section.A.1}
-\contentsline {section}{\numberline {A.2}Choice of CATH fold-probe level}{59}{section.A.2}
-\contentsline {section}{\numberline {A.3}Leakage-controlled probe evaluation}{60}{section.A.3}
-\contentsline {section}{\numberline {A.4}Full representation-quality ablation}{61}{section.A.4}
-\contentsline {section}{\numberline {A.5}Representation quality on AFDB}{61}{section.A.5}
-\contentsline {section}{\numberline {A.6}Representation-alignment matrix}{62}{section.A.6}
-\contentsline {section}{\numberline {A.7}Representation--generation coupling on AFDB}{62}{section.A.7}
-\contentsline {section}{\numberline {A.8}The ssJSD-2D secondary-structure metric}{63}{section.A.8}
-\contentsline {section}{\numberline {A.9}Secondary-structure composition of the designable subset}{63}{section.A.9}
-\contentsline {section}{\numberline {A.10}Deterministic (ODE) sampling across variants}{64}{section.A.10}
-\contentsline {section}{\numberline {A.11}Per-seed spread of the 1.3M results}{65}{section.A.11}
-\contentsline {section}{\numberline {A.12}Full encoder profiles}{66}{section.A.12}
+\contentsline {chapter}{\numberline {1}Introduction}{7}{chapter.1}
+\contentsline {section}{\numberline {1.1}A history of trade-offs}{7}{section.1.1}
+\contentsline {section}{\numberline {1.2}Representation alignment}{8}{section.1.2}
+\contentsline {section}{\numberline {1.3}Contributions}{9}{section.1.3}
+\contentsline {chapter}{\numberline {2}Background and Related Work}{10}{chapter.2}
+\contentsline {section}{\numberline {2.1}Flow matching}{10}{section.2.1}
+\contentsline {section}{\numberline {2.2}Representation alignment}{11}{section.2.2}
+\contentsline {subsection}{\numberline {2.2.1}What makes for a good REPA encoder?}{13}{subsection.2.2.1}
+\contentsline {section}{\numberline {2.3}A primer on molecular generation}{13}{section.2.3}
+\contentsline {section}{\numberline {2.4}Tabasco and Proteina}{14}{section.2.4}
+\contentsline {subsection}{\numberline {2.4.1}Small molecules and Tabasco}{15}{subsection.2.4.1}
+\contentsline {subsection}{\numberline {2.4.2}Protein backbones and Proteina}{15}{subsection.2.4.2}
+\contentsline {section}{\numberline {2.5}Open questions}{16}{section.2.5}
+\contentsline {chapter}{\numberline {3}Evaluating molecular generation}{17}{chapter.3}
+\contentsline {section}{\numberline {3.1}What makes for a ``good'' molecule?}{17}{section.3.1}
+\contentsline {section}{\numberline {3.2}Representation and generation are multi-factorial and multi-scale problems}{17}{section.3.2}
+\contentsline {section}{\numberline {3.3}The linear probe principle}{18}{section.3.3}
+\contentsline {section}{\numberline {3.4}Small-molecule metrics}{19}{section.3.4}
+\contentsline {section}{\numberline {3.5}Protein-backbone metrics}{19}{section.3.5}
+\contentsline {section}{\numberline {3.6}The designability--diversity trade-off}{23}{section.3.6}
+\contentsline {chapter}{\numberline {4}Encoder targets and profiling}{25}{chapter.4}
+\contentsline {section}{\numberline {4.1}A profiling protocol}{25}{section.4.1}
+\contentsline {section}{\numberline {4.2}Small molecule encoders}{28}{section.4.2}
+\contentsline {section}{\numberline {4.3}Protein backbone encoders}{28}{section.4.3}
+\contentsline {section}{\numberline {4.4}Informing our experiments}{29}{section.4.4}
+\contentsline {chapter}{\numberline {5}REPA on small molecules}{30}{chapter.5}
+\contentsline {section}{\numberline {5.1}Experimental setup}{30}{section.5.1}
+\contentsline {subsection}{\numberline {5.1.1}Dataset}{30}{subsection.5.1.1}
+\contentsline {subsection}{\numberline {5.1.2}Models}{30}{subsection.5.1.2}
+\contentsline {subsection}{\numberline {5.1.3}Metrics}{31}{subsection.5.1.3}
+\contentsline {section}{\numberline {5.2}Results: no measurable gain}{32}{section.5.2}
+\contentsline {section}{\numberline {5.3}Discussion}{34}{section.5.3}
+\contentsline {chapter}{\numberline {6}REPA on protein backbones}{36}{chapter.6}
+\contentsline {section}{\numberline {6.1}Experimental setup}{37}{section.6.1}
+\contentsline {subsection}{\numberline {6.1.1}Datasets}{37}{subsection.6.1.1}
+\contentsline {subsection}{\numberline {6.1.2}Models}{38}{subsection.6.1.2}
+\contentsline {subsection}{\numberline {6.1.3}Metrics}{40}{subsection.6.1.3}
+\contentsline {subsection}{\numberline {6.1.4}Evaluation protocol}{40}{subsection.6.1.4}
+\contentsline {section}{\numberline {6.2}Results}{41}{section.6.2}
+\contentsline {subsection}{\numberline {6.2.1}REPA improves representation quality asymptotically}{41}{subsection.6.2.1}
+\contentsline {subsection}{\numberline {6.2.2}A diagnostic check on alignment}{43}{subsection.6.2.2}
+\contentsline {subsection}{\numberline {6.2.3}In the short run, REPA accelerates generation quality in both experimental and synthetic data regimes}{44}{subsection.6.2.3}
+\contentsline {subsection}{\numberline {6.2.4}In the long run, REPA gains are data-regime dependent}{47}{subsection.6.2.4}
+\contentsline {subsection}{\numberline {6.2.5}What we do not claim}{49}{subsection.6.2.5}
+\contentsline {section}{\numberline {6.3}Discussion}{50}{section.6.3}
+\contentsline {chapter}{\numberline {7}Conclusions}{52}{chapter.7}
+\contentsline {section}{\numberline {7.1}Does REPA work in the molecular domain?}{52}{section.7.1}
+\contentsline {section}{\numberline {7.2}When does REPA work?}{53}{section.7.2}
+\contentsline {section}{\numberline {7.3}Open questions}{54}{section.7.3}
+\contentsline {chapter}{\numberline {A}Technical details}{60}{appendix.A}
+\contentsline {section}{\numberline {A.1}Protein dataset composition and split overlap}{60}{section.A.1}
+\contentsline {section}{\numberline {A.2}Choice of CATH fold-probe level}{60}{section.A.2}
+\contentsline {section}{\numberline {A.3}Leakage-controlled probe evaluation}{61}{section.A.3}
+\contentsline {section}{\numberline {A.4}Full representation-quality ablation}{62}{section.A.4}
+\contentsline {section}{\numberline {A.5}Representation quality on AFDB}{62}{section.A.5}
+\contentsline {section}{\numberline {A.6}Representation-alignment matrix}{63}{section.A.6}
+\contentsline {section}{\numberline {A.7}Representation--generation coupling on AFDB}{63}{section.A.7}
+\contentsline {section}{\numberline {A.8}The ssJSD-2D secondary-structure metric}{64}{section.A.8}
+\contentsline {section}{\numberline {A.9}Secondary-structure composition of the designable subset}{64}{section.A.9}
+\contentsline {section}{\numberline {A.10}Deterministic (ODE) sampling across variants}{65}{section.A.10}
+\contentsline {section}{\numberline {A.11}Per-seed spread of the 1.3M results}{66}{section.A.11}
+\contentsline {section}{\numberline {A.12}Full encoder profiles}{67}{section.A.12}
