@@ -1,0 +1,62 @@
+\BOOKMARK [0][-]{chapter.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.1.1}{A history of trade-offs}{chapter.1}% 2
+\BOOKMARK [1][-]{section.1.2}{Representation alignment}{chapter.1}% 3
+\BOOKMARK [1][-]{section.1.3}{Contributions}{chapter.1}% 4
+\BOOKMARK [0][-]{chapter.2}{Background and Related Work}{}% 5
+\BOOKMARK [1][-]{section.2.1}{Flow matching}{chapter.2}% 6
+\BOOKMARK [1][-]{section.2.2}{Representation alignment}{chapter.2}% 7
+\BOOKMARK [2][-]{subsection.2.2.1}{What makes for a good REPA encoder?}{section.2.2}% 8
+\BOOKMARK [1][-]{section.2.3}{A primer on molecular generation}{chapter.2}% 9
+\BOOKMARK [1][-]{section.2.4}{Tabasco and Proteina}{chapter.2}% 10
+\BOOKMARK [2][-]{subsection.2.4.1}{Small molecules and Tabasco}{section.2.4}% 11
+\BOOKMARK [2][-]{subsection.2.4.2}{Protein backbones and Proteina}{section.2.4}% 12
+\BOOKMARK [1][-]{section.2.5}{Open questions}{chapter.2}% 13
+\BOOKMARK [0][-]{chapter.3}{Evaluating molecular generation}{}% 14
+\BOOKMARK [1][-]{section.3.1}{What makes for a ``good'' molecule?}{chapter.3}% 15
+\BOOKMARK [1][-]{section.3.2}{Representation and generation are multi-factorial and multi-scale problems}{chapter.3}% 16
+\BOOKMARK [1][-]{section.3.3}{The linear probe principle}{chapter.3}% 17
+\BOOKMARK [1][-]{section.3.4}{Small-molecule metrics}{chapter.3}% 18
+\BOOKMARK [1][-]{section.3.5}{Protein-backbone metrics}{chapter.3}% 19
+\BOOKMARK [1][-]{section.3.6}{The designability\205diversity trade-off}{chapter.3}% 20
+\BOOKMARK [0][-]{chapter.4}{Encoder targets and profiling}{}% 21
+\BOOKMARK [1][-]{section.4.1}{A profiling protocol}{chapter.4}% 22
+\BOOKMARK [1][-]{section.4.2}{Small molecule encoders}{chapter.4}% 23
+\BOOKMARK [1][-]{section.4.3}{Protein backbone encoders}{chapter.4}% 24
+\BOOKMARK [1][-]{section.4.4}{Informing our experiments}{chapter.4}% 25
+\BOOKMARK [0][-]{chapter.5}{REPA on small molecules}{}% 26
+\BOOKMARK [1][-]{section.5.1}{Experimental setup}{chapter.5}% 27
+\BOOKMARK [2][-]{subsection.5.1.1}{Dataset}{section.5.1}% 28
+\BOOKMARK [2][-]{subsection.5.1.2}{Models}{section.5.1}% 29
+\BOOKMARK [2][-]{subsection.5.1.3}{Metrics}{section.5.1}% 30
+\BOOKMARK [1][-]{section.5.2}{Results: no measurable gain}{chapter.5}% 31
+\BOOKMARK [1][-]{section.5.3}{Discussion}{chapter.5}% 32
+\BOOKMARK [0][-]{chapter.6}{REPA on protein backbones}{}% 33
+\BOOKMARK [1][-]{section.6.1}{Experimental setup}{chapter.6}% 34
+\BOOKMARK [2][-]{subsection.6.1.1}{Datasets}{section.6.1}% 35
+\BOOKMARK [2][-]{subsection.6.1.2}{Models}{section.6.1}% 36
+\BOOKMARK [2][-]{subsection.6.1.3}{Metrics}{section.6.1}% 37
+\BOOKMARK [2][-]{subsection.6.1.4}{Evaluation protocol}{section.6.1}% 38
+\BOOKMARK [1][-]{section.6.2}{Results}{chapter.6}% 39
+\BOOKMARK [2][-]{subsection.6.2.1}{REPA improves representation quality asymptotically}{section.6.2}% 40
+\BOOKMARK [2][-]{subsection.6.2.2}{A diagnostic check on alignment}{section.6.2}% 41
+\BOOKMARK [2][-]{subsection.6.2.3}{In the short run, REPA accelerates generation quality in both experimental and synthetic data regimes}{section.6.2}% 42
+\BOOKMARK [2][-]{subsection.6.2.4}{In the long run, REPA gains are data-regime dependent}{section.6.2}% 43
+\BOOKMARK [2][-]{subsection.6.2.5}{What we do not claim}{section.6.2}% 44
+\BOOKMARK [1][-]{section.6.3}{Discussion}{chapter.6}% 45
+\BOOKMARK [0][-]{chapter.7}{Conclusions}{}% 46
+\BOOKMARK [1][-]{section.7.1}{Does REPA work in the molecular domain?}{chapter.7}% 47
+\BOOKMARK [1][-]{section.7.2}{When does REPA work?}{chapter.7}% 48
+\BOOKMARK [1][-]{section.7.3}{Open questions}{chapter.7}% 49
+\BOOKMARK [0][-]{appendix.A}{Technical details}{}% 50
+\BOOKMARK [1][-]{section.A.1}{Dataset composition and split overlap}{appendix.A}% 51
+\BOOKMARK [1][-]{section.A.2}{Choice of CATH fold-probe level}{appendix.A}% 52
+\BOOKMARK [1][-]{section.A.3}{Leakage-controlled probe evaluation}{appendix.A}% 53
+\BOOKMARK [1][-]{section.A.4}{Full representation-quality ablation}{appendix.A}% 54
+\BOOKMARK [1][-]{section.A.5}{Representation quality on AFDB}{appendix.A}% 55
+\BOOKMARK [1][-]{section.A.6}{Representation-alignment matrix}{appendix.A}% 56
+\BOOKMARK [1][-]{section.A.7}{Representation\205generation coupling on AFDB}{appendix.A}% 57
+\BOOKMARK [1][-]{section.A.8}{The ssJSD-2D secondary-structure metric}{appendix.A}% 58
+\BOOKMARK [1][-]{section.A.9}{Secondary-structure composition of the designable subset}{appendix.A}% 59
+\BOOKMARK [1][-]{section.A.10}{Deterministic \(ODE\) sampling across variants}{appendix.A}% 60
+\BOOKMARK [1][-]{section.A.11}{Per-seed spread of the centerpiece table}{appendix.A}% 61
+\BOOKMARK [1][-]{section.A.12}{Full encoder profiles}{appendix.A}% 62

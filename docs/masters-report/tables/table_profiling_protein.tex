@@ -19,6 +19,6 @@ PW-GearNet      & 3072 & \rd{0.928} & \rd{0.86} & \rd{0.71} & $+0.013$ & \rd{208
 MC-GearNet-Edge & 3072 & \gd{0.146} & \rd{0.77} & \rd{0.86} & $+0.002$ & \rd{12}   & collapsed \\
 \bottomrule
 \end{tabular}
-\caption{Protein encoder profiles. GearNet and ProteinMPNN show promise. \emph{AA-probe}: residue-identity linear-probe accuracy (high $=$ an identity lookup the generator already has). \emph{3D}: cosine self-similarity after a 1\,\AA{} perturbation (lower $=$ more 3D-sensitive; N/A for sequence-only ESM2. \emph{Floor}: constant-prediction cosine (high $=$ saturated). \emph{Lift}: the rise a same-form MLP gains above the floor from cheap inputs. \emph{RankMe}: Roy--Vetterli effective rank out of \emph{Dim}~\cite{RankMe}. \textsuperscript{\dag}ESM2's lift is the largest here but is sequence context, not 3D: off-task.}
+\caption{Protein encoder profiles. GearNet and ProteinMPNN show promise. \emph{AA-probe}: residue-identity linear-probe accuracy (high $=$ off-task for a backbone generator). \emph{3D}: cosine self-similarity after a 1\,\AA{} perturbation (lower $=$ more 3D-sensitive; N/A for sequence-only ESM2). \emph{Floor}: constant-prediction cosine (high $=$ saturated). \emph{Lift}: the rise a same-form MLP gains above the floor from cheap inputs. \emph{RankMe}: Roy--Vetterli effective rank out of \emph{Dim}~\cite{RankMe}. \textsuperscript{\dag}ESM2's lift is the largest here but is sequence context, not 3D: off-task.}
 \label{tab:profiling-protein}
 \end{table}

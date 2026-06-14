@@ -1,0 +1,42 @@
+=== Rep-eval propagation start Thu May 28 08:44:30 BST 2026 ===
+log: /home/sr2173/git/molecular-repa/evaluation/proteina/representation/scripts/.propagate_repeval_20260528_084430.log
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/representation/scripts/paper/build_clean_manifests_v2.py
+
+[cleantrain max_size=128] /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n128_convergence_cleantrain_pdb
+  total train chains: 425100
+  val-homologous train chains to drop: 227019
+  eligible (clean, length<=max_size): 54918
+  wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n128_convergence_cleantrain_pdb/batch_manifest_train_clean_v2.json (n=5000, max_size=128)
+
+[cleantrain max_size=256] /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_convergence_cleantrain_pdb
+  total train chains: 425100
+  val-homologous train chains to drop: 227019
+  eligible (clean, length<=max_size): 129941
+  wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_convergence_cleantrain_pdb/batch_manifest_train_clean_v2.json (n=5000, max_size=256)
+
+[xclean afdb_train max_size=128] /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n128_xclean_afdb_pdb
+  eligible (length<=max_size): 82855 / 229670
+  wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n128_xclean_afdb_pdb/batch_manifest_train_v2.json (n=5000, max_size=128)
+
+[xclean afdb_train max_size=256] /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_xclean_afdb_pdb
+  eligible (length<=max_size): 229670 / 229670
+  wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_xclean_afdb_pdb/batch_manifest_train_v2.json (n=5000, max_size=256)
+
+[xclean pdb_train max_size=256] /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_xclean_pdb_afdb
+  eligible (length<=max_size): 273771 / 425100
+  wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_xclean_pdb_afdb/batch_manifest_train_v2.json (n=5000, max_size=256)
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/representation/scripts/paper/plot_repr_quality_over_training.py
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/figures/paper/n256_convergence/repr_quality_over_training.png
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/representation/scripts/paper/plot_leakage_decomp_n256.py
+{'dirty': 2563, 'cleantrain': 3073, 'cleanval': 2362, 'xclean-AFDB': 3369}
+wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/figures/paper/leakage_decomp/n256/pdb/n256_leakage_decomp.png
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/representation/scripts/paper/plot_xclean_pdb_afdb_trained.py
+{'dirty': 2112, 'xclean-PDB': 2312}
+wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/figures/paper/leakage_decomp/n256/afdb/n256_afdb_trained_dirty_vs_xclean_pdb.png
+
+=== Rep-eval propagation done Thu May 28 08:44:47 BST 2026 ===
+All steps succeeded.

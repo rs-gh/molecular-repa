@@ -1,0 +1,201 @@
+=== ext7/ext4 propagation start Sat May 30 17:01:18 BST 2026 ===
+log: /home/sr2173/git/molecular-repa/evaluation/proteina/generation/scripts/.propagate_ext_20260530_170118.log
+
+--- clean_variance_jsonl.py /home/sr2173/git/molecular-repa/evaluation/proteina/generation/results/paper/n256_convergence_pdb/sweep_results.jsonl
+  WARN: 203 metric conflicts across dupes:
+    ('repa_l9_256_per_residue_bs24_2gpu_step1200k', 1200000, 'sde_n0.45', 0)  metric=_res_AFDB_FID
+    ('repa_l9_256_per_residue_bs24_2gpu_step1200k', 1200000, 'sde_n0.45', 0)  metric=_res_AFDB_fJSD_A
+    ('repa_l9_256_per_residue_bs24_2gpu_step1200k', 1200000, 'sde_n0.45', 0)  metric=_res_AFDB_fJSD_C
+    ('repa_l9_256_per_residue_bs24_2gpu_step1200k', 1200000, 'sde_n0.45', 0)  metric=_res_AFDB_fJSD_T
+    ('repa_l9_256_per_residue_bs24_2gpu_step1200k', 1200000, 'sde_n0.45', 0)  metric=_res_PDB_FID
+/home/sr2173/git/molecular-repa/evaluation/proteina/generation/results/paper/n256_convergence_pdb/sweep_results.jsonl
+  input rows         : 179
+  skeleton dropped   : 1
+  duplicates dropped : 5
+  seed backfilled    : 0
+  output rows        : 173
+  -> /home/sr2173/git/molecular-repa/evaluation/proteina/generation/results/paper/n256_convergence_pdb/sweep_results.clean.jsonl
+
+--- clean_variance_jsonl.py /home/sr2173/git/molecular-repa/evaluation/proteina/generation/results/paper/n256_convergence_afdb/sweep_results.jsonl
+/home/sr2173/git/molecular-repa/evaluation/proteina/generation/results/paper/n256_convergence_afdb/sweep_results.jsonl
+  input rows         : 119
+  skeleton dropped   : 5
+  duplicates dropped : 25
+  seed backfilled    : 0
+  output rows        : 89
+  -> /home/sr2173/git/molecular-repa/evaluation/proteina/generation/results/paper/n256_convergence_afdb/sweep_results.clean.jsonl
+
+--- jsonl_to_tsv.py all
+  skipped n512: No ablation blocks for set=n512 in /home/sr2173/git/molecular-repa/evaluation/proteina/generation/results/paper/ablation_blocks.yaml
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n128_paper/n128_paper_tables.tsv  (45 rows × 75 columns across 8 ablation block(s))
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_paper/n256_paper_tables.tsv  (37 rows × 75 columns across 6 ablation block(s))
+
+--- consolidate rep shards: paper_n256_cath_if_dih_convergence_pdb_ext4
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-scatter'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_scatter/_version_cuda.so
+  import torch_geometric.typing
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-cluster'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_cluster/_version_cuda.so
+  import torch_geometric.typing
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-sparse'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_sparse/_convert_cuda.so
+  import torch_geometric.typing
+[config] Loaded profile 'paper_n256_cath_if_dih_convergence_pdb_ext4': {'n_train': 5000, 'n_eval': 3190, 'head_type': 'linear', 'probe_epochs': 8, 'probe_lr': 0.001, 'probe_seed': 42, 'manifest_seed': 42, 'train_manifest_version': 'train_v1', 'eval_manifest_version': 'eval_v1', 'timesteps': '1.0', 'probes': 'cath,inverse_folding,dihedral', 'cath_levels': 'C,A,T', 'cath_min_per_class': 3, 'baselines': 'untrained_proteina,random_gauss,seq_onehot,trained_noise,knn_dist,local_frame', 'max_size': 256, 'output_dir': 'results/paper/n256_convergence_cath_if_dih_pdb', 'baseline_trained_noise_run': 'baseline_256_ep21', 'runs': 'repa_l4_256_per_residue_random_bs24_2gpu_step900k,repa_l4_256_per_residue_random_bs24_2gpu_step1000k,repa_l4_256_per_residue_random_bs24_2gpu_step1100k,repa_l4_256_per_residue_random_bs24_2gpu_step1200k,baseline_256_bs24_2gpu_step1900k,baseline_256_bs24_2gpu_step2000k,baseline_256_bs24_2gpu_step2100k,baseline_256_bs24_2gpu_step2200k,baseline_256_bs24_2gpu_step2300k,baseline_256_bs24_2gpu_step2400k,repa_mpnn_l9_256_per_residue_step1800k,repa_mpnn_l9_256_per_residue_step1900k,repa_mpnn_l9_256_per_residue_step2000k,repa_l9_256_per_residue_bs24_2gpu_step1500k,repa_l9_256_per_residue_bs24_2gpu_step1600k'}
+Consolidated to /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_convergence_cath_if_dih_pdb/pretrained_sweep_results.{csv,json}
+
+--- consolidate rep shards: paper_n256_cath_if_dih_convergence_afdb_ext4
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-scatter'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_scatter/_version_cuda.so
+  import torch_geometric.typing
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-cluster'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_cluster/_version_cuda.so
+  import torch_geometric.typing
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-sparse'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_sparse/_convert_cuda.so
+  import torch_geometric.typing
+[config] Loaded profile 'paper_n256_cath_if_dih_convergence_afdb_ext4': {'n_train': 5000, 'n_eval': 4521, 'head_type': 'linear', 'probe_epochs': 8, 'probe_lr': 0.001, 'probe_seed': 42, 'manifest_seed': 42, 'train_manifest_version': 'train_v1', 'eval_manifest_version': 'eval_v1', 'timesteps': '1.0', 'probes': 'cath,inverse_folding,dihedral', 'cath_levels': 'C,A,T', 'cath_min_per_class': 3, 'baselines': 'untrained_proteina,random_gauss,seq_onehot,trained_noise,knn_dist,local_frame', 'max_size': 256, 'output_dir': 'results/paper/n256_convergence_cath_if_dih_afdb', 'baseline_trained_noise_run': 'baseline_afdb_256_ep20', 'runs': 'repa_l4_afdb_256_random_step200k,repa_l4_afdb_256_random_step400k,repa_l4_afdb_256_random_step500k'}
+Consolidated to /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_convergence_cath_if_dih_afdb/pretrained_sweep_results.{csv,json}
+
+--- consolidate rep shards: paper_n256_cath_if_dih_cleantrain_pdb_ext4
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-scatter'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_scatter/_version_cuda.so
+  import torch_geometric.typing
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-cluster'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_cluster/_version_cuda.so
+  import torch_geometric.typing
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-sparse'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_sparse/_convert_cuda.so
+  import torch_geometric.typing
+[config] Loaded profile 'paper_n256_cath_if_dih_cleantrain_pdb_ext4': {'n_train': 5000, 'n_eval': 3190, 'head_type': 'linear', 'probe_epochs': 8, 'probe_lr': 0.001, 'probe_seed': 42, 'manifest_seed': 42, 'train_manifest_version': 'train_clean_v2', 'eval_manifest_version': 'eval_v1', 'timesteps': '1.0', 'probes': 'cath,inverse_folding,dihedral', 'cath_levels': 'C,A,T', 'cath_min_per_class': 3, 'baselines': 'untrained_proteina,random_gauss,seq_onehot,trained_noise,knn_dist,local_frame', 'max_size': 256, 'output_dir': 'results/paper/n256_convergence_cleantrain_pdb', 'baseline_trained_noise_run': 'baseline_256_bs24_2gpu_step200k', 'runs': 'repa_l4_256_per_residue_random_bs24_2gpu_step900k,repa_l4_256_per_residue_random_bs24_2gpu_step1000k,repa_l4_256_per_residue_random_bs24_2gpu_step1100k,repa_l4_256_per_residue_random_bs24_2gpu_step1200k,baseline_256_bs24_2gpu_step1900k,baseline_256_bs24_2gpu_step2000k,baseline_256_bs24_2gpu_step2100k,baseline_256_bs24_2gpu_step2200k,baseline_256_bs24_2gpu_step2300k,baseline_256_bs24_2gpu_step2400k,repa_mpnn_l9_256_per_residue_step1800k,repa_mpnn_l9_256_per_residue_step1900k,repa_mpnn_l9_256_per_residue_step2000k,repa_l9_256_per_residue_bs24_2gpu_step1500k,repa_l9_256_per_residue_bs24_2gpu_step1600k'}
+[consolidate] dedup: dropped 500 duplicate rows (3823 -> 3323)
+Consolidated to /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_convergence_cleantrain_pdb/pretrained_sweep_results.{csv,json}
+
+--- consolidate rep shards: paper_n256_cath_if_dih_xclean_afdb_pdb_ext4
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-scatter'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_scatter/_version_cuda.so
+  import torch_geometric.typing
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-cluster'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_cluster/_version_cuda.so
+  import torch_geometric.typing
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-sparse'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_sparse/_convert_cuda.so
+  import torch_geometric.typing
+[config] Loaded profile 'paper_n256_cath_if_dih_xclean_afdb_pdb_ext4': {'n_train': 5000, 'n_eval': 325, 'head_type': 'linear', 'probe_epochs': 8, 'probe_lr': 0.001, 'probe_seed': 42, 'manifest_seed': 42, 'train_manifest_version': 'train_v2', 'eval_manifest_version': 'eval_clean_v2', 'timesteps': '1.0', 'probes': 'cath,inverse_folding,dihedral', 'cath_levels': 'C,A,T', 'cath_min_per_class': 3, 'baselines': 'untrained_proteina,random_gauss,seq_onehot,trained_noise,knn_dist,local_frame', 'max_size': 256, 'output_dir': 'results/paper/n256_xclean_afdb_pdb', 'baseline_trained_noise_run': 'baseline_256_bs24_2gpu_step200k', 'runs': 'repa_l4_256_per_residue_random_bs24_2gpu_step900k,repa_l4_256_per_residue_random_bs24_2gpu_step1000k,repa_l4_256_per_residue_random_bs24_2gpu_step1100k,repa_l4_256_per_residue_random_bs24_2gpu_step1200k,baseline_256_bs24_2gpu_step1900k,baseline_256_bs24_2gpu_step2000k,baseline_256_bs24_2gpu_step2100k,baseline_256_bs24_2gpu_step2200k,baseline_256_bs24_2gpu_step2300k,baseline_256_bs24_2gpu_step2400k,repa_mpnn_l9_256_per_residue_step1800k,repa_mpnn_l9_256_per_residue_step1900k,repa_mpnn_l9_256_per_residue_step2000k,repa_l9_256_per_residue_bs24_2gpu_step1500k,repa_l9_256_per_residue_bs24_2gpu_step1600k'}
+[consolidate] dedup: dropped 456 duplicate rows (4119 -> 3663)
+Consolidated to /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_xclean_afdb_pdb/pretrained_sweep_results.{csv,json}
+
+--- consolidate rep shards: paper_n256_cath_if_dih_xclean_pdb_afdb_ext4
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-scatter'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_scatter/_version_cuda.so
+  import torch_geometric.typing
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-cluster'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_cluster/_version_cuda.so
+  import torch_geometric.typing
+/home/sr2173/git/molecular-repa/.venv/lib64/python3.11/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-sparse'. Disabling its usage. Stacktrace: Could not load this library: /home/sr2173/git/molecular-repa/.venv/lib/python3.11/site-packages/torch_sparse/_convert_cuda.so
+  import torch_geometric.typing
+[config] Loaded profile 'paper_n256_cath_if_dih_xclean_pdb_afdb_ext4': {'n_train': 5000, 'n_eval': 62, 'head_type': 'linear', 'probe_epochs': 8, 'probe_lr': 0.001, 'probe_seed': 42, 'manifest_seed': 42, 'train_manifest_version': 'train_v2', 'eval_manifest_version': 'eval_clean_v2', 'timesteps': '1.0', 'probes': 'cath,inverse_folding,dihedral', 'cath_levels': 'C,A,T', 'cath_min_per_class': 3, 'baselines': 'untrained_proteina,random_gauss,seq_onehot,trained_noise,knn_dist,local_frame', 'max_size': 256, 'output_dir': 'results/paper/n256_xclean_pdb_afdb', 'baseline_trained_noise_run': 'baseline_256_bs24_2gpu_step200k', 'runs': 'repa_l4_afdb_256_random_step200k,repa_l4_afdb_256_random_step400k,repa_l4_afdb_256_random_step500k'}
+Consolidated to /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_xclean_pdb_afdb/pretrained_sweep_results.{csv,json}
+
+--- build_clean_manifests_v2.py
+
+[cleantrain max_size=128] /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n128_convergence_cleantrain_pdb
+  total train chains: 425100
+  val-homologous train chains to drop: 227019
+  eligible (clean, length<=max_size): 54918
+  wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n128_convergence_cleantrain_pdb/batch_manifest_train_clean_v2.json (n=5000, max_size=128)
+
+[cleantrain max_size=256] /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_convergence_cleantrain_pdb
+  total train chains: 425100
+  val-homologous train chains to drop: 227019
+  eligible (clean, length<=max_size): 129941
+  wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_convergence_cleantrain_pdb/batch_manifest_train_clean_v2.json (n=5000, max_size=256)
+
+[xclean afdb_train max_size=128] /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n128_xclean_afdb_pdb
+  eligible (length<=max_size): 82855 / 229670
+  wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n128_xclean_afdb_pdb/batch_manifest_train_v2.json (n=5000, max_size=128)
+
+[xclean afdb_train max_size=256] /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_xclean_afdb_pdb
+  eligible (length<=max_size): 229670 / 229670
+  wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_xclean_afdb_pdb/batch_manifest_train_v2.json (n=5000, max_size=256)
+
+[xclean pdb_train max_size=256] /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_xclean_pdb_afdb
+  eligible (length<=max_size): 273771 / 425100
+  wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/results/paper/n256_xclean_pdb_afdb/batch_manifest_train_v2.json (n=5000, max_size=256)
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/generation/scripts/paper/plot_convergence_fid.py
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/single_seed_42/convergence_fid.png
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/generation/scripts/paper/plot_convergence_fid_multi_seed.py
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n128_convergence/multi_seed/convergence_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/multi_seed/convergence_fid.png
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/generation/scripts/paper/plot_convergence_des.py
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/single_seed_42/convergence_des.png
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/generation/scripts/paper/plot_convergence_des_ci.py
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/single_seed_42/convergence_des_ci.png
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/generation/scripts/paper/plot_convergence_des_multi_seed.py
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n128_convergence/multi_seed/convergence_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/multi_seed/convergence_des.png
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/generation/scripts/paper/plot_convergence_quality_multi_seed.py
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n128_convergence/multi_seed/convergence_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/multi_seed/convergence_quality.png
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/generation/scripts/paper/plot_h2h_n256.py
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/baseline_vs_mpnn_l9/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/baseline_vs_mpnn_l9/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/baseline_vs_mpnn_l9/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/baseline_vs_mpnn_l4/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/baseline_vs_mpnn_l4/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/baseline_vs_mpnn_l4/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/baseline_vs_gearnet_l4/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/baseline_vs_gearnet_l4/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/baseline_vs_gearnet_l4/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/baseline_vs_gearnet_l9/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/baseline_vs_gearnet_l9/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/baseline_vs_gearnet_l9/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/baseline_vs_gearnet_l4/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/baseline_vs_gearnet_l4/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/baseline_vs_gearnet_l4/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/baseline_vs_mpnn_l9/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/baseline_vs_mpnn_l9/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/baseline_vs_mpnn_l9/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/layers/gearnet/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/layers/gearnet/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/layers/gearnet/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/layers/mpnn/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/layers/mpnn/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/layers/mpnn/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/layers/gearnet/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/layers/gearnet/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/layers/gearnet/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/layers/mpnn/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/layers/mpnn/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/layers/mpnn/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/encoders/L4/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/encoders/L4/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/encoders/L4/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/encoders/L9/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/encoders/L9/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/pdb/encoders/L9/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/encoders/L4/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/encoders/L4/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/encoders/L4/h2h_quality.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/encoders/L9/h2h_des.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/encoders/L9/h2h_fid.png
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/generation/figures/paper/n256_convergence/h2h/afdb/encoders/L9/h2h_quality.png
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/representation/scripts/paper/plot_repr_quality_over_training.py
+Wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/figures/paper/n256_convergence/repr_quality_over_training.png
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/representation/scripts/paper/plot_leakage_decomp_n256.py
+{'dirty': 3313, 'cleantrain': 3823, 'cleanval': 2362, 'xclean-AFDB': 4119}
+wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/figures/paper/leakage_decomp/n256/pdb/n256_leakage_decomp.png
+
+--- python /home/sr2173/git/molecular-repa/evaluation/proteina/representation/scripts/paper/plot_xclean_pdb_afdb_trained.py
+{'dirty': 2262, 'xclean-PDB': 2462}
+wrote /home/sr2173/git/molecular-repa/evaluation/proteina/representation/figures/paper/leakage_decomp/n256/afdb/n256_afdb_trained_dirty_vs_xclean_pdb.png
+
+--- python /home/sr2173/git/molecular-repa/docs/masters-report/figures/scripts/fig1c_headline_fid_des.py
+Saved /home/sr2173/git/molecular-repa/docs/masters-report/figures/fig01_fid_des_convergence.png
+
+--- python /home/sr2173/git/molecular-repa/docs/masters-report/figures/scripts/fig2_representation.py
+Saved /home/sr2173/git/molecular-repa/docs/masters-report/figures/fig02_representation.png
+
+--- python /home/sr2173/git/molecular-repa/docs/masters-report/figures/scripts/fig4c_gen_vs_rep_combined.py
+/home/sr2173/git/molecular-repa/docs/masters-report/figures/scripts/fig4c_gen_vs_rep_combined.py:104: UserWarning: You passed a edgecolor/edgecolors ('white') for an unfilled marker ('x').  Matplotlib is ignoring the edgecolor in favor of the facecolor.  This behavior may change in the future.
+  ax.scatter(
+/home/sr2173/git/molecular-repa/docs/masters-report/figures/scripts/fig4c_gen_vs_rep_combined.py:140: UserWarning: You passed a edgecolor/edgecolors ('black') for an unfilled marker ('x').  Matplotlib is ignoring the edgecolor in favor of the facecolor.  This behavior may change in the future.
+  ax.scatter(
+Saved /home/sr2173/git/molecular-repa/docs/masters-report/figures/fig04_fid_des_gen_vs_rep.png
+
+=== ext7/ext4 propagation done Sat May 30 17:04:33 BST 2026 ===
+All plot/figure steps succeeded.

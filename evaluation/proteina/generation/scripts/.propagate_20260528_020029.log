@@ -1,0 +1,22 @@
+=== Propagation start Thu May 28 02:00:29 BST 2026 ===
+log: /home/sr2173/git/molecular-repa/evaluation/proteina/generation/scripts/.propagate_20260528_020029.log
+
+--- clean_variance_jsonl.py /home/sr2173/git/molecular-repa/evaluation/proteina/generation/results/variance/n256_afdb_sampler_ablation/sweep_results.jsonl
+Traceback (most recent call last):
+  File "/home/sr2173/git/molecular-repa/evaluation/proteina/generation/scripts/clean_variance_jsonl.py", line 143, in <module>
+    clean(Path(arg))
+  File "/home/sr2173/git/molecular-repa/evaluation/proteina/generation/scripts/clean_variance_jsonl.py", line 61, in clean
+    rows = [json.loads(ln) for ln in in_path.read_text().splitlines() if ln.strip()]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sr2173/git/molecular-repa/evaluation/proteina/generation/scripts/clean_variance_jsonl.py", line 61, in <listcomp>
+    rows = [json.loads(ln) for ln in in_path.read_text().splitlines() if ln.strip()]
+            ^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.11/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.11/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.11/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)

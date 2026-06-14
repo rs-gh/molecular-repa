@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2026.4.15)  15 JUN 2026 00:14
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2026.4.15)  13 JUN 2026 18:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**report-draft.tex
-(./report-draft.tex
+**report-draft-nocomments.tex
+(./report-draft-nocomments.tex
 LaTeX2e <2017-04-15>
 Babel <3.17> and hyphenation patterns for 3 language(s) loaded.
 (/usr/share/texlive/texmf-dist/tex/latex/base/report.cls
@@ -600,25 +600,25 @@ File: pgflibraryarrows.meta.code.tex 2015/05/13 v3.0.1a (rcs-revision 1.13)
 zlibraryfit.code.tex
 File: tikzlibraryfit.code.tex 2013/07/12 v3.0.1a (rcs-revision 1.5)
 )
-No file report-draft.aux.
-\openout1 = `report-draft.aux'.
+No file report-draft-nocomments.aux.
+\openout1 = `report-draft-nocomments.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
 \AtBeginShipoutBox=\box41
-Package hyperref Info: Link coloring OFF on input line 75.
+Package hyperref Info: Link coloring OFF on input line 46.
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
 
@@ -627,13 +627,11 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
 \c@section@level=\count138
 )
-LaTeX Info: Redefining \ref on input line 75.
-LaTeX Info: Redefining \pageref on input line 75.
-LaTeX Info: Redefining \nameref on input line 75.
-
-(./report-draft.out) (./report-draft.out)
+LaTeX Info: Redefining \ref on input line 46.
+LaTeX Info: Redefining \pageref on input line 46.
+LaTeX Info: Redefining \nameref on input line 46.
 \@outlinefile=\write4
-\openout4 = `report-draft.out'.
+\openout4 = `report-draft-nocomments.out'.
 
 
 *geometry* driver: auto-detecting
@@ -701,200 +699,196 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 ABD: EveryShipout initializing macros
-<logo-dcst-colour.pdf, id=256, pagebox=cropbox, 185.69376pt x 70.2625pt>
+<logo-dcst-colour.pdf, id=6, pagebox=cropbox, 185.69376pt x 70.2625pt>
 File: logo-dcst-colour.pdf Graphic file (type pdf)
 <use logo-dcst-colour.pdf>
-Package pdftex.def Info: logo-dcst-colour.pdf  used on input line 85. on input
-line 85.
+Package pdftex.def Info: logo-dcst-colour.pdf  used on input line 54. on input
+line 54.
 Package pdftex.def Info: Requested size: 184.9429pt x 69.98035pt on input line
-85.
+54.
  [1
 
-{/usr/share/texlive/texmf-dist/fonts/map/pdftex/updmap/pdftex.map} <./logo-dcst
--colour.pdf>]
+{/usr/share/texlive/texmf-dist/fonts/map/pdftex/updmap/pdftex.map}]
 
-LaTeX Warning: Reference `lastpage' on page 2 undefined on input line 137.
+LaTeX Warning: Reference `lastpage' on page 2 undefined on input line 104.
 
 
 LaTeX Warning: Reference `firstcontentpage' on page 2 undefined on input line 1
-50.
+15.
 
 
-LaTeX Warning: Reference `lastcontentpage' on page 2 undefined on input line 15
-0.
+LaTeX Warning: Reference `lastcontentpage' on page 2 undefined on input line 11
+5.
 
-LaTeX Font Info:    Try loading font information for U+msa on input line 157.
+LaTeX Font Info:    Try loading font information for U+msa on input line 122.
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 157.
+LaTeX Font Info:    Try loading font information for U+msb on input line 122.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [2] [3
+)
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 156.
 
-] [4
-
-]
-
-Package hyperref Warning: old toc file detected, not used; run LaTeX again.
-
-\tf@toc=\write5
-\openout5 = `report-draft.toc'.
-
-[5
-
-
-]
-Chapter 1.
-
-LaTeX Warning: Citation `DDPM' on page 6 undefined on input line 419.
-
-
-LaTeX Warning: Citation `FlowMatching' on page 6 undefined on input line 419.
-
-
-LaTeX Warning: Citation `Tabasco' on page 6 undefined on input line 419.
-
-
-LaTeX Warning: Citation `RFdiffusion' on page 6 undefined on input line 419.
-
-
-LaTeX Warning: Citation `Chroma' on page 6 undefined on input line 419.
-
-
-LaTeX Warning: Citation `Proteina' on page 6 undefined on input line 419.
-
-
-LaTeX Warning: Citation `MatterGen' on page 6 undefined on input line 419.
-
-
-LaTeX Warning: Citation `LAION5B' on page 6 undefined on input line 419.
-
-
-LaTeX Warning: Citation `Proteina' on page 6 undefined on input line 419.
-
-
-LaTeX Warning: Citation `BronsteinGDL' on page 6 undefined on input line 421.
-
-
-LaTeX Warning: Citation `ThomasTFN' on page 6 undefined on input line 421.
-
-
-LaTeX Warning: Citation `ViT' on page 6 undefined on input line 423.
-
-
-LaTeX Warning: Citation `TokenGT' on page 6 undefined on input line 423.
-
-
-LaTeX Warning: Citation `AlphaFold3' on page 6 undefined on input line 423.
-
-
-LaTeX Warning: Citation `AlphaFold2' on page 6 undefined on input line 423.
-
-
-LaTeX Warning: Citation `Brehmer2024' on page 6 undefined on input line 423.
-
-
-LaTeX Warning: Citation `Tabasco' on page 6 undefined on input line 423.
-
-
-LaTeX Warning: Citation `Proteina' on page 6 undefined on input line 423.
-
-[6
-
-]
-
-LaTeX Warning: Citation `Proteina' on page 7 undefined on input line 425.
-
-
-LaTeX Warning: Citation `AFDB' on page 7 undefined on input line 425.
-
-
-LaTeX Warning: Citation `MGnify' on page 7 undefined on input line 425.
-
-
-LaTeX Warning: Citation `BrocchieriKarlin' on page 7 undefined on input line 42
-5.
-
-
-LaTeX Warning: Citation `REPA' on page 7 undefined on input line 431.
-
-
-LaTeX Warning: Citation `VideoREPA' on page 7 undefined on input line 435.
-
-
-LaTeX Warning: Citation `TARO' on page 7 undefined on input line 435.
-
-
-LaTeX Warning: Citation `REED' on page 7 undefined on input line 435.
-
-
-LaTeX Warning: Citation `BoltzREPA' on page 7 undefined on input line 435.
-
-[7]
-
-LaTeX Warning: Citation `Tabasco' on page 8 undefined on input line 444.
-
-
-LaTeX Warning: Citation `Proteina' on page 8 undefined on input line 444.
-
-
-LaTeX Warning: Citation `SpatialStructure' on page 8 undefined on input line 44
-5.
-
-
-LaTeX Warning: Reference `ch:background' on page 8 undefined on input line 450.
-
-
-
-LaTeX Warning: Reference `ch:evaluation' on page 8 undefined on input line 450.
-
-
-
-LaTeX Warning: Reference `ch:profiling' on page 8 undefined on input line 450.
-
-
-LaTeX Warning: Reference `ch:tabasco-study' on page 8 undefined on input line 4
-50.
-
-
-LaTeX Warning: Reference `ch:proteina-study' on page 8 undefined on input line
-450.
-
-
-LaTeX Warning: Reference `ch:conclusions' on page 8 undefined on input line 450
-.
-
-[8]
-Chapter 2.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 677.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 677.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 156.
+ [2] [3
 
+] [4
+
+]
+\tf@toc=\write5
+\openout5 = `report-draft-nocomments.toc'.
+
+ [5
+
+]
+Chapter 1.
+
+LaTeX Warning: Citation `DDPM' on page 6 undefined on input line 206.
+
+
+LaTeX Warning: Citation `FlowMatching' on page 6 undefined on input line 206.
+
+
+LaTeX Warning: Citation `Tabasco' on page 6 undefined on input line 206.
+
+
+LaTeX Warning: Citation `RFdiffusion' on page 6 undefined on input line 206.
+
+
+LaTeX Warning: Citation `Chroma' on page 6 undefined on input line 206.
+
+
+LaTeX Warning: Citation `Proteina' on page 6 undefined on input line 206.
+
+
+LaTeX Warning: Citation `MatterGen' on page 6 undefined on input line 206.
+
+
+LaTeX Warning: Citation `LAION5B' on page 6 undefined on input line 206.
+
+
+LaTeX Warning: Citation `Proteina' on page 6 undefined on input line 206.
+
+
+LaTeX Warning: Citation `BronsteinGDL' on page 6 undefined on input line 208.
+
+
+LaTeX Warning: Citation `ThomasTFN' on page 6 undefined on input line 208.
+
+
+LaTeX Warning: Citation `ViT' on page 6 undefined on input line 210.
+
+
+LaTeX Warning: Citation `TokenGT' on page 6 undefined on input line 210.
+
+
+LaTeX Warning: Citation `AlphaFold3' on page 6 undefined on input line 210.
+
+
+LaTeX Warning: Citation `AlphaFold2' on page 6 undefined on input line 210.
+
+
+LaTeX Warning: Citation `Brehmer2024' on page 6 undefined on input line 210.
+
+
+LaTeX Warning: Citation `Tabasco' on page 6 undefined on input line 210.
+
+
+LaTeX Warning: Citation `Proteina' on page 6 undefined on input line 210.
+
+[6
+
+]
+
+LaTeX Warning: Citation `Proteina' on page 7 undefined on input line 212.
+
+
+LaTeX Warning: Citation `AFDB' on page 7 undefined on input line 212.
+
+
+LaTeX Warning: Citation `MGnify' on page 7 undefined on input line 212.
+
+
+LaTeX Warning: Citation `BrocchieriKarlin' on page 7 undefined on input line 21
+2.
+
+
+LaTeX Warning: Citation `REPA' on page 7 undefined on input line 218.
+
+
+LaTeX Warning: Citation `VideoREPA' on page 7 undefined on input line 222.
+
+
+LaTeX Warning: Citation `TARO' on page 7 undefined on input line 222.
+
+
+LaTeX Warning: Citation `REED' on page 7 undefined on input line 222.
+
+
+LaTeX Warning: Citation `BoltzREPA' on page 7 undefined on input line 222.
+
+[7]
+
+LaTeX Warning: Citation `Tabasco' on page 8 undefined on input line 231.
+
+
+LaTeX Warning: Citation `Proteina' on page 8 undefined on input line 231.
+
+
+LaTeX Warning: Citation `SpatialStructure' on page 8 undefined on input line 23
+2.
+
+
+LaTeX Warning: Reference `ch:background' on page 8 undefined on input line 237.
+
+
+
+LaTeX Warning: Reference `ch:evaluation' on page 8 undefined on input line 237.
+
+
+
+LaTeX Warning: Reference `ch:profiling' on page 8 undefined on input line 237.
+
+
+LaTeX Warning: Reference `ch:tabasco-study' on page 8 undefined on input line 2
+37.
+
+
+LaTeX Warning: Reference `ch:proteina-study' on page 8 undefined on input line
+237.
+
+
+LaTeX Warning: Reference `ch:conclusions' on page 8 undefined on input line 237
+.
+
+[8]
+Chapter 2.
 
 LaTeX Warning: Reference `sec:flow-matching' on page 9 undefined on input line
-677.
+244.
 
 
-LaTeX Warning: Reference `sec:repa' on page 9 undefined on input line 677.
+LaTeX Warning: Reference `sec:repa' on page 9 undefined on input line 244.
 
 
-LaTeX Warning: Reference `sec:primer' on page 9 undefined on input line 677.
+LaTeX Warning: Reference `sec:primer' on page 9 undefined on input line 244.
 
 
 LaTeX Warning: Reference `sec:molecular-domains' on page 9 undefined on input l
-ine 677.
+ine 244.
 
 
-LaTeX Warning: Citation `FlowMatching' on page 9 undefined on input line 684.
+LaTeX Warning: Citation `FlowMatching' on page 9 undefined on input line 251.
 
 
-LaTeX Warning: Citation `FlowMatching' on page 9 undefined on input line 686.
+LaTeX Warning: Citation `FlowMatching' on page 9 undefined on input line 253.
 
 
 Underfull \vbox (badness 1173) has occurred while \output is active []
@@ -903,123 +897,115 @@ Underfull \vbox (badness 1173) has occurred while \output is active []
 
 ]
 
-LaTeX Warning: Citation `DDPM' on page 10 undefined on input line 692.
+LaTeX Warning: Citation `DDPM' on page 10 undefined on input line 259.
 
 
-LaTeX Warning: Citation `FlowMatching' on page 10 undefined on input line 692.
+LaTeX Warning: Citation `FlowMatching' on page 10 undefined on input line 259.
 
 
-LaTeX Warning: Citation `FMGuide' on page 10 undefined on input line 692.
+LaTeX Warning: Citation `FMGuide' on page 10 undefined on input line 259.
 
 
-LaTeX Warning: Citation `FlowMatching' on page 10 undefined on input line 698.
+LaTeX Warning: Citation `FlowMatching' on page 10 undefined on input line 265.
 
 
-LaTeX Warning: Citation `FMGuide' on page 10 undefined on input line 698.
+LaTeX Warning: Citation `FMGuide' on page 10 undefined on input line 265.
 
 
-Overfull \hbox (20.4376pt too wide) in paragraph at lines 774--775
+Overfull \hbox (20.4376pt too wide) in paragraph at lines 323--324
  [][]
  []
 
 
-LaTeX Warning: Reference `ch:intro' on page 10 undefined on input line 779.
+LaTeX Warning: Reference `ch:intro' on page 10 undefined on input line 328.
 
 
-LaTeX Warning: Citation `REPA' on page 10 undefined on input line 779.
+LaTeX Warning: Citation `REPA' on page 10 undefined on input line 328.
 
 
 LaTeX Warning: Reference `sec:flow-matching' on page 10 undefined on input line
- 779.
+ 328.
 
 [10]
 
 LaTeX Warning: Reference `fig:repa-construction' on page 11 undefined on input
-line 781.
+line 330.
 
 
-LaTeX Warning: Reference `sec:primer' on page 11 undefined on input line 781.
+LaTeX Warning: Reference `sec:primer' on page 11 undefined on input line 330.
 
 
 LaTeX Warning: Reference `sec:flow-matching' on page 11 undefined on input line
- 789.
+ 338.
 
 
 LaTeX Warning: Reference `ch:proteina-study' on page 11 undefined on input line
- 794.
+ 343.
 
 
-LaTeX Warning: Reference `ch:tabasco-study' on page 11 undefined on input line
-800.
+LaTeX Warning: Citation `DiffuseDisperse' on page 11 undefined on input line 35
+2.
 
 
-LaTeX Warning: Reference `ch:proteina-study' on page 11 undefined on input line
- 800.
+LaTeX Warning: Citation `REED' on page 11 undefined on input line 352.
+
+
+LaTeX Warning: Citation `VideoREPA' on page 11 undefined on input line 352.
+
+
+LaTeX Warning: Citation `TARO' on page 11 undefined on input line 352.
+
+
+LaTeX Warning: Citation `CrystalREPA' on page 11 undefined on input line 352.
+
+
+LaTeX Warning: Citation `BoltzREPA' on page 11 undefined on input line 352.
 
 [11]
 
-LaTeX Warning: Citation `DiffuseDisperse' on page 12 undefined on input line 80
-3.
+LaTeX Warning: Citation `REPA' on page 12 undefined on input line 358.
 
 
-LaTeX Warning: Citation `REED' on page 12 undefined on input line 803.
+LaTeX Warning: Citation `SpatialStructure' on page 12 undefined on input line 3
+58.
 
 
-LaTeX Warning: Citation `VideoREPA' on page 12 undefined on input line 803.
-
-
-LaTeX Warning: Citation `TARO' on page 12 undefined on input line 803.
-
-
-LaTeX Warning: Citation `CrystalREPA' on page 12 undefined on input line 803.
-
-
-LaTeX Warning: Citation `BoltzREPA' on page 12 undefined on input line 803.
-
-
-LaTeX Warning: Citation `REPA' on page 12 undefined on input line 819.
-
-
-LaTeX Warning: Citation `SpatialStructure' on page 12 undefined on input line 8
-19.
-
-
-LaTeX Warning: Reference `ch:profiling' on page 12 undefined on input line 819.
+LaTeX Warning: Reference `ch:profiling' on page 12 undefined on input line 358.
 
 
 
-LaTeX Warning: Citation `Schneider2018' on page 12 undefined on input line 861.
+LaTeX Warning: Citation `Schneider2018' on page 12 undefined on input line 390.
 
 
 
 LaTeX Warning: Reference `fig:design-cycle' on page 12 undefined on input line
-861.
+390.
 
 
-LaTeX Warning: Citation `PoseBusters' on page 12 undefined on input line 863.
+LaTeX Warning: Citation `PoseBusters' on page 12 undefined on input line 392.
 
 
-LaTeX Warning: Citation `QED' on page 12 undefined on input line 863.
+LaTeX Warning: Citation `QED' on page 12 undefined on input line 392.
 
 
-LaTeX Warning: Citation `Proteina' on page 12 undefined on input line 863.
+LaTeX Warning: Citation `Proteina' on page 12 undefined on input line 392.
 
 [12]
 
-LaTeX Warning: Reference `ch:evaluation' on page 13 undefined on input line 865
+LaTeX Warning: Reference `ch:evaluation' on page 13 undefined on input line 394
 .
 
 
-LaTeX Warning: Citation `Tabasco' on page 13 undefined on input line 870.
+LaTeX Warning: Citation `Tabasco' on page 13 undefined on input line 399.
 
 
-LaTeX Warning: Citation `Proteina' on page 13 undefined on input line 870.
+LaTeX Warning: Citation `Proteina' on page 13 undefined on input line 399.
 
 
-LaTeX Warning: Reference `fig:domains' on page 13 undefined on input line 870.
+LaTeX Warning: Reference `fig:domains' on page 13 undefined on input line 399.
 
 (./figures/fig_ch2_domains.tex
-<figures/fig_ch2_domains.png, id=345, 527.571pt x 267.399pt>
+<figures/fig_ch2_domains.png, id=95, 527.571pt x 267.399pt>
 File: figures/fig_ch2_domains.png Graphic file (type png)
 <use figures/fig_ch2_domains.png>
 Package pdftex.def Info: figures/fig_ch2_domains.png  used on input line 5. on
@@ -1028,194 +1014,195 @@ Package pdftex.def Info: Requested size: 409.71692pt x 207.66458pt on input lin
 e 5.
 )
 
-LaTeX Warning: Citation `EQGATdiff' on page 13 undefined on input line 874.
+LaTeX Warning: Citation `EQGATdiff' on page 13 undefined on input line 403.
 
 
-LaTeX Warning: Citation `MiDi' on page 13 undefined on input line 874.
+LaTeX Warning: Citation `MiDi' on page 13 undefined on input line 403.
 
 
-LaTeX Warning: Citation `SemlaFlow' on page 13 undefined on input line 874.
+LaTeX Warning: Citation `SemlaFlow' on page 13 undefined on input line 403.
 
 
-LaTeX Warning: Citation `AlphaFold3' on page 13 undefined on input line 874.
+LaTeX Warning: Citation `AlphaFold3' on page 13 undefined on input line 403.
 
 
-LaTeX Warning: Citation `RFdiffusion' on page 13 undefined on input line 874.
+LaTeX Warning: Citation `RFdiffusion' on page 13 undefined on input line 403.
 
 
-LaTeX Warning: Citation `FrameFlow' on page 13 undefined on input line 874.
+LaTeX Warning: Citation `FrameFlow' on page 13 undefined on input line 403.
 
 
-LaTeX Warning: Citation `Genie' on page 13 undefined on input line 874.
+LaTeX Warning: Citation `Genie' on page 13 undefined on input line 403.
 
 
-LaTeX Warning: Citation `NIHSmallMolGuide' on page 13 undefined on input line 8
-83.
+LaTeX Warning: Citation `NIHSmallMolGuide' on page 13 undefined on input line 4
+07.
+
+[13]
+
+LaTeX Warning: Citation `Tabasco' on page 14 undefined on input line 409.
 
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [13 <./figures/fig_ch2_domains.png>]
-
-LaTeX Warning: Citation `Tabasco' on page 14 undefined on input line 885.
+LaTeX Warning: Citation `GEOMdrugs' on page 14 undefined on input line 409.
 
 
-LaTeX Warning: Citation `GEOMdrugs' on page 14 undefined on input line 885.
+LaTeX Warning: Citation `EQGATdiff' on page 14 undefined on input line 411.
 
 
-LaTeX Warning: Citation `EQGATdiff' on page 14 undefined on input line 887.
+LaTeX Warning: Citation `MiDi' on page 14 undefined on input line 411.
 
 
-LaTeX Warning: Citation `MiDi' on page 14 undefined on input line 887.
+LaTeX Warning: Citation `SemlaFlow' on page 14 undefined on input line 411.
 
 
-LaTeX Warning: Citation `SemlaFlow' on page 14 undefined on input line 887.
-
-
-LaTeX Warning: Citation `HitchhikersGuide' on page 14 undefined on input line 8
-87.
+LaTeX Warning: Citation `HitchhikersGuide' on page 14 undefined on input line 4
+11.
 
 
 LaTeX Warning: Citation `MoleculeDiffusionSurvey' on page 14 undefined on input
- line 887.
+ line 411.
 
 
 LaTeX Warning: Citation `BritannicaProtein' on page 14 undefined on input line
-898.
+415.
 
 
-LaTeX Warning: Citation `DSSP' on page 14 undefined on input line 900.
+LaTeX Warning: Citation `CATH' on page 14 undefined on input line 417.
 
 
-LaTeX Warning: Citation `CATH' on page 14 undefined on input line 900.
+LaTeX Warning: Citation `ProteinMPNN' on page 14 undefined on input line 419.
 
 
-LaTeX Warning: Citation `ProteinMPNN' on page 14 undefined on input line 902.
+LaTeX Warning: Citation `Proteina' on page 14 undefined on input line 419.
 
 
-LaTeX Warning: Citation `Proteina' on page 14 undefined on input line 902.
+LaTeX Warning: Citation `AFDB' on page 14 undefined on input line 419.
 
 
-LaTeX Warning: Citation `AFDB' on page 14 undefined on input line 902.
-
-
-LaTeX Warning: Citation `ESM2' on page 14 undefined on input line 904.
+LaTeX Warning: Citation `ESM2' on page 14 undefined on input line 421.
 
 
 LaTeX Warning: Citation `NotinProteinDesign' on page 14 undefined on input line
- 904.
-
-[14]
-
-LaTeX Warning: Reference `sec:contributions' on page 15 undefined on input line
- 918.
+ 421.
 
 
-LaTeX Warning: Citation `REED' on page 15 undefined on input line 918.
+LaTeX Warning: Reference `sec:contributions' on page 14 undefined on input line
+ 427.
 
 
-LaTeX Warning: Citation `BoltzREPA' on page 15 undefined on input line 918.
+LaTeX Warning: Citation `REED' on page 14 undefined on input line 427.
 
 
-LaTeX Warning: Reference `sec:encoder-characterisation' on page 15 undefined on
- input line 918.
+LaTeX Warning: Citation `BoltzREPA' on page 14 undefined on input line 427.
 
 
-LaTeX Warning: Reference `ch:profiling' on page 15 undefined on input line 918.
+LaTeX Warning: Reference `sec:encoder-characterisation' on page 14 undefined on
+ input line 427.
+
+
+LaTeX Warning: Reference `ch:profiling' on page 14 undefined on input line 427.
 
 
 
-LaTeX Warning: Reference `ch:proteina-study' on page 15 undefined on input line
- 918.
+LaTeX Warning: Reference `ch:proteina-study' on page 14 undefined on input line
+ 427.
 
-[15]
+[14] [15]
 Chapter 3.
 
 LaTeX Warning: Reference `tab:eval-smallmol' on page 16 undefined on input line
- 1084.
+ 434.
 
 
 LaTeX Warning: Reference `tab:eval-protein' on page 16 undefined on input line
-1084.
+434.
 
 
-LaTeX Warning: Reference `sec:primer' on page 16 undefined on input line 1089.
+LaTeX Warning: Reference `ch:proteina-study' on page 16 undefined on input line
+ 434.
 
 
-Overfull \hbox (1.82362pt too wide) in paragraph at lines 1091--1091
+LaTeX Warning: Reference `sec:protein-tradeoffs' on page 16 undefined on input
+line 434.
+
+
+LaTeX Warning: Reference `sec:primer' on page 16 undefined on input line 439.
+
+
+Overfull \hbox (1.82362pt too wide) in paragraph at lines 441--441
 |[]\OT1/cmr/bx/n/17.28 Representation and gen-er-a-tion are multi-factorial
  []
 
 
 LaTeX Warning: Reference `sec:flow-matching' on page 16 undefined on input line
- 1099.
+ 445.
 
 
-LaTeX Warning: Citation `FID' on page 16 undefined on input line 1101.
+LaTeX Warning: Citation `FID' on page 16 undefined on input line 447.
 
 [16
 
 ]
 
-LaTeX Warning: Reference `ch:profiling' on page 17 undefined on input line 1105
-.
+LaTeX Warning: Reference `ch:profiling' on page 17 undefined on input line 451.
 
 
-LaTeX Warning: Reference `sec:repa' on page 17 undefined on input line 1107.
+
+LaTeX Warning: Reference `sec:repa' on page 17 undefined on input line 453.
 
 
-LaTeX Warning: Citation `REPA' on page 17 undefined on input line 1112.
+LaTeX Warning: Citation `REPA' on page 17 undefined on input line 458.
 
 
-LaTeX Warning: Reference `ch:profiling' on page 17 undefined on input line 1112
-.
+LaTeX Warning: Reference `ch:profiling' on page 17 undefined on input line 458.
+
 
 
 LaTeX Warning: Reference `ch:tabasco-study' on page 17 undefined on input line
-1112.
+458.
 
 
 LaTeX Warning: Reference `ch:proteina-study' on page 17 undefined on input line
- 1112.
+ 458.
 
 
 LaTeX Warning: Reference `sec:eval-small-mol' on page 17 undefined on input lin
-e 1116.
+e 462.
 
 
 LaTeX Warning: Reference `sec:eval-protein' on page 17 undefined on input line
-1116.
+462.
 
 [17]
 
 LaTeX Warning: Reference `tab:eval-smallmol' on page 18 undefined on input line
- 1121.
+ 467.
 
 
-LaTeX Warning: Citation `Tabasco' on page 18 undefined on input line 1121.
+LaTeX Warning: Citation `Tabasco' on page 18 undefined on input line 467.
 
 
-LaTeX Warning: Citation `EQGATdiff' on page 18 undefined on input line 1121.
+LaTeX Warning: Citation `EQGATdiff' on page 18 undefined on input line 467.
 
 
-LaTeX Warning: Citation `SemlaFlow' on page 18 undefined on input line 1121.
+LaTeX Warning: Citation `SemlaFlow' on page 18 undefined on input line 467.
 
 
-LaTeX Warning: Reference `sec:eval-probe' on page 18 undefined on input line 11
-23.
+LaTeX Warning: Reference `sec:eval-probe' on page 18 undefined on input line 46
+9.
 
 
-LaTeX Warning: Citation `RDKit' on page 18 undefined on input line 1123.
+LaTeX Warning: Citation `RDKit' on page 18 undefined on input line 469.
 
 
-LaTeX Warning: Citation `FCD' on page 18 undefined on input line 1125.
+LaTeX Warning: Citation `FCD' on page 18 undefined on input line 471.
 
 
-LaTeX Warning: Citation `FID' on page 18 undefined on input line 1125.
+LaTeX Warning: Citation `FID' on page 18 undefined on input line 471.
 
 
 LaTeX Warning: Reference `ch:tabasco-study' on page 18 undefined on input line
-1125.
+471.
 
 (./tables/table_eval_smallmol.tex
 
@@ -1252,12 +1239,12 @@ LaTeX Warning: Citation `SemlaFlow' on page 18 undefined on input line 32.
 
 )
 
-LaTeX Warning: Reference `ch:background' on page 18 undefined on input line 113
-2.
+LaTeX Warning: Reference `ch:background' on page 18 undefined on input line 478
+.
 
 
 LaTeX Warning: Reference `tab:eval-protein' on page 18 undefined on input line
-1132.
+478.
 
 (./tables/table_eval_protein.tex
 
@@ -1280,85 +1267,80 @@ LaTeX Warning: Citation `PlatonicRep' on page 18 undefined on input line 16.
 
 
 LaTeX Warning: Reference `ch:proteina-study' on page 18 undefined on input line
- 40.
+ 41.
 
 
 LaTeX Warning: Reference `tab:proteina-13m' on page 18 undefined on input line
-40.
+41.
 
 
 LaTeX Warning: Reference `tab:proteina-concentration' on page 18 undefined on i
-nput line 40.
+nput line 41.
 
 
 LaTeX Warning: Reference `ch:proteina-study' on page 18 undefined on input line
- 40.
+ 41.
 
 
 LaTeX Warning: Reference `tab:proteina-13m' on page 18 undefined on input line
-40.
+41.
 
 
 LaTeX Warning: Reference `tab:proteina-concentration' on page 18 undefined on i
-nput line 40.
+nput line 41.
 
 )
 
-LaTeX Warning: Reference `sec:eval-probe' on page 18 undefined on input line 11
-36.
+LaTeX Warning: Reference `sec:eval-probe' on page 18 undefined on input line 48
+2.
 
 
-LaTeX Warning: Citation `Ingraham2019' on page 18 undefined on input line 1136.
+LaTeX Warning: Citation `Ingraham2019' on page 18 undefined on input line 482.
 
 
-
-LaTeX Warning: Citation `ProteinWorkshop' on page 18 undefined on input line 11
-36.
-
-
-LaTeX Warning: Citation `ProteinWorkshop' on page 18 undefined on input line 11
-36.
+LaTeX Warning: Citation `ProteinWorkshop' on page 18 undefined on input line 48
+2.
 
 
-LaTeX Warning: Citation `PlatonicRep' on page 18 undefined on input line 1138.
+LaTeX Warning: Citation `ProteinWorkshop' on page 18 undefined on input line 48
+2.
 
 
-LaTeX Warning: Citation `REPA' on page 18 undefined on input line 1138.
+LaTeX Warning: Citation `PlatonicRep' on page 18 undefined on input line 484.
 
 
-LaTeX Warning: Citation `BoltzREPA' on page 18 undefined on input line 1138.
+LaTeX Warning: Citation `REPA' on page 18 undefined on input line 484.
 
 
-LaTeX Warning: Citation `Proteina' on page 18 undefined on input line 1140.
+LaTeX Warning: Citation `BoltzREPA' on page 18 undefined on input line 484.
+
+
+LaTeX Warning: Citation `Proteina' on page 18 undefined on input line 486.
 
 [18]
 
-LaTeX Warning: Reference `sec:protein' on page 19 undefined on input line 1142.
+LaTeX Warning: Reference `sec:protein' on page 19 undefined on input line 488.
 
 
-
-LaTeX Warning: Citation `ProteinMPNN' on page 19 undefined on input line 1142.
-
-
-LaTeX Warning: Citation `ESM2' on page 19 undefined on input line 1142.
+LaTeX Warning: Citation `ProteinMPNN' on page 19 undefined on input line 488.
 
 
 LaTeX Warning: Reference `fig:designability' on page 19 undefined on input line
- 1142.
+ 488.
 
 
-LaTeX Warning: Citation `AlphaFold2' on page 19 undefined on input line 1144.
+LaTeX Warning: Citation `AlphaFold2' on page 19 undefined on input line 490.
 
 
 LaTeX Warning: Reference `ch:proteina-study' on page 19 undefined on input line
- 1144.
+ 490.
 
-[19]
+[19] [20]
 
-LaTeX Warning: Reference `app:ssjsd' on page 20 undefined on input line 1146.
+LaTeX Warning: Reference `app:ssjsd' on page 21 undefined on input line 492.
 
-[20] (./figures/fig_ch3_designability.tex
-<figures/fig_ch3_designability.png, id=386, 679.338pt x 361.35pt>
+(./figures/fig_ch3_designability.tex
+<figures/fig_ch3_designability.png, id=144, 679.338pt x 361.35pt>
 File: figures/fig_ch3_designability.png Graphic file (type png)
 <use figures/fig_ch3_designability.png>
 Package pdftex.def Info: figures/fig_ch3_designability.png  used on input line
@@ -1382,80 +1364,79 @@ es-ignable ones (top,
 
 )
 
-LaTeX Warning: Citation `Proteina' on page 21 undefined on input line 1150.
+LaTeX Warning: Citation `Proteina' on page 21 undefined on input line 496.
 
 
-LaTeX Warning: Citation `GearNet' on page 21 undefined on input line 1150.
+LaTeX Warning: Citation `GearNet' on page 21 undefined on input line 496.
 
 
 LaTeX Warning: Reference `ch:proteina-study' on page 21 undefined on input line
- 1150.
+ 496.
 
 
 LaTeX Warning: Reference `sec:proteina-convergence' on page 21 undefined on inp
-ut line 1150.
+ut line 496.
+
+[21]
+
+LaTeX Warning: Citation `PSEA' on page 22 undefined on input line 498.
 
 
-LaTeX Warning: Citation `PSEA' on page 21 undefined on input line 1152.
+LaTeX Warning: Citation `Biotite' on page 22 undefined on input line 498.
 
 
-LaTeX Warning: Citation `Biotite' on page 21 undefined on input line 1152.
+LaTeX Warning: Reference `app:ssjsd' on page 22 undefined on input line 498.
 
-
-LaTeX Warning: Reference `app:ssjsd' on page 21 undefined on input line 1152.
-
-[21 <./figures/fig_ch3_designability.png>]
 
 LaTeX Warning: Reference `ch:proteina-study' on page 22 undefined on input line
- 1154.
+ 500.
 
 
-LaTeX Warning: Citation `Proteina' on page 22 undefined on input line 1154.
+LaTeX Warning: Citation `Proteina' on page 22 undefined on input line 500.
 
 
-LaTeX Warning: Reference `sec:protein' on page 22 undefined on input line 1154.
+LaTeX Warning: Reference `sec:protein' on page 22 undefined on input line 500.
 
 
+LaTeX Warning: Citation `Proteina' on page 22 undefined on input line 500.
 
-LaTeX Warning: Citation `Proteina' on page 22 undefined on input line 1154.
 
-
-LaTeX Warning: Citation `Proteina' on page 22 undefined on input line 1161.
+LaTeX Warning: Citation `Proteina' on page 22 undefined on input line 507.
 
 [22]
 
-LaTeX Warning: Reference `ch:profiling' on page 23 undefined on input line 1165
-.
+LaTeX Warning: Reference `ch:profiling' on page 23 undefined on input line 511.
+
 
 
 LaTeX Warning: Reference `ch:tabasco-study' on page 23 undefined on input line
-1165.
+511.
 
 
 LaTeX Warning: Reference `ch:proteina-study' on page 23 undefined on input line
- 1165.
+ 511.
 
 [23]
 Chapter 4.
 
 LaTeX Warning: Reference `sec:encoder-characterisation' on page 24 undefined on
- input line 1210.
+ input line 517.
 
 
 LaTeX Warning: Reference `sec:eval-multifactorial' on page 24 undefined on inpu
-t line 1212.
+t line 519.
 
 
 LaTeX Warning: Reference `ch:tabasco-study' on page 24 undefined on input line
-1214.
+521.
 
 
 LaTeX Warning: Reference `ch:proteina-study' on page 24 undefined on input line
- 1214.
+ 521.
 
 
 LaTeX Warning: Reference `tab:profiling-diagnostics' on page 24 undefined on in
-put line 1219.
+put line 526.
 
 (./tables/table_profiling_diagnostics.tex
 
@@ -1466,49 +1447,49 @@ LaTeX Warning: Citation `RankMe' on page 24 undefined on input line 22.
 ]
 
 LaTeX Warning: Reference `sec:profiling-protein' on page 25 undefined on input
-line 1227.
+line 534.
 
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [25]
 
-LaTeX Warning: Reference `sec:repa' on page 26 undefined on input line 1235.
+LaTeX Warning: Reference `sec:repa' on page 26 undefined on input line 542.
 
 
 LaTeX Warning: Reference `tab:profiling-diagnostics' on page 26 undefined on in
-put line 1235.
+put line 542.
 
 
 LaTeX Warning: Reference `sec:profiling-mol' on page 26 undefined on input line
- 1246.
+ 553.
 
 
 LaTeX Warning: Reference `sec:profiling-protein' on page 26 undefined on input
-line 1246.
+line 553.
 
 
 LaTeX Warning: Reference `sec:profiling-predictions' on page 26 undefined on in
-put line 1246.
+put line 553.
 
 (./tables/table_profiling_mol.tex)
 
 LaTeX Warning: Reference `tab:profiling-mol' on page 26 undefined on input line
- 1253.
+ 560.
 
 
 LaTeX Warning: Reference `app:profiling-full' on page 26 undefined on input lin
-e 1253.
+e 560.
 
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [26]
 
-LaTeX Warning: Citation `CheMeleon' on page 27 undefined on input line 1255.
+LaTeX Warning: Citation `CheMeleon' on page 27 undefined on input line 562.
 
 
-LaTeX Warning: Citation `MACE' on page 27 undefined on input line 1257.
+LaTeX Warning: Citation `MACE' on page 27 undefined on input line 564.
 
 (./tables/table_profiling_protein.tex
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <8> not available
@@ -1523,80 +1504,83 @@ LaTeX Warning: Citation `RankMe' on page 27 undefined on input line 22.
 )
 
 LaTeX Warning: Reference `tab:profiling-protein' on page 27 undefined on input
-line 1264.
+line 571.
 
 
 LaTeX Warning: Reference `app:profiling-full' on page 27 undefined on input lin
-e 1264.
+e 571.
 
 
-LaTeX Warning: Citation `GearNet' on page 27 undefined on input line 1266.
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [27]
+
+LaTeX Warning: Citation `GearNet' on page 28 undefined on input line 573.
 
 
-LaTeX Warning: Citation `Proteina' on page 27 undefined on input line 1266.
+LaTeX Warning: Citation `Proteina' on page 28 undefined on input line 573.
 
 
-LaTeX Warning: Citation `ESM2' on page 27 undefined on input line 1268.
-
-[27]
-
-LaTeX Warning: Citation `ProteinMPNN' on page 28 undefined on input line 1270.
+LaTeX Warning: Citation `ESM2' on page 28 undefined on input line 575.
 
 
-LaTeX Warning: Citation `GearNet' on page 28 undefined on input line 1272.
+LaTeX Warning: Citation `ProteinMPNN' on page 28 undefined on input line 577.
 
 
-LaTeX Warning: Citation `ProteinWorkshop' on page 28 undefined on input line 12
-72.
+LaTeX Warning: Citation `GearNet' on page 28 undefined on input line 579.
 
 
-LaTeX Warning: Citation `GearNet' on page 28 undefined on input line 1272.
+LaTeX Warning: Citation `ProteinWorkshop' on page 28 undefined on input line 57
+9.
+
+
+LaTeX Warning: Citation `GearNet' on page 28 undefined on input line 579.
 
 
 LaTeX Warning: Reference `ch:tabasco-study' on page 28 undefined on input line
-1279.
+586.
 
 
 LaTeX Warning: Reference `ch:proteina-study' on page 28 undefined on input line
- 1279.
+ 586.
 
 [28]
 Chapter 5.
 
-LaTeX Warning: Reference `ch:profiling' on page 29 undefined on input line 1312
-.
+LaTeX Warning: Reference `ch:profiling' on page 29 undefined on input line 592.
 
 
-LaTeX Warning: Citation `Tabasco' on page 29 undefined on input line 1312.
+
+LaTeX Warning: Citation `Tabasco' on page 29 undefined on input line 592.
 
 
 LaTeX Warning: Reference `sec:tabasco-diagnosis' on page 29 undefined on input
-line 1314.
+line 594.
 
 
 LaTeX Warning: Reference `ch:proteina-study' on page 29 undefined on input line
- 1314.
+ 594.
 
 
-LaTeX Warning: Citation `GEOMdrugs' on page 29 undefined on input line 1322.
+LaTeX Warning: Citation `GEOMdrugs' on page 29 undefined on input line 602.
 
 
-LaTeX Warning: Reference `sec:small-mol' on page 29 undefined on input line 132
-2.
+LaTeX Warning: Reference `sec:small-mol' on page 29 undefined on input line 602
+.
 
 
-LaTeX Warning: Reference `sec:small-mol' on page 29 undefined on input line 132
-7.
+LaTeX Warning: Reference `sec:small-mol' on page 29 undefined on input line 607
+.
 
 
-LaTeX Warning: Reference `sec:repa' on page 29 undefined on input line 1327.
+LaTeX Warning: Reference `sec:repa' on page 29 undefined on input line 607.
 
 
 LaTeX Warning: Reference `fig:tabasco-setup' on page 29 undefined on input line
- 1327.
+ 607.
 
 
-Overfull \hbox (6.3277pt too wide) in paragraph at lines 1327--1328
+Overfull \hbox (6.3277pt too wide) in paragraph at lines 607--608
 \OT1/cmr/m/n/12 The base-line is the un-mod-i-fied Tabasco flow-matching trans-
 former (\OMS/cmsy/m/n/12 x[]\OT1/cmr/m/n/12 ): a 3.7M-parameter
  []
@@ -1605,17 +1589,17 @@ former (\OMS/cmsy/m/n/12 x[]\OT1/cmr/m/n/12 ): a 3.7M-parameter
 
 ] (./figures/fig_ch5_model.tex)
 
-LaTeX Warning: Reference `ch:profiling' on page 30 undefined on input line 1331
-.
+LaTeX Warning: Reference `ch:profiling' on page 30 undefined on input line 611.
 
 
-LaTeX Warning: Citation `CheMeleon' on page 30 undefined on input line 1331.
+
+LaTeX Warning: Citation `CheMeleon' on page 30 undefined on input line 611.
 
 
-LaTeX Warning: Citation `MACE' on page 30 undefined on input line 1331.
+LaTeX Warning: Citation `MACE' on page 30 undefined on input line 611.
 
 
-LaTeX Warning: Citation `MACEOFF' on page 30 undefined on input line 1331.
+LaTeX Warning: Citation `MACEOFF' on page 30 undefined on input line 611.
 
 (./tables/table_tabasco_setup.tex
 
@@ -1628,43 +1612,43 @@ line 34.
 
 )
 
-LaTeX Warning: Reference `ch:evaluation' on page 30 undefined on input line 133
-8.
+LaTeX Warning: Reference `ch:evaluation' on page 30 undefined on input line 618
+.
 
 
 LaTeX Warning: Reference `tab:eval-smallmol' on page 30 undefined on input line
- 1338.
+ 618.
 
 
-LaTeX Warning: Citation `RDKit' on page 30 undefined on input line 1338.
+LaTeX Warning: Citation `RDKit' on page 30 undefined on input line 618.
 
 
 LaTeX Warning: Reference `sec:tabasco-diagnosis' on page 30 undefined on input
-line 1338.
+line 618.
 
 
-LaTeX Warning: Reference `ch:evaluation' on page 30 undefined on input line 134
-2.
+LaTeX Warning: Reference `ch:evaluation' on page 30 undefined on input line 622
+.
 
 
 LaTeX Warning: Reference `tab:eval-smallmol' on page 30 undefined on input line
- 1342.
+ 622.
 
 
 LaTeX Warning: Reference `tab:tabasco-setup' on page 30 undefined on input line
- 1344.
+ 624.
 
 [30]
 
-LaTeX Warning: Reference `tab:tabasco-gen' on page 31 undefined on input line 1
-349.
+LaTeX Warning: Reference `tab:tabasco-gen' on page 31 undefined on input line 6
+29.
 
 
 LaTeX Warning: Reference `fig:tabasco-gallery' on page 31 undefined on input li
-ne 1349.
+ne 629.
 
 (./figures/fig_ch5_gallery.tex
-<figures/fig_ch5_gallery.png, id=435, 615.37904pt x 331.35796pt>
+<figures/fig_ch5_gallery.png, id=203, 615.37904pt x 331.35796pt>
 File: figures/fig_ch5_gallery.png Graphic file (type png)
 <use figures/fig_ch5_gallery.png>
 Package pdftex.def Info: figures/fig_ch5_gallery.png  used on input line 5. on
@@ -1682,21 +1666,21 @@ line 6.
 
 )
 
-LaTeX Warning: Reference `tab:tabasco-gen' on page 31 undefined on input line 1
-353.
+LaTeX Warning: Reference `tab:tabasco-gen' on page 31 undefined on input line 6
+33.
 
 
-LaTeX Warning: Reference `sec:repa' on page 31 undefined on input line 1355.
+LaTeX Warning: Reference `sec:repa' on page 31 undefined on input line 635.
 
 
-LaTeX Warning: Citation `REPA' on page 31 undefined on input line 1355.
+LaTeX Warning: Citation `REPA' on page 31 undefined on input line 635.
 
 
 LaTeX Warning: Reference `fig:tabasco-curves' on page 31 undefined on input lin
-e 1355.
+e 635.
 
 [31] (./figures/fig5_1_tabasco_curves.tex
-<figures/fig5_1_tabasco_curves.png, id=442, 781.2387pt x 239.2137pt>
+<figures/fig5_1_tabasco_curves.png, id=211, 781.2387pt x 239.2137pt>
 File: figures/fig5_1_tabasco_curves.png Graphic file (type png)
 <use figures/fig5_1_tabasco_curves.png>
 Package pdftex.def Info: figures/fig5_1_tabasco_curves.png  used on input line
@@ -1731,19 +1715,19 @@ ne 16.
 
 )
 
-LaTeX Warning: Citation `REPA' on page 32 undefined on input line 1370.
+LaTeX Warning: Citation `REPA' on page 32 undefined on input line 646.
 
 
-Underfull \vbox (badness 6141) has occurred while \output is active []
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [32 <./figures/fig_ch5_gallery.png> <./figures/fig5_1_tabasco_curves.png>]
+ [32]
 
 LaTeX Warning: Reference `sec:tabasco-results' on page 33 undefined on input li
-ne 1372.
+ne 648.
 
 
 LaTeX Warning: Reference `tab:tabasco-probe' on page 33 undefined on input line
- 1374.
+ 650.
 
 (./tables/table_tabasco_probe.tex
 
@@ -1754,41 +1738,41 @@ ne 21.
 LaTeX Warning: Reference `sec:tabasco-metrics' on page 33 undefined on input li
 ne 21.
 
-)
+[33])
 
-LaTeX Warning: Reference `tab:tabasco-gen' on page 33 undefined on input line 1
-380.
+LaTeX Warning: Reference `tab:tabasco-gen' on page 34 undefined on input line 6
+56.
 
 
-LaTeX Warning: Reference `tab:tabasco-probe' on page 33 undefined on input line
- 1380.
+LaTeX Warning: Reference `tab:tabasco-probe' on page 34 undefined on input line
+ 656.
 
-[33] [34]
+[34]
 Chapter 6.
 
 LaTeX Warning: Reference `ch:tabasco-study' on page 35 undefined on input line
-1572.
+666.
 
 
-LaTeX Warning: Citation `Tabasco' on page 35 undefined on input line 1572.
+LaTeX Warning: Citation `Tabasco' on page 35 undefined on input line 666.
 
 
-LaTeX Warning: Citation `Proteina' on page 35 undefined on input line 1572.
+LaTeX Warning: Citation `Proteina' on page 35 undefined on input line 666.
 
 
 LaTeX Warning: Reference `fig:proteina-fid' on page 35 undefined on input line
-1574.
+668.
 
 
 LaTeX Warning: Reference `sec:proteina-datasets' on page 35 undefined on input
-line 1574.
+line 668.
 
 
 LaTeX Warning: Reference `sec:proteina-datasets' on page 35 undefined on input
-line 1580.
+line 672.
 
 (./figures/fig01_fid_des_convergence.tex
-<figures/fig01_fid_des_convergence.png, id=461, 931.8012pt x 661.5114pt>
+<figures/fig01_fid_des_convergence.png, id=229, 931.8012pt x 661.5114pt>
 File: figures/fig01_fid_des_convergence.png Graphic file (type png)
 <use figures/fig01_fid_des_convergence.png>
 Package pdftex.def Info: figures/fig01_fid_des_convergence.png  used on input l
@@ -1797,18 +1781,17 @@ Package pdftex.def Info: Requested size: 455.24411pt x 323.1946pt on input line
  4.
 )
 
-LaTeX Warning: Citation `Proteina' on page 35 undefined on input line 1587.
+LaTeX Warning: Citation `Proteina' on page 35 undefined on input line 679.
 
 
-LaTeX Warning: Reference `sec:protein' on page 35 undefined on input line 1587.
+LaTeX Warning: Reference `sec:protein' on page 35 undefined on input line 679.
 
 
-
-LaTeX Warning: Reference `sec:repa' on page 35 undefined on input line 1587.
+LaTeX Warning: Reference `sec:repa' on page 35 undefined on input line 679.
 
 
 LaTeX Warning: Reference `fig:proteina-setup' on page 35 undefined on input lin
-e 1587.
+e 679.
 
 
 Underfull \vbox (badness 7151) has occurred while \output is active []
@@ -1817,63 +1800,62 @@ Underfull \vbox (badness 7151) has occurred while \output is active []
 
 ]
 
-LaTeX Warning: Reference `ch:intro' on page 36 undefined on input line 1592.
+LaTeX Warning: Reference `ch:intro' on page 36 undefined on input line 684.
 
 
-LaTeX Warning: Citation `PDB' on page 36 undefined on input line 1592.
+LaTeX Warning: Citation `PDB' on page 36 undefined on input line 684.
 
 
-LaTeX Warning: Citation `AFDB' on page 36 undefined on input line 1592.
+LaTeX Warning: Citation `AFDB' on page 36 undefined on input line 684.
 
 
-LaTeX Warning: Citation `Proteina' on page 36 undefined on input line 1592.
+LaTeX Warning: Citation `Proteina' on page 36 undefined on input line 684.
 
 
-LaTeX Warning: Citation `Proteina' on page 36 undefined on input line 1594.
+LaTeX Warning: Citation `Proteina' on page 36 undefined on input line 686.
 
 
-LaTeX Warning: Reference `app:datasets' on page 36 undefined on input line 1594
-.
+LaTeX Warning: Reference `ch:appendix' on page 36 undefined on input line 686.
 
-[36 <./figures/fig01_fid_des_convergence.png>]
+[36]
 
 LaTeX Warning: Reference `sec:proteina-convergence' on page 37 undefined on inp
-ut line 1596.
+ut line 688.
 
 
-LaTeX Warning: Reference `ch:evaluation' on page 37 undefined on input line 159
-6.
+LaTeX Warning: Reference `ch:evaluation' on page 37 undefined on input line 688
+.
 
 
 LaTeX Warning: Reference `sec:eval-protocol' on page 37 undefined on input line
- 1596.
+ 688.
 
 
-LaTeX Warning: Reference `tab:setup-model' on page 37 undefined on input line 1
-599.
+LaTeX Warning: Reference `tab:setup-model' on page 37 undefined on input line 6
+91.
 
 (./figures/fig_ch6_model.tex)
 
-LaTeX Warning: Reference `ch:profiling' on page 37 undefined on input line 1603
-.
+LaTeX Warning: Reference `ch:profiling' on page 37 undefined on input line 695.
 
 
-LaTeX Warning: Citation `GearNet' on page 37 undefined on input line 1603.
+
+LaTeX Warning: Citation `GearNet' on page 37 undefined on input line 695.
 
 
-LaTeX Warning: Citation `Proteina' on page 37 undefined on input line 1603.
+LaTeX Warning: Citation `Proteina' on page 37 undefined on input line 695.
 
 
-LaTeX Warning: Citation `ProteinMPNN' on page 37 undefined on input line 1603.
+LaTeX Warning: Citation `ProteinMPNN' on page 37 undefined on input line 695.
 
 
-LaTeX Warning: Reference `app:rep-full' on page 37 undefined on input line 1603
-.
+LaTeX Warning: Reference `app:rep-full' on page 37 undefined on input line 695.
+
 
 [37]
 
-LaTeX Warning: Reference `app:rep-full' on page 38 undefined on input line 1605
-.
+LaTeX Warning: Reference `app:rep-full' on page 38 undefined on input line 697.
+
 
 (./tables/table_setup_model.tex
 
@@ -1884,93 +1866,92 @@ LaTeX Warning: Reference `ch:appendix' on page 38 undefined on input line 33.
 
 )
 
-LaTeX Warning: Citation `REPA' on page 38 undefined on input line 1612.
+LaTeX Warning: Citation `REPA' on page 38 undefined on input line 704.
 
 
 LaTeX Warning: Reference `tab:eval-protein' on page 38 undefined on input line
-1612.
+704.
 
 [38]
 
-LaTeX Warning: Reference `ch:evaluation' on page 39 undefined on input line 161
-4.
+LaTeX Warning: Reference `ch:evaluation' on page 39 undefined on input line 706
+.
 
 
 LaTeX Warning: Reference `tab:eval-protein' on page 39 undefined on input line
-1614.
+706.
 
 
-LaTeX Warning: Reference `app:cath' on page 39 undefined on input line 1614.
+LaTeX Warning: Reference `ch:appendix' on page 39 undefined on input line 706.
 
 
-LaTeX Warning: Reference `tab:setup-cath' on page 39 undefined on input line 16
-14.
+LaTeX Warning: Reference `tab:setup-cath' on page 39 undefined on input line 70
+6.
 
 
-LaTeX Warning: Reference `sec:eval-probe' on page 39 undefined on input line 16
-16.
-
-
-LaTeX Warning: Citation `REPA' on page 39 undefined on input line 1616.
-
-
-LaTeX Warning: Citation `BoltzREPA' on page 39 undefined on input line 1616.
-
-
-LaTeX Warning: Reference `ch:evaluation' on page 39 undefined on input line 161
+LaTeX Warning: Reference `sec:eval-probe' on page 39 undefined on input line 70
 8.
 
 
+LaTeX Warning: Citation `REPA' on page 39 undefined on input line 708.
+
+
+LaTeX Warning: Citation `BoltzREPA' on page 39 undefined on input line 708.
+
+
+LaTeX Warning: Reference `ch:evaluation' on page 39 undefined on input line 710
+.
+
+
 LaTeX Warning: Reference `tab:eval-protein' on page 39 undefined on input line
-1618.
+710.
 
 
-LaTeX Warning: Citation `Proteina' on page 39 undefined on input line 1620.
+LaTeX Warning: Citation `Proteina' on page 39 undefined on input line 712.
 
 
-LaTeX Warning: Reference `ch:evaluation' on page 39 undefined on input line 162
-0.
+LaTeX Warning: Reference `ch:evaluation' on page 39 undefined on input line 712
+.
 
 
 LaTeX Warning: Reference `sec:proteina-anatomy' on page 39 undefined on input l
-ine 1620.
+ine 712.
 
 
-LaTeX Warning: Reference `sec:eval-probe' on page 39 undefined on input line 16
-25.
+LaTeX Warning: Reference `sec:eval-probe' on page 39 undefined on input line 71
+7.
 
 
-LaTeX Warning: Reference `app:leakage' on page 39 undefined on input line 1627.
-
+LaTeX Warning: Reference `app:leakage' on page 39 undefined on input line 719.
 
 [39]
 
-LaTeX Warning: Reference `sec:eval-probe' on page 40 undefined on input line 16
-29.
+LaTeX Warning: Reference `sec:eval-probe' on page 40 undefined on input line 72
+1.
 
 
-LaTeX Warning: Citation `ESM2' on page 40 undefined on input line 1629.
+LaTeX Warning: Citation `ESM2' on page 40 undefined on input line 721.
 
 
-LaTeX Warning: Citation `REPA' on page 40 undefined on input line 1629.
+LaTeX Warning: Citation `REPA' on page 40 undefined on input line 721.
 
 
-LaTeX Warning: Citation `Proteina' on page 40 undefined on input line 1631.
+LaTeX Warning: Citation `Proteina' on page 40 undefined on input line 723.
 
 
 LaTeX Warning: Reference `sec:eval-protein' on page 40 undefined on input line
-1631.
+723.
 
 
 LaTeX Warning: Reference `fig:proteina-rep' on page 40 undefined on input line
-1663.
+736.
 
 
 LaTeX Warning: Reference `sec:proteina-metrics' on page 40 undefined on input l
-ine 1663.
+ine 736.
 
 (./figures/fig02_representation.tex
-<figures/fig02_representation.png, id=488, 967.4544pt x 330.5148pt>
+<figures/fig02_representation.png, id=260, 967.4544pt x 330.5148pt>
 File: figures/fig02_representation.png Graphic file (type png)
 <use figures/fig02_representation.png>
 Package pdftex.def Info: figures/fig02_representation.png  used on input line 4
@@ -1986,67 +1967,70 @@ LaTeX Warning: Reference `app:leakage' on page 40 undefined on input line 5.
 
 )
 
-LaTeX Warning: Citation `REPA' on page 40 undefined on input line 1667.
+LaTeX Warning: Citation `REPA' on page 40 undefined on input line 740.
 
 [40]
 
 LaTeX Warning: Reference `tab:proteina-rep' on page 41 undefined on input line
-1669.
+742.
 
 
-LaTeX Warning: Reference `ch:evaluation' on page 41 undefined on input line 166
-9.
-
-
-LaTeX Warning: Reference `app:rep-afdb' on page 41 undefined on input line 1669
+LaTeX Warning: Reference `ch:evaluation' on page 41 undefined on input line 742
 .
 
-(./tables/table_rep_quality.tex (./tables/table_rep_quality_data.tex)
 
-LaTeX Warning: Reference `app:leakage' on page 41 undefined on input line 8.
-
-
-LaTeX Warning: Reference `tab:proteina-rep-full' on page 41 undefined on input
-line 8.
+LaTeX Warning: Reference `app:rep-afdb' on page 41 undefined on input line 742.
 
 
-LaTeX Warning: Reference `app:leakage' on page 41 undefined on input line 8.
+(./tables/table_rep_quality.tex
+
+LaTeX Warning: Reference `app:leakage' on page 41 undefined on input line 19.
 
 
 LaTeX Warning: Reference `tab:proteina-rep-full' on page 41 undefined on input
-line 8.
+line 19.
 
-) [41 <./figures/fig02_representation.png>]
+
+LaTeX Warning: Reference `app:leakage' on page 41 undefined on input line 19.
+
+
+LaTeX Warning: Reference `tab:proteina-rep-full' on page 41 undefined on input
+line 19.
+
+)
+Underfull \vbox (badness 1803) has occurred while \output is active []
+
+ [41]
 
 LaTeX Warning: Reference `sec:profiling-protein' on page 42 undefined on input
-line 1675.
+line 748.
 
 
 LaTeX Warning: Reference `sec:profiling-framework' on page 42 undefined on inpu
-t line 1675.
+t line 748.
 
 
 LaTeX Warning: Reference `sec:proteina-convergence' on page 42 undefined on inp
-ut line 1675.
+ut line 748.
 
 
-LaTeX Warning: Citation `REPA' on page 42 undefined on input line 1680.
+LaTeX Warning: Citation `REPA' on page 42 undefined on input line 753.
 
 
-LaTeX Warning: Citation `BoltzREPA' on page 42 undefined on input line 1680.
+LaTeX Warning: Citation `BoltzREPA' on page 42 undefined on input line 753.
 
 
-LaTeX Warning: Citation `PlatonicRep' on page 42 undefined on input line 1680.
+LaTeX Warning: Citation `PlatonicRep' on page 42 undefined on input line 753.
 
 
-LaTeX Warning: Citation `ESM2' on page 42 undefined on input line 1680.
+LaTeX Warning: Citation `ESM2' on page 42 undefined on input line 753.
 
 
 LaTeX Warning: Reference `fig:proteina-cknna' on page 42 undefined on input lin
-e 1682.
+e 755.
 
 (./figures/fig03_alignment.tex
-<figures/fig03_alignment.png, id=500, 895.1844pt x 322.3242pt>
+<figures/fig03_alignment.png, id=273, 895.1844pt x 322.3242pt>
 File: figures/fig03_alignment.png Graphic file (type png)
 <use figures/fig03_alignment.png>
 Package pdftex.def Info: figures/fig03_alignment.png  used on input line 4. on
@@ -2055,93 +2039,95 @@ Package pdftex.def Info: Requested size: 455.24411pt x 163.92084pt on input lin
 e 4.
 )
 
-LaTeX Warning: Reference `app:cknna' on page 42 undefined on input line 1686.
+LaTeX Warning: Reference `app:cknna' on page 42 undefined on input line 759.
 
 
-LaTeX Warning: Citation `ESM2' on page 42 undefined on input line 1686.
+LaTeX Warning: Citation `ESM2' on page 42 undefined on input line 759.
 
 
 LaTeX Warning: Reference `fig:proteina-cknna' on page 42 undefined on input lin
-e 1686.
+e 759.
 
 
-LaTeX Warning: Citation `PlatonicRep' on page 42 undefined on input line 1686.
+LaTeX Warning: Citation `PlatonicRep' on page 42 undefined on input line 759.
 
 
 LaTeX Warning: Reference `tab:eval-protein' on page 42 undefined on input line
-1692.
+765.
 
 
 LaTeX Warning: Reference `sec:proteina-anatomy' on page 42 undefined on input l
-ine 1692.
+ine 765.
 
-[42]
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [42]
 
 LaTeX Warning: Reference `tab:proteina-speedup' on page 43 undefined on input l
-ine 1694.
+ine 767.
 
 
 LaTeX Warning: Reference `sec:proteina-datasets' on page 43 undefined on input
-line 1694.
+line 767.
 
-(./tables/table_speedup.tex (./tables/table_speedup_data.tex)
-
-LaTeX Warning: Reference `fig:proteina-genrep' on page 43 undefined on input li
-ne 7.
-
+(./tables/table_speedup.tex
 
 LaTeX Warning: Reference `fig:proteina-genrep' on page 43 undefined on input li
-ne 7.
+ne 42.
+
+
+LaTeX Warning: Reference `fig:proteina-genrep' on page 43 undefined on input li
+ne 42.
 
 )
 
 LaTeX Warning: Reference `tab:proteina-speedup' on page 43 undefined on input l
-ine 1698.
+ine 771.
 
 
 LaTeX Warning: Reference `tab:proteina-sampler' on page 43 undefined on input l
-ine 1698.
+ine 771.
 
 (./tables/table_sampler.tex)
 
 LaTeX Warning: Reference `sec:eval-protein' on page 43 undefined on input line
-1702.
+775.
 
 
 LaTeX Warning: Reference `tab:proteina-13m' on page 43 undefined on input line
-1702.
+775.
 
 
-LaTeX Warning: Citation `REPA' on page 43 undefined on input line 1704.
+LaTeX Warning: Citation `REPA' on page 43 undefined on input line 777.
 
 
 LaTeX Warning: Reference `tab:proteina-genrep-corr' on page 43 undefined on inp
-ut line 1704.
+ut line 777.
 
 
-LaTeX Warning: Reference `app:genrep-afdb' on page 43 undefined on input line 1
-704.
+LaTeX Warning: Reference `app:genrep-afdb' on page 43 undefined on input line 7
+77.
 
 
 LaTeX Warning: Reference `sec:proteina-rep' on page 43 undefined on input line
-1704.
+777.
 
 
 LaTeX Warning: Reference `fig:proteina-rep' on page 43 undefined on input line
-1704.
+777.
 
-[43 <./figures/fig03_alignment.png>] (./tables/table_genrep_corr.tex
-(./tables/table_genrep_corr_data.tex))
+[43] (./tables/table_genrep_corr.tex)
 
 LaTeX Warning: Reference `fig:proteina-genrep' on page 44 undefined on input li
-ne 1709.
+ne 782.
 
 
-Underfull \vbox (badness 7576) has occurred while \output is active []
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [44]
 (./figures/fig04_fid_des_gen_vs_rep.tex
-<figures/fig04_fid_des_gen_vs_rep.png, id=517, 931.3194pt x 359.4228pt>
+<figures/fig04_fid_des_gen_vs_rep.png, id=291, 931.3194pt x 359.4228pt>
 File: figures/fig04_fid_des_gen_vs_rep.png Graphic file (type png)
 <use figures/fig04_fid_des_gen_vs_rep.png>
 Package pdftex.def Info: figures/fig04_fid_des_gen_vs_rep.png  used on input li
@@ -2151,31 +2137,34 @@ e 4.
 )
 
 LaTeX Warning: Reference `sec:proteina-rep' on page 45 undefined on input line
-1713.
+786.
 
 
 LaTeX Warning: Reference `tab:proteina-speedup' on page 45 undefined on input l
-ine 1713.
+ine 786.
 
 
-LaTeX Warning: Reference `sec:proteina-convergence' on page 45 undefined on inp
-ut line 1726.
+Underfull \vbox (badness 1371) has occurred while \output is active []
+
+ [45]
+
+LaTeX Warning: Reference `sec:proteina-convergence' on page 46 undefined on inp
+ut line 794.
 
 
-LaTeX Warning: Reference `ch:intro' on page 45 undefined on input line 1726.
+LaTeX Warning: Reference `ch:intro' on page 46 undefined on input line 794.
 
-
-LaTeX Warning: Reference `sec:proteina-datasets' on page 45 undefined on input
-line 1726.
-
-[45]
 
 LaTeX Warning: Reference `sec:proteina-datasets' on page 46 undefined on input
-line 1728.
+line 794.
+
+
+LaTeX Warning: Reference `sec:proteina-datasets' on page 46 undefined on input
+line 796.
 
 
 LaTeX Warning: Reference `fig:proteina-fid' on page 46 undefined on input line
-1728.
+796.
 
 (./tables/table_proteina_13m.tex
 
@@ -2197,42 +2186,38 @@ t line 43.
 )
 
 LaTeX Warning: Reference `tab:proteina-13m' on page 46 undefined on input line
-1732.
+800.
 
 
 LaTeX Warning: Reference `tab:proteina-speedup' on page 46 undefined on input l
-ine 1732.
+ine 800.
 
 
 LaTeX Warning: Reference `sec:protein-tradeoffs' on page 46 undefined on input
-line 1732.
+line 800.
 
 
-LaTeX Warning: Reference `app:13m-ranges' on page 46 undefined on input line 17
-32.
+LaTeX Warning: Reference `app:13m-ranges' on page 46 undefined on input line 80
+0.
 
 
-LaTeX Warning: Reference `app:ode' on page 46 undefined on input line 1732.
+LaTeX Warning: Reference `app:ode' on page 46 undefined on input line 800.
 
-[46 <./figures/fig04_fid_des_gen_vs_rep.png>]
+[46]
 
 LaTeX Warning: Reference `fig:proteina-enrichment' on page 47 undefined on inpu
-t line 1734.
-
-
-LaTeX Warning: Reference `app:ss-composition' on page 47 undefined on input lin
-e 1734.
+t line 802.
 
 
 LaTeX Warning: Reference `tab:proteina-concentration' on page 47 undefined on i
-nput line 1734.
+nput line 802.
 
 
 LaTeX Warning: Reference `tab:proteina-speedup' on page 47 undefined on input l
-ine 1734.
+ine 802.
 
 (./figures/fig_ch6_enrichment.tex
-<figures/fig_ch6_enrichment.png, id=530, 679.338pt x 274.626pt>
+<figures/fig_ch6_enrichment.png, id=304, 679.338pt x 274.626pt>
 File: figures/fig_ch6_enrichment.png Graphic file (type png)
 <use figures/fig_ch6_enrichment.png>
 Package pdftex.def Info: figures/fig_ch6_enrichment.png  used on input line 5.
@@ -2251,180 +2236,192 @@ LaTeX Warning: Reference `tab:proteina-13m' on page 47 undefined on input line
 ) (./tables/table_concentration.tex)
 
 LaTeX Warning: Reference `sec:proteina-convergence' on page 47 undefined on inp
-ut line 1740.
+ut line 808.
 
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
+Underfull \vbox (badness 2617) has occurred while \output is active []
 
  [47]
 
 LaTeX Warning: Reference `sec:proteina-convergence' on page 48 undefined on inp
-ut line 1748.
+ut line 816.
+
+[48]
+
+LaTeX Warning: Reference `sec:proteina-genrep' on page 49 undefined on input li
+ne 817.
 
 
-LaTeX Warning: Reference `sec:proteina-genrep' on page 48 undefined on input li
-ne 1749.
+LaTeX Warning: Reference `sec:flow-matching' on page 49 undefined on input line
+ 818.
 
-
-LaTeX Warning: Reference `sec:flow-matching' on page 48 undefined on input line
- 1750.
-
-[48 <./figures/fig_ch6_enrichment.png>]
 
 LaTeX Warning: Reference `sec:proteina-setup' on page 49 undefined on input lin
-e 1751.
+e 819.
 
 
 LaTeX Warning: Reference `sec:proteina-convergence' on page 49 undefined on inp
-ut line 1752.
+ut line 820.
 
 
 LaTeX Warning: Reference `sec:proteina-rep' on page 49 undefined on input line
-1758.
+826.
 
 
 LaTeX Warning: Reference `sec:tabasco-diagnosis' on page 49 undefined on input
-line 1760.
+line 828.
 
 
 LaTeX Warning: Reference `ch:tabasco-study' on page 49 undefined on input line
-1760.
+828.
 
 
 LaTeX Warning: Reference `sec:proteina-modulation' on page 49 undefined on inpu
-t line 1762.
+t line 830.
 
 
 LaTeX Warning: Reference `sec:proteina-alignment' on page 49 undefined on input
- line 1764.
+ line 832.
 
 
-LaTeX Warning: Citation `PlatonicRep' on page 49 undefined on input line 1764.
+LaTeX Warning: Citation `PlatonicRep' on page 49 undefined on input line 832.
 
 
 LaTeX Warning: Reference `sec:proteina-anatomy' on page 49 undefined on input l
-ine 1764.
+ine 832.
 
 [49]
 
 LaTeX Warning: Reference `sec:proteina-anatomy' on page 50 undefined on input l
-ine 1766.
+ine 834.
 
 
-LaTeX Warning: Citation `HASTE' on page 50 undefined on input line 1766.
+LaTeX Warning: Citation `HASTE' on page 50 undefined on input line 834.
 
 
 LaTeX Warning: Reference `ch:tabasco-study' on page 50 undefined on input line
-1768.
+836.
 
 
-LaTeX Warning: Reference `ch:conclusions' on page 50 undefined on input line 17
-68.
+LaTeX Warning: Reference `ch:conclusions' on page 50 undefined on input line 83
+6.
 
 [50]
 Chapter 7.
 
-LaTeX Warning: Reference `ch:intro' on page 51 undefined on input line 1869.
+LaTeX Warning: Reference `ch:intro' on page 51 undefined on input line 843.
 
 
-LaTeX Warning: Citation `REPA' on page 51 undefined on input line 1869.
+LaTeX Warning: Citation `REPA' on page 51 undefined on input line 843.
 
 
 LaTeX Warning: Reference `ch:tabasco-study' on page 51 undefined on input line
-1877.
+851.
 
 
 LaTeX Warning: Reference `ch:proteina-study' on page 51 undefined on input line
- 1877.
+ 851.
 
 [51
 
 ]
 
 LaTeX Warning: Reference `sec:proteina-convergence' on page 52 undefined on inp
-ut line 1883.
+ut line 857.
 
 
 LaTeX Warning: Reference `sec:proteina-distribution' on page 52 undefined on in
-put line 1885.
+put line 859.
 
 
 LaTeX Warning: Reference `sec:proteina-convergence' on page 52 undefined on inp
-ut line 1885.
+ut line 859.
 
 
-LaTeX Warning: Reference `sec:primer' on page 52 undefined on input line 1897.
+LaTeX Warning: Reference `sec:primer' on page 52 undefined on input line 871.
 
 
-LaTeX Warning: Reference `ch:evaluation' on page 52 undefined on input line 189
-9.
-
-
-LaTeX Warning: Reference `ch:profiling' on page 52 undefined on input line 1899
+LaTeX Warning: Reference `ch:evaluation' on page 52 undefined on input line 873
 .
+
+
+LaTeX Warning: Reference `ch:profiling' on page 52 undefined on input line 873.
+
 
 [52]
 
 LaTeX Warning: Reference `sec:eval-multifactorial' on page 53 undefined on inpu
-t line 1901.
+t line 875.
 
 
-LaTeX Warning: Reference `ch:intro' on page 53 undefined on input line 1908.
+LaTeX Warning: Reference `ch:intro' on page 53 undefined on input line 882.
 
 
 LaTeX Warning: Citation `TurbulenceDiffusion' on page 53 undefined on input lin
-e 1908.
+e 882.
 
 
-LaTeX Warning: Citation `SpatialStructure' on page 53 undefined on input line 1
-910.
+LaTeX Warning: Citation `SpatialStructure' on page 53 undefined on input line 8
+84.
 
 [53] [54
 
 ]
-Underfull \hbox (badness 1721) in paragraph at lines 2011--2015
+Underfull \hbox (badness 1721) in paragraph at lines 980--984
 []\OT1/cmr/m/n/12 Alex Zha-voronkov et al. ``Deep learn-ing en-ables rapid iden
 -ti-fi-ca-tion of po-
  []
 
 
-Underfull \hbox (badness 5667) in paragraph at lines 2056--2060
+Underfull \hbox (badness 5667) in paragraph at lines 1023--1027
 \OT1/cmr/m/n/12 ture with a lan-guage model''. \OT1/cmr/m/it/12 Sci-ence \OT1/c
 mr/m/n/12 379.6637 (2023), pp. 1123--1130.
  []
 
 [55]
-Underfull \hbox (badness 3179) in paragraph at lines 2109--2113
+Underfull \hbox (badness 3179) in paragraph at lines 1076--1080
 []\OT1/cmr/m/n/12 Michael Heinzinger et al. ``Bilin-gual lan-guage model for pr
 o-tein se-quence
  []
 
 
-Underfull \hbox (badness 5607) in paragraph at lines 2109--2113
+Underfull \hbox (badness 5607) in paragraph at lines 1076--1080
 \OT1/cmr/m/n/12 and struc-ture''. \OT1/cmr/m/it/12 NAR Ge-nomics and Bioin-for-
 mat-ics \OT1/cmr/m/n/12 6.4 (2024), lqae150.
  []
 
 
-Underfull \hbox (badness 2913) in paragraph at lines 2153--2157
+Underfull \hbox (badness 2913) in paragraph at lines 1119--1123
 []\OT1/cmr/m/n/12 Luciano Broc-chieri and Samuel Kar-lin. ``Pro-tein length in
 eu-kary-otic and
  []
 
 [56]
-Underfull \hbox (badness 1917) in paragraph at lines 2198--2201
+Underfull \hbox (badness 1917) in paragraph at lines 1163--1166
 []\OT1/cmr/m/n/12 Johann Brehmer et al. \OT1/cmr/m/it/12 Does equiv-ari-ance ma
 t-ter at scale? \OT1/cmr/m/n/12 TMLR 2025.
  []
 
 [57]
-Underfull \hbox (badness 1127) in paragraph at lines 2307--2311
+Underfull \hbox (badness 1127) in paragraph at lines 1264--1268
 \OT1/cmr/m/n/12 new ef-fi-cient as-sign-ment of sec-ondary struc-ture from C$\O
 ML/cmm/m/it/12 $ \OT1/cmr/m/n/12 trace of pro-teins''.
  []
 
 [58]
 Appendix A.
+
+LaTeX Warning: Reference `tab:setup-datasets' on page 59 undefined on input lin
+e 1287.
+
+
+LaTeX Warning: Reference `ch:proteina-study' on page 59 undefined on input line
+ 1287.
+
+
+LaTeX Warning: Reference `ch:evaluation' on page 59 undefined on input line 128
+7.
+
 (./tables/table_setup_datasets.tex
 Overfull \hbox (17.7752pt too wide) in paragraph at lines 6--20
  [][]
@@ -2438,287 +2435,244 @@ LaTeX Warning: Citation `MMseqs2' on page 59 undefined on input line 20.
 
 )
 
-LaTeX Warning: Reference `tab:setup-datasets' on page 59 undefined on input lin
-e 2368.
-
-
 LaTeX Warning: Reference `ch:proteina-study' on page 59 undefined on input line
- 2368.
+ 1294.
 
 
-LaTeX Warning: Reference `app:leakage' on page 59 undefined on input line 2368.
+LaTeX Warning: Reference `tab:setup-cath' on page 59 undefined on input line 12
+94.
 
-
-
-LaTeX Warning: Reference `ch:evaluation' on page 59 undefined on input line 236
-8.
-
-
-LaTeX Warning: Reference `ch:proteina-study' on page 59 undefined on input line
- 2373.
-
-
-LaTeX Warning: Reference `tab:setup-cath' on page 59 undefined on input line 23
-73.
-
-[59
-
-] (./tables/table_setup_cath.tex
+(./tables/table_setup_cath.tex
 Overfull \hbox (16.63011pt too wide) in paragraph at lines 5--14
  [][]
  []
 
 )
 
-LaTeX Warning: Reference `app:datasets' on page 60 undefined on input line 2380
+LaTeX Warning: Reference `app:datasets' on page 59 undefined on input line 1301
 .
 
+[59
 
-LaTeX Warning: Reference `tab:proteina-rep-afdb' on page 60 undefined on input
-line 2384.
+]
 
-[60]
-
-LaTeX Warning: Reference `tab:proteina-rep' on page 61 undefined on input line
-2391.
+LaTeX Warning: Reference `tab:proteina-rep' on page 60 undefined on input line
+1308.
 
 
-LaTeX Warning: Reference `tab:proteina-rep-full' on page 61 undefined on input
-line 2391.
+LaTeX Warning: Reference `tab:proteina-rep-full' on page 60 undefined on input
+line 1308.
 
-(./tables/table_rep_quality_full.tex (./tables/table_rep_quality_full_data.tex)
 
-Overfull \hbox (46.62437pt too wide) in paragraph at lines 3--8
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [60]
+(./tables/table_rep_quality_full.tex
+Overfull \hbox (46.62437pt too wide) in paragraph at lines 7--21
  [][]
  []
 
 
 LaTeX Warning: Reference `tab:proteina-rep' on page 61 undefined on input line
-8.
+21.
 
 
 LaTeX Warning: Reference `tab:proteina-rep' on page 61 undefined on input line
-8.
+21.
 
 )
 
 LaTeX Warning: Reference `tab:proteina-rep-afdb' on page 61 undefined on input
-line 2398.
+line 1315.
 
 
 LaTeX Warning: Reference `tab:proteina-rep' on page 61 undefined on input line
-2398.
+1315.
 
-[61] (./tables/table_rep_quality_afdb.tex
-(./tables/table_rep_quality_afdb_data.tex)
+(./tables/table_rep_quality_afdb.tex
 
-LaTeX Warning: Reference `tab:proteina-rep' on page 62 undefined on input line
-8.
-
-
-LaTeX Warning: Reference `app:leakage' on page 62 undefined on input line 8.
+LaTeX Warning: Reference `tab:proteina-rep' on page 61 undefined on input line
+19.
 
 
-LaTeX Warning: Reference `tab:proteina-rep' on page 62 undefined on input line
-8.
+LaTeX Warning: Reference `app:leakage' on page 61 undefined on input line 19.
 
 
-LaTeX Warning: Reference `app:leakage' on page 62 undefined on input line 8.
+LaTeX Warning: Reference `tab:proteina-rep' on page 61 undefined on input line
+19.
+
+
+LaTeX Warning: Reference `app:leakage' on page 61 undefined on input line 19.
 
 )
 
-LaTeX Warning: Reference `sec:proteina-alignment' on page 62 undefined on input
- line 2407.
+LaTeX Warning: Reference `sec:proteina-alignment' on page 61 undefined on input
+ line 1322.
 
 
-LaTeX Warning: Reference `tab:cknna-matrix' on page 62 undefined on input line
-2407.
+LaTeX Warning: Reference `tab:cknna-matrix' on page 61 undefined on input line
+1322.
 
-(./tables/table_cknna_matrix.tex (./tables/table_cknna_matrix_data.tex))
+(./tables/table_cknna_matrix.tex)
 
-LaTeX Warning: Reference `sec:proteina-genrep' on page 62 undefined on input li
-ne 2414.
+LaTeX Warning: Reference `sec:proteina-genrep' on page 61 undefined on input li
+ne 1329.
+
+
+LaTeX Warning: Reference `tab:proteina-genrep-corr' on page 61 undefined on inp
+ut line 1329.
+
+
+LaTeX Warning: Reference `tab:proteina-genrep-corr-afdb' on page 61 undefined o
+n input line 1329.
+
+
+LaTeX Warning: Reference `sec:proteina-datasets' on page 61 undefined on input
+line 1329.
+
+
+Underfull \vbox (badness 1895) has occurred while \output is active []
+
+ [61]
+(./tables/table_genrep_corr_afdb.tex
+
+LaTeX Warning: Reference `tab:proteina-genrep-corr' on page 62 undefined on inp
+ut line 16.
+
+
+LaTeX Warning: Reference `app:leakage' on page 62 undefined on input line 16.
 
 
 LaTeX Warning: Reference `tab:proteina-genrep-corr' on page 62 undefined on inp
-ut line 2414.
+ut line 16.
 
 
-LaTeX Warning: Reference `tab:proteina-genrep-corr-afdb' on page 62 undefined o
-n input line 2414.
-
-
-LaTeX Warning: Reference `sec:proteina-datasets' on page 62 undefined on input
-line 2414.
-
-[62] (./tables/table_genrep_corr_afdb.tex
-(./tables/table_genrep_corr_afdb_data.tex)
-
-LaTeX Warning: Reference `tab:proteina-genrep-corr' on page 63 undefined on inp
-ut line 7.
-
-
-LaTeX Warning: Reference `app:leakage' on page 63 undefined on input line 7.
-
-
-LaTeX Warning: Reference `tab:proteina-genrep-corr' on page 63 undefined on inp
-ut line 7.
-
-
-LaTeX Warning: Reference `app:leakage' on page 63 undefined on input line 7.
+LaTeX Warning: Reference `app:leakage' on page 62 undefined on input line 16.
 
 )
 
-LaTeX Warning: Citation `PSEA' on page 63 undefined on input line 2423.
+LaTeX Warning: Citation `PSEA' on page 62 undefined on input line 1338.
 
 
-LaTeX Warning: Citation `Biotite' on page 63 undefined on input line 2423.
+LaTeX Warning: Citation `Biotite' on page 62 undefined on input line 1338.
 
-
-Overfull \hbox (15.64963pt too wide) in paragraph at lines 2425--2425
+[62]
+Overfull \hbox (15.64963pt too wide) in paragraph at lines 1340--1340
 |[]\OT1/cmr/bx/n/17.28 Secondary-structure com-po-si-tion of the des-ignable
  []
 
 
-LaTeX Warning: Reference `tab:ss-composition' on page 63 undefined on input lin
-e 2428.
-
-
 LaTeX Warning: Reference `sec:proteina-anatomy' on page 63 undefined on input l
-ine 2428.
-
-[63] (./tables/table_ss_composition.tex)
-
-LaTeX Warning: Reference `tab:proteina-sampler' on page 64 undefined on input l
-ine 2435.
+ine 1343.
 
 
-LaTeX Warning: Reference `tab:proteina-ode' on page 64 undefined on input line
-2437.
+LaTeX Warning: Reference `tab:ss-composition' on page 63 undefined on input lin
+e 1343.
 
 
-LaTeX Warning: Reference `sec:proteina-anatomy' on page 64 undefined on input l
-ine 2437.
+LaTeX Warning: Reference `tab:proteina-13m' on page 63 undefined on input line
+1343.
+
+(./tables/table_ss_composition.tex
+
+LaTeX Warning: Reference `tab:proteina-13m' on page 63 undefined on input line
+27.
 
 
-LaTeX Warning: Reference `tab:proteina-ode' on page 64 undefined on input line
-2439.
-
-
-LaTeX Warning: Reference `sec:proteina-anatomy' on page 64 undefined on input l
-ine 2439.
-
-(./tables/table_ode.tex)
-
-LaTeX Warning: Reference `tab:proteina-13m' on page 64 undefined on input line
-2448.
-
-
-LaTeX Warning: Reference `tab:proteina-13m-ranges' on page 64 undefined on inpu
-t line 2448.
-
-
-Underfull \vbox (badness 1609) has occurred while \output is active []
-
- [64]
-(./tables/table_13m_ranges.tex (./tables/table_13m_ranges_data.tex)
-
-LaTeX Warning: Reference `tab:proteina-13m' on page 65 undefined on input line
-9.
-
-
-LaTeX Warning: Reference `tab:proteina-13m' on page 65 undefined on input line
-9.
+LaTeX Warning: Reference `tab:proteina-13m' on page 63 undefined on input line
+27.
 
 )
 
-LaTeX Warning: Reference `tab:profiling-mol' on page 65 undefined on input line
- 2455.
+LaTeX Warning: Reference `tab:proteina-ode' on page 63 undefined on input line
+1350.
 
 
-LaTeX Warning: Reference `tab:profiling-protein' on page 65 undefined on input
-line 2455.
+LaTeX Warning: Reference `sec:proteina-anatomy' on page 63 undefined on input l
+ine 1350.
+
+[63] (./tables/table_ode.tex)
+
+LaTeX Warning: Reference `tab:proteina-13m' on page 64 undefined on input line
+1357.
 
 
-LaTeX Warning: Reference `tab:profiling-full-mol' on page 65 undefined on input
- line 2455.
+LaTeX Warning: Reference `tab:proteina-13m-ranges' on page 64 undefined on inpu
+t line 1357.
+
+(./tables/table_13m_ranges.tex
+
+LaTeX Warning: Reference `tab:proteina-13m' on page 64 undefined on input line
+29.
 
 
-LaTeX Warning: Reference `tab:profiling-full-protein' on page 65 undefined on i
-nput line 2455.
+LaTeX Warning: Reference `tab:proteina-13m' on page 64 undefined on input line
+29.
+
+)
+
+LaTeX Warning: Reference `tab:profiling-mol' on page 64 undefined on input line
+ 1364.
 
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
+LaTeX Warning: Reference `tab:profiling-protein' on page 64 undefined on input
+line 1364.
 
- [65]
+
+LaTeX Warning: Reference `tab:profiling-full-mol' on page 64 undefined on input
+ line 1364.
+
+
+LaTeX Warning: Reference `tab:profiling-full-protein' on page 64 undefined on i
+nput line 1364.
+
 (./tables/table_profiling_full.tex
 
-LaTeX Warning: Reference `tab:profiling-mol' on page 66 undefined on input line
- 20.
+LaTeX Warning: Reference `tab:profiling-mol' on page 64 undefined on input line
+ 27.
 
 
-LaTeX Warning: Reference `tab:profiling-mol' on page 66 undefined on input line
- 20.
+LaTeX Warning: Reference `tab:profiling-mol' on page 64 undefined on input line
+ 27.
+
+) [64] [65]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1495.
+ [66]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1495.
+ (./report-draft-nocomments.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1495.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1495.
 
 
-LaTeX Warning: Reference `tab:profiling-protein' on page 66 undefined on input
-line 41.
 
+Package rerunfilecheck Warning: File `report-draft-nocomments.out' has changed.
 
-LaTeX Warning: Reference `tab:profiling-protein' on page 66 undefined on input
-line 41.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
 
-) [66]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2461.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 2461.
- (./report-draft.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 2461.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2461.
-
-Package rerunfilecheck Info: File `report-draft.out' has not changed.
-(rerunfilecheck)             Checksum: 42437ED12692C2EE1C02A6C005CCF78C;4611.
-
+Package rerunfilecheck Info: Checksums for `report-draft-nocomments.out':
+(rerunfilecheck)             Before: <no file>
+(rerunfilecheck)             After:  6C786CE8A545F76769D2E216ED0DF601;4608.
 
 LaTeX Warning: There were undefined references.
 
 
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2461.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1495.
  )
 Here is how much of TeX's memory you used:
- 18234 strings out of 494917
- 337978 string characters out of 6180699
- 410278 words of memory out of 5000000
- 20869 multiletter control sequences out of 15000+600000
- 18021 words of font info for 67 fonts, out of 8000000 for 9000
+ 18143 strings out of 494917
+ 336380 string characters out of 6180699
+ 417446 words of memory out of 5000000
+ 20807 multiletter control sequences out of 15000+600000
+ 18380 words of font info for 68 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 55i,16n,67p,1702b,796s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share/texli
-ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/tex
-mf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dis
-t/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist/font
-s/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1
-/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
-ts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-r7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><
-/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss12.pfb></usr/s
-hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss17.pfb></usr/share/t
-exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/share/texlive/
-texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-
-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fo
-nts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/typ
-e1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
-lic/amsfonts/cm/cmti12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/am
-sfonts/cm/cmti8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmtt12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbol
-s/msbm10.pfb>
-Output written on report-draft.pdf (66 pages, 2354365 bytes).
+ 55i,16n,67p,1692b,796s stack positions out of 5000i,500n,10000p,200000b,80000s
+
+pdfTeX warning: \pdfdraftmode enabled, not changing output pdf
+
 PDF statistics:
- 900 PDF objects out of 1000 (max. 8388607)
- 780 compressed objects within 8 object streams
- 241 named destinations out of 1000 (max. 500000)
- 559 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 559 PDF objects out of 1000 (max. 8388607)
+ 239 named destinations out of 1000 (max. 500000)
+ 63 words of extra memory for PDF output out of 10000 (max. 10000000)
