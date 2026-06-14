@@ -33,6 +33,39 @@ DRAFT_DEPS := $(wildcard tables/*.tex) \
 report.pdf: logo-dcst-colour.pdf
 report-draft.pdf: logo-dcst-colour.pdf $(DRAFT_DEPS)
 
+# ============================================================================
+# Submission deliverables (both built from the single source report-draft.tex)
+#
+#   make submissions    -> builds BOTH PDFs below from the current draft
+#   make report-final.pdf   NORMAL copy: title page with name/college/date,
+#                           signed declaration, acknowledgements page.
+#   make report-anon.pdf    ANONYMISED copy for blind marking: candidate-number
+#                           cover sheet, no name, no signature, no
+#                           acknowledgements.
+#
+# Both versions share one source and are byte-identical in the body. They
+# differ only in the front matter, switched by the \ifsubmission boolean in
+# report-draft.tex. The anonymised build is made from a throwaway copy
+# (report-anon.tex) with \submissiontrue uncommented; report-anon.tex is a
+# generated, disposable artefact.
+# ============================================================================
+.PHONY: submissions
+submissions: report-final.pdf report-anon.pdf
+
+# NORMAL copy == the draft built with the submission flag off (its default).
+report-final.pdf: report-draft.pdf
+	cp -f report-draft.pdf $@
+
+# Generated source for the anonymised build: uncomment \submissiontrue.
+report-anon.tex: report-draft.tex
+	sed -e 's/^%\(\\submissiontrue\)/\1/' $< >$@
+
+# Explicit recipe (overrides the generic %.pdf rule) so the multi-pass build
+# resolves the cover-sheet page-count cross-references in the anon layout.
+report-anon.pdf: report-anon.tex logo-dcst-colour.pdf $(DRAFT_DEPS)
+	pdflatex -halt-on-error -file-line-error report-anon.tex
+	while grep -q 'Rerun to get ' report-anon.log ; do pdflatex -halt-on-error report-anon.tex ; done
+
 WORDCOUNT_FILE=report-draft
 
 # ---- word count (texcount over the LaTeX source) ----
@@ -67,4 +100,4 @@ wordcount-gs: $(WORDCOUNT_FILE).pdf
 
 clean:
 	rm -f *.log *.aux *.toc *.bbl *.ind *.lot *.lof *.out *~
-	rm -f report-submission.tex
+	rm -f report-submission.tex report-anon.tex
