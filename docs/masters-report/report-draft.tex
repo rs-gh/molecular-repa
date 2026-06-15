@@ -2455,7 +2455,7 @@ Each cell of Table~\ref{tab:proteina-13m} is a mean over three generation seeds.
 
 Tables~\ref{tab:profiling-mol} and~\ref{tab:profiling-protein} in the main text show only the diagnostics that drive each verdict. Tables~\ref{tab:profiling-full-mol} and~\ref{tab:profiling-full-protein} give the complete measured set for every candidate encoder. The \emph{3D}, \emph{Floor}, \emph{Lift}, \emph{Sparsity} and \emph{RankMe} columns carry the same meaning as in the main-text tables. The added columns are:
 \begin{itemize}[topsep=2pt,itemsep=1pt]
-  \item \emph{context-$\Delta$}: the mean cosine similarity between same-type token pairs minus that between different-type pairs. A positive value means the encoder separates atoms or residues by type.
+  \item \emph{context-$\Delta$}: the mean cosine similarity between same-type token pairs minus that between different-type pairs. A positive value means the encoder separates atoms or residues by type. It is the cosine-similarity counterpart to the atom/AA identity probe (\S\ref{sec:profiling-framework}). A high value flags an encoder leaning on token identity, which is cheatable for molecules and potentially off-task for proteins.
   \item \emph{Best}: the best-projector cosine, with $\text{Lift}=\text{Best}-\text{Floor}$.
   \item \emph{PR}: the participation ratio.
   \item \emph{Dims@95\%}: the number of dimensions holding $95\%$ of the variance.
