@@ -123,17 +123,31 @@ def _humanize_step_k(x, _):
 def log_step_axis(ax, label="Training step (log scale)"):
     """Apply log scale on x-axis for training-step plots, with humanised ticks.
 
-    x-data is in thousands of steps; ticks span the full sweep range (data
-    runs to 2.4M steps) and are humanised to 100K / 1M / 2.4M form. Ticks
-    beyond a given figure's data are auto-clipped by the data-driven xlim.
+    x-data is in thousands of steps. Round ticks are drawn at 100K / 200K /
+    .../ 2.4M (humanised), clipped to the panel's data range. The panel's
+    final data point is always given its own tick, so a trajectory tail past
+    the last round tick (e.g. a 1.3M checkpoint beyond the 1M tick) stays
+    readable. Call this AFTER the data has been plotted.
     """
     import matplotlib.ticker as mticker
 
     ax.set_xscale("log")
     ax.xaxis.set_major_formatter(mticker.FuncFormatter(_humanize_step_k))
-    ax.xaxis.set_major_locator(
-        mticker.FixedLocator([100, 200, 400, 700, 1000, 1500, 2400])
-    )
+    base = [100, 200, 400, 700, 1000, 1500, 2400]
+    data_max = ax.dataLim.x1 if ax.has_data() else None
+    if data_max and data_max > 0:
+        ticks = [t for t in base if t <= data_max * 1.02]
+        final = int(round(data_max))
+        # Always mark the final data point. If it sits close to the last round
+        # tick (e.g. 1.6M next to 1.5M), replace that tick so the two labels do
+        # not collide; otherwise add it as a new tick (e.g. 1.3M past 1M).
+        if ticks and data_max < ticks[-1] * 1.3:
+            ticks[-1] = final
+        elif not ticks or final > ticks[-1]:
+            ticks.append(final)
+    else:
+        ticks = base
+    ax.xaxis.set_major_locator(mticker.FixedLocator(ticks))
     ax.xaxis.set_minor_locator(mticker.NullLocator())
     ax.set_xlabel(label, fontsize=10)
     ax.grid(True, which="major", alpha=0.25, linewidth=0.5)
