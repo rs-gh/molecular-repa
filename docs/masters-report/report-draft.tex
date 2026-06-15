@@ -149,7 +149,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 14904
+Main chapters word count: 14941
 
 Methodology used to generate that word count:
 
@@ -1881,9 +1881,9 @@ What explains these divergent behaviours? At root, the two regimes represent com
 
 The protein-backbone result is ultimately a statement about training efficiency, and it pays off along two axes.
 
-The first is \emph{acceleration}: for a fixed compute budget, REPA reaches better generation quality in both the experimental (PDB) and synthetic (AFDB) regimes. Early in training, every variant already leads the baseline on designability, and most lead on distribution match (FPSD) in both regimes (\S\ref{sec:proteina-convergence}). A cheap auxiliary signal buys faster convergence, which is highly valuable in a data-scarce, prior-light field.
+The first is \emph{acceleration}: for a fixed compute budget, REPA reaches better generation quality in both the experimental (PDB) and synthetic (AFDB) regimes. Early in training, every variant already leads the baseline on PDB designability, and most lead on distribution match (FPSD) in both regimes (\S\ref{sec:proteina-convergence}). A cheap auxiliary signal buys faster convergence, which is highly valuable in a data-scarce, prior-light field.
 
-The second axis is \emph{asymptotics}: whether that early lead survives to convergence. Here the answer is not uniform, and it follows the data regime. The two regimes leave their headroom in different places. Synthetic (AFDB) data yields designability cheaply, but leaves the fold distribution hard to match. Experimental (PDB) data is the reverse, with a baseline that already matches the distribution but leaves room on designability (\S\ref{sec:proteina-distribution}). REPA's lasting gain lands wherever that gap is. On AFDB the distribution-match lead is permanent, because the baseline plateaus there. On PDB that same lead eventually closes, as the baseline catches up (\S\ref{sec:proteina-convergence}).
+The second axis is \emph{asymptotics}: whether that early lead survives to convergence. Here the answer is not uniform, and it follows the data regime. The two regimes leave their headroom in different places. Synthetic (AFDB) data yields designability cheaply, but leaves the fold distribution hard to match. Experimental (PDB) data is the reverse, with a baseline that already matches the distribution but leaves room on designability (\S\ref{sec:proteina-distribution}). REPA's lasting gain lands wherever that gap is. On AFDB the distribution-match lead is permanent, because the baseline plateaus there. On PDB that same lead eventually closes, as the baseline catches up (\S\ref{sec:proteina-distribution}).
 
 Both axes point the same way as a data-efficiency story. REPA always buys a faster climb, and can offer a lasting advantage when the baseline struggles most. The field's frontier --- larger synthetic corpora, longer backbones, the all-atom setting --- is where the generation problem is hardest and an unaided baseline has ground to make up. This may also be where REPA's payoff is greatest, and where it should be tested next.
 
@@ -1897,7 +1897,7 @@ must carry structural information the generator does not already learn cheaply.
 
 In this framework, our small-molecules study showed little promise because generation and representation quality metrics were already saturated, and the trunk already learned everything our encoders carried. Indeed, the problem of generating structurally plausible small molecules in-silico appears largely solved. To set appropriate expectations about what this means, we note that structural plausibility is only one desideratum among the many a real design campaign cares about (\S\ref{sec:primer}), and it is arguably the most tractable of them. The properties that actually determine a molecule's utility --- how it binds a target, metabolises, or synthesises --- are downstream of plausibility and far less settled. Moreover, all of this is measured in an in-silico sandbox that is itself a coarse stand-in for real chemistry. The saturated metrics do not suggest that we have mastered small-molecule generation, but that one tractable sub-problem of it looks solved under proxies that are far removed from the wet lab. But this suffices to leave REPA nothing to add.
 
-Protein backbone generation presents a more challenging task, where both representation and generation metrics are unsaturated, and determining teacher suitability remains difficult. In Chapter~\ref{ch:evaluation}, we propose a new framework in which to interpret the vast array of relevant metrics, which are complex both in isolation and in their relationships with each other. We also frame the central dynamic that characterises a generator's quality, the \emph{designability--diversity} trade-off, and the distinction between merely moving along such an envelope and pushing it outward. In Chapter~\ref{ch:profiling}, we then propose a set of heuristics to estimate the utility of an encoder as a REPA teacher. We investigate the \emph{information} content of a suite of pre-trained encoders, the \emph{relevance} of that content to the generative task, and the mathematical \emph{conditioning} of their embeddings, and use the most promising candidates in the studies that follow. We note that the approach we propose here is domain-agnostic. The questions we raise are purely statistical, and can be asked of any encoder in any domain with a few modifications.
+Protein backbone generation presents a more challenging task, where both representation and generation metrics are unsaturated, and determining teacher suitability remains difficult. In Chapter~\ref{ch:evaluation}, we propose a new framework in which to interpret the vast array of relevant metrics, which are complex both in isolation and in their relationships with each other. We also frame the central dynamic that characterises a generator's quality, the \emph{designability--diversity} trade-off, and the distinction between merely moving along such an envelope and pushing it outward. In Chapter~\ref{ch:profiling}, we then propose a set of heuristics to estimate the utility of an encoder as a REPA teacher. We investigate the \emph{information} content of a suite of pre-trained encoders, the \emph{relevance} of that content to the generative task, and the mathematical \emph{conditioning} of their embeddings, and use the most promising candidates in the studies that follow. We note that the approach we propose here is largely domain-agnostic. The questions we raise are purely statistical, and can be asked of any encoder in any domain with a few modifications.
 
 However, the molecular domain presents unique challenges in how multi-factorial and multi-scale its representations are, especially in contrast to images (\S\ref{sec:eval-multifactorial}). In this light, our work also presents a new view on REPA: it is not a single mechanism, but rather a \emph{family of interventions}. Every pre-trained encoder emphasises a different factor, so the choice of alignment target is also a choice over the structural factor one seeks to enhance.
 
@@ -2366,19 +2366,19 @@ Patrick Kunzmann, Kay Hamacher.
 
 \input{tables/table_setup_datasets}
 
-Table~\ref{tab:setup-datasets} summarises the two datasets used in Chapter~\ref{ch:proteina-study}. Both training sets are $\alpha/\beta$-dominated and span a substantial fraction of CATH architectures (44.2\% PDB, 61.8\% AFDB), which is what makes the per-chain CATH fold probe meaningful. Neither random split is sequence-clustered: 98.3\% of PDB and 92.2\% of AFDB validation chains have a $\ge$30\%-identity homolog in their own training set, so absolute in-house scores are inflated and we read rank-order and $\Delta$-from-baseline instead. The cross-database overlap is far lower: only 62.1\% of AFDB validation chains have a $\ge$30\%-identity hit in PDB training. This is what makes a clean evaluation possible. Filtering AFDB chains clean against \emph{both} training pools leaves $\sim$325 proteins at $n{\le}256$, more than five times the $\sim$62 left in the same-source PDB validation set, so this cross-database set serves as the blinded probe set for PDB-trained models (\S\ref{app:leakage}; Chapter~\ref{ch:evaluation}).
+Table~\ref{tab:setup-datasets} summarises the two datasets used in Chapter~\ref{ch:proteina-study}. In the $n{\le}256$ regime, both training sets are $\alpha/\beta$-dominated, and a substantial fraction of their chains carry a CATH annotation (44.2\% PDB, 61.8\% AFDB). Neither random split is sequence-clustered: 98.3\% of PDB and 92.2\% of AFDB validation chains have a $\ge$30\%-identity homologue in their own training set. The cross-database overlap is lower: only 62.1\% of AFDB validation chains have a $\ge$30\%-identity hit in PDB training. Moreover, filtering AFDB chains clean against \emph{both} training pools leaves $\sim$325 proteins, which serves as the blinded probe set for our models (\S\ref{app:leakage}; Chapter~\ref{ch:evaluation} in the main text).
 
 \section{Choice of CATH fold-probe level}
 \label{app:cath}
 
-We report CATH \emph{architecture} (CATH-A) as the headline fold-probe level throughout Chapter~\ref{ch:proteina-study}. Table~\ref{tab:setup-cath} justifies that choice: Class is too coarse (four buckets, one already near-saturated), Topology too finely-bucketed to probe reliably, and Architecture sits between --- discriminative but learnable. The example here shows the PDB-trained baseline trunk ($n{\le}256$): the probe classifies validation chains by their CATH code and we report the linear-probe top-1 accuracy at each level.
+We report CATH \emph{architecture} (CATH-A) as the headline fold-probe level throughout Chapter~\ref{ch:proteina-study}. Table~\ref{tab:setup-cath} justifies that choice: Class is too coarse (four buckets, one already near-saturated), Topology too finely-bucketed to probe reliably, and Architecture sits in between. The table here shows readouts from the PDB-trained baseline trunk ($n{\le}256$). The probe classifies validation chains by their CATH code and we report the linear-probe top-1 accuracy at each level.
 
 \input{tables/table_setup_cath}
 
 \section{Leakage-controlled probe evaluation}
 \label{app:leakage}
 
-The random train/val split (\S\ref{app:datasets}) is not sequence-clustered, so probe scores are exposed to two distinct leakages. \emph{Model leakage} is asymmetric: a model trained on the leaky split has effectively seen near-duplicates of the evaluation proteins, an advantage a differently-curated model (such as an externally-pretrained checkpoint) does not share. \emph{Probe leakage} is symmetric: a probe fit on training chains near-identical to its evaluation set can shortcut by matching sequences rather than learning generalisable structure, inflating every model's absolute score.
+The random train/val split (\S\ref{app:datasets}) is not sequence-clustered, so probe scores are exposed to two distinct leakages. \emph{Model leakage} is asymmetric across the models we compare. A model trained on the leaky split has effectively seen near-duplicates of the evaluation proteins, an advantage a differently-curated model (such as an externally-pretrained checkpoint) does not share. \emph{Probe leakage} is symmetric across those same models. A probe fit on training chains near-identical to its evaluation set can shortcut by matching sequences rather than learning generalisable structure, which inflates every model's absolute score equally.
 
 We control these by filtering the evaluation. A \emph{probe-clean} split removes probe leakage alone. The probe's training chains are filtered to have no $\ge$30\% sequence-identity hit to the evaluation set, which is otherwise the full validation set. A \emph{blinded} split removes both: the evaluation proteins are held under 30\% sequence identity to all training data.
 
@@ -2398,7 +2398,7 @@ The main-text representation table (Table~\ref{tab:proteina-rep}) shows four row
 
 Table~\ref{tab:proteina-rep-afdb} is the AFDB-trained counterpart of the PDB Table~\ref{tab:proteina-rep}. The fold routing (GearNet\,$\to$\,CATH) replicates. The per-residue routing does not: inverse folding and the dihedral probe show no consistent REPA effect, unlike the clear MPNN-led per-residue gains on PDB.
 
-However, we note this might reflect a measurement limit. These probes are run on the small cross-database blinded set at a single seed and a single checkpoint, so step-to-step noise is large. For example, the baseline dihedral error alone swings several degrees between adjacent checkpoints. We therefore draw no per-residue conclusion on AFDB and lean on the fold result, where the effect is large enough to clear that noise.
+However, we note this might reflect a measurement limit. The cross-database blinded set has ample residues to pin down each probe score for a fixed model state, but here we evaluate at a single seed and a single checkpoint, so checkpoint- and seed-level noise is large. For example, the baseline dihedral error alone swings several degrees between adjacent checkpoints. We therefore draw no per-residue conclusion on AFDB and lean on the fold result, where the effect is large enough to clear that noise.
 
 \input{tables/table_rep_quality_afdb}
 
@@ -2419,14 +2419,14 @@ Section~\ref{sec:proteina-genrep} establishes the representation--generation cou
 \section{The ssJSD-2D secondary-structure metric}
 \label{app:ssjsd}
 
-Proteina's secondary-structure metric compares the \emph{mean} helix and strand content of a generated set against a reference. This collapses each set to a single point, so it cannot see variance, bimodality, or tails. Hence, a model that matches the average composition while collapsing its spread scores the same as one that reproduces it. ssJSD-2D removes this blind spot by comparing the full joint distribution.
+Proteina's secondary-structure metric compares the mean helix and strand content of a generated set against a reference~\cite{Proteina}. This collapses each set to a single point, so it cannot see variance. Hence, a model that matches the average composition while collapsing its spread scores the same as one that reproduces it. ssJSD-2D removes this blind spot by comparing the full joint distribution.
 
-For each backbone we annotate every residue as helix, strand, or coil with a C$\alpha$-only secondary-structure assignment (P-SEA~\cite{PSEA}, as implemented in Biotite~\cite{Biotite}) and record the fraction of residues in helix ($f_H$) and in strand ($f_E$). A set of $N$ backbones is then a cloud of $N$ points in the $(f_H, f_E)$ plane. We bin that plane into a $5\times5$ grid over $[0,1]^2$, form normalised two-dimensional histograms for the generated and reference sets, and report the Jensen--Shannon divergence between them (lower is better). Binning the joint distribution, rather than comparing marginal means, lets the metric reward a model for reproducing the \emph{shape} of the secondary-structure distribution and penalise mode collapse onto, say, all-$\alpha$ backbones.
+For each backbone we annotate every residue as helix, strand, or coil with a C$\alpha$-only secondary-structure assignment (P-SEA~\cite{PSEA}, as implemented in Biotite~\cite{Biotite}) and record the fraction of residues in helix ($f_H$) and in strand ($f_E$). A set of $N$ backbones is then a cloud of $N$ points in the $(f_H, f_E)$ plane. We bin that plane into a $5\times5$ grid over $[0,1]^2$, form normalised two-dimensional histograms for the generated and reference sets, and report the Jensen--Shannon divergence between them (lower is better). Binning the joint distribution, rather than comparing marginal means, lets the metric reward a model for reproducing the shape of the secondary-structure distribution and penalise mode collapse.
 
 \section{Secondary-structure composition of the designable subset}
 \label{app:ss-composition}
 
-Table~\ref{tab:ss-composition} reports the per-seed secondary-structure composition of the designable backbones, behind the secondary-structure readings in \S\ref{sec:proteina-anatomy}. We show it at 700K, the step with the most complete multi-seed coverage across variants. On AFDB, the L9-GearNet and L9-MPNN strand and helix ranges do not overlap across seeds, in opposite directions. The remaining rows are included for completeness.
+Table~\ref{tab:ss-composition} reports the secondary-structure composition of designable backbones generated by our models, and its spread across seeds (\S\ref{sec:proteina-anatomy}). We show it at 700K, the step with the most complete multi-seed coverage across variants. On AFDB, the L9-GearNet and L9-MPNN strand and helix ranges do not overlap across seeds, in opposite directions. The remaining rows are included for completeness.
 
 \input{tables/table_ss_composition}
 
@@ -2443,17 +2443,25 @@ We read the magnitudes cautiously, as the ODE FPSD is single-seed and noisy. We 
 
 \input{tables/table_ode}
 
-\section{Per-seed spread of the 1.3M results}
+\section{Seed spread of the 1.3M results}
 \label{app:13m-ranges}
 
-Each cell of Table~\ref{tab:proteina-13m} is a mean over three generation seeds. Table~\ref{tab:proteina-13m-ranges} reports the min--max range across those three seeds for the same cells, in absolute units. The most load-bearing case is AFDB L4-GearNet, as references in the main text. Its designable-diversity (pwTM) range overlaps with the baseline, so the $0.02$ rise we report is within seed scatter, while its FPSD range stays cleanly below the baseline's.
+Each cell of Table~\ref{tab:proteina-13m} is a mean over three generation seeds. Table~\ref{tab:proteina-13m-ranges} reports the min--max range across those three seeds for the same cells, in absolute units. The most load-bearing case is AFDB L4-GearNet, as referenced in the main text. Its designable-diversity (pwTM) range overlaps with the baseline, so the $0.02$ rise we report is within seed scatter, while its FPSD range stays cleanly below the baseline's.
 
 \input{tables/table_13m_ranges}
 
 \section{Full encoder profiles}
 \label{app:profiling-full}
 
-Tables~\ref{tab:profiling-mol} and~\ref{tab:profiling-protein} in the main text show only the diagnostics that drive each verdict. Tables~\ref{tab:profiling-full-mol} and~\ref{tab:profiling-full-protein} give the complete measured set for every candidate encoder. The probe, \emph{3D}, \emph{Floor}, \emph{Lift}, \emph{Sparsity} and \emph{RankMe} columns carry the same meaning as in the main-text tables. The added columns are \emph{context-$\Delta$} (the within-minus-between cosine spread); \emph{Best} (the best-projector cosine, with $\text{Lift}=\text{Best}-\text{Floor}$); \emph{PR} (participation ratio); \emph{Dims@95\%} (dimensions holding $95\%$ of the variance); and \emph{norm} (mean L2 embedding norm). The spectral columns --- RankMe, PR, Dims@95\% and norm --- diagnose optimisation tractability. Rank collapse or a norm explosion degrades the gradient signal even when the embedding is informative.
+Tables~\ref{tab:profiling-mol} and~\ref{tab:profiling-protein} in the main text show only the diagnostics that drive each verdict. Tables~\ref{tab:profiling-full-mol} and~\ref{tab:profiling-full-protein} give the complete measured set for every candidate encoder. The \emph{3D}, \emph{Floor}, \emph{Lift}, \emph{Sparsity} and \emph{RankMe} columns carry the same meaning as in the main-text tables. The added columns are:
+\begin{itemize}[topsep=2pt,itemsep=1pt]
+  \item \emph{context-$\Delta$}: the mean cosine similarity between same-type token pairs minus that between different-type pairs. A positive value means the encoder separates atoms or residues by type.
+  \item \emph{Best}: the best-projector cosine, with $\text{Lift}=\text{Best}-\text{Floor}$.
+  \item \emph{PR}: the participation ratio.
+  \item \emph{Dims@95\%}: the number of dimensions holding $95\%$ of the variance.
+  \item \emph{norm}: the mean L2 embedding norm.
+\end{itemize}
+The spectral columns --- RankMe, PR, Dims@95\% and norm --- diagnose optimisation tractability. Rank collapse or a norm explosion degrades the gradient signal even when the embedding is informative.
 
 \input{tables/table_profiling_full}
 

@@ -131,6 +131,12 @@ def fmt_abs(pl, val):
 # below-epsilon changes are noise; leave them uncoloured (as the PDB table does)
 EPS = {"IF": 0.005, "dih": 0.5, "C": 0.01, "A": 0.01, "T": 0.01}
 
+# The per-residue probes (IF, dihedral) are noise-dominated on the single-seed,
+# single-checkpoint AFDB blinded set (see caption / App.~rep-afdb), so we draw no
+# per-residue conclusion and never colour these columns --- colouring would imply a
+# trustworthy "best" we explicitly disclaim.
+NO_COLOR = {"IF", "dih"}
+
 
 def fmt_delta(pl, val, hb, col_best_family, family):
     if val is None or base[pl] is None:
@@ -143,7 +149,7 @@ def fmt_delta(pl, val, hb, col_best_family, family):
         if pl in ("IF", "C", "A", "T")
         else f"{'+' if d >= 0 else '$-$'}{mag:.1f}"
     )
-    if not improved:
+    if not improved or pl in NO_COLOR:
         return body
     macro = "gb" if family == col_best_family else "gd"
     return f"\\{macro}{{{body}}}"

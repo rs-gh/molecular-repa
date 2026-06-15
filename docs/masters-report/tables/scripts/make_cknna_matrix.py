@@ -57,6 +57,10 @@ def main():
     lines.append(r"\begin{tabular}{lccc}")
     lines.append(r"\toprule")
     lines.append(
+        r" & \multicolumn{3}{c}{\textbf{CKNNA\,($\times 10^{3}$)\,$\uparrow$}} \\"
+    )
+    lines.append(r"\cmidrule(lr){2-4}")
+    lines.append(
         r" & " + " & ".join(f"\\textbf{{{disp}}}" for _, disp in ENCODERS) + r" \\"
     )
     lines.append(r"\midrule")
