@@ -72,6 +72,17 @@
 \submissiontrue
 % For the final version (with your name) leave the above commented.
 
+% Code-availability footnote, gated on the anonymisation flag: the final
+% build links the public repository; the blind-marking build points to the
+% separately submitted source archive instead (no identifying URL).
+\newcommand{\codeavailability}{%
+  \ifsubmission
+    The source code accompanying this report is submitted as a separate archive alongside this document.%
+  \else
+    The source code accompanying this report is available at \url{https://github.com/rs-gh/molecular-repa-release}.%
+  \fi
+}
+
 \begin{document}
 
 %TC:ignore  % wordcount: exclude front matter (cover sheet, abstract, TOC). See makefile target 'wordcount'.
@@ -95,7 +106,7 @@ Research project report title page
 Candidate \candidatenumber
 
 \vspace{42mm}
-\textsl{``\@title''}
+\textsl{``\@title''}\footnote{\codeavailability}
 
 \end{Large}
 
@@ -106,7 +117,7 @@ Candidate \candidatenumber
 \Huge
 \vspace{\fill}
 
-\@title
+\@title\footnote{\codeavailability}
 \vspace{\fill}
 
 \@author

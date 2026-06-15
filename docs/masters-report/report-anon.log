@@ -1,6 +1,7 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2026.4.15)  15 JUN 2026 16:22
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2026.4.15)  15 JUN 2026 17:38
 entering extended mode
  restricted \write18 enabled.
+ file:line:error style messages enabled.
  %&-line parsing enabled.
 **report-anon.tex
 (./report-anon.tex
@@ -602,22 +603,22 @@ File: tikzlibraryfit.code.tex 2013/07/12 v3.0.1a (rcs-revision 1.5)
 ) (./report-anon.aux)
 \openout1 = `report-anon.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 86.
+LaTeX Font Info:    ... okay on input line 86.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 86.
+LaTeX Font Info:    ... okay on input line 86.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 86.
+LaTeX Font Info:    ... okay on input line 86.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 86.
+LaTeX Font Info:    ... okay on input line 86.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 86.
+LaTeX Font Info:    ... okay on input line 86.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 86.
+LaTeX Font Info:    ... okay on input line 86.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 86.
+LaTeX Font Info:    ... okay on input line 86.
 \AtBeginShipoutBox=\box41
-Package hyperref Info: Link coloring OFF on input line 75.
+Package hyperref Info: Link coloring OFF on input line 86.
 
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
@@ -627,9 +628,9 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
 \c@section@level=\count138
 )
-LaTeX Info: Redefining \ref on input line 75.
-LaTeX Info: Redefining \pageref on input line 75.
-LaTeX Info: Redefining \nameref on input line 75.
+LaTeX Info: Redefining \ref on input line 86.
+LaTeX Info: Redefining \pageref on input line 86.
+LaTeX Info: Redefining \nameref on input line 86.
 
 (./report-anon.out) (./report-anon.out)
 \@outlinefile=\write4
@@ -704,29 +705,28 @@ ABD: EveryShipout initializing macros
 <logo-dcst-colour.pdf, id=260, pagebox=cropbox, 185.69376pt x 70.2625pt>
 File: logo-dcst-colour.pdf Graphic file (type pdf)
 <use logo-dcst-colour.pdf>
-Package pdftex.def Info: logo-dcst-colour.pdf  used on input line 85. on input
-line 85.
+Package pdftex.def Info: logo-dcst-colour.pdf  used on input line 96. on input
+line 96.
 Package pdftex.def Info: Requested size: 184.9429pt x 69.98035pt on input line
-85.
- [1
-
-{/usr/share/texlive/texmf-dist/fonts/map/pdftex/updmap/pdftex.map} <./logo-dcst
--colour.pdf>]
-LaTeX Font Info:    Try loading font information for U+msa on input line 157.
+96.
+LaTeX Font Info:    Try loading font information for U+msa on input line 109.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 157.
+LaTeX Font Info:    Try loading font information for U+msb on input line 109.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [2] [3
+) [1
+
+{/usr/share/texlive/texmf-dist/fonts/map/pdftex/updmap/pdftex.map} <./logo-dcst
+-colour.pdf>]
+[2] [3
 
 ] [4
 
-]
-(./report-anon.toc [5
+] (./report-anon.toc [5
 
 ])
 \tf@toc=\write5
@@ -738,25 +738,25 @@ Chapter 1.
 
 ] [8] [9]
 Chapter 2.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 677.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 688.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 677.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 688.
 
 Underfull \vbox (badness 1173) has occurred while \output is active []
 
  [10
 
 ]
-Overfull \hbox (20.4376pt too wide) in paragraph at lines 774--775
+Overfull \hbox (20.4376pt too wide) in paragraph at lines 785--786
  [][]
  []
 
 [11] [12] [13] (./figures/fig_ch2_domains.tex
-<figures/fig_ch2_domains.png, id=525, 527.571pt x 267.399pt>
+<figures/fig_ch2_domains.png, id=527, 527.571pt x 267.399pt>
 File: figures/fig_ch2_domains.png Graphic file (type png)
 <use figures/fig_ch2_domains.png>
 Package pdftex.def Info: figures/fig_ch2_domains.png  used on input line 5. on
@@ -769,7 +769,7 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
  [14 <./figures/fig_ch2_domains.png>] [15] [16]
 Chapter 3.
 
-Overfull \hbox (1.82362pt too wide) in paragraph at lines 1091--1091
+Overfull \hbox (1.82362pt too wide) in paragraph at lines 1102--1102
 |[]\OT1/cmr/bx/n/17.28 Representation and gen-er-a-tion are multi-factorial
  []
 
@@ -777,7 +777,7 @@ Overfull \hbox (1.82362pt too wide) in paragraph at lines 1091--1091
 
 ] [18] (./tables/table_eval_smallmol.tex) (./tables/table_eval_protein.tex)
 [19] [20] [21] (./figures/fig_ch3_designability.tex
-<figures/fig_ch3_designability.png, id=681, 679.338pt x 361.35pt>
+<figures/fig_ch3_designability.png, id=683, 679.338pt x 361.35pt>
 File: figures/fig_ch3_designability.png Graphic file (type png)
 <use figures/fig_ch3_designability.png>
 Package pdftex.def Info: figures/fig_ch3_designability.png  used on input line
@@ -811,7 +811,7 @@ Chapter 5.
 
 ] (./figures/fig_ch5_model.tex) (./tables/table_tabasco_setup.tex) [31]
 (./figures/fig_ch5_gallery.tex
-<figures/fig_ch5_gallery.png, id=809, 615.37904pt x 331.35796pt>
+<figures/fig_ch5_gallery.png, id=811, 615.37904pt x 331.35796pt>
 File: figures/fig_ch5_gallery.png Graphic file (type png)
 <use figures/fig_ch5_gallery.png>
 Package pdftex.def Info: figures/fig_ch5_gallery.png  used on input line 5. on
@@ -819,7 +819,7 @@ input line 5.
 Package pdftex.def Info: Requested size: 455.24411pt x 245.13026pt on input lin
 e 5.
 ) [32] (./figures/fig5_1_tabasco_curves.tex
-<figures/fig5_1_tabasco_curves.png, id=822, 781.2387pt x 239.2137pt>
+<figures/fig5_1_tabasco_curves.png, id=824, 781.2387pt x 239.2137pt>
 File: figures/fig5_1_tabasco_curves.png Graphic file (type png)
 <use figures/fig5_1_tabasco_curves.png>
 Package pdftex.def Info: figures/fig5_1_tabasco_curves.png  used on input line
@@ -834,7 +834,7 @@ Underfull \vbox (badness 6141) has occurred while \output is active []
 (./tables/table_tabasco_probe.tex) [34] [35]
 Chapter 6.
 (./figures/fig01_fid_des_convergence.tex
-<figures/fig01_fid_des_convergence.png, id=858, 931.8012pt x 661.5114pt>
+<figures/fig01_fid_des_convergence.png, id=860, 931.8012pt x 661.5114pt>
 File: figures/fig01_fid_des_convergence.png Graphic file (type png)
 <use figures/fig01_fid_des_convergence.png>
 Package pdftex.def Info: figures/fig01_fid_des_convergence.png  used on input l
@@ -850,7 +850,7 @@ Underfull \vbox (badness 7151) has occurred while \output is active []
 [37 <./figures/fig01_fid_des_convergence.png>] (./figures/fig_ch6_model.tex)
 [38] (./tables/table_setup_model.tex) [39] [40]
 (./figures/fig02_representation.tex
-<figures/fig02_representation.png, id=927, 967.4544pt x 330.5148pt>
+<figures/fig02_representation.png, id=929, 967.4544pt x 330.5148pt>
 File: figures/fig02_representation.png Graphic file (type png)
 <use figures/fig02_representation.png>
 Package pdftex.def Info: figures/fig02_representation.png  used on input line 4
@@ -860,7 +860,7 @@ e 4.
 ) [41] (./tables/table_rep_quality.tex
 (./tables/table_rep_quality_data.tex)) [42 <./figures/fig02_representation.png>
 ] (./figures/fig03_alignment.tex
-<figures/fig03_alignment.png, id=958, 895.1844pt x 322.3242pt>
+<figures/fig03_alignment.png, id=960, 895.1844pt x 322.3242pt>
 File: figures/fig03_alignment.png Graphic file (type png)
 <use figures/fig03_alignment.png>
 Package pdftex.def Info: figures/fig03_alignment.png  used on input line 4. on
@@ -872,7 +872,7 @@ e 4.
 (./tables/table_sampler.tex) (./tables/table_genrep_corr.tex
 (./tables/table_genrep_corr_data.tex) [44])
 (./figures/fig04_fid_des_gen_vs_rep.tex
-<figures/fig04_fid_des_gen_vs_rep.png, id=992, 931.3194pt x 359.4228pt>
+<figures/fig04_fid_des_gen_vs_rep.png, id=994, 931.3194pt x 359.4228pt>
 File: figures/fig04_fid_des_gen_vs_rep.png Graphic file (type png)
 <use figures/fig04_fid_des_gen_vs_rep.png>
 Package pdftex.def Info: figures/fig04_fid_des_gen_vs_rep.png  used on input li
@@ -885,7 +885,7 @@ Underfull \vbox (badness 1024) has occurred while \output is active []
  [45]
 [46] (./tables/table_proteina_13m.tex) [47 <./figures/fig04_fid_des_gen_vs_rep.
 png>] (./figures/fig_ch6_enrichment.tex
-<figures/fig_ch6_enrichment.png, id=1028, 679.338pt x 274.626pt>
+<figures/fig_ch6_enrichment.png, id=1030, 679.338pt x 274.626pt>
 File: figures/fig_ch6_enrichment.png Graphic file (type png)
 <use figures/fig_ch6_enrichment.png>
 Package pdftex.def Info: figures/fig_ch6_enrichment.png  used on input line 5.
@@ -901,25 +901,25 @@ Chapter 7.
 
 
 ]
-Underfull \hbox (badness 5667) in paragraph at lines 2042--2046
+Underfull \hbox (badness 5667) in paragraph at lines 2053--2057
 \OT1/cmr/m/n/12 ture with a lan-guage model''. \OT1/cmr/m/it/12 Sci-ence \OT1/c
 mr/m/n/12 379.6637 (2023), pp. 1123--1130.
  []
 
 [56]
-Underfull \hbox (badness 2913) in paragraph at lines 2127--2131
+Underfull \hbox (badness 2913) in paragraph at lines 2138--2142
 []\OT1/cmr/m/n/12 Luciano Broc-chieri and Samuel Kar-lin. ``Pro-tein length in
 eu-kary-otic and
  []
 
 [57]
-Underfull \hbox (badness 1917) in paragraph at lines 2172--2175
+Underfull \hbox (badness 1917) in paragraph at lines 2183--2186
 []\OT1/cmr/m/n/12 Johann Brehmer et al. \OT1/cmr/m/it/12 Does equiv-ari-ance ma
 t-ter at scale? \OT1/cmr/m/n/12 TMLR 2025.
  []
 
 [58]
-Underfull \hbox (badness 1127) in paragraph at lines 2274--2278
+Underfull \hbox (badness 1127) in paragraph at lines 2285--2289
 \OT1/cmr/m/n/12 new ef-fi-cient as-sign-ment of sec-ondary struc-ture from C$\O
 ML/cmm/m/it/12 $ \OT1/cmr/m/n/12 trace of pro-teins''.
  []
@@ -932,7 +932,7 @@ Overfull \hbox (17.7752pt too wide) in paragraph at lines 6--20
  []
 
 )
-Overfull \hbox (0.30399pt too wide) in paragraph at lines 2335--2336
+Overfull \hbox (0.30399pt too wide) in paragraph at lines 2346--2347
 \OT1/cmr/m/n/12 an-no-ta-tion (44.2% PDB, 61.8% AFDB). Nei-ther ran-dom split i
 s sequence-clustered: 98.3%
  []
@@ -955,57 +955,60 @@ Overfull \hbox (46.62437pt too wide) in paragraph at lines 3--8
 (./tables/table_cknna_matrix.tex (./tables/table_cknna_matrix_data.tex))
 [63] (./tables/table_genrep_corr_afdb.tex
 (./tables/table_genrep_corr_afdb_data.tex))
-Overfull \hbox (15.64963pt too wide) in paragraph at lines 2392--2392
+Overfull \hbox (15.64963pt too wide) in paragraph at lines 2403--2403
 |[]\OT1/cmr/bx/n/17.28 Secondary-structure com-po-si-tion of the des-ignable
  []
 
 (./tables/table_ss_composition.tex) [64] (./tables/table_ode.tex) [65]
 (./tables/table_13m_ranges.tex (./tables/table_13m_ranges_data.tex)) [66]
 (./tables/table_profiling_full.tex) [67]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2436.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 2436.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2447.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 2447.
  (./report-anon.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 2436.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2436.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 2447.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2447.
 
 Package rerunfilecheck Info: File `report-anon.out' has not changed.
 (rerunfilecheck)             Checksum: 7B8F34ADB51C8E1B0E4AA0C4ADE1DB80;4656.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2436.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2447.
  )
 Here is how much of TeX's memory you used:
- 18230 strings out of 494917
- 337948 string characters out of 6180699
- 432987 words of memory out of 5000000
- 20865 multiletter control sequences out of 15000+600000
- 18073 words of font info for 67 fonts, out of 8000000 for 9000
+ 18237 strings out of 494917
+ 338059 string characters out of 6180699
+ 433227 words of memory out of 5000000
+ 20871 multiletter control sequences out of 15000+600000
+ 19320 words of font info for 72 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 55i,16n,67p,1673b,796s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share/texli
-ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/tex
-mf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dis
-t/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist/font
-s/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1
-/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
-ts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-r7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><
-/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss12.pfb></usr/s
-hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss17.pfb></usr/share/t
-exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/share/texlive/
-texmf-dist/fonts/type1/public/amsfonts/cm/cmssi17.pfb></usr/share/texlive/texmf
--dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/t
-ype1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
-blic/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/a
-msfonts/cm/cmti12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
-s/cm/cmti8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-tt12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msb
-m10.pfb>
-Output written on report-anon.pdf (67 pages, 2382245 bytes).
+ 55i,16n,67p,1673b,792s stack positions out of 5000i,500n,10000p,200000b,80000s
+pdfTeX warning (dest): name{Hfootnote.1} has been referenced but does not exi
+st, replaced by a fixed one
+
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/
+share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/
+texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share/texlive
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf
+-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts
+/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7
+.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss12.pfb></usr/sha
+re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss17.pfb></usr/share/tex
+live/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/share/texlive/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmssi17.pfb></usr/share/texlive/texmf-d
+ist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/typ
+e1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmti12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmti8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt
+12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm1
+0.pfb>
+Output written on report-anon.pdf (67 pages, 2382757 bytes).
 PDF statistics:
- 1413 PDF objects out of 1440 (max. 8388607)
- 1255 compressed objects within 13 object streams
- 236 named destinations out of 1000 (max. 500000)
+ 1415 PDF objects out of 1440 (max. 8388607)
+ 1257 compressed objects within 13 object streams
+ 237 named destinations out of 1000 (max. 500000)
  567 words of extra memory for PDF output out of 10000 (max. 10000000)
