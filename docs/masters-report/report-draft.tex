@@ -149,7 +149,7 @@ Main chapters (excluding front-matter, references and appendix):
 \contentpages~pages
 (pp~\pageref{firstcontentpage}--\pageref{lastcontentpage})
 
-Main chapters word count: 14941
+Main chapters word count: 14942
 
 Methodology used to generate that word count:
 
@@ -201,7 +201,7 @@ the approved use of Generative AI tools, such as Anthropic Claude and Google Gem
 \fi
 
 \bigskip
-\textbf{Date: June 15 2026}
+\textbf{Date: June 15, 2026}
 \vspace{\fill}
 
 \chapter*{Abstract}
@@ -674,7 +674,7 @@ The remainder of this report is organised as follows. Chapter~\ref{ch:background
 % conditional move more carefully.
 % ==========================================================================
 
-In this chapter, we introduce the machinery the rest of this thesis depends on: flow matching (\S\ref{sec:flow-matching}), representation alignment (\S\ref{sec:repa}), the de-novo molecular design pipeline (\S\ref{sec:primer}), and the two domains and models we work with (\S\ref{sec:molecular-domains}). The treatment is cursory by design. We intend only to guide the reader through this report, and we provide citations for omitted details.
+In this chapter, we introduce the machinery the rest of this report depends on: flow matching (\S\ref{sec:flow-matching}), representation alignment (\S\ref{sec:repa}), the de-novo molecular design pipeline (\S\ref{sec:primer}), and the two domains and models we work with (\S\ref{sec:molecular-domains}). The treatment is cursory by design. We intend only to guide the reader through this report, and we provide citations for omitted details.
 
 \section{Flow matching}
 \label{sec:flow-matching}
@@ -895,7 +895,7 @@ This point-cloud-of-atoms parameterisation is one of several, each with a differ
 \subsection{Protein backbones and Proteina}
 \label{sec:protein}
 
-A \emph{protein} is a chain of amino-acid residues, ranging from around 50 to several thousands in length~\cite{BritannicaProtein}. Each amino-acid residue contributes four \emph{backbone} atoms (N, C$_\alpha$, C, O) whose interactions determine the chain's fold geometry, and a \emph{side chain} that determines its amino-acid identity.
+A \emph{protein} is a chain of amino-acid residues, ranging from around 50 to several thousand in length~\cite{BritannicaProtein}. Each amino-acid residue contributes four \emph{backbone} atoms (N, C$_\alpha$, C, O) whose interactions determine the chain's fold geometry, and a \emph{side chain} that determines its amino-acid identity.
 
 A protein's \emph{secondary structure} is its local pattern of $\alpha$-helices and $\beta$-strands. An $\alpha$-helix is a compact right-handed coil; a $\beta$-strand is an extended segment that lines up alongside others into a sheet. Both are stabilised by regular backbone hydrogen-bonding patterns~\cite{DSSP}. Its \emph{tertiary structure} is the global three-dimensional fold those elements form when they pack together. A CATH code~\cite{CATH} (Class, Architecture, Topology, Homology) classifies this fold hierarchically. \emph{Class} captures broad secondary-structure content (mostly-$\alpha$, mostly-$\beta$, or mixed), \emph{Architecture} the gross spatial arrangement of those elements, and \emph{Topology} their specific connectivity.
 
@@ -1162,7 +1162,7 @@ A central dynamic in protein generation pits the designability number against th
 
 Ultimately, how does this trade-off help us compare models? In our studies, we distinguish between two phenomena. The first is whether a model merely occupies a different spot on the same envelope, in which case the optimal choice is use-case specific. The second is whether a model pushes the envelope itself --- playing the same trade-off game, but at a higher level, winning on one axis without conceding the other. This makes a model canonically better.
 
-These complex dynamics further motivate the question: \emph{what makes an encoder a good teacher of representational information in this domain?} We examine this question in Chapter~\ref{ch:profiling}, which informs the experiments we present in Chapters~\ref{ch:tabasco-study} and ~\ref{ch:proteina-study}.
+These complex dynamics further motivate the question: \emph{what makes an encoder a good teacher of representational information in this domain?} We examine this question in Chapter~\ref{ch:profiling}, which informs the experiments we present in Chapters~\ref{ch:tabasco-study} and~\ref{ch:proteina-study}.
 
 \chapter{Encoder targets and profiling}
 \label{ch:profiling}
@@ -1895,7 +1895,7 @@ conditions hold together. The evaluation surface must leave \emph{headroom} for
 a gain to register, and the encoder must be a \emph{suitable teacher} --- it
 must carry structural information the generator does not already learn cheaply.
 
-In this framework, our small-molecules study showed little promise because generation and representation quality metrics were already saturated, and the trunk already learned everything our encoders carried. Indeed, the problem of generating structurally plausible small molecules in-silico appears largely solved. To set appropriate expectations about what this means, we note that structural plausibility is only one desideratum among the many a real design campaign cares about (\S\ref{sec:primer}), and it is arguably the most tractable of them. The properties that actually determine a molecule's utility --- how it binds a target, metabolises, or synthesises --- are downstream of plausibility and far less settled. Moreover, all of this is measured in an in-silico sandbox that is itself a coarse stand-in for real chemistry. The saturated metrics do not suggest that we have mastered small-molecule generation, but that one tractable sub-problem of it looks solved under proxies that are far removed from the wet lab. But this suffices to leave REPA nothing to add.
+In this framework, our small-molecule study showed little promise because generation and representation quality metrics were already saturated, and the trunk already learned everything our encoders carried. Indeed, the problem of generating structurally plausible small molecules in-silico appears largely solved. To set appropriate expectations about what this means, we note that structural plausibility is only one desideratum among the many a real design campaign cares about (\S\ref{sec:primer}), and it is arguably the most tractable of them. The properties that actually determine a molecule's utility --- how it binds a target, metabolises, or synthesises --- are downstream of plausibility and far less settled. Moreover, all of this is measured in an in-silico sandbox that is itself a coarse stand-in for real chemistry. The saturated metrics do not suggest that we have mastered small-molecule generation, but that one tractable sub-problem of it looks solved under proxies that are far removed from the wet lab. But this suffices to leave REPA nothing to add.
 
 Protein backbone generation presents a more challenging task, where both representation and generation metrics are unsaturated, and determining teacher suitability remains difficult. In Chapter~\ref{ch:evaluation}, we propose a new framework in which to interpret the vast array of relevant metrics, which are complex both in isolation and in their relationships with each other. We also frame the central dynamic that characterises a generator's quality, the \emph{designability--diversity} trade-off, and the distinction between merely moving along such an envelope and pushing it outward. In Chapter~\ref{ch:profiling}, we then propose a set of heuristics to estimate the utility of an encoder as a REPA teacher. We investigate the \emph{information} content of a suite of pre-trained encoders, the \emph{relevance} of that content to the generative task, and the mathematical \emph{conditioning} of their embeddings, and use the most promising candidates in the studies that follow. We note that the approach we propose here is largely domain-agnostic. The questions we raise are purely statistical, and can be asked of any encoder in any domain with a few modifications.
 
@@ -1916,6 +1916,9 @@ We read our contribution not as a verdict that REPA accelerates protein backbone
 
 %TC:ignore  % wordcount: exclude references + appendix (non-core material)
 
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliography}
 \begin{thebibliography}{99}
 
 % --- Foundational generative methods ---
@@ -2002,18 +2005,6 @@ C.~Vonessen et al.
 
 % --- Generative design across domains ---
 
-\bibitem{REINVENT}
-Marcus Olivecrona, Thomas Blaschke, Ola Engkvist, Hongming Chen.
-``Molecular de-novo design through deep reinforcement learning''.
-\textit{Journal of Cheminformatics} 9:48 (2017).
-\href{https://doi.org/10.1186/s13321-017-0235-x}{doi:10.1186/s13321-017-0235-x}.
-
-\bibitem{GENTRL}
-Alex Zhavoronkov et al.
-``Deep learning enables rapid identification of potent DDR1 kinase inhibitors''.
-\textit{Nature Biotechnology} 37 (2019), pp.~1038--1040.
-\href{https://doi.org/10.1038/s41587-019-0224-x}{doi:10.1038/s41587-019-0224-x}.
-
 \bibitem{RFdiffusion}
 Joseph~L. Watson et al.
 ``de-novo design of protein structure and function with RFdiffusion''.
@@ -2025,12 +2016,6 @@ John~B. Ingraham et al.
 ``Illuminating protein space with a programmable generative model''.
 \textit{Nature} 623 (2023), pp.~1070--1078.
 \href{https://doi.org/10.1038/s41586-023-06728-8}{doi:10.1038/s41586-023-06728-8}.
-
-\bibitem{GNoME}
-Amil Merchant et al.
-``Scaling deep learning for materials discovery''.
-\textit{Nature} 624 (2023), pp.~80--85.
-\href{https://doi.org/10.1038/s41586-023-06735-9}{doi:10.1038/s41586-023-06735-9}.
 
 \bibitem{MatterGen}
 Claudio Zeni et al.
@@ -2105,18 +2090,6 @@ arXiv preprint (2025).
 Quentin Garrido, Randall Balestriero, Laurent Najman, Yann LeCun.
 \textit{RankMe: Assessing the Downstream Performance of Pretrained Self-Supervised Representations by Their Rank}. ICML 2023.
 \href{https://arxiv.org/abs/2210.02885}{arXiv:2210.02885}.
-
-\bibitem{ProstT5}
-Michael Heinzinger et al.
-``Bilingual language model for protein sequence and structure''.
-\textit{NAR Genomics and Bioinformatics} 6.4 (2024), lqae150.
-\href{https://doi.org/10.1093/nargab/lqae150}{doi:10.1093/nargab/lqae150}.
-
-\bibitem{SaProt}
-Jin Su et al.
-``SaProt: Protein Language Modeling with Structure-aware Vocabulary''.
-\textit{bioRxiv} (2023). Preprint.
-\href{https://doi.org/10.1101/2023.10.01.560349}{doi:10.1101/2023.10.01.560349}.
 
 % --- Data sources ---
 
@@ -2281,13 +2254,6 @@ Pascal Notin et al.
 ``Machine learning for functional protein design''.
 \textit{Nature Biotechnology} 42 (2024), pp.~216--228.
 \href{https://doi.org/10.1038/s41587-024-02127-0}{doi:10.1038/s41587-024-02127-0}.
-
-\bibitem{Genie2}
-Yeqing Lin, Minji Lee, Zhao Zhang, and Mohammed AlQuraishi.
-``Out of Many, One: Designing and Scaffolding Proteins at the Scale of the
-Structural Universe with Genie~2''.
-\textit{arXiv preprint} arXiv:2405.15489 (2024).
-\href{https://arxiv.org/abs/2405.15489}{arXiv:2405.15489}.
 
 % --- Structural databases and representation-geometry tools ---
 
