@@ -34,14 +34,14 @@
 \contentsline {section}{\numberline {6.1}Experimental setup}{37}{section.6.1}
 \contentsline {subsection}{\numberline {6.1.1}Datasets}{37}{subsection.6.1.1}
 \contentsline {subsection}{\numberline {6.1.2}Models}{38}{subsection.6.1.2}
-\contentsline {subsection}{\numberline {6.1.3}Metrics}{40}{subsection.6.1.3}
+\contentsline {subsection}{\numberline {6.1.3}Metrics}{39}{subsection.6.1.3}
 \contentsline {subsection}{\numberline {6.1.4}Evaluation protocol}{40}{subsection.6.1.4}
 \contentsline {section}{\numberline {6.2}Results}{41}{section.6.2}
 \contentsline {subsection}{\numberline {6.2.1}REPA improves representation quality asymptotically}{41}{subsection.6.2.1}
 \contentsline {subsection}{\numberline {6.2.2}A diagnostic check on alignment}{43}{subsection.6.2.2}
 \contentsline {subsection}{\numberline {6.2.3}In the short run, REPA accelerates generation quality in both experimental and synthetic data regimes}{44}{subsection.6.2.3}
-\contentsline {subsection}{\numberline {6.2.4}In the long run, REPA gains are data-regime dependent}{47}{subsection.6.2.4}
-\contentsline {subsection}{\numberline {6.2.5}What we do not claim}{49}{subsection.6.2.5}
+\contentsline {subsection}{\numberline {6.2.4}In the long run, REPA gains are data-regime dependent}{46}{subsection.6.2.4}
+\contentsline {subsection}{\numberline {6.2.5}What we do not claim}{48}{subsection.6.2.5}
 \contentsline {section}{\numberline {6.3}Discussion}{50}{section.6.3}
 \contentsline {chapter}{\numberline {7}Conclusions}{52}{chapter.7}
 \contentsline {section}{\numberline {7.1}Does REPA work in the molecular domain?}{52}{section.7.1}
