@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2026.4.15)  15 JUN 2026 15:13
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2026.4.15)  15 JUN 2026 15:45
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -644,7 +644,7 @@ LaTeX Info: Redefining \nameref on input line 75.
 * paper: a4paper
 * layout: <same size as paper>
 * layoutoffset:(h,v)=(0.0pt,0.0pt)
-* modes: twoside
+* modes: twoside 
 * h-part:(L,W,R)=(71.13188pt, 455.24411pt, 71.13188pt)
 * v-part:(T,H,B)=(56.9055pt, 731.23584pt, 56.9055pt)
 * \paperwidth=597.50787pt
@@ -705,9 +705,9 @@ ABD: EveryShipout initializing macros
 <logo-dcst-colour.pdf, id=256, pagebox=cropbox, 185.69376pt x 70.2625pt>
 File: logo-dcst-colour.pdf Graphic file (type pdf)
 <use logo-dcst-colour.pdf>
-Package pdftex.def Info: logo-dcst-colour.pdf  used on input line 85. on input
+Package pdftex.def Info: logo-dcst-colour.pdf  used on input line 85. on input 
 line 85.
-Package pdftex.def Info: Requested size: 184.9429pt x 69.98035pt on input line
+Package pdftex.def Info: Requested size: 184.9429pt x 69.98035pt on input line 
 85.
  [1
 
@@ -754,14 +754,14 @@ Underfull \vbox (badness 1173) has occurred while \output is active []
 
 ]
 Overfull \hbox (20.4376pt too wide) in paragraph at lines 774--775
- [][]
+ [][] 
  []
 
 [11] [12] [13] (./figures/fig_ch2_domains.tex
 <figures/fig_ch2_domains.png, id=521, 527.571pt x 267.399pt>
 File: figures/fig_ch2_domains.png Graphic file (type png)
 <use figures/fig_ch2_domains.png>
-Package pdftex.def Info: figures/fig_ch2_domains.png  used on input line 5. on
+Package pdftex.def Info: figures/fig_ch2_domains.png  used on input line 5. on 
 input line 5.
 Package pdftex.def Info: Requested size: 409.71692pt x 207.66458pt on input lin
 e 5.
@@ -782,7 +782,7 @@ Overfull \hbox (1.82362pt too wide) in paragraph at lines 1091--1091
 <figures/fig_ch3_designability.png, id=677, 679.338pt x 361.35pt>
 File: figures/fig_ch3_designability.png Graphic file (type png)
 <use figures/fig_ch3_designability.png>
-Package pdftex.def Info: figures/fig_ch3_designability.png  used on input line
+Package pdftex.def Info: figures/fig_ch3_designability.png  used on input line 
 6. on input line 6.
 Package pdftex.def Info: Requested size: 455.24411pt x 242.15839pt on input lin
 e 6.
@@ -816,7 +816,7 @@ Chapter 5.
 <figures/fig_ch5_gallery.png, id=805, 615.37904pt x 331.35796pt>
 File: figures/fig_ch5_gallery.png Graphic file (type png)
 <use figures/fig_ch5_gallery.png>
-Package pdftex.def Info: figures/fig_ch5_gallery.png  used on input line 5. on
+Package pdftex.def Info: figures/fig_ch5_gallery.png  used on input line 5. on 
 input line 5.
 Package pdftex.def Info: Requested size: 455.24411pt x 245.13026pt on input lin
 e 5.
@@ -824,7 +824,7 @@ e 5.
 <figures/fig5_1_tabasco_curves.png, id=818, 781.2387pt x 239.2137pt>
 File: figures/fig5_1_tabasco_curves.png Graphic file (type png)
 <use figures/fig5_1_tabasco_curves.png>
-Package pdftex.def Info: figures/fig5_1_tabasco_curves.png  used on input line
+Package pdftex.def Info: figures/fig5_1_tabasco_curves.png  used on input line 
 4. on input line 4.
 Package pdftex.def Info: Requested size: 455.24411pt x 139.3974pt on input line
  4.
@@ -865,7 +865,7 @@ e 4.
 <figures/fig03_alignment.png, id=954, 895.1844pt x 322.3242pt>
 File: figures/fig03_alignment.png Graphic file (type png)
 <use figures/fig03_alignment.png>
-Package pdftex.def Info: figures/fig03_alignment.png  used on input line 4. on
+Package pdftex.def Info: figures/fig03_alignment.png  used on input line 4. on 
 input line 4.
 Package pdftex.def Info: Requested size: 455.24411pt x 163.92084pt on input lin
 e 4.
@@ -890,7 +890,7 @@ png>] (./figures/fig_ch6_enrichment.tex
 <figures/fig_ch6_enrichment.png, id=1024, 679.338pt x 274.626pt>
 File: figures/fig_ch6_enrichment.png Graphic file (type png)
 <use figures/fig_ch6_enrichment.png>
-Package pdftex.def Info: figures/fig_ch6_enrichment.png  used on input line 5.
+Package pdftex.def Info: figures/fig_ch6_enrichment.png  used on input line 5. 
 on input line 5.
 Package pdftex.def Info: Requested size: 455.24411pt x 184.04036pt on input lin
 e 5.
@@ -927,7 +927,7 @@ mat-ics \OT1/cmr/m/n/12 6.4 (2024), lqae150.
 
 
 Underfull \hbox (badness 2913) in paragraph at lines 2154--2158
-[]\OT1/cmr/m/n/12 Luciano Broc-chieri and Samuel Kar-lin. ``Pro-tein length in
+[]\OT1/cmr/m/n/12 Luciano Broc-chieri and Samuel Kar-lin. ``Pro-tein length in 
 eu-kary-otic and
  []
 
@@ -947,7 +947,7 @@ ML/cmm/m/it/12 $ \OT1/cmr/m/n/12 trace of pro-teins''.
 Appendix A.
 (./tables/table_setup_datasets.tex
 Overfull \hbox (17.7752pt too wide) in paragraph at lines 6--20
- [][]
+ [][] 
  []
 
 )
@@ -958,7 +958,7 @@ s sequence-clustered: 98.3%
 
 (./tables/table_setup_cath.tex
 Overfull \hbox (16.63011pt too wide) in paragraph at lines 5--14
- [][]
+ [][] 
  []
 
 ) [60
@@ -966,7 +966,7 @@ Overfull \hbox (16.63011pt too wide) in paragraph at lines 5--14
 ] [61] (./tables/table_rep_quality_full.tex
 (./tables/table_rep_quality_full_data.tex)
 Overfull \hbox (46.62437pt too wide) in paragraph at lines 3--8
- [][]
+ [][] 
  []
 
 ) (./tables/table_rep_quality_afdb.tex
@@ -990,7 +990,7 @@ Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2470.
 Package rerunfilecheck Info: File `report-draft.out' has not changed.
 (rerunfilecheck)             Checksum: E68943AA0CBC05D608F119A5CF272732;4607.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2470.
- )
+ ) 
 Here is how much of TeX's memory you used:
  18239 strings out of 494917
  338053 string characters out of 6180699
@@ -1021,9 +1021,10 @@ lic/amsfonts/cm/cmti12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmti8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
 cm/cmtt12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbol
 s/msbm10.pfb>
-Output written on report-draft.pdf (67 pages, 2375241 bytes).
+Output written on report-draft.pdf (67 pages, 2375478 bytes).
 PDF statistics:
- 1418 PDF objects out of 1440 (max. 8388607)
- 1261 compressed objects within 13 object streams
+ 1419 PDF objects out of 1440 (max. 8388607)
+ 1262 compressed objects within 13 object streams
  242 named destinations out of 1000 (max. 500000)
  559 words of extra memory for PDF output out of 10000 (max. 10000000)
+
