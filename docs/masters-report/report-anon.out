@@ -47,16 +47,17 @@
 \BOOKMARK [1][-]{section.7.1}{Does REPA work in the molecular domain?}{chapter.7}% 47
 \BOOKMARK [1][-]{section.7.2}{When does REPA work?}{chapter.7}% 48
 \BOOKMARK [1][-]{section.7.3}{Open questions}{chapter.7}% 49
-\BOOKMARK [0][-]{appendix.A}{Technical details}{}% 50
-\BOOKMARK [1][-]{section.A.1}{Protein dataset composition and split overlap}{appendix.A}% 51
-\BOOKMARK [1][-]{section.A.2}{Choice of CATH fold-probe level}{appendix.A}% 52
-\BOOKMARK [1][-]{section.A.3}{Leakage-controlled probe evaluation}{appendix.A}% 53
-\BOOKMARK [1][-]{section.A.4}{Full representation-quality ablation}{appendix.A}% 54
-\BOOKMARK [1][-]{section.A.5}{Representation quality on AFDB}{appendix.A}% 55
-\BOOKMARK [1][-]{section.A.6}{Representation-alignment matrix}{appendix.A}% 56
-\BOOKMARK [1][-]{section.A.7}{Representation\205generation coupling on AFDB}{appendix.A}% 57
-\BOOKMARK [1][-]{section.A.8}{The ssJSD-2D secondary-structure metric}{appendix.A}% 58
-\BOOKMARK [1][-]{section.A.9}{Secondary-structure composition of the designable subset}{appendix.A}% 59
-\BOOKMARK [1][-]{section.A.10}{Deterministic \(ODE\) sampling across variants}{appendix.A}% 60
-\BOOKMARK [1][-]{section.A.11}{Per-seed spread of the 1.3M results}{appendix.A}% 61
-\BOOKMARK [1][-]{section.A.12}{Full encoder profiles}{appendix.A}% 62
+\BOOKMARK [0][-]{section*.3}{Bibliography}{}% 50
+\BOOKMARK [0][-]{appendix.A}{Technical details}{}% 51
+\BOOKMARK [1][-]{section.A.1}{Protein dataset composition and split overlap}{appendix.A}% 52
+\BOOKMARK [1][-]{section.A.2}{Choice of CATH fold-probe level}{appendix.A}% 53
+\BOOKMARK [1][-]{section.A.3}{Leakage-controlled probe evaluation}{appendix.A}% 54
+\BOOKMARK [1][-]{section.A.4}{Full representation-quality ablation}{appendix.A}% 55
+\BOOKMARK [1][-]{section.A.5}{Representation quality on AFDB}{appendix.A}% 56
+\BOOKMARK [1][-]{section.A.6}{Representation-alignment matrix}{appendix.A}% 57
+\BOOKMARK [1][-]{section.A.7}{Representation\205generation coupling on AFDB}{appendix.A}% 58
+\BOOKMARK [1][-]{section.A.8}{The ssJSD-2D secondary-structure metric}{appendix.A}% 59
+\BOOKMARK [1][-]{section.A.9}{Secondary-structure composition of the designable subset}{appendix.A}% 60
+\BOOKMARK [1][-]{section.A.10}{Deterministic \(ODE\) sampling across variants}{appendix.A}% 61
+\BOOKMARK [1][-]{section.A.11}{Seed spread of the 1.3M results}{appendix.A}% 62
+\BOOKMARK [1][-]{section.A.12}{Full encoder profiles}{appendix.A}% 63
